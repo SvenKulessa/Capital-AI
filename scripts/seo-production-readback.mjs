@@ -121,6 +121,18 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
   }
   await get('/login', (response, html) => add('/login', 'NOINDEX', /noindex/i.test(response.headers.get('x-robots-tag') || '') &&
     /<meta name="robots" content="noindex/i.test(html)));
+  // A raw, bounded GET never executes JavaScript: check the initial server HTML.
+  await get('/marketscreener/dokumentation', (response, html) => {
+    const path = '/marketscreener/dokumentation';
+    add(path, 'BLUEPRINT_NOJS_SERVER_HTML',
+      html.includes('<main id="capital-ai-blueprint-preview" lang="de"')
+      && html.includes('Synthetisches Beispiel')
+      && html.includes('href="/pricing">Bestehende Angebote vergleichen</a>'));
+    add(path, 'BLUEPRINT_NOINDEX',
+      /noindex/i.test(response.headers.get('x-robots-tag') || ''));
+    add(path, 'BLUEPRINT_NO_INTERNAL_LEAK',
+      !/\/api\/billing|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY/i.test(html));
+  });
   let runtimeIdentity = { status: 'NOT_PROVEN', sourceSha: null, evidence: 'NOT_PROVEN' };
   await get('/healthz', (_response, body) => {
     const health = JSON.parse(body);

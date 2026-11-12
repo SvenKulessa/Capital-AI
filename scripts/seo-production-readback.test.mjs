@@ -33,6 +33,9 @@ function fixture(url, options) {
   else if (path === '/robots.txt') body = 'Sitemap: https://capital-ai.online/sitemap.xml';
   else if (path === '/sitemap.xml') body = '<urlset>' + SEO_CONTENT_MANIFEST.map(item => `<url><loc>${item.canonical}</loc></url>`).join('') + '</urlset>';
   else if (path === '/login') return new Response('<meta name="robots" content="noindex, nofollow">', { headers: { 'x-robots-tag': 'noindex, nofollow' } });
+  else if (path === '/marketscreener/dokumentation') return new Response(
+    '<html><head><title>Screener-Blueprint · Vorschau</title></head><body><div id="root"><main id="capital-ai-blueprint-preview" lang="de"><h1>Screener-Blueprint · Vorschau</h1><h2>Synthetisches Beispiel</h2><a href="/pricing">Bestehende Angebote vergleichen</a></main></div></body></html>',
+    { headers: { 'content-type': 'text/html', 'x-robots-tag': 'noindex, nofollow' } });
   else if (path === '/healthz') body = JSON.stringify({ status: 'ok', buildIdentity: { bound: false, sourceSha: null } });
   else if (path.includes('subscriptions')) body = JSON.stringify({ schema: 'CAPITAL_AI_SUBSCRIPTION_COMMERCE_READINESS@1', enabled: true });
   else if (path.includes('commerce')) body = JSON.stringify({ schema: 'CAPITAL_AI_CADS_COMMERCE_READINESS@1', githubMarketplace: { runtimeReady: false } });
@@ -190,4 +193,49 @@ test('health HTTP redirects do not masquerade as a verified runtime', async () =
   assert.equal(report.healthReadback.status, 'NOT_PROVEN');
   assert.equal(report.runtimeIdentity.status, 'NOT_PROVEN');
   assert.equal(report.seoStatus, 'FAIL');
+});
+
+test('raw server Blueprint HTML is accessible without JavaScript, noindexed and has safe pricing CTA', async () => {
+  const report = await productionReadback({ fetchImpl: fixture });
+  const checks = report.checks.filter(item => item.path === '/marketscreener/dokumentation');
+  assert.deepEqual(checks.map(item => item.check), [
+    'HTTP_200_NO_REDIRECT', 'BLUEPRINT_NOJS_SERVER_HTML',
+    'BLUEPRINT_NOINDEX', 'BLUEPRINT_NO_INTERNAL_LEAK',
+  ]);
+  assert.ok(checks.every(item => item.status === 'PASS'));
+  assert.equal(report.seoStatus, 'PASS');
+});
+
+test('raw Blueprint server contract fails closed on absent preview, CTA, noindex, redirects and leaked billing internals', async () => {
+  const path = '/marketscreener/dokumentation';
+  const variants = [
+    ['missing-root', s => s.replace('capital-ai-blueprint-preview', 'missing-blueprint-root')],
+    ['missing-example', s => s.replace('Synthetisches Beispiel', 'Beispiel fehlt')],
+    ['missing-cta', s => s.replace('href="/pricing"', 'href="/missing-pricing"')],
+    ['bootstrap-error', () => 'Die Anwendung konnte nicht gestartet werden'],
+    ['internal-billing', s => s + '/api/billing'],
+  ];
+  for (const [name, modify] of variants) {
+    const report = await productionReadback({ fetchImpl: async (url, options) => {
+      if (new URL(url).pathname !== path) return fixture(url, options);
+      const response = fixture(url, options);
+      return new Response(modify(await response.text()), { headers: response.headers });
+    } });
+    assert.equal(report.seoStatus, 'FAIL', name);
+    assert.ok(report.checks.some(item => item.path === path && item.status === 'FAIL'), name);
+    assert.equal(JSON.stringify(report).includes('Die Anwendung konnte nicht gestartet werden'), false);
+  }
+  const noindex = await productionReadback({ fetchImpl: (url, options) => {
+    if (new URL(url).pathname !== path) return fixture(url, options);
+    return new Response('<main id="capital-ai-blueprint-preview" lang="de"><h2>Synthetisches Beispiel</h2><a href="/pricing">Bestehende Angebote vergleichen</a></main>', { headers: { 'content-type': 'text/html' } });
+  } });
+  assert.equal(noindex.seoStatus, 'FAIL');
+  assert.ok(noindex.checks.some(item => item.check === 'BLUEPRINT_NOINDEX' && item.status === 'FAIL'));
+  const redirect = await productionReadback({ fetchImpl: (url, options) =>
+    new URL(url).pathname === path
+      ? new Response(null, { status: 302, headers: { location: 'https://example.invalid' } })
+      : fixture(url, options) });
+  assert.equal(redirect.seoStatus, 'FAIL');
+  assert.ok(redirect.checks.some(item => item.path === path
+    && item.check === 'HTTP_200_NO_REDIRECT' && item.status === 'FAIL'));
 });
