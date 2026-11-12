@@ -45,6 +45,15 @@ test('matching recipes and independently staged archive hash verify, without leg
   assert.equal(r.redistributionApproved, false);
   assert.equal(r.publishedOCIManifestDigest, null);
 });
+test('musl underscore-prefixed sources are valid and path traversal is rejected', () => {
+  const recipe = lock().recipes[0];
+  const muslName = '__stack_chk_fail_local.c';
+  const withSource = name => build.replaceAll('zlib-1.4.tar.gz', name);
+  const valid = withSource(muslName);
+  assert.deepEqual(parseRecipe(Buffer.from(valid), { ...recipe, apkbuildGitBlob: blob(valid) }).map(x => x.file), [muslName]);
+  const traversal = withSource('../' + muslName);
+  assert.throws(() => parseRecipe(Buffer.from(traversal), { ...recipe, apkbuildGitBlob: blob(traversal) }), /Invalid or duplicate/);
+});
 test('modified upstream recipe and nonmatching source tarball are rejected', async t => {
   const root = fixture(t);
   writeFileSync(join(root, 'zlib', 'zlib-1.4.tar.gz'), 'tampered');

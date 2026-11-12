@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 const sha40 = /^[0-9a-f]{40}$/;
 const sha256 = /^sha256:[0-9a-f]{64}$/;
 const safeName = /^[a-zA-Z0-9][a-zA-Z0-9_.+@~%-]*$/;
+const safeSourceFilename = /^[a-zA-Z0-9_][a-zA-Z0-9_.+@~%-]*$/;
 const sha512line = /^([a-f0-9]{128})[ \t]+([^\s]+)$/;
 const hash = (algo, bytes) => createHash(algo).update(bytes).digest('hex');
 const gitBlob = bytes => hash('sha1', Buffer.concat([Buffer.from('blob ' + bytes.length + '\0'), bytes]));
@@ -59,7 +60,7 @@ export function parseRecipe(apkbuild, recipe) {
   const seen = new Set();
   for (const line of (match?.[1] || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean)) {
     const entry = sha512line.exec(line);
-    if (!entry || !safeName.test(entry[2]) || basename(entry[2]) !== entry[2] ||
+    if (!entry || !safeSourceFilename.test(entry[2]) || basename(entry[2]) !== entry[2] ||
         seen.has(entry[2])) throw new Error('Invalid or duplicate SHA512 source declaration');
     seen.add(entry[2]);
     values.push({ file: entry[2], sha512: entry[1] });
