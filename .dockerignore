@@ -397,6 +397,10 @@
 !server/social-media/provider-publish.test.mjs
 !server/social-media/instagram-carousel.mjs
 !server/social-media/instagram-carousel.test.mjs
+!server/social-media/instagram-oauth-start.mjs
+!server/social-media/instagram-oauth-exchange.mjs
+!server/social-media/instagram-account-status.mjs
+!server/social-media/instagram-oauth.test.mjs
 !server/social-media/provider-execution.mjs
 !server/social-media/google-neural2-tts.mjs
 !server/social-media/google-neural2-tts.test.mjs
