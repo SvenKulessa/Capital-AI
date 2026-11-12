@@ -34,8 +34,12 @@ export function createInstagramFacebookStart({env=process.env,auth,store=null,fe
       authorize.searchParams.set('response_type','code');
       authorize.searchParams.set('scope',INSTAGRAM_FACEBOOK_SCOPES.join(','));
       authorize.searchParams.set('state',issued.state);
-      res.setHeader('Set-Cookie',COOKIE+'='+issued.state
-        +'; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=600');
+      const previousCookies=res.getHeader?.('Set-Cookie');
+      res.setHeader('Set-Cookie',[
+        ...(Array.isArray(previousCookies)?previousCookies:previousCookies?[previousCookies]:[]),
+        COOKIE+'='+issued.state
+          +'; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=600',
+      ]);
       res.writeHead(303,{Location:authorize.toString(), 'Cache-Control':'no-store',
         'Referrer-Policy':'no-referrer'});
       res.end();
