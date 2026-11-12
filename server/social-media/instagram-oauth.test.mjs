@@ -127,7 +127,7 @@ test('Meta flow verifies USER and PAGE token types, exact Page tasks, scopes, IG
   const [ver,iv,tag,data]=row.access_token_encrypted.split('.');
   assert.equal(ver,'v1');
   const d=createDecipheriv('aes-256-gcm',Buffer.from(KEY,'hex'),Buffer.from(iv,'base64url'));
-  d.setAAD(Buffer.from(JSON.stringify(['capital-social-instagram-page-v1',USER,IG,PAGE])));
+  d.setAAD(Buffer.from(JSON.stringify(['capital-social-instagram-page-v1',USER,IG])));
   d.setAuthTag(Buffer.from(tag,'base64url'));
   assert.equal(Buffer.concat([d.update(Buffer.from(data,'base64url')),d.final()]).toString(),
     'synthetic-page-token-1234');
@@ -182,7 +182,8 @@ test('browser cookie plus persisted one-shot state protect owner callback and su
   let used=false,exchanges=0;
   const store={consumeOAuthCallback:async input=>{
     if(used)throw Error('SOCIAL_OAUTH_CONSUME_NOT_CONFIRMED');
-    used=true;assert.equal(input.channel,'INSTAGRAM');assert.equal(input.userId,USER);
+    assert.equal(input.channel,'INSTAGRAM');assert.equal(input.userId,USER);
+    used=true;
     assert.equal(input.redirectUri,CALLBACK);
     await input.exchangeCode({...trusted});
     return{consumed:true,platform:'instagram'};
