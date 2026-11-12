@@ -38,6 +38,16 @@ Manifest: `CAPITAL_AI_ENCRYPTED_BACKUP_MANIFEST@1`; Zeitpunkt (UTC), logischer E
 
 Die Dateiablage ist nur lokale verschlüsselte Staging-Ablage; noch keine automatisierte Sicherung, kein Cloud-Upload und keine Retention-Löschung. Das bestehende Retention-Modul bleibt reiner `DRY_RUN_ONLY`-Planer. `pg_dump --no-owner --no-privileges` enthält absichtlich **keine** vollständigen Rollen-/ACL-Rechte: Ein realer Restore muss diese separat sichern und validieren.
 
+### Dedicated backup-reader exporter compatibility (not production activation)
+
+The exporter accepts `capital_ai_backup_reader` as a second allowed production identity, in addition to existing `postgres` credentials. Direct connections use `db.ryzywoktpmyhwzxmstyu.supabase.co` and `PGUSER=capital_ai_backup_reader`. Shared **session** pooler connections on port `5432` use the host copied from Supabase Connect and `PGUSER=capital_ai_backup_reader.ryzywoktpmyhwzxmstyu`. Transaction pooler port `6543` is rejected. Production still requires explicit owner authorization, project binding, `PGSSLMODE=verify-full`, a trusted CA and protected mode-0600 `PGPASSFILE`. Inline passwords, libpq host-address/service/option/database overrides are rejected before invoking `pg_dump`.
+
+`node --test scripts/platform/backup-reader-auth.test.mjs` covers four accepted host/user combinations, 27 rejected connection, TLS, credential and override cases, plus replay/no-clobber. It substitutes local mocks for `pg_dump` and `age`; **it does not prove genuine encryption, connection privileges, or restore**. Existing workflow tests continue to perform real synthetic age/PostgreSQL round trips.
+
+This change does **not** create the role, database privileges, secrets, GCS uploads or a production backup. A role with `BYPASSRLS` and `pg_read_all_data` is not guaranteed strictly read-only: Supabase warns about publicly available extension privileges and overrideable transaction defaults. Before provisioning, verify the smallest sufficient access, including `pg_net`/`pg_cron` negative writes. `pg_dump --no-owner --no-privileges` also needs separate roles/ACL recovery evidence; it excludes Supabase Storage object bytes. OCC-v2 PR #548 remains HOLD.
+
+Reference: https://supabase.com/kb/troubleshooting/pg_dump-fails-with-query-would-be-affected-by-row-level-security-policy-1d5783
+
 ## Prüfen
 
 Bereits vorhandenen `Drive Backup Encryption Test` Workflow ausführen (erweitert um den neuen Synthetic-Stream-Test) oder auf einem isolierten Linux-Runner:
@@ -46,6 +56,7 @@ Bereits vorhandenen `Drive Backup Encryption Test` Workflow ausführen (erweiter
 bash scripts/platform/drive-encryption-test.sh
 bash scripts/platform/backup-synthetic-restore-test.sh
 bash scripts/platform/backup-stream-encrypt-test.sh
+node --test scripts/platform/backup-reader-auth.test.mjs
 node --test scripts/platform/backup-retention.test.mjs
 ```
 

@@ -7,6 +7,7 @@ on:
       - 'scripts/platform/backup-synthetic-restore-test.sh'
       - 'scripts/platform/backup-stream-encrypt.sh'
       - 'scripts/platform/backup-stream-encrypt-test.sh'
+      - 'scripts/platform/backup-reader-auth.test.mjs'
       - 'scripts/platform/backup-retention.mjs'
       - 'scripts/platform/backup-retention.test.mjs'
       - 'scripts/trust/verify-blueprint-backup.mjs'
@@ -36,6 +37,8 @@ jobs:
         run: bash scripts/platform/backup-synthetic-restore-test.sh
       - name: Stream encrypted PostgreSQL stdout and restore locally (synthetic only)
         run: bash scripts/platform/backup-stream-encrypt-test.sh
+      - name: Backup reader route and credential/TLS negative tests (offline mocks only)
+        run: node --test scripts/platform/backup-reader-auth.test.mjs
       - name: Encrypted archive retention dry-run (synthetic metadata only)
         run: node --test scripts/platform/backup-retention.test.mjs
       - name: Verify configured public recovery recipient (synthetic data only)
