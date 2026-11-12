@@ -161,6 +161,10 @@ SQL
 printf 'Server %s; ' "$(source_admin -Atqc 'SHOW server_version')"
 source_admin -Atqc "SELECT string_agg(extname || '=' || extversion, ', ' ORDER BY extname)
   FROM pg_extension WHERE extname IN ('pg_net','pg_cron')"
+assert_query 0.20.4 "$admin" "SELECT extversion FROM pg_extension WHERE extname='pg_net'"
+# pg_cron upstream v1.6.4 has SQL extension version 1.6.
+assert_query 1.6 "$admin" "SELECT extversion FROM pg_extension WHERE extname='pg_cron'"
+printf 'PASS expected pg_net 0.20.4 and pg_cron catalog 1.6\n'
 assert_query t "$reader" "SELECT session_user = current_user AND current_user = '$reader'
   AND current_setting('transaction_read_only') = 'on'"
 assert_query 0 "$reader" 'SELECT count(*) FROM app.notes'
