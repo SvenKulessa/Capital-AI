@@ -145,7 +145,16 @@ test('Meta flow verifies USER and PAGE token types, exact Page tasks, scopes, IG
   assert.ok(!JSON.stringify(result).includes('token'));
 });
 test('Meta account response is rejected if scope, USER app, PAGE token or task/IG relation differs',async()=>{
+  const expired=Math.floor(Date.now()/1000)-120;
   const invalid=[
+    flow({userDebug:{is_valid:false}}),
+    flow({userDebug:{expires_at:expired}}),
+    flow({userDebug:{data_access_expires_at:expired}}),
+    flow({userDebug:{data_access_expires_at:'invalid'}}),
+    flow({pageDebug:{is_valid:false}}),
+    flow({pageDebug:{expires_at:expired}}),
+    flow({pageDebug:{data_access_expires_at:expired}}),
+    flow({pageDebug:{app_id:'other-app'}}),
     flow({userDebug:{app_id:'different-app'}}),
     flow({userDebug:{type:'PAGE'}}),
     flow({userDebug:{scopes:['instagram_basic']}}),
