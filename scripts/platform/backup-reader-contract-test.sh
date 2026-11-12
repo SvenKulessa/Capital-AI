@@ -87,6 +87,17 @@ expect_denied() {
   printf 'PASS %s (42501)\n' "$name"
 }
 
+expect_fk_violation() {
+  local name=$1 port=$2 statement=$3 output
+  # A real FK violation must return 23503 rather than a permission or RLS error.
+  if output="$(sql "$port" "$admin" -v VERBOSITY=verbose -qc \
+      "BEGIN; $statement; ROLLBACK;" 2>&1)"; then
+    fail "$name unexpectedly succeeded"
+  fi
+  [[ $output =~ ERROR:[[:space:]]+23503: ]] || fail "$name wrong SQLSTATE: $output"
+  printf 'PASS %s (23503)\n' "$name"
+}
+
 assert_query() {
   local expected=$1 role=$2 statement=$3 port=${4:-$source_port} actual
   actual="$(sql "$port" "$role" -Atqc "$statement")"
@@ -114,9 +125,11 @@ GRANT CONNECT ON DATABASE postgres TO capital_ai_backup_reader;
 CREATE SCHEMA app;
 CREATE SCHEMA unrelated;
 CREATE TABLE unrelated.outside_scope (id integer);
+CREATE TABLE app.tenants (tenant text PRIMARY KEY);
+INSERT INTO app.tenants (tenant) VALUES ('fixture_tenant'), ('another_tenant');
 CREATE TABLE app.notes (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  tenant text NOT NULL,
+  tenant text NOT NULL REFERENCES app.tenants(tenant) ON UPDATE RESTRICT ON DELETE RESTRICT,
   revision integer NOT NULL CHECK (revision > 0)
 );
 INSERT INTO app.notes (tenant, revision) VALUES ('fixture_tenant', 1), ('another_tenant', 2);
@@ -124,7 +137,7 @@ ALTER TABLE app.notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app.notes FORCE ROW LEVEL SECURITY;
 CREATE POLICY tenant_select ON app.notes FOR SELECT TO fixture_tenant USING (tenant = current_user);
 GRANT USAGE ON SCHEMA app TO fixture_tenant, capital_ai_backup_reader;
-GRANT SELECT ON app.notes TO fixture_tenant, capital_ai_backup_reader;
+GRANT SELECT ON app.notes, app.tenants TO fixture_tenant, capital_ai_backup_reader;
 GRANT SELECT ON SEQUENCE app.notes_id_seq TO capital_ai_backup_reader;
 
 -- Reproduce the production catalog findings on upstream extension objects.
@@ -278,18 +291,45 @@ restore_admin -qc 'CREATE ROLE fixture_tenant LOGIN;
 restore_admin -q --single-transaction -f "$scratch/app.sql" >/dev/null
 assert_query f "$admin" "SELECT has_schema_privilege('fixture_tenant','app','USAGE')" "$restore_port"
 assert_query f "$admin" "SELECT has_function_privilege('fixture_tenant','app.write_note()','EXECUTE')" "$restore_port"
-restore_admin -qc 'GRANT USAGE ON SCHEMA app TO fixture_tenant; GRANT SELECT ON app.notes TO fixture_tenant'
+restore_admin -qc 'GRANT USAGE ON SCHEMA app TO fixture_tenant; GRANT SELECT ON app.notes, app.tenants TO fixture_tenant'
 assert_query 1 fixture_tenant 'SELECT count(*) FROM app.notes' "$restore_port"
+
+check_fk_contract() {
+  local port=$1
+  assert_query 2 "$admin" 'SELECT count(*) FROM app.tenants' "$port"
+  assert_query 2 "$admin" 'SELECT count(*) FROM app.notes' "$port"
+  assert_query 0 "$admin" "SELECT count(*) FROM app.notes n LEFT JOIN app.tenants t ON t.tenant=n.tenant WHERE t.tenant IS NULL" "$port"
+  assert_query t "$admin" "SELECT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid='app.notes'::regclass
+      AND confrelid='app.tenants'::regclass
+      AND contype='f' AND convalidated
+      AND confupdtype='r' AND confdeltype='r'
+  )" "$port"
+  # Positive insert is rolled back; no fixture data leaks between assertions.
+  assert_query t "$admin" "BEGIN;
+    INSERT INTO app.notes(tenant, revision) VALUES ('fixture_tenant', 99);
+    SELECT EXISTS(SELECT 1 FROM app.notes WHERE tenant='fixture_tenant' AND revision=99);
+    ROLLBACK;" "$port"
+  expect_fk_violation 'orphan child insert' "$port" "INSERT INTO app.notes(tenant, revision) VALUES ('missing_tenant', 3)"
+  expect_fk_violation 'referenced parent delete' "$port" "DELETE FROM app.tenants WHERE tenant='fixture_tenant'"
+  expect_fk_violation 'referenced parent update' "$port" "UPDATE app.tenants SET tenant='renamed' WHERE tenant='fixture_tenant'"
+  printf 'PASS FK positive insert, parent protection and orphan rejection\n'
+}
+check_fk_contract "$source_port"
+check_fk_contract "$restore_port"
 
 fingerprint() {
   sql "$1" "$admin" -Atq <<'SQL' | sha256sum | cut -d ' ' -f 1
+SELECT tenant FROM app.tenants ORDER BY tenant;
 SELECT id, tenant, revision FROM app.notes ORDER BY id;
 SELECT last_value, is_called FROM app.notes_id_seq;
 SELECT relrowsecurity, relforcerowsecurity FROM pg_class WHERE oid = 'app.notes'::regclass;
 SELECT policyname, permissive, roles, cmd, qual, with_check
 FROM pg_policies WHERE schemaname = 'app' AND tablename = 'notes' ORDER BY policyname;
-SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint
-WHERE conrelid = 'app.notes'::regclass ORDER BY conname;
+SELECT conrelid::regclass::text, conname, pg_get_constraintdef(oid) FROM pg_constraint
+WHERE conrelid IN ('app.notes'::regclass, 'app.tenants'::regclass)
+ORDER BY conrelid::regclass::text, conname;
 SQL
 }
 source_hash="$(fingerprint "$source_port")"
