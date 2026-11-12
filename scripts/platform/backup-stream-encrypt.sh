@@ -36,7 +36,7 @@ case "$mode" in
     direct_host="db.${CAPITAL_BACKUP_PROJECT_REF}.supabase.co"
     if [[ "${PGHOST:-}" == "$direct_host" ]]; then
       [[ "${PGUSER:-}" == 'postgres' || "${PGUSER:-}" == 'capital_ai_backup_reader' ]] || fail 'unexpected direct database user'
-    elif [[ "${PGHOST:-}" == *.pooler.supabase.com ]]; then
+    elif [[ "${PGHOST:-}" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?\.pooler\.supabase\.com$ ]]; then
       [[ "${PGUSER:-}" == "postgres.${CAPITAL_BACKUP_PROJECT_REF}" ||
          "${PGUSER:-}" == "capital_ai_backup_reader.${CAPITAL_BACKUP_PROJECT_REF}" ]] || fail 'unexpected session pooler database user'
     else
@@ -45,6 +45,8 @@ case "$mode" in
     [[ -z "${PGPASSWORD:-}${PGHOSTADDR:-}${PGSERVICE:-}${PGSERVICEFILE:-}${PGOPTIONS:-}${PGDATABASE:-}" ]] || fail 'production forbids inline passwords, service, host-address, option, and database overrides'
     [[ "${PGSSLMODE:-}" == 'verify-full' && -f "${PGSSLROOTCERT:-}" && ! -L "${PGSSLROOTCERT:-}" ]] || fail 'production requires verified TLS and trusted CA bundle'
     [[ -f "${PGPASSFILE:-}" && ! -L "${PGPASSFILE:-}" && "$(stat -c %a -- "${PGPASSFILE:-/dev/null}")" == '600' ]] || fail 'production requires mode-0600 password file'
+    # libpq otherwise prefers GSS encryption to certificate-verified TLS.
+    export PGGSSENCMODE=disable
     ;;
   *) fail 'CAPITAL_BACKUP_MODE must be synthetic or production (no implicit production mode)' ;;
 esac

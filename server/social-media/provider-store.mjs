@@ -192,5 +192,129 @@ export function createSocialProviderStore({ env = process.env, fetchImpl = fetch
     });
   }
 
-  return Object.freeze({ beginOAuth, consumeOAuthCallback, claimDelivery, noteUnknownDelivery, completeDelivery });
+
+  // Carousel reservation uses the existing service-role PostgREST authority.
+  // The DB independently verifies every exact asset/approval pair.
+  async function claimCarouselGroup({
+    manifest, handoffs, userId, accountRow, approvalRows, verifiedAssets,
+    capability, editorialReview, now = Date.now(),
+  } = {}) {
+    assert(UUID.test(userId) && Array.isArray(handoffs) && handoffs.length >= 2
+      && handoffs.length <= 10 && Array.isArray(approvalRows)
+      && approvalRows.length === handoffs.length && Array.isArray(verifiedAssets)
+      && verifiedAssets.length === handoffs.length,
+    'SOCIAL_STORE_CAROUSEL_GROUP_INVALID');
+    const account = publicSocialAccountProjection(accountRow, userId, 'INSTAGRAM', now);
+    assert(account.externalAccountId && /^\d{1,40}$/.test(account.externalAccountId)
+      && ['pages_show_list','instagram_basic','instagram_content_publish','pages_read_engagement']
+        .every(scope => account.scopes.includes(scope)),
+    'SOCIAL_STORE_CAROUSEL_FACEBOOK_SCOPE_REQUIRED');
+    assert(capability?.channel === 'INSTAGRAM' && capability?.status === 'VERIFIED'
+      && capability?.loginMethod === 'FACEBOOK_LOGIN'
+      && capability?.apiHost === 'graph.facebook.com'
+      && capability.publishRightsVerified === true
+      && capability.scopesVerified === true && capability.evidenceRef,
+    'SOCIAL_STORE_CAROUSEL_CAPABILITY_INVALID');
+    const fingerprint = editorialReview?.editorialFingerprint;
+    assert(editorialReview?.status === 'APPROVED' && editorialReview.userId === userId
+      && editorialReview.campaignId === manifest?.campaignId
+      && editorialReview.contentId === manifest?.contentId
+      && editorialReview.sourceSha === manifest?.sourceSha
+      && /^[a-f0-9]{64}$/.test(fingerprint ?? '')
+      && typeof editorialReview.evidenceRef === 'string'
+      && editorialReview.evidenceRef.length > 0,
+    'SOCIAL_STORE_CAROUSEL_EDITORIAL_REQUIRED');
+    const ids = [], hashes = [], approvals = [], seen = new Set();
+    for (let i = 0; i < handoffs.length; i++) {
+      const { channel, asset } = assertSocialManifestHandoff(manifest,handoffs[i]);
+      const approval = approvalRows[i], verified = verifiedAssets[i];
+      assert(channel === 'INSTAGRAM' && asset.kind === 'IMAGE'
+        && asset.mimeType === 'image/jpeg' && !seen.has(asset.assetId),
+      'SOCIAL_STORE_CAROUSEL_JPEG_REQUIRED');
+      seen.add(asset.assetId);
+      assert(approval?.id === handoffs[i].approvalRef && approval.user_id === userId
+        && approval.status === 'approved' && approval.public_publish_allowed === true
+        && approval.platforms?.includes('instagram')
+        && approval.campaign_id === manifest.campaignId
+        && approval.content_id === manifest.contentId
+        && approval.source_sha === manifest.sourceSha
+        && approval.asset_id === asset.assetId && approval.asset_sha256 === asset.sha256
+        && verified?.assetId === asset.assetId
+        && verified.contentId === manifest.contentId
+        && verified.sourceSha === manifest.sourceSha
+        && verified.retrievedBytesSha256 === asset.sha256
+        && verified.rightsVerified === true,
+      'SOCIAL_STORE_CAROUSEL_ASSET_APPROVAL_INVALID');
+      ids.push(asset.assetId);
+      hashes.push(asset.sha256);
+      approvals.push(approval.id);
+    }
+    const deliveryKey = [
+      manifest.campaignId,manifest.contentId,'INSTAGRAM','CAROUSEL',fingerprint,
+    ].join(':');
+    const group = await request('/rest/v1/rpc/capital_social_claim_carousel_group', {
+      p_user_id:userId,p_account_id:account.accountId,
+      p_campaign_id:manifest.campaignId,p_content_id:manifest.contentId,
+      p_source_sha:manifest.sourceSha,p_asset_ids:ids,p_asset_sha256s:hashes,
+      p_approval_refs:approvals,p_editorial_fingerprint:fingerprint,
+      p_delivery_key:deliveryKey,
+    });
+    assert(UUID.test(group?.id ?? '') && group.user_id === userId
+      && group.account_id === account.accountId
+      && group.campaign_id === manifest.campaignId
+      && group.content_id === manifest.contentId
+      && group.source_sha === manifest.sourceSha
+      && group.editorial_fingerprint === fingerprint
+      && group.delivery_key === deliveryKey
+      && group.status === 'CLAIMED'
+      && new Date(group.expires_at).getTime() > now
+      && JSON.stringify(group.asset_ids) === JSON.stringify(ids)
+      && JSON.stringify(group.asset_sha256s) === JSON.stringify(hashes)
+      && JSON.stringify(group.approval_refs) === JSON.stringify(approvals),
+    'SOCIAL_STORE_CAROUSEL_CLAIM_READBACK_MISMATCH');
+    return Object.freeze({ ...group });
+  }
+
+  // This is the only supported production CAS callback for the carousel transport.
+  async function beginCarouselAttempt({ userId, accountId, reservationId, deliveryKey } = {}) {
+    assert(UUID.test(userId ?? '') && UUID.test(accountId ?? '')
+      && UUID.test(reservationId ?? '') && typeof deliveryKey === 'string'
+      && deliveryKey.length <= 700 && deliveryKey.includes(':INSTAGRAM:CAROUSEL:'),
+    'SOCIAL_STORE_CAROUSEL_CAS_PLAN_INVALID');
+    const job = await request('/rest/v1/rpc/capital_social_begin_carousel_attempt', {
+      p_user_id:userId,p_account_id:accountId,p_group_id:reservationId,
+      p_delivery_key:deliveryKey,
+    });
+    assert(job?.id === reservationId && job.user_id === userId
+      && job.account_id === accountId && job.delivery_key === deliveryKey
+      && job.status === 'SUBMITTING',
+    'SOCIAL_STORE_CAROUSEL_CAS_READBACK_MISMATCH');
+    return Object.freeze(job);
+  }
+
+  async function noteCarouselUnknown({
+    userId, accountId, reservationId, deliveryKey,
+    stage, providerDeliveryId = null, status,
+  } = {}) {
+    assert(status === 'UNKNOWN' && UUID.test(userId ?? '') && UUID.test(accountId ?? '')
+      && UUID.test(reservationId ?? '') && typeof deliveryKey === 'string'
+      && /^([A-Z_]{3,80})$/.test(stage ?? '')
+      && (providerDeliveryId === null || /^\d{1,40}$/.test(providerDeliveryId)),
+    'SOCIAL_STORE_CAROUSEL_UNKNOWN_INVALID');
+    const receipt = await request('/rest/v1/rpc/capital_social_note_carousel_unknown', {
+      p_user_id:userId,p_account_id:accountId,p_group_id:reservationId,
+      p_delivery_key:deliveryKey,p_stage:stage,
+      p_provider_delivery_id:providerDeliveryId,
+      p_evidence_ref:'provider-submit://instagram/carousel/' + stage.toLowerCase(),
+    });
+    assert(receipt?.id === reservationId && receipt.user_id === userId
+      && receipt.account_id === accountId && receipt.delivery_key === deliveryKey
+      && receipt.status === 'UNKNOWN'
+      && receipt.provider_delivery_id === providerDeliveryId,
+    'SOCIAL_STORE_CAROUSEL_UNKNOWN_READBACK_MISMATCH');
+    return Object.freeze(receipt);
+  }
+
+  return Object.freeze({ beginOAuth, consumeOAuthCallback, claimDelivery, noteUnknownDelivery,
+    completeDelivery, claimCarouselGroup, beginCarouselAttempt, noteCarouselUnknown });
 }

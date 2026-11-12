@@ -15,7 +15,7 @@ test('backup reader transport, TLS and credential fail-closed checks', () => {
   fs.writeFileSync(called, ''); fs.writeFileSync(ca, 'SYNTHETIC CA');
   fs.writeFileSync(pass, 'SYNTHETIC - NOT A PASSWORD', { mode: 0o600 });
   const stub = (name, body) => fs.writeFileSync(path.join(bin, name), '#!/usr/bin/env bash\nset -Eeuo pipefail\n' + body + '\n', { mode: 0o500 });
-  stub('pg_dump', '[[ "$MOCK" == 1 ]] || exit 99\nif [[ "$1" == --version ]]; then echo "pg_dump (PostgreSQL) 17.11"; exit 0; fi\necho called >> "$MOCK_CALLED"\necho "-- MOCK DATA ONLY"');
+  stub('pg_dump', '[[ "$MOCK" == 1 ]] || exit 99\nif [[ "$1" == --version ]]; then echo "pg_dump (PostgreSQL) 17.11"; exit 0; fi\n[[ "$PGGSSENCMODE" == disable ]] || exit 98\necho called >> "$MOCK_CALLED"\necho "-- MOCK DATA ONLY"');
   stub('age', '[[ "$MOCK" == 1 && "$1" == --encrypt && "$2" == -r && "$4" == -o ]] || exit 99\ncat >/dev/null\nprintf "age-encryption.org/v1\\nMOCK_ONLY\\n" > "$5"');
   stub('date', 'if [[ "$2" == +%Y%m%dT%H%M%SZ ]]; then echo 20261112T000000Z; elif [[ "$2" == +%Y-%m-%dT%H:%M:%SZ ]]; then echo 2026-11-12T00:00:00Z; else /usr/bin/date "$@"; fi');
   const ref = 'ryzywoktpmyhwzxmstyu', pool = 'aws-0-eu-west-1.pooler.supabase.com';
@@ -28,11 +28,15 @@ test('backup reader transport, TLS and credential fail-closed checks', () => {
   const run = (override = {}) => spawnSync('bash', [exporter, 'postgres', out], { env: { ...base, ...override }, encoding: 'utf8', timeout: 5000 });
   const calls = () => fs.readFileSync(called, 'utf8').split('called\n').length - 1;
   const valid = [ {}, { PGHOST: pool, PGUSER: 'capital_ai_backup_reader.' + ref },
-    { PGUSER: 'postgres' }, { PGHOST: pool, PGUSER: 'postgres.' + ref } ];
+    { PGUSER: 'postgres' }, { PGHOST: pool, PGUSER: 'postgres.' + ref },
+    { PGGSSENCMODE: 'require' } ];
   const rejected = [
     { CAPITAL_BACKUP_PRODUCTION_APPROVED: '' }, { CAPITAL_BACKUP_PRODUCTION_APPROVED: 'OTHER' },
     { CAPITAL_BACKUP_PROJECT_REF: 'wrong' }, { PGDATABASE: 'postgres' },
     { PGHOST: 'db.wrong.supabase.co' }, { PGHOST: '127.0.0.1' },
+    { PGHOST: 'untrusted.example,' + pool, PGUSER: 'capital_ai_backup_reader.' + ref },
+    { PGHOST: ',' + pool, PGUSER: 'capital_ai_backup_reader.' + ref },
+    { PGHOST: '/var/run/postgresql,' + pool, PGUSER: 'capital_ai_backup_reader.' + ref },
     { PGHOST: pool, PGUSER: 'capital_ai_backup_reader' },
     { PGHOST: pool, PGUSER: 'capital_ai_backup_reader.wrong' },
     { PGUSER: 'capital_ai_backup_reader.' + ref }, { PGUSER: 'service_role' },
