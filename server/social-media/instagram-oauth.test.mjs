@@ -150,7 +150,7 @@ test('Meta account response is rejected if scope, USER app, PAGE token or task/I
     flow({pages:{data:[],paging:{next:'https://graph.facebook.com/another-page'}}}),
     flow({pages:{data:[{id:PAGE,tasks:['CREATE_CONTENT'],
       instagram_business_account:{id:IG,username:'synth'},access_token:'synthetic-page-token-1234'},
-      {id:'222',tasks:['CREATE_CONTENT'],instagram_business_account:{id:'333',username:'other'},access_token:'synthetic-page-token-1234'}]}}),
+      {id:PAGE,tasks:['CREATE_CONTENT'],instagram_business_account:{id:IG,username:'other'},access_token:'synthetic-page-token-1234'}]}}),
   ];
   for(const m of invalid){
     await assert.rejects(createInstagramFacebookExchange({env,fetchImpl:m.fetchImpl})(trusted));
