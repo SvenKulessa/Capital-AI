@@ -144,6 +144,14 @@ test('Meta flow verifies USER and PAGE token types, exact Page tasks, scopes, IG
     'synthetic-page-token-1234');
   assert.ok(!JSON.stringify(result).includes('token'));
 });
+test('persisted connection expires no later than Meta data-access authorization',async()=>{
+  const grantExpiresAt=Math.floor(Date.now()/1000)+180;
+  const m=flow({userDebug:{data_access_expires_at:grantExpiresAt}});
+  await createInstagramFacebookExchange({env,fetchImpl:m.fetchImpl})(trusted);
+  const row=JSON.parse(m.records[7].init.body);
+  assert.ok(Date.parse(row.token_expires_at)<=grantExpiresAt*1000);
+  assert.ok(Date.parse(row.token_expires_at)>Date.now()+60000);
+});
 test('Meta account response is rejected if scope, USER app, PAGE token or task/IG relation differs',async()=>{
   const expired=Math.floor(Date.now()/1000)-120;
   const invalid=[
