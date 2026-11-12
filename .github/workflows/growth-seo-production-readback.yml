@@ -6,6 +6,8 @@ on:
       - .github/workflows/growth-seo-production-readback.yml
       - scripts/seo-production-readback.mjs
       - scripts/seo-production-readback.test.mjs
+      - scripts/public-security-header-readback.mjs
+      - scripts/public-security-header-readback.test.mjs
       - shared/seo-content-manifest.mjs
       - shared/blog-articles.mjs
   workflow_dispatch:
@@ -32,5 +34,17 @@ jobs:
         with:
           name: growth-public-seo-${{ github.sha }}
           path: public-seo-readback.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Public HTTPS header evidence – isolated negative regressions
+        run: node --test scripts/public-security-header-readback.test.mjs
+      - name: Anonymous public HTTPS header readback
+        run: node scripts/public-security-header-readback.mjs --origin https://capital-ai.online --output public-security-headers-readback.json
+      - name: Preserve sanitized HTTPS header evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: trust-https-headers-${{ github.sha }}
+          path: public-security-headers-readback.json
           if-no-files-found: warn
           retention-days: 7
