@@ -77,6 +77,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
     const code = url.searchParams.get('code');
     if (!allowed.includes(channel) || url.searchParams.has('error')
       || url.searchParams.getAll('channel').length > 1
+      || (instagramState === state && channel !== 'INSTAGRAM')
       || (channel === 'INSTAGRAM' && (instagramState !== state
         || youtubeState === state || env.SOCIAL_INSTAGRAM_OAUTH_CONNECT_ENABLED !== 'true'))
       || !/^[A-Za-z0-9_-]{43}$/.test(state || '')
