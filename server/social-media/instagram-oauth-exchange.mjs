@@ -65,7 +65,11 @@ const bearer=token=>({Authorization:'Bearer '+token});
 function dataValid(debug,appId,type) {
   const d=debug?.data; check(d?.is_valid===true && String(d.app_id)===appId
     && d.type===type && Number.isSafeInteger(d.expires_at)
-    && (d.expires_at===0 || d.expires_at*1000>Date.now()+60000),
+    && (d.expires_at===0 || d.expires_at*1000>Date.now()+60000)
+    && (d.data_access_expires_at === undefined || d.data_access_expires_at === null
+      || (Number.isSafeInteger(d.data_access_expires_at)
+        && (d.data_access_expires_at===0
+          || d.data_access_expires_at*1000>Date.now()+60000))),
   'SOCIAL_IG_DEBUG_TOKEN_INVALID');
   return d;
 }
