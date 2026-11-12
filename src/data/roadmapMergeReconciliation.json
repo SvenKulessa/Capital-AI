@@ -5,8 +5,8 @@
   "mergeCount": 530,
   "fromPr": 641,
   "toPr": 654,
-  "sourceSha": "c980f639fa3502b2ffdc7b0fb33f5a2af65d01e3",
-  "reconciledAt": "2026-11-11T21:52:09.001Z",
+  "sourceSha": "02224052803a400521de717914214d89ecb8fead",
+  "reconciledAt": "2026-11-12T12:39:35.658Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
