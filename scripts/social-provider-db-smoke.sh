@@ -19,6 +19,7 @@ pg -f /work/scripts/social-provider-db-fixture.sql
 pg -f /work/supabase/migrations/20260801150000_social_media_publishing.sql
 pg -f /work/supabase/migrations/20260815140000_social_media_content_approvals.sql
 pg -f /work/supabase/migrations/20261008113000_social_provider_store.sql
+pg -f /work/supabase/migrations/20261112160000_instagram_carousel_group_cas.sql
 pg -f /work/supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
 pg -f /work/supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
 pg -f /work/supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql
@@ -50,6 +51,35 @@ if ! grep -q 'SOCIAL_DELIVERY_ALREADY_RESERVED' "$one" "$two"; then
   exit 1
 fi
 pg -f /work/scripts/social-provider-db-after.sql
+pg -f /work/scripts/social-carousel-db-data.sql
+pg -f /work/scripts/social-carousel-db-before.sql
+
+# Two parallel independent connections compete for the *same* immutable group CAS.
+carousel_claim="SET ROLE service_role; SELECT id FROM public.capital_social_claim_carousel_group(
+'d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101'::uuid,
+'e683ecba-1fab-45f7-8c6a-a35418750771'::uuid,
+'ig-camp','ig-content',repeat('b',40),
+array['etf-1','etf-2','etf-3'],
+array[repeat('1',64),repeat('2',64),repeat('3',64)],
+array['carousel-a1','carousel-a2','carousel-a3'],repeat('f',64),
+'ig-camp:ig-content:INSTAGRAM:CAROUSEL:'||repeat('f',64));"
+carousel_one="$(mktemp)"; carousel_two="$(mktemp)"
+trap 'rm -f "$one" "$two" "$carousel_one" "$carousel_two"' EXIT
+pg -At -c "$carousel_claim" > "$carousel_one" 2>&1 &
+carousel_pid_one=$!
+pg -At -c "$carousel_claim" > "$carousel_two" 2>&1 &
+carousel_pid_two=$!
+carousel_ok_one=0; carousel_ok_two=0
+if wait "$carousel_pid_one"; then carousel_ok_one=1; fi
+if wait "$carousel_pid_two"; then carousel_ok_two=1; fi
+if [[ "$((carousel_ok_one + carousel_ok_two))" -ne 1 ]]; then
+  echo 'CAROUSEL_PARALLEL_CLAIM_BROKEN: expected exactly one winner' >&2
+  cat "$carousel_one" "$carousel_two" >&2; exit 1
+fi
+if ! grep -q 'SOCIAL_CAROUSEL_GROUP_ALREADY_RESERVED' "$carousel_one" "$carousel_two"; then
+  echo 'CAROUSEL_DUPLICATE_CLAIM_NOT_DENIED' >&2; exit 1
+fi
+pg -f /work/scripts/social-carousel-db-after.sql
 pg -f /work/scripts/social-token-refresh-db.sql
 pg -f /work/scripts/youtube-private-receipt-recovery-db.sql
 pg -f /work/supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql
