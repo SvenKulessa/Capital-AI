@@ -155,6 +155,7 @@ test('Meta account response is rejected if scope, USER app, PAGE token or task/I
     flow({pageDebug:{expires_at:expired}}),
     flow({pageDebug:{data_access_expires_at:expired}}),
     flow({pageDebug:{app_id:'other-app'}}),
+    flow({pageDebug:{profile_id:'99887766554433'}}),
     flow({userDebug:{app_id:'different-app'}}),
     flow({userDebug:{type:'PAGE'}}),
     flow({userDebug:{scopes:['instagram_basic']}}),
