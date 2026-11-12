@@ -36,6 +36,16 @@ Readback vom 12.11.2026 aus PostgreSQL-Katalogen. PostgreSQL `170011`, 113 RLS-T
 
 Weitere Erweiterungen ohne registrierte Config-Objekte: `btree_gist 1.7`, `pg_stat_statements 1.11`, `pgaudit 17.1`, `pgcrypto 1.3`, `plpgsql 1.0`, `uuid-ossp 1.1`, `wrappers 0.6.3`. Clusterweite Rollen, Eigentümer und ACLs brauchen eine eigene Wiederherstellung. Der [bestehende Exporter](../../scripts/platform/backup-stream-encrypt.sh) verwendet einen unbeschränkten Plain-Dump mit `--no-owner --no-privileges`. Der Testreader scheitert an diesem unbeschränkten Aufruf. Der verifizierte Dump umfasst das vollständige synthetische Schema `app`. [OCC-v2 #548](https://github.com/SvenKulessa/Capital-AI/pull/548) bleibt HOLD.
 
+## FK-Restore-Regression (Erweiterung PR #665, noch nicht erneut ausgeführt)
+
+Das synthetische Schema `app` umfasst jetzt eine Eltern-Tabelle `app.tenants` mit Primärschlüssel und die Kind-Tabelle `app.notes` mit einem **validierten Fremdschlüssel** auf `app.tenants.tenant` (`ON UPDATE RESTRICT ON DELETE RESTRICT`). Der eng begrenzte Reader erhält `SELECT` auf beide Tabellen. Der Quell- und der unabhängige Restore-Cluster prüfen jeweils:
+
+- **Positiv:** zwei Eltern- und zwei Kindzeilen, kein verwaistes Kind, im Katalog validierte Fremdschlüsseldefinition sowie erfolgreicher Kind-INSERT mit gültiger Referenz innerhalb einer zurückgerollten Transaktion.
+- **Negativ:** INSERT mit unbekanntem Tenant, DELETE eines referenzierten Parents und UPDATE des referenzierten Parent-Schlüssels müssen jeweils explizit mit SQLSTATE `23503` scheitern; andere SQLSTATEs sind kein PASS.
+- **Integrität:** der SHA-256-Fingerprint von Quelle und Restore umfasst beide Tabellen, die Identitätssequenz, RLS-/Policy-Definitionen und PK/FK/CHECK-Constraints. Die vorhandenen `42501`-Tests für Rollenrechte bleiben unverändert.
+
+**Status dieser Erweiterung: NOT_PROVEN bis zum erneuten realen PG17/pg_net/pg_cron-Lauf.** Die unten dokumentierten 42 PASS und Hashes gehören ausschließlich zum vorherigen Test-Head ohne echte FK-Abnahme und dürfen nicht zur Freigabe des neuen Heads herangezogen werden. Das Testskript muss auf einem isolierten Linux-Runner mit PostgreSQL 17, `pg_net 0.20.4` und `pg_cron v1.6.4` tatsächlich erfolgreich durchlaufen. Der Agenten-Arbeitscontainer besitzt keine installierten PG17-Server- und Extension-Binaries und keinen externen Paket-DNS-Zugang; daraus folgt kein neuer PASS.
+
 ## Reproduktion
 
 Auf einem isolierten Linux-Einbenutzer-Runner als unprivilegierter OS-Benutzer mit PostgreSQL-17-Server/Client, `pg_net 0.20.4`, Upstream-`pg_cron v1.6.4`, Python 3 und ripgrep. `PG17_BINDIR` kann den Pfad zu den PG17-Binaries angeben.
@@ -48,7 +58,7 @@ Zwei frische Cluster verwenden dynamische Loopback-Ports. PostgreSQL-Prozesse er
 
 Getestet mit Debian PostgreSQL `17.11-0+deb13u1`, `pg_net` Tag `v0.20.4` (`698fb055f666366a78c112b0578b0a5652ddbcfa`) und `pg_cron` Tag `v1.6.4` (`9490f9cc9803f75105f2f7d89839a998f011f8d8`). Das Upstream-Paket meldet `pg_cron=1.6` im Katalog. Supabase meldet `1.6.4`. Der Lauf prüft die nachgestellten ACLs auf Upstream-Objekten. Die Parität mit der Providerdistribution ist offen.
 
-Der dokumentierte Lauf meldete 42 bestandene Prüfungen, davon 33 erwartete Ablehnungen mit SQLSTATE `42501`.
+Der **historische** dokumentierte Lauf (vor der FK-Erweiterung) meldete 42 bestandene Prüfungen, davon 33 erwartete Ablehnungen mit SQLSTATE `42501`. Diese Ergebnisse sind keine neue Head-CI-Evidence.
 
 - Synthetischer Dump SHA-256 `20367b6a463d48c86f7d83d35fab2f5b711ef274f85a1f33d97a4538e3fb65a8`
 - Identischer Fingerprint von Quelle und Restore `e89cf82f0c5f0581581462439b2d2cae6265e92ed5b959553a01769afb954e50`
