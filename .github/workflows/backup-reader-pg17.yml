@@ -35,9 +35,12 @@ jobs:
           ENV DEBIAN_FRONTEND=noninteractive
           RUN set -eux; \
               apt-get update -qq; \
+              # Preserve 17.11 server/client from the digest-pinned base while installing build headers. \
+              apt-mark hold postgresql-17 postgresql-client-17; \
               apt-get install -y --no-install-recommends \
                 ca-certificates git build-essential postgresql-server-dev-17 \
                 libcurl4-openssl-dev python3 ripgrep; \
+              test "$(/usr/lib/postgresql/17/bin/postgres --version)" = 'postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)' || { /usr/lib/postgresql/17/bin/postgres --version; exit 1; }; \
               git clone https://github.com/supabase/pg_net.git /tmp/pg_net; \
               git -C /tmp/pg_net checkout 698fb055f666366a78c112b0578b0a5652ddbcfa; \
               make -C /tmp/pg_net PG_CONFIG=/usr/lib/postgresql/17/bin/pg_config; \
@@ -49,7 +52,7 @@ jobs:
               rm -rf /tmp/pg_net /tmp/pg_cron /var/lib/apt/lists/*
           USER postgres
           DOCKERFILE
-      - name: Verify exact fixture versions and run isolated two-cluster recovery
+      - name: Verify PostgreSQL 17.11 and run isolated two-cluster recovery
         shell: bash
         run: |
           set -Eeuo pipefail
