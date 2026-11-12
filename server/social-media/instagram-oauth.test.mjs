@@ -194,9 +194,12 @@ test('browser cookie plus persisted one-shot state protect owner callback and su
     exchangeCode:async t=>{exchanges++;assert.equal(t.channel,'INSTAGRAM');}});
   const query='?state='+STATE+'&code=synthetic';
   for(const [request,querySuffix,expected] of [
-    [req(),query,400],
-    [req('capital_instagram_oauth_state='+'a'.repeat(43)),query,400],
-    [req('capital_instagram_oauth_state='+STATE),query+'&channel=X',503],
+    // Without the Instagram cookie the generic callback cannot distinguish X;
+    // it must fail closed at the persisted X-state CAS, not invoke the exchanger.
+    [req(),query,503],
+    [req('capital_instagram_oauth_state='+'a'.repeat(43)),query,503],
+    [req('capital_instagram_oauth_state='+STATE),query+'&channel=X',400],
+    [req(),query+'&channel=INSTAGRAM',400],
   ]) {const r=res();await handler.handle(request,r,url(cb,querySuffix),json);
     assert.equal(r.status,expected);}
   assert.equal(exchanges,0);assert.equal(used,false);
