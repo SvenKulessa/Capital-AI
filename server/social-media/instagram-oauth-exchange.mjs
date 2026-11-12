@@ -1,7 +1,7 @@
 // CAPITAL_AI_INSTAGRAM_FACEBOOK_OAUTH_EXCHANGE@1
 // Facebook Login only: never interchange Instagram Login tokens or API hosts.
 // No publish/upload API calls. All provider responses are bounded and fail closed.
-import { createCipheriv, randomBytes } from 'node:crypto';
+import { createCipheriv, createHmac, randomBytes } from 'node:crypto';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const NUM=/^[0-9]{1,40}$/;
 const REQUIRED=Object.freeze(['pages_show_list','instagram_basic','instagram_content_publish','pages_read_engagement']);
@@ -92,20 +92,27 @@ export function createInstagramFacebookExchange({env=process.env,fetchImpl=fetch
     check(typeof long.access_token==='string' && long.access_token.length>=10
       && (!long.token_type || /^bearer$/i.test(long.token_type)),
     'SOCIAL_IG_LONG_TOKEN_MISSING');
-    const debugBody=token=>new URLSearchParams({input_token:token}).toString();
-    const appBearer=bearer(cfg.appId+'|'+cfg.appSecret);
+    // Meta Require App Secret must remain compatible: HMAC over the exact
+    // access token, never the token or app secret in the URL.
+    const appToken=cfg.appId+'|'+cfg.appSecret;
+    const proof=token=>createHmac('sha256',cfg.appSecret).update(token).digest('hex');
+    const debugBody=token=>new URLSearchParams({
+      input_token:token,appsecret_proof:proof(appToken),
+    }).toString();
+    const appBearer=bearer(appToken);
     const userDebug=dataValid(await request(fetchImpl,root+'/debug_token',{method:'POST',
       headers:{...appBearer,'Content-Type':'application/x-www-form-urlencoded'},
       body:debugBody(long.access_token)}),cfg.appId,'USER');
     check(REQUIRED.every(scope=>Array.isArray(userDebug.scopes)&&userDebug.scopes.includes(scope))
       && NUM.test(String(userDebug.user_id||'')), 'SOCIAL_IG_SCOPES_OR_USER_INVALID');
-    const permissions=await request(fetchImpl,root+'/me/permissions?limit=100',
+    const userProof=proof(long.access_token);
+    const permissions=await request(fetchImpl,root+'/me/permissions?limit=100&appsecret_proof='+userProof,
       {headers:bearer(long.access_token)});
     check(Array.isArray(permissions?.data)
       && REQUIRED.every(scope=>permissions.data.some(p=>p.permission===scope && p.status==='granted')),
       'SOCIAL_IG_PERMISSIONS_NOT_GRANTED');
     const pages=await request(fetchImpl,
-      root+'/me/accounts?fields=id,name,tasks,instagram_business_account%7Bid%2Cusername%7D,access_token&limit=100',
+      root+'/me/accounts?fields=id,name,tasks,instagram_business_account%7Bid%2Cusername%7D,access_token&limit=100&appsecret_proof='+userProof,
       {headers:bearer(long.access_token)});
     // No silent selection of the first page, truncation or pagination ambiguity.
     check(Array.isArray(pages?.data) && !pages.paging?.next,'SOCIAL_IG_PAGE_SELECTION_REQUIRED');
@@ -130,7 +137,7 @@ export function createInstagramFacebookExchange({env=process.env,fetchImpl=fetch
     // A PAGE token must independently read back the same Page and its IG link.
     // Avoid relying on a debug_token profile_id that some Meta versions omit.
     const bound=await request(fetchImpl,root+'/'+page.id
-      +'?fields=id,instagram_business_account%7Bid%2Cusername%7D',
+      +'?fields=id,instagram_business_account%7Bid%2Cusername%7D&appsecret_proof='+proof(page.access_token),
       {headers:bearer(page.access_token)});
     check(String(bound?.id||'')===String(page.id)
       && String(bound?.instagram_business_account?.id||'')===String(ig.id),
