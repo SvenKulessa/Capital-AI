@@ -30,7 +30,7 @@ const start='/api/social-media/instagram/auth/start';
 const cb='/api/social-media/auth/callback';
 const status='/api/social-media/instagram/account/status';
 const complete='pages_show_list instagram_basic instagram_content_publish pages_read_engagement';
-function flow({userDebug={},pageDebug={},pages,perms,editRow=x=>x}={}) {
+function flow({userDebug={},pageDebug={},pageBound={},pages,perms,editRow=x=>x}={}) {
   const records=[];
   const now=Math.floor(Date.now()/1000);
   const answers=[
@@ -45,12 +45,13 @@ function flow({userDebug={},pageDebug={},pages,perms,editRow=x=>x}={}) {
       access_token:'synthetic-page-token-1234'}]},
     {data:{is_valid:true,app_id:env.SOCIAL_INSTAGRAM_OAUTH_APP_ID,
       type:'PAGE',profile_id:PAGE,expires_at:0,...pageDebug}},
+    {id:PAGE,instagram_business_account:{id:IG,username:'synthetic.instagram'},...pageBound},
   ];
   async function fetchImpl(target,init){
     records.push({url:String(target),init});
     const n=records.length-1;
-    if(n<6)return response(answers[n]);
-    if(n===6)return response([editRow(JSON.parse(init.body))]);
+    if(n<7)return response(answers[n]);
+    if(n===7)return response([editRow(JSON.parse(init.body))]);
     throw Error('unexpected network call');
   }
   return{fetchImpl,records};
@@ -112,14 +113,15 @@ test('Meta flow verifies USER and PAGE token types, exact Page tasks, scopes, IG
   const m=flow();
   const result=await createInstagramFacebookExchange({env,fetchImpl:m.fetchImpl})(trusted);
   assert.deepEqual(result,{connected:true,channel:'INSTAGRAM',handle:'synthetic.instagram'});
-  assert.equal(m.records.length,7);
+  assert.equal(m.records.length,8);
   assert.ok(m.records[0].url.endsWith('/oauth/access_token'));
   assert.equal(m.records[0].init.method,'POST');
   assert.equal(m.records[1].init.method,'POST');
   assert.ok(m.records[2].url.endsWith('/debug_token'));
   assert.match(m.records[4].url,/\/me\/accounts\?/);
-  assert.ok(m.records[6].url.includes('on_conflict=user_id%2Cplatform'));
-  const row=JSON.parse(m.records[6].init.body);
+  assert.ok(m.records[7].url.includes('on_conflict=user_id%2Cplatform'));
+  assert.match(m.records[6].url, /fields=id,instagram_business_account/);
+  const row=JSON.parse(m.records[7].init.body);
   assert.equal(row.user_id,USER);
   assert.equal(row.platform,'instagram');assert.equal(row.external_account_id,IG);
   assert.equal(row.refresh_token_encrypted,null);
@@ -139,7 +141,7 @@ test('Meta account response is rejected if scope, USER app, PAGE token or task/I
     flow({userDebug:{type:'PAGE'}}),
     flow({userDebug:{scopes:['instagram_basic']}}),
     flow({pageDebug:{type:'USER'}}),
-    flow({pageDebug:{profile_id:'9999'}}),
+    flow({pageBound:{id:'9999'}}),
     flow({perms:{data:[{permission:'instagram_basic',status:'granted'}]}}),
     flow({pages:{data:[{id:PAGE,name:'Page',tasks:['ANALYZE'],
       instagram_business_account:{id:IG,username:'synth'},access_token:'synthetic-page-token-1234'}]}}),
@@ -152,7 +154,7 @@ test('Meta account response is rejected if scope, USER app, PAGE token or task/I
   ];
   for(const m of invalid){
     await assert.rejects(createInstagramFacebookExchange({env,fetchImpl:m.fetchImpl})(trusted));
-    assert.ok(m.records.length<=6,'bad provider identity was persisted');
+    assert.ok(m.records.length<=7,'bad provider identity was persisted');
   }
 });
 test('no provider writes for wrong channel, forged user, redirect, disabled flag or token family',async()=>{
@@ -175,7 +177,7 @@ test('forged Supabase upsert response does not produce a connected claim',async(
     const m=flow({editRow});
     await assert.rejects(createInstagramFacebookExchange({env,fetchImpl:m.fetchImpl})(trusted),
       /SOCIAL_IG_PERSIST_READBACK_FAILED/);
-    assert.equal(m.records.length,7);
+    assert.equal(m.records.length,8);
   }
 });
 test('browser cookie plus persisted one-shot state protect owner callback and success redirects only to Instagram',async()=>{
