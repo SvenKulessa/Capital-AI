@@ -35,7 +35,6 @@ jobs:
           ENV DEBIAN_FRONTEND=noninteractive
           RUN set -eux; \
               apt-get update -qq; \
-              # Preserve 17.11 server/client from the digest-pinned base while installing build headers. \
               apt-mark hold postgresql-17 postgresql-client-17; \
               apt-get install -y --no-install-recommends \
                 ca-certificates git build-essential postgresql-server-dev-17 \
