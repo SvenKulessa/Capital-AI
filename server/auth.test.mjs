@@ -51,6 +51,10 @@ async function harness(envOverrides = {}, simulatorStore = new Map()) {
     id: state.subject,
     email: `${state.subject}@example.test`,
     user_metadata: { full_name: state.subject === 'owner-subject' ? 'Test Owner' : 'Second User' },
+    ...(state.mfaFactorStatus ? { factors: [{
+      id: '11111111-1111-4111-8111-111111111111',
+      factor_type: 'totp', status: state.mfaFactorStatus,
+    }] } : {}),
   });
 
   const tokenPayload = () => ({
@@ -1043,5 +1047,26 @@ test('X registration rejects unconsented cross-origin requests and records expli
     const completed=await h.request(callbackRequestPath(new URL(target.searchParams.get('redirect_to'))),{headers:{cookie:pkce}});
     assert.equal(completed.status,303);
     assert.ok(h.state.consentWrites.length>=1);
+  } finally { await h.stop(); }
+});
+
+
+test('owner observability denies enrolled TOTP AAL1 while preserving unverified factors and tenant isolation', async () => {
+  const h = await harness();
+  try {
+    const cookie = await h.completeEmail();
+    const endpoint = '/api/internal/observability';
+    const read = () => h.request(endpoint, { headers: { cookie } });
+    assert.equal((await read()).status, 200, 'ordinary owner baseline');
+    h.state.mfaFactorStatus = 'unverified';
+    assert.equal((await read()).status, 200, 'unverified factors must not trigger mandatory step-up');
+    h.state.mfaFactorStatus = 'verified';
+    const denied = await read();
+    assert.equal(denied.status, 404, 'owner-only API must fail closed before MFA step-up');
+    assert.deepEqual(await denied.json(), { error: 'not_found' });
+    const session = await (await h.request('/api/auth/session', { headers: { cookie } })).json();
+    assert.equal(session.mfaRequired, true, 'real TOTP challenge remains available');
+    h.state.subject = 'second-user';
+    assert.equal((await read()).status, 404, 'cross-user identities stay denied');
   } finally { await h.stop(); }
 });
