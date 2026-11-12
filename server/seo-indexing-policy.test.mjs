@@ -297,6 +297,19 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
       const html = await response.text();
       assert.doesNotMatch(html, /capital-ai-public-snapshot/, route);
     }
+    const articleResponse = await fetch(origin + '/blog/datenkonzept-blueprint');
+    assert.equal(articleResponse.status, 200);
+    assert.match(await articleResponse.text(), /href="https:\/\/capital-ai\.online\/marketscreener\/dokumentation"/);
+
+    const blueprintResponse = await fetch(origin + '/marketscreener/dokumentation');
+    assert.equal(blueprintResponse.status, 200);
+    assert.equal(blueprintResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
+    const blueprintHtml = await blueprintResponse.text();
+    assert.match(blueprintHtml, /<main id="capital-ai-blueprint-preview" lang="de"/);
+    assert.match(blueprintHtml, /Synthetisches Beispiel/);
+    assert.match(blueprintHtml, /href="\/pricing">Bestehende Angebote vergleichen<\/a>/);
+    assert.doesNotMatch(blueprintHtml, /rel="canonical"|type="application\/ld\+json"|\/api\/billing/);
+
     const pricingResponse = await fetch(origin + '/pricing');
     assert.equal(pricingResponse.status, 200);
     assert.equal(pricingResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
