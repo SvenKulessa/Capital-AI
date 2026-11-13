@@ -10,7 +10,9 @@ chmod 0755 "$tmp"
 cleanup() {
   docker rm -f "$name" capital-nats-negative >/dev/null 2>&1 || true
   docker volume rm "$volume" >/dev/null 2>&1 || true
-  rm -rf "$tmp"
+  # Fixture directories are deliberately owned by UID 1000 or root.
+  # Only remove this freshly allocated runner-local temp path, never a mounted production disk.
+  sudo rm -rf -- "$tmp"
 }
 trap cleanup EXIT
 fail() { printf 'FAIL %s\n' "$*" >&2; exit 1; }
