@@ -27,11 +27,11 @@ async function evaluate(expression) {
   if (r.exceptionDetails) throw new Error('PAGE_EVAL_FAILED');
   return r.result?.value;
 }
-async function navigate(path) {
+async function navigate(path, readyExpression = 'true') {
   await send('Page.navigate', { url: origin.origin + path });
   for (let i = 0; i < 150; i++) {
     try {
-      if (await evaluate("document.readyState === 'complete' && document.body && document.body.textContent.length > 40")) {
+      if (await evaluate(`location.pathname === ${JSON.stringify(path)} && document.readyState === 'complete' && document.body && document.body.textContent.length > 40 && (${readyExpression})`)) {
         await sleep(500);
         return;
       }
@@ -47,7 +47,7 @@ async function check(width, jsEnabled) {
   await send('Emulation.setDeviceMetricsOverride', { width, height: 820, deviceScaleFactor: 2, mobile: true });
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
   await send('Emulation.setScriptExecutionDisabled', { value: !jsEnabled });
-  await navigate('/blog/datenkonzept-blueprint');
+  await navigate('/blog/datenkonzept-blueprint', "document.body.textContent.includes('Datenkonzept-Blueprint')");
   assert.equal(await evaluate("document.body.textContent.includes('Datenkonzept-Blueprint')"), true, 'article missing');
   await navigate('/marketscreener/dokumentation');
   const state = await snapshot();
