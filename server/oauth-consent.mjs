@@ -142,6 +142,12 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
           return true;
         }
         const details = checked.data;
+        // Supabase binds the authorization to a concrete user; never approve a
+        // different user's pending request under this website session.
+        if (details.authorization_id !== id || details.user?.id !== identity.userId) {
+          response(res, 403, page('<p>OAuth-Anfrage stimmt nicht mit deiner Sitzung überein.</p>'));
+          return true;
+        }
         if (!CLIENT_ID.test(String(details.client?.id || '')) || !allowed.has(details.client.id)) {
           response(res, 403, page('<p>Diese OAuth-App ist nicht zugelassen.</p>'));
           return true;
