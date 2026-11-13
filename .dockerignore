@@ -471,3 +471,9 @@
 !scripts/growth/firecrawl-client.mjs
 !scripts/growth/firecrawl-client.test.mjs
 !server/chat-buddy-learn.test.mjs
+
+# P0 OAuth 2.1: exact consent runtime and synthetic validation sources.
+!server/oauth-consent.mjs
+!server/oauth-consent.test.mjs
+!scripts/oauth-client-isolation.test.mjs
+!supabase/migrations/20261113152000_oauth_client_default_deny.sql
