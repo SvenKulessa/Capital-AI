@@ -17,6 +17,7 @@ on:
       - 'src/components/HubCatalog.tsx'
       - 'src/components/EcosystemRoadmapPanel.tsx'
       - 'scripts/qa/ecosystem-roadmap-browser.mjs'
+      - 'scripts/qa/screener-blueprint-reset-browser.mjs'
       - 'server/learning-simulator.mjs'
       - 'server/auth.test.mjs'
       - 'shared/hub-routes.mjs'
@@ -71,6 +72,13 @@ jobs:
           "$CHROME_BIN" --version
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/product-accessibility-browser.mjs http://127.0.0.1:17871 \
             | tee artifacts-browser-result.json
+      - name: Screener Blueprint YAML reset regression (synthetic)
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/screener-blueprint-reset-browser.mjs http://127.0.0.1:17871 \
+            | tee screener-reset-browser-result.json
       - name: Course inquiry purpose, receipt and keyboard QA without mail delivery
         run: |
           set -euo pipefail
@@ -110,6 +118,7 @@ jobs:
             artifacts/scorer-browser/*.mp4
             artifacts/scorer-browser/result.json
             artifacts-browser-result.json
+            screener-reset-browser-result.json
             ecosystem-roadmap-browser-result.json
             artifacts/globe-browser/*.png
             artifacts/globe-browser/result.json
