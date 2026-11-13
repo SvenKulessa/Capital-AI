@@ -26,6 +26,7 @@ async function harness({ env = {}, loggedIn = true, verify = true, details = nul
     if (options.method === 'POST') return Response.json({ redirect_url: target });
     return Response.json(details ?? {
       authorization_id: id,
+      user: { id: 'test-user' },
       client: { id: clientId, name: '<script>alert(1)</script>' },
       redirect_uri: 'https://client.example/cb',
       scope: 'openid email',
@@ -80,7 +81,7 @@ test('GET renders sanitized consent only for allowlisted client', async () => {
 });
 
 test('unlisted OAuth client denied without allowing approval', async () => {
-  const h = await harness({ details: { authorization_id: id, client: { id: 'unknown_client_1234', name: 'Unknown' }, scope: 'openid' } });
+  const h = await harness({ details: { authorization_id: id, user: { id: 'test-user' }, client: { id: 'unknown_client_1234', name: 'Unknown' }, scope: 'openid' } });
   try { assert.equal((await h.request(`/oauth/consent?authorization_id=${id}`)).status, 403); assert.equal(h.calls.length, 1); } finally { await h.close(); }
 });
 
@@ -138,4 +139,23 @@ test('already consented direct redirect is accepted only from trusted provider r
 test('upstream failure cannot become consent or a successful authorization', async () => {
   const h = await harness({ fail: true });
   try { assert.equal((await h.request(`/oauth/consent?authorization_id=${id}`)).status, 502); } finally { await h.close(); }
+});
+
+test('authorization ID and authenticated user must match upstream authorization details', async () => {
+  for (const details of [
+    { authorization_id: 'different_authorization', user: { id: 'test-user' }, client: { id: clientId }, scope: 'openid' },
+    { authorization_id: id, user: { id: 'different_user' }, client: { id: clientId }, scope: 'openid' },
+    { authorization_id: id, client: { id: clientId }, scope: 'openid' },
+  ]) {
+    const h = await harness({ details });
+    try {
+      const r = await h.request('/oauth/consent', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://capital-ai.online' },
+        body: `authorization_id=${id}&decision=approve`,
+      });
+      assert.equal(r.status, 403);
+      assert.deepEqual(h.calls.map(x => x.method), ['GET']);
+    } finally { await h.close(); }
+  }
 });
