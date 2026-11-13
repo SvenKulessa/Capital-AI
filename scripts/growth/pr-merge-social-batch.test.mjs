@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import {
   assertBatch,runBatch,renderDraftHtml,toolSuitability,readWorkerJson,
   BRAND_ASSET,BRAND_SHA256,
@@ -53,6 +54,23 @@ test('real canonical watermark is digest-pinned and public-domain-facing but dra
   assert.match(html,/ENTWURF/);
   assert.doesNotMatch(html,/<script/);
 });
+test('resvg draft is deterministic, dimension-bound and included in the CADS package', async () => {
+  const fetchImpl = () => { throw Error('Unexpected network request'); };
+  const first = await runBatch(source,{...opts,fetchImpl});
+  const second = await runBatch(source,{...opts,fetchImpl});
+  assert.deepEqual(first.png,second.png);
+  assert.equal(first.png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  assert.equal(first.png.readUInt32BE(16),1440);
+  assert.equal(first.png.readUInt32BE(20),810);
+  const graphic = first.outcome.graphic;
+  assert.equal(graphic.sha256,createHash('sha256').update(first.png).digest('hex'));
+  assert.equal(first.outcome.manifest.assets.find(asset=>asset.assetId===graphic.assetId)?.sha256,graphic.sha256);
+  assert.equal(first.outcome.cads.graphic.technicalStatus,'PASS');
+  assert.ok(first.html.includes(first.png.toString('base64')));
+  assert.ok(first.html.includes(graphic.alt));
+  assert.equal(first.outcome.socialEngine.publicPublishAllowed,false);
+});
+
 test('real parallel network adapters use fixed endpoints, limited public GitHub URLs and no auto-publication',async()=>{
   const urls=[];
   const fetchImpl=async (url,request)=>{

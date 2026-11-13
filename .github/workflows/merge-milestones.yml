@@ -127,6 +127,7 @@ jobs:
           path: |
             artifacts/social-content-candidates/merge-batch-*.json
             artifacts/social-content-candidates/merge-batch-*.html
+            artifacts/social-content-candidates/merge-batch-*.png
           if-no-files-found: error
           retention-days: 14
       # Check both credentials before token minting; never print or persist private-key material.
