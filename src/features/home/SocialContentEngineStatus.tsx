@@ -34,7 +34,7 @@ export const SocialContentEngineStatus: React.FC = () => {
           </p>
         </div>
         <span className="shrink-0 rounded-lg border border-amber-400/25 bg-amber-400/5 px-3 py-1.5 text-[11px] font-semibold text-amber-100">
-          {de ? 'Quellstand' : 'Source snapshot'} · 14.10.2026
+          {de ? 'Quellstand' : 'Source snapshot'} · <time dateTime={FIRST_X_PILOT_STATE.snapshotDate}>{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(FIRST_X_PILOT_STATE.snapshotDate))}</time>
         </span>
       </div>
 

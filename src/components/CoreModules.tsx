@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CORE_MODULES } from '../data/mockData';
+import { VOCABULARY_PUBLIC_COUNT } from '../../shared/vocabulary-metadata.mjs';
 import { CoreModule } from '../types';
 
 interface CoreModulesProps {
@@ -152,7 +153,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
           >
             <span>Unsere Kernmodule</span>
             <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-white/5 border border-slate-700/60 text-slate-300">
-              Top 3
+              Top {primaryModules.length}
             </span>
           </h2>
         </div>
@@ -213,8 +214,8 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
                   {module.id === 'market-screener'
                     ? 'Datenprüfung'
                     : module.id === 'learning-portal'
-                    ? '294 Begriffe'
-                    : '40 € / Mo Cap'}
+                    ? `${VOCABULARY_PUBLIC_COUNT} Begriffe`
+                    : 'Datenpipeline'}
                 </span>
               </div>
 
