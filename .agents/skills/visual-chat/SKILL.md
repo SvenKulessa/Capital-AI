@@ -38,6 +38,6 @@ description: "Use for clear, evidence-based visual communication in chat across 
 | TRUST | Tenant/auth boundaries, threat model, rights obligations, status and evidence matrix |
 | GROWTH | Publication workflow, editorial calendar, funnel metrics only when measured, claim/right provenance |
 
-**Authority:** Root `AGENTS.md` and `SOLO_MAINTAINER_FLOW@1`. This skill provides presentation guidance only and creates **no gates**, review requirements, spending authority, new tools, licensing permissions, CI steps or deployment rights.
+**Authority:** Root `AGENTS.md` and `SOLO_MAINTAINER_FLOW@2`. This skill provides presentation guidance only and creates **no gates**, review requirements, spending authority, new tools, licensing permissions, CI steps or deployment rights.
 
 **Verification:** `npm run test:domain-skills` validates repository references, not rendering inside a particular ChatGPT product, other chats or external agents.

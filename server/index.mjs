@@ -51,6 +51,7 @@ import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
 import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
+  isSeoPublicImage,
   robotsDirectiveFor,
   seoIndexableStaticPaths,
 } from '../shared/seo-indexing-policy.mjs';
@@ -723,6 +724,12 @@ export function createApp(root = defaultRoot, options = {}) {
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
     let body = await readFile(resolved);
+    // Lift noindex only after an exact, existing, non-HTML image was read.
+    // Missing images, SPA fallbacks and all other artifacts stay fail-closed.
+    if (isSeoPublicImage(url.pathname) && resolved === asset &&
+        ['.png', '.ico', '.jpg'].includes(path.extname(file))) {
+      res.removeHeader('X-Robots-Tag');
+    }
     let documentLocale = null;
     // Reuse the outer canonical publicPath; redeclaring here would cause a TDZ in static route resolution.
     if (path.extname(file) === '.html') {

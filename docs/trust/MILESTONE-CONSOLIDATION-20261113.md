@@ -1,28 +1,19 @@
-# Milestone Consolidation — 2026-11-13
+# Control Center Milestones vom 13. November 2026
 
-**Purpose:** Consolidate the open draft Milestone PRs into one reviewable unit for the Control Center.
+Der Roadmap-Abgleich wurde aus `main@10de7f4e3f7a26a036649dbe073e290209d90245` neu erzeugt. Die GitHub-Mergehistorie enthielt 555 gemergte PRs. Die letzte vollständige Zehnergruppe endet bei #681, die letzte vollständige Zwanzigergruppe bei #665. Der Roadmap-Abgleich erfasst 106 Arbeitspakete, davon 25 mit `NOT_PROVEN`.
 
-## Source Drafts (to be closed after this PR)
-- #684 roadmap milestone draft from PR #681
-- #671 combined milestone draft from PR #665
-- #656 roadmap milestone draft from PR #650
-- #655 Consolidate milestone roadmap drafts
-- #643 combined milestone draft from PR #641
-- #635 roadmap milestone draft from PR #630
-- #616 combined milestone draft from PR #585
+| Entwurf | Inhalt im konsolidierten Stand |
+| --- | --- |
+| #684 | Originaler Roadmap-Snapshot #681 und neu erzeugter Roadmap-Abgleich für das Control Center |
+| #671 | Originaler Roadmap-Snapshot #665 und unveröffentlichter News-Entwurf #665 für das Control Center |
+| #656 | Originaler Roadmap-Snapshot #650 |
+| #655 | Originale Roadmap-Snapshots #585, #630, #641 und #654 sowie News-Entwürfe #585 und #641 |
+| #643 | Originaler Roadmap-Snapshot und News-Entwurf #641, bytegleich zu #655 |
+| #635 | Originaler Roadmap-Snapshot #630, bytegleich zu #655 |
+| #616 | Originaler Roadmap-Snapshot und News-Entwurf #585, bytegleich zu #655 |
 
-## Current main state
-- `src/data/roadmapMergeReconciliation.json`: lastReconciledPr 545
-- `src/data/controlCenterNews.json`: lastBatchPr 528, state DRAFT_NOT_PUBLISHED
+Alle historischen Roadmap-Snapshots bleiben bytegetreu. Ihre Quell-SHA-256 wurden an den jeweils eingetragenen Git-Commits geprüft. Die GitHub-Mergehistorie ordnet den 530. Merge #650 zu. Der im Vorgänger-PR #655 ebenfalls als 530. Merge bezeichnete Snapshot #654 bleibt als historische Datei erhalten. Die aktuelle Projektion verwendet die bestätigte Reihenfolge.
 
-## Intent
-The Milestone App generates draft reconciliation and news files after every 10/20 merges. These drafts are meant to surface the latest changes in the Control Center. They should be consolidated against the current main and reviewed as one unit.
+Der News-Entwurf #665 bleibt an den ursprünglichen Merge `51c766ad2514e1e4e93bb59c1d8deb0991f6f274` gebunden. Die Rekonstruktion aus der bestätigten Zwanzigergruppe stimmt bis auf den Erstellungszeitstempel mit dem Original überein. `DRAFT_NOT_PUBLISHED` und `publicPublishAllowed=false` gelten weiter. Der Roadmap-Abgleich belegt vorhandene Quellen und Dokumente. Produktionswirkung und Veröffentlichungsrechte erfordern eigene Nachweise.
 
-## Non-claims
-- This PR does not regenerate the full reconciliation (requires local script execution).
-- News drafts remain DRAFT_NOT_PUBLISHED.
-- No automatic publication or VERIFIED promotion.
-- Old draft PRs should be closed after this consolidation is reviewed.
-
-## Next step
-Run the existing milestone scripts locally against current main to produce a fresh `roadmapMergeReconciliation.json` and updated `controlCenterNews.json`, then update this branch.
+PR #548 für Private Notes OCC v2 bleibt offen. Die Migration `20261031030000_private_notes_occ_v2.sql` und der OCC-Client fehlen auf dem geprüften Main. Der produktive Cutover bleibt von Backup-/Restore-Nachweis und gesonderter Autorisierung abhängig.
