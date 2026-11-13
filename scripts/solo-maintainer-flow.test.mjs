@@ -64,3 +64,10 @@ test('active skills and copilot instructions point at V2', () => {
     assert.doesNotMatch(content, /SOLO_MAINTAINER_FLOW@1/, skill);
   }
 });
+
+test('the V2 regression executes in the existing offline Docker test stage', () => {
+  const dockerfile = read('Dockerfile');
+  const dockerignore = read('.dockerignore');
+  assert.match(dockerfile, /^COPY scripts\/domain-skills\.test\.mjs scripts\/solo-maintainer-flow\.test\.mjs \.\/scripts\/$/m);
+  assert.match(dockerignore, /^!scripts\/solo-maintainer-flow\.test\.mjs$/m);
+});

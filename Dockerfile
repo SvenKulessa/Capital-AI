@@ -90,7 +90,7 @@ COPY supabase/email-templates ./supabase/email-templates
 COPY supabase/migrations/20261013042915_learning_simulator_private_scenarios.sql supabase/migrations/20261013030655_youtube_private_upload_jobs.sql supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql supabase/migrations/20261005155500_fix_registration_consent_null.sql supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql supabase/migrations/20261009104641_enforce_subscription_price_authority.sql supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql supabase/migrations/20261007214554_provider_query_guard.sql supabase/migrations/20261008181500_private_user_analysis_bindings.sql ./supabase/migrations/
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
-COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
+COPY scripts/domain-skills.test.mjs scripts/solo-maintainer-flow.test.mjs ./scripts/
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
