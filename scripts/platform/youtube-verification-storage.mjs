@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
-export const DEMO_OBJECT = 'youtube-verification/demo.mp4.enc';
+export const DEMO_OBJECT = 'youtube-verification/demo-key-rotation-01.mp4.enc';
 const MAX_ENVELOPE_BYTES = 100 * 1024 * 1024 + 128;
 
 export async function readDemoObject({ bucket, generation, token, fetchImpl = fetch }) {

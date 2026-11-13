@@ -23,7 +23,19 @@ The YouTube call uses channel-owner OAuth rather than the Cloud access token.
 3. Use a private Cloud Storage bucket with uniform bucket-level access and public
    access prevention. Grant the dedicated account only `storage.objects.get`
    through a conditional bucket binding limited to
-   `projects/_/buckets/<bucket>/objects/youtube-verification/demo.mp4.enc`.
+   `projects/_/buckets/<bucket>/objects/youtube-verification/demo-key-rotation-01.mp4.enc`.
+   Use an exact equality condition (never a prefix or wildcard):
+
+       resource.name == 'projects/_/buckets/<bucket>/objects/youtube-verification/demo-key-rotation-01.mp4.enc'
+
+   Replace the previous demo.mp4.enc condition on the dedicated reader binding;
+   do not add bucket-wide access or retain an additional legacy-object grant.
+   Keep the existing get-only role and WIF/OAuth bindings unchanged. Read back
+   the policy and verify that the rotated object is allowed, while the legacy
+   object and unrelated objects are denied before any upload. This is a proposed
+   IAM correction, not evidence that a live policy has been changed.
+   The local scratch filename remains verification-media/demo.mp4.enc; it is
+   independent of the fixed remote object name. No legacy fallback is attempted.
    The trusted staging principal writes this object separately. The operator's
    Cloud token has the short-lived `devstorage.read_only` scope.
 4. Set environment variables `YOUTUBE_DEMO_BUCKET` and `YOUTUBE_DEMO_SHA256` in

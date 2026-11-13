@@ -9,7 +9,7 @@ test('reads the fixed object at the exact generation and rejects redirects', asy
   const result = await readDemoObject({ ...options, fetchImpl: async (url, init) => {
     const target = new URL(url);
     assert.equal(target.origin, 'https://storage.googleapis.com');
-    assert.equal(target.pathname, '/storage/v1/b/private-demo-test/o/youtube-verification%2Fdemo.mp4.enc');
+    assert.equal(target.pathname, '/storage/v1/b/private-demo-test/o/youtube-verification%2Fdemo-key-rotation-01.mp4.enc');
     assert.equal(target.searchParams.get('generation'), options.generation);
     assert.equal(target.searchParams.get('alt'), 'media');
     assert.equal(init.headers.Authorization, 'Bearer ' + options.token);

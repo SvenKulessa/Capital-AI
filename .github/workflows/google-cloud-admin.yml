@@ -10,7 +10,7 @@ on:
         options: [readback, upload-youtube-demo]
         default: readback
       media_object_generation:
-        description: Generation of youtube-verification/demo.mp4.enc in the private demo bucket
+        description: Generation of youtube-verification/demo-key-rotation-01.mp4.enc in the private demo bucket
         type: string
         default: ''
       media_sha256:
