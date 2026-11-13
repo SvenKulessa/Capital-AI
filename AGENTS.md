@@ -1,7 +1,7 @@
 # CAPITAL-AI Solo Maintainer Policy
 
-Stand: 2026-10-11
-Contract: `SOLO_MAINTAINER_FLOW@1`
+Stand: 2026-11-13
+Contract: `SOLO_MAINTAINER_FLOW@2`
 Geltungsbereich: gesamtes Repository.
 
 ## Einzige autorisierende Richtlinie
@@ -11,6 +11,20 @@ Diese Datei ist die **einzige repositoryweite autorisierende Engineering-/Govern
 Ältere oder zusätzliche Richtlinien-, Governance-, Handoff-, Admission-, Self-Healing-, Benchmark- oder Domain-Dokumente sind nur historische Dokumentation oder Evidence und dürfen **keine zusätzlichen Freigaben, Handoffs, Admissions, Pflichtreviews oder Korrelationsschleifen erzwingen**.
 
 Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dürfen erst wieder eingeführt werden, wenn ein konkretes Problem oder Risiko nachgewiesen wurde und der Human Repository Owner die minimale zusätzliche Regel ausdrücklich freigibt.
+
+## Standardmodus: ACTIVE_CONSERVATIVE
+
+**ACTIVE_CONSERVATIVE ist der Standard** für autorisierte Entwicklungs-, Wartungs-, Security- und Governance-Aufträge in allen fünf Domains. `SOLO_MAINTAINER_FLOW@2` ersetzt `SOLO_MAINTAINER_FLOW@1`, ohne historische Evidence rückwirkend umzuschreiben. Der Agent prüft nicht nur, sondern setzt den kleinsten sicheren, vollständigen und wartbaren Slice im beauftragten Scope aktiv um.
+
+**READ_ONLY gilt bei ausdrücklich lesenden Aufträgen** (etwa „read-only“, „nur prüfen“ oder „keine Änderungen“) sowie bei fehlenden Schreibrechten. Eine Statusprüfung darf niemals stillschweigend in eine Mutation übergehen. **Explizite Verbote von Merge, Deployment oder Publishing** im konkreten Auftrag haben Vorrang vor der allgemeinen delegierten Merge-Regel; ein PR ist keine Merge- oder Produktionsfreigabe.
+
+1. **Risiko zuerst:** Aktuellen `main`, `AGENTS.md`, relevante Skills, vorhandene Scope-PRs/Issues, Tests und tatsächliche Evidence gezielt abgleichen. P0-Auth-, Tenant-, Secret-, Lizenz- und Supply-Chain-Risiken vor niedrigeren Prioritäten bearbeiten; Prioritäten aus dem konkreten Auftrag beachten.
+2. **Fehlerursache reproduzieren:** Betroffenen Codepfad und seine Abhängigkeiten eingrenzen, beobachtete Fehler von Hypothesen trennen und den kleinsten reversiblen Fix auf einem autorisierten Feature-Branch oder bestehenden Scope-PR implementieren.
+3. **Tests einschließlich Negativtests:** Passende Unit-, Integrations-, Security- und Regressionsprüfungen tatsächlich ausführen, reproduzierte Fehler erneut testen und bestehende CI-Jobs nutzen. Keine synthetischen PASS-Meldungen, künstlichen Attestations, neuen Required Checks oder manuelle Preflight-Schleifen.
+4. **Blocker effizient beseitigen:** Technische Blocker im Scope eigenständig korrigieren, nach einem Fehlschlag einen begründet anderen Ansatz erproben und unabhängige autorisierte Arbeit fortführen. Nur echte persönliche Owner-Schritte, fehlende Rechte oder kritische Freigaben eskalieren; keine Endlosschleifen oder willkürliche Scope-Ausweitung.
+5. **Evidence und PR:** Diff, Baseline-/Head-SHA, reproduzierbare Tests, CI-Run-IDs, Risiken, Rollback und offen gebliebene Nachweise dokumentieren. Den PR erst nach vollständiger beauftragter Implementierung eröffnen. Kein `NOT_PROVEN` als `VERIFIED` und keine Production-Wirkung aus Repository-Tests ableiten.
+
+**Unveränderte Grenzen:** Keine produktiven Datenbankmutationen ohne gesonderte Autorisierung und belastbare Backup-/Recovery-Evidence. Keine kostenpflichtige Aktivierung ohne die bestehende ausdrückliche Owner-Zustimmung. Keine unautorisierten OAuth-/Provider-/Secret-/Berechtigungsänderungen, Lizenzfreigaben, Merges, Deployments oder Veröffentlichungen. GitHub-Rulesets, Least Privilege, Tenant-Isolation und die bestehende delegierte Merge-Regel einschließlich ihrer bestehenden Required Checks (`Docker Security Gate` und `Domain Governance`) bleiben verbindlich. Dieser Standardmodus schafft keine neue Autorisierung, keinen Gate und keinen automatischen Produktionspfad.
 
 ## Chat-Start: Domain-Roadmap gegen aktuellen main abgleichen (Owner-Beschluss 2026-10-14)
 
@@ -265,7 +279,7 @@ Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie domainübergreifende 
 1. **Auftrags- und Evidenzbezug:** Die Vorschläge leiten sich aus Nutzerziel, bereits umgesetztem Scope, aktuellen Befunden, Risiken, Kosten und offenen Abhängigkeiten ab; keine generischen Floskeln oder erfundenen nächsten Aufgaben. Jeder Vorschlag nennt eine ausführbare Aktion oder eine präzise Entscheidungsoption sowie ihren Zweck. Wenn mehrere Wege sinnvoll sind, eine bevorzugte Option zuerst nennen und insgesamt maximal drei Optionen anbieten.
 2. **Weiterarbeit statt Handoff:** Geeignete, bereits autorisierte Arbeit eigenständig erledigen, bevor nächste Schritte vorgeschlagen werden. Domainübergreifende Aufgaben im **gleichen Chat** fortführen; keine künstlichen Domain-Handoffs, unnötigen Rückfragen oder Aufforderungen zur wiederholten Zustimmung. Persönliche Owner-Schritte wie Vertrag, Credential-Eingabe oder kostenpflichtige Aktivierung mit `👋⚙️` kennzeichnen.
 3. **Platzierung und Länge:** Die 1–3 Vorschläge in Status-/Abschlussantworten unter `🔧 OFFEN / NÄCHSTE SCHRITTE` aufführen; andere inhaltliche Antworten erhalten am Ende eine knappe Passage mit 1–3 passenden nächsten Chat-Aktionen. Nicht denselben Vorschlag zusätzlich in einer separaten Liste wiederholen. Bei vollständig abgeschlossenen Aufträgen sinnvolle optionale Folgeaktionen statt fiktiver Blocker nennen.
-4. **Grenzen:** Nur Optionen vorschlagen, die zum Thema und zu vorhandenen Berechtigungen passen. Keine Ausführung, Kosten, Provider-/Lizenzrechte, Security-Freigabe, Merge- oder Production-Fähigkeit behaupten, die nicht belegt sind. Die bisherigen zwei Status-Codeblöcke, Required Checks `Docker Security Gate` und `Domain Governance`, der `SOLO_MAINTAINER_FLOW@1` und die delegierte Agenten-Merge-Regel gelten verbindlich.
+4. **Grenzen:** Nur Optionen vorschlagen, die zum Thema und zu vorhandenen Berechtigungen passen. Keine Ausführung, Kosten, Provider-/Lizenzrechte, Security-Freigabe, Merge- oder Production-Fähigkeit behaupten, die nicht belegt sind. Die bisherigen zwei Status-Codeblöcke, Required Checks `Docker Security Gate` und `Domain Governance`, der `SOLO_MAINTAINER_FLOW@2` und die delegierte Agenten-Merge-Regel gelten verbindlich.
 
 ## Status in ChatGPT
 

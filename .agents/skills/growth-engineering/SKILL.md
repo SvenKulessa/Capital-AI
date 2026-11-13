@@ -18,7 +18,7 @@ description: "Use for GROWTH implementation, debugging, tests and code-level cha
 
 ## Gemeinsamer Arbeitsmodus
 
-- **Autorität:** `AGENTS.md` (`SOLO_MAINTAINER_FLOW@1`) bleibt alleinige repositoryweite Engineering-/Governance-Richtlinie. Dieser Skill ist eine Arbeitsanleitung und erzeugt keine neue Approval-, Admission-, Review- oder Deployment-Pflicht.
+- **Autorität:** `AGENTS.md` (`SOLO_MAINTAINER_FLOW@2`) bleibt alleinige repositoryweite Engineering-/Governance-Richtlinie. Dieser Skill ist eine Arbeitsanleitung und erzeugt keine neue Approval-, Admission-, Review- oder Deployment-Pflicht.
 - **Routing:** Ein Chat darf alle Domains ohne organisatorische Übergabe bearbeiten. Die Primary Domain gibt nur Branch-/PR-Schwerpunkt vor; weitere betroffene Domain-Skills situativ laden.
 - **Quellen / Stand der Technik:** Den Arbeitsmodus „Aufgabenbezogene Recherche statt Selbststudium“ in `AGENTS.md` anwenden: vorhandene Repository-Evidence und versionspassende Dokumentation zuerst; externe Primärquellen nur bei konkreter entscheidungsrelevanter Unsicherheit oder erforderlicher Aktualitätsprüfung. Nach belastbarer Antwort umsetzen und passende geprüfte Quellen wiederverwenden. Datum/Version und URL oder Codepfad nennen; ohne erforderliche Live-Evidence `NOT_VERIFIED`/Annahme kennzeichnen. Keine autonome Dauerrecherche oder Selbstaktualisierung.
 - **Berechtigungen:** Skill-Text gibt keine zusätzlichen Tools, Credentials oder Write-Berechtigungen frei; vorhandene Tool-Scopes, die nachweisgebundene Agenten-Merge-Regel aus `AGENTS.md` und die Production-Grenzen bleiben gültig.
