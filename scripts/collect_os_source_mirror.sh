@@ -140,3 +140,16 @@ summary={'schema':'CAPITAL_AI_ISOLATED_OS_SOURCE_COLLECTION@1','status':status,
 print(json.dumps({k:summary[k] for k in ('status','externalFetchFailures','sourceDeliveryProven','redistributionApproved','failedRecipes')}))
 PY
 if ! grep -q '"status": "SOURCE_HASHES_VERIFIED_NON_AUTHORIZING"' "$REPORT_DIR/collection-summary.json"; then exit 2; fi
+# Package only after all real SHA512 checks passed, as the SAME nonprivileged user.
+# This is a private CI source mirror, NOT proof of corresponding-source legal delivery.
+tar -C "$(dirname "$MIRROR")" -czf "$REPORT_DIR/source-mirror.tar.gz" "$(basename "$MIRROR")"
+( cd "$REPORT_DIR" && sha256sum source-mirror.tar.gz > source-mirror.tar.gz.sha256 )
+python3 - "$REPORT_DIR" <<'PYARCHIVE'
+import json,pathlib,sys
+p=pathlib.Path(sys.argv[1]); report=p/'collection-summary.json'
+data=json.loads(report.read_text()); digest=(p/'source-mirror.tar.gz.sha256').read_text().split()[0]
+data['privateMirrorArchiveSha256']='sha256:'+digest
+data['privateMirrorArchiveBytes']=(p/'source-mirror.tar.gz').stat().st_size
+data['sourceDeliveryProven']=False;data['redistributionApproved']=False
+report.write_text(json.dumps(data,indent=2)+'\n')
+PYARCHIVE
