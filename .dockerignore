@@ -186,6 +186,7 @@
 !scripts/independent-review-manifest.mjs
 !scripts/independent-review-manifest.test.mjs
 !scripts/domain-skills.test.mjs
+!scripts/solo-maintainer-flow.test.mjs
 !scripts/universe-hero.test.mjs
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
@@ -471,8 +472,6 @@
 !scripts/growth/firecrawl-client.mjs
 !scripts/growth/firecrawl-client.test.mjs
 !server/chat-buddy-learn.test.mjs
-
-# P0 OAuth 2.1: exact consent runtime and synthetic validation sources.
 !server/oauth-consent.mjs
 !server/oauth-consent.test.mjs
 !scripts/oauth-client-isolation.test.mjs

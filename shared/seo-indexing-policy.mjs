@@ -1,4 +1,18 @@
 import { HUB_ROUTES, DOCUMENT_ROUTES } from './hub-routes.mjs';
+
+// Image eligibility is separate from the HTML route inventory and XML sitemap.
+// Only the first-party images referenced by public Search metadata are admitted.
+export const SEO_PUBLIC_IMAGE_PATHS = Object.freeze([
+  '/branding/asset-pack/favicon/favicon-96x96.png',
+  '/branding/asset-pack/favicon/favicon.ico',
+  '/branding/asset-pack/favicon/apple-touch-icon-180x180.png',
+  '/branding/asset-pack/avatars/capital-ai-avatar-512x512.png',
+  '/branding/asset-pack/social/open-graph-1200x630.jpg',
+]);
+
+export function isSeoPublicImage(pathname) {
+  return SEO_PUBLIC_IMAGE_PATHS.includes(pathname);
+}
 export const SEO_INDEXING_STATES = Object.freeze({
   INDEX: 'INDEX',
   NOINDEX: 'NOINDEX',

@@ -22,9 +22,13 @@ test('milestones fire only for complete groups of ten and twenty merges', () => 
 
 test('source-linked titles are sanitized and never claim publication', () => {
   const batch = milestone(Array.from({length: 20}, (_, i) => make(i + 1)), 20);
+  batch.batch[0].title = 'Bump @google/genai from 2.32.0 to 3.0.0';
   const article = draftBlog(batch, 'a'.repeat(40));
   assert.match(article, /Entwurf – nicht veröffentlicht/);
   assert.match(article, /PR #20/);
+  assert.match(article, /PR #1\]\(https:\/\/github\.com\/SvenKulessa\/Capital-AI\/pull\/1\): Repository-Änderung/);
+  assert.ok(!article.includes('@google/genai'));
+  assert.ok(!sanitizedTitle('Rotate SUPABASE_SERVICE_ROLE_KEY').includes('SUPABASE_SERVICE_ROLE_KEY'));
   assert.equal(sanitizedTitle('<script>alert(1)</script>'), 'script alert(1) /script');
 });
 

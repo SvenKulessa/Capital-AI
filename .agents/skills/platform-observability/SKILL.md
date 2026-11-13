@@ -5,7 +5,7 @@ description: "SRE-Telemetrie, Traces, Logs, Metriken, SLOs, Alerting und sichere
 
 # platform-observability
 
-> Fachliche Arbeitsanweisung ohne eigenständige Freigabeautorität. Maßgeblich ist ausschließlich [AGENTS.md](../../../AGENTS.md) mit `SOLO_MAINTAINER_FLOW@1`. Keine zusätzlichen Required Checks, Admissions oder generellen Handoffs. Evidence-First; Fail Closed bei fehlender Berechtigung, Security-Evidence oder Quellenlage.
+> Fachliche Arbeitsanweisung ohne eigenständige Freigabeautorität. Maßgeblich ist ausschließlich [AGENTS.md](../../../AGENTS.md) mit `SOLO_MAINTAINER_FLOW@2`. Keine zusätzlichen Required Checks, Admissions oder generellen Handoffs. Evidence-First; Fail Closed bei fehlender Berechtigung, Security-Evidence oder Quellenlage.
 
 ## Mission
 SRE-Telemetrie, Traces, Logs, Metriken, SLOs, Alerting und sichere Cardinality; ausschließlich nachvollziehbare und sicher begrenzte CAPITAL-AI-Arbeit liefern.
