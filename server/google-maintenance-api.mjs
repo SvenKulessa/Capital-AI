@@ -15,6 +15,7 @@ const SERVICE_ORIGIN = 'https://serviceusage.googleapis.com';
 const GSC_ORIGIN = 'https://www.googleapis.com';
 const INSPECTION_ORIGIN = 'https://searchconsole.googleapis.com';
 export const GSC_INSPECTION_PATHS = Object.freeze(['/learning', '/vocabulary/orderbuch', '/vocabulary/capital-eventmesh']);
+export const GSC_SEARCH_CONFIGURATION_PATHS = Object.freeze(['/', '/learning', '/studio/blueprints', '/marketscreener/scorer']);
 const GSC_PROPERTY = 'sc-domain:capital-ai.online';
 const SITEMAP_URL = 'https://capital-ai.online/sitemap.xml';
 const MAX_RESPONSE_BYTES = 1024 * 1024;
@@ -282,11 +283,22 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
         ] } }, limit: '100', returnPropertyQuota: true,
       } });
     }
-    if (name === 'gsc_inspect_public_urls') {
+    if (name === 'gsc_get_expected_site') {
+      exact(input, []);
+      const result = await request(GSC_ORIGIN, '/webmasters/v3/sites');
+      if (result.siteEntry !== undefined && !Array.isArray(result.siteEntry)) throw new Error('GSC_SITES_INVALID_RESPONSE');
+      const sites = (result.siteEntry || []).filter(site => site?.siteUrl === GSC_PROPERTY);
+      if (sites.length !== 1) throw new Error('GSC_EXPECTED_PROPERTY_NOT_ACCESSIBLE');
+      const site = sites[0];
+      if (!['siteOwner', 'siteFullUser', 'siteRestrictedUser'].includes(site.permissionLevel)) throw new Error('GSC_PROPERTY_PERMISSION_INSUFFICIENT');
+      return { property: site.siteUrl, permissionLevel: site.permissionLevel, status: 'PROVIDER_READ_VERIFIED' };
+    }
+    if (name === 'gsc_inspect_public_urls' || name === 'gsc_inspect_search_configuration') {
       exact(input, []);
       const urls = [];
       const pick = (value, allowed) => allowed.includes(value) ? value : null;
-      for (const path of GSC_INSPECTION_PATHS) {
+      const paths = name === 'gsc_inspect_public_urls' ? GSC_INSPECTION_PATHS : GSC_SEARCH_CONFIGURATION_PATHS;
+      for (const path of paths) {
         const inspectionUrl = 'https://capital-ai.online' + path;
         const result = await request(INSPECTION_ORIGIN, '/v1/urlInspection/index:inspect', {
           method: 'POST', body: { inspectionUrl, siteUrl: GSC_PROPERTY, languageCode: 'en-US' },
