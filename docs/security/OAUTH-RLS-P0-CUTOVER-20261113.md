@@ -205,3 +205,18 @@ blocking_issue: 664
 ```
 
 **Kleinster realer Next-Slice:** #664: autorisierten und nachweislich egress-isolierten Restore-Rahmen herstellen, durch einen unabhängigen echten Export/Download/Restore testen. Parallel unabhängig davon PR #691 auf aktuellen `main` synchronisieren und die regulären Checks am neuen SHA auswerten. **Kein PROD-Merge/Deployment/Migration/OAuth-Enable aus diesem Plan.**
+
+## 11. Aktuelle Verifikations- und Offsite-Metadaten · 13.11.2026 (ohne Produktionsdaten)
+
+**Vergleichsbasis:** aktueller GitHub-`main` `d0bdbf86bc28c6e68ad4ff9719a749c4656192b3`, PR-Feature-Branch nach kontrollierter Synchronisierung `b46b4f3afef4b4ef2d80d8c27052aaa08f132c5d` (vor diesem Evidence-Commit). Der PR unterscheidet sich zum abgeglichenen Main in **11 OAuth-Scope-Dateien**, Branch-Rückstand **0**. Main-Governance `SOLO_MAINTAINER_FLOW@2`, SEO-`isSeoPublicImage` sowie Docker-/Test-Wiring bleiben erhalten.
+
+**Offsite-Fundstellen (ausschließlich Metadaten, kein Download):**
+- [Privater Google-Drive-Ordner „CAPITAL-AI Supabase Backups“](https://drive.google.com/drive/folders/13HiWDBT2WAID_7l0TL2SjS2DiI5HlP_e): existiert; `list_folder` meldet **0 sichtbare Dateien**. Nicht als Backup, Archiv- oder Restore-Nachweis anerkannt.
+- Dropbox-Suchen nach `capital-ai-supabase` und `backup-manifest`: **0 Treffer**. Das ist keine Aussage über nicht angebundene Ablagen, Buckets oder andere Namen.
+- Für GCS fehlt ein autorisiert rücklesbares Objekt mit geprüftem `age`-Ciphertext-SHA, Versions-/Generation-Identität und unabhängigem Download. Kein GCS-Upload/Download in diesem Auftrag.
+
+**Frische nur aggregierte Katalogverifikation:** Supabase PROD PG17.11: 8 Auth-Account-Metadaten, 2 private Storage-Buckets, 1 Storage-Objekt-Metadatensatz, 6 verschlüsselte Vault-Einträge, 3 aktive Cron-Jobs, 0 Backup-Reader-Rollen. Keine Datensätze, Token, Objektbytes oder Secretwerte gelesen. Separates `capital-ai-recovery-664-test` PG17.11: **1 bestehende Auth-Identität**, 0 Buckets, 0 Storage-Objekte, 0 Vault-Einträge, 2 Cron-Jobs mit **0 aktiven** Jobs. Dieses Ziel ist **nicht exklusiv/frei/egress-isoliert nachgewiesen** und darf nicht als Restore-Weg für echte Produktionsdaten genutzt werden. `pg_net`-/Stripe-/Webhook-Nicht-Replay bleibt unabhängig zu belegen.
+
+**CI-Ursachenbefund nach Main-Synchronisierung:** `TRUST npm Update Capsule` [Run 43488478700](https://github.com/SvenKulessa/Capital-AI/actions/runs/43488478700), Job 132103087607 **FAIL**: `FINANCE-SOURCE-TARGET-MANIFEST target authority drift`, `server/auth.mjs` erwartete Blob `b9a3f8799c5dcc0ec0b8a76d082c976ced27e854`, tatsächlicher Blob `d5b272dd05c0361db162491e3f2c5b184a0b9e22`. 16 Manifest-Authority-Blobs direkt gegen GitHub-Objekte geprüft, 15 passend, nur `TA-AUTH` driftend. **Minimalfix:** ausschließlich `TA-AUTH`-Blob und korrelierte Erklärung im vorhandenen Source-to-Target-Manifest aktualisieren. Keine Finance-Zielrechte, Lizenzannahmen oder externen Quellen geändert. Die GitHub-CI muss am **neuen finalen Head** erneut grün sein. Docker Security Gate [Run 43488478852](https://github.com/SvenKulessa/Capital-AI/actions/runs/43488478852) und Domain Governance [Run 43488478578](https://github.com/SvenKulessa/Capital-AI/actions/runs/43488478578) gehören zum **vorherigen** Head; sie werden nicht als Freigabe für spätere Änderungen gezählt.
+
+**G1 Offsite-Backup=BLOCKED, G2 unabhängig realer Restore=BLOCKED, G3 echte OAuth HTTP-E2E=NOT_PROVEN.** Selbst erfolgreiche PR-CI berechtigt nicht zum Merge, zur Produktionsmigration oder zum OAuth-Enable. **Kein externes Speichern/Teilen/Publizieren und keine produktive SQL-/OAuth-/Secrets-Mutation ausgeführt.**
