@@ -26,6 +26,11 @@ const OWNER_SAFE_CALLBACK_DIAGNOSTICS = Object.freeze({
   SOCIAL_IG_PERMISSIONS_NOT_GRANTED: 'provider_scopes_missing',
   SOCIAL_IG_PAGE_SELECTION_REQUIRED: 'professional_page_selection_required',
   SOCIAL_IG_PERSIST_READBACK_FAILED: 'vault_persistence_not_confirmed',
+  SOCIAL_FB_USER_SCOPES_INVALID: 'provider_scopes_missing',
+  SOCIAL_FB_PERMISSIONS_NOT_GRANTED: 'provider_scopes_missing',
+  SOCIAL_FB_PAGE_SELECTION_REQUIRED: 'page_selection_required',
+  SOCIAL_FB_PAGE_SCOPES_INVALID: 'provider_scopes_missing',
+  SOCIAL_FB_PERSIST_READBACK_FAILED: 'vault_persistence_not_confirmed',
   SOCIAL_OAUTH_CONSUME_NOT_CONFIRMED: 'oauth_state_not_confirmed',
   SOCIAL_OAUTH_PKCE_MISSING: 'oauth_pkce_invalid',
   SOCIAL_OAUTH_CALLBACK_READBACK_MISMATCH: 'vault_persistence_not_confirmed',
@@ -38,7 +43,7 @@ function safeOwnerCallbackFailure(error) {
 export function createSocialOAuthCallback({ env = process.env, auth, store = null,
   exchangeCode = null, fetchImpl = fetch } = {}) {
   const path = '/api/social-media/auth/callback';
-  const allowed = ['YOUTUBE', 'INSTAGRAM', 'X'];
+  const allowed = ['YOUTUBE', 'INSTAGRAM', 'FACEBOOK', 'X'];
 
   async function handle(req, res, url, json) {
     if (url.pathname !== path) return false;
@@ -71,17 +76,25 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       .exec(req.headers?.cookie || '')?.[1];
     const instagramState = /(?:^|;\s*)capital_instagram_oauth_state=([A-Za-z0-9_-]{43})(?:;|$)/
       .exec(req.headers?.cookie || '')?.[1];
+    const facebookState = /(?:^|;\s*)capital_facebook_oauth_state=([A-Za-z0-9_-]{43})(?:;|$)/
+      .exec(req.headers?.cookie || '')?.[1];
     const channel = url.searchParams.get('channel')
-      ?? (instagramState && instagramState === state ? 'INSTAGRAM'
+      ?? (facebookState && facebookState === state ? 'FACEBOOK'
+        : instagramState && instagramState === state ? 'INSTAGRAM'
         : youtubeState && youtubeState === state ? 'YOUTUBE' : 'X');
     const code = url.searchParams.get('code');
     if (!allowed.includes(channel) || url.searchParams.has('error')
       || url.searchParams.getAll('state').length !== 1
       || url.searchParams.getAll('code').length !== 1
       || url.searchParams.getAll('channel').length > 1
+      || (facebookState === state && channel !== 'FACEBOOK')
       || (instagramState === state && channel !== 'INSTAGRAM')
       || (channel === 'INSTAGRAM' && (instagramState !== state
-        || youtubeState === state || env.SOCIAL_INSTAGRAM_OAUTH_CONNECT_ENABLED !== 'true'))
+        || youtubeState === state || facebookState === state
+        || env.SOCIAL_INSTAGRAM_OAUTH_CONNECT_ENABLED !== 'true'))
+      || (channel === 'FACEBOOK' && (facebookState !== state
+        || youtubeState === state || instagramState === state
+        || env.SOCIAL_FACEBOOK_OAUTH_CONNECT_ENABLED !== 'true'))
       || !/^[A-Za-z0-9_-]{43}$/.test(state || '')
       || typeof code !== 'string' || code.length < 1 || code.length > 2048) {
       json(res, 400, { error: 'invalid_social_oauth_callback' });
@@ -92,7 +105,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       json(res, 401, { error: 'authentication_required' });
       return true;
     }
-    if (['X', 'YOUTUBE', 'INSTAGRAM'].includes(channel) && (identity.emailVerified !== true
+    if (['X', 'YOUTUBE', 'INSTAGRAM', 'FACEBOOK'].includes(channel) && (identity.emailVerified !== true
       || await auth?.authorizeIamRole?.(req, res, 'owner') !== true)) {
       json(res, 403, { error: 'owner_authorization_required' });
       return true;
@@ -120,11 +133,12 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       if (result?.consumed !== true || result.platform !== channel.toLowerCase()) {
         throw new Error('SOCIAL_OAUTH_CALLBACK_READBACK_MISMATCH');
       }
-      if (channel === 'YOUTUBE' || channel === 'INSTAGRAM') {
+      if (channel === 'YOUTUBE' || channel === 'INSTAGRAM' || channel === 'FACEBOOK') {
         const existingCookies = res.getHeader?.('Set-Cookie');
         res.setHeader('Set-Cookie', [
           ...(Array.isArray(existingCookies) ? existingCookies : existingCookies ? [existingCookies] : []),
-          (channel === 'INSTAGRAM' ? 'capital_instagram_oauth_state'
+          (channel === 'FACEBOOK' ? 'capital_facebook_oauth_state'
+            : channel === 'INSTAGRAM' ? 'capital_instagram_oauth_state'
             : 'capital_youtube_oauth_state')
             + '=; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
         ]);
@@ -140,6 +154,11 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
         res.end();
         return true;
       }
+      if (channel === 'FACEBOOK') {
+        res.writeHead(303, { Location: '/api/social-media/facebook/account/status',
+          'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' });
+        res.end(); return true;
+      }
       // The exchanger has confirmed encrypted persistence/readback. Point the
       // authenticated owner to the read-only status instead of a blank 204.
       res.writeHead(303, {
@@ -151,7 +170,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       // Identity and IAM owner role have already been checked above.
       // Other social channels have not passed the owner-only authorization
       // boundary; preserve their generic response without diagnostic metadata.
-      json(res, 503, ['X', 'YOUTUBE', 'INSTAGRAM'].includes(channel)
+      json(res, 503, ['X', 'YOUTUBE', 'INSTAGRAM', 'FACEBOOK'].includes(channel)
         ? { error: 'social_oauth_callback_unavailable',
           diagnostic: safeOwnerCallbackFailure(error) }
         : { error: 'social_oauth_callback_unavailable' });
