@@ -31,8 +31,8 @@ async function readForm(req) {
   return new URLSearchParams(value);
 }
 
-async function upstream(fetchImpl, endpoint, apiKey, token, method = 'GET', action) {
-  const headers = { Accept: 'application/json', apikey: apiKey, Authorization: `Bearer ${token}` };
+async function upstream(fetchImpl, endpoint, apiKey, token, origin, method = 'GET', action) {
+  const headers = { Accept: 'application/json', apikey: apiKey, Authorization: `Bearer ${token}`, Origin: origin };
   if (action) headers['Content-Type'] = 'application/json';
   const result = await fetchImpl(endpoint, {
     method, headers, body: action ? JSON.stringify({ action }) : undefined,
@@ -130,7 +130,7 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
       if (!token) { response(res, 401, page('<p>Ungültige Sitzung.</p>')); return true; }
       try {
         const endpoint = new URL(`/auth/v1/oauth/authorizations/${encodeURIComponent(id)}`, issuer.origin);
-        const checked = await upstream(fetchImpl, endpoint, apiKey, token);
+        const checked = await upstream(fetchImpl, endpoint, apiKey, token, origin.origin);
         if (!checked.ok || !checked.data) {
           response(res, 502, page('<p>OAuth-Anfrage konnte nicht geprüft werden.</p>'));
           return true;
@@ -155,7 +155,7 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
           response(res, 400, page('<p>Ungültige Entscheidung.</p>'));
           return true;
         }
-        const decision = await upstream(fetchImpl, new URL(endpoint.pathname + '/consent', issuer.origin), apiKey, token, 'POST', action);
+        const decision = await upstream(fetchImpl, new URL(endpoint.pathname + '/consent', issuer.origin), apiKey, token, origin.origin, 'POST', action);
         const target = decision.ok ? trustedRedirect(decision.data?.redirect_url) : null;
         if (!target) response(res, 502, page('<p>OAuth-Entscheidung konnte nicht verarbeitet werden.</p>'));
         else redirect(res, target);
