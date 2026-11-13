@@ -59,12 +59,12 @@ function trustedRedirect(value, registeredCallbacks) {
       if (target.origin !== base.origin || target.pathname !== base.pathname) continue;
       const expected = new URLSearchParams(base.search);
       const actual = new URLSearchParams(target.search);
+      let matches = true;
       for (const [key, value] of expected) {
-        const index = actual.getAll(key).indexOf(value);
-        if (index < 0) return null;
+        if (!actual.getAll(key).includes(value)) { matches = false; break; }
         actual.delete(key, value);
       }
-      if ([...actual.keys()].every(key => ['code', 'state', 'error', 'error_description', 'iss'].includes(key))) {
+      if (matches && [...actual.keys()].every(key => ['code', 'state', 'error', 'error_description', 'iss'].includes(key))) {
         return target.toString();
       }
     }
