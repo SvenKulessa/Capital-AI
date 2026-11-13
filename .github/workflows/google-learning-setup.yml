@@ -8,6 +8,12 @@ on:
         default: audit
         type: choice
         options: [audit, apply]
+      target:
+        description: 'search: Search Console/logo only; learning: existing GA4 and learning setup'
+        required: true
+        default: learning
+        type: choice
+        options: [learning, search]
 permissions:
   contents: read
   id-token: write
@@ -32,12 +38,16 @@ jobs:
           SERVICE_ACCOUNT: ${{ vars.GCP_GOOGLE_READER_SERVICE_ACCOUNT }}
           PROPERTY: ${{ vars.GA4_PROPERTY_ID }}
           MODE: ${{ inputs.mode }}
+          TARGET: ${{ inputs.target || 'learning' }}
         run: |
           set -euo pipefail
           [[ "$PROVIDER" == projects/542877602707/locations/global/workloadIdentityPools/capital-ai-github-read/providers/capital-ai-dispatch ]]
           [[ "$SERVICE_ACCOUNT" == capital-ai-google-audit@aifinancial-500208.iam.gserviceaccount.com ]]
-          [[ "$PROPERTY" == 548187678 ]]
           [[ "$MODE" == audit || "$MODE" == apply ]]
+          [[ "$TARGET" == learning || "$TARGET" == search ]]
+          if [[ "$TARGET" == learning ]]; then
+            [[ "$PROPERTY" == 548187678 ]]
+          fi
       - id: google_auth
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
         with:
@@ -47,8 +57,8 @@ jobs:
           token_format: access_token
           access_token_lifetime: 900s
           access_token_scopes: |
-            ${{ inputs.mode == 'apply' && 'https://www.googleapis.com/auth/analytics.edit' || 'https://www.googleapis.com/auth/analytics.readonly' }}
-            https://www.googleapis.com/auth/analytics.readonly
+            ${{ inputs.target != 'search' && (inputs.mode == 'apply' && 'https://www.googleapis.com/auth/analytics.edit' || 'https://www.googleapis.com/auth/analytics.readonly') || '' }}
+            ${{ inputs.target != 'search' && 'https://www.googleapis.com/auth/analytics.readonly' || '' }}
             ${{ inputs.mode == 'apply' && 'https://www.googleapis.com/auth/webmasters' || 'https://www.googleapis.com/auth/webmasters.readonly' }}
           create_credentials_file: false
           export_environment_variables: false
@@ -56,11 +66,16 @@ jobs:
         env:
           GOOGLE_MAINTENANCE_ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
           MODE: ${{ inputs.mode }}
+          TARGET: ${{ inputs.target || 'learning' }}
         run: |
+          if [[ "$TARGET" == search ]]; then
+            node scripts/google-search-config.mjs "$MODE"
+            exit
+          fi
           node scripts/google-learning-setup.mjs "$MODE" > "$RUNNER_TEMP/learning-setup.json"
           cat "$RUNNER_TEMP/learning-setup.json"
       - name: Bind verified privacy settings to the existing Render service
-        if: inputs.mode == 'apply'
+        if: inputs.mode == 'apply' && inputs.target != 'search'
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
         run: node scripts/activate-learning-measurement.mjs "$RUNNER_TEMP/learning-setup.json"
