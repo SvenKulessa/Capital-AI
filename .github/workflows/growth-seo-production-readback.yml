@@ -25,9 +25,19 @@ jobs:
         with:
           persist-credentials: false
       - name: Offline regression, including negative cases
-        run: node --test scripts/seo-production-readback.test.mjs
+        run: node --test scripts/seo-production-readback.test.mjs scripts/seo-crawlability-gate.test.mjs
       - name: Anonymous production HTTP readback
         run: node scripts/seo-production-readback.mjs --origin https://capital-ai.online --output public-seo-readback.json
+      - name: Anonymous crawlability gate
+        run: node scripts/seo-crawlability-gate.mjs --origin https://capital-ai.online --output public-seo-crawlability.json
+      - name: Preserve crawlability evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: growth-crawlability-${{ github.sha }}
+          path: public-seo-crawlability.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Preserve sanitized checks without response bodies
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

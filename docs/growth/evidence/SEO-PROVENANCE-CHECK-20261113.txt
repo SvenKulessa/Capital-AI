@@ -1,0 +1,5 @@
+
+> capital-ai@0.8.0-alpha.1 seo:provenance:check
+> node scripts/refresh-seo-source-provenance.mjs --check
+
+SEO source provenance matches tracked source bytes.

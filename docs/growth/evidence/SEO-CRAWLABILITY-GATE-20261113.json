@@ -1,0 +1,96 @@
+{
+  "schema": "CAPITAL_AI_SEO_CRAWLABILITY_GATE@1",
+  "observedAt": "2026-11-13T19:58:29.990Z",
+  "origin": "https://capital-ai.online",
+  "expectedIndexCount": 372,
+  "sitemapUrlCount": 372,
+  "checks": [
+    {
+      "check": "ROBOTS_HTTP_200",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "ROBOTS_HAS_SITEMAP",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "ROBOTS_USER_AGENT_STAR",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SITEMAP_HTTP_200",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SITEMAP_XML_CONTENT_TYPE",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SITEMAP_HAS_URLS",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SITEMAP_ONLY_INDEX_ROUTES",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SITEMAP_COVERS_EXPECTED_INDEX",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SITEMAP_NO_PRIVATE_OR_API",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT___HTTP_200",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT___NOT_NOINDEX",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT__learning_HTTP_200",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT__learning_NOT_NOINDEX",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT__vocabulary_HTTP_200",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT__vocabulary_NOT_NOINDEX",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT__faq_HTTP_200",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "SPOT__faq_NOT_NOINDEX",
+      "status": "PASS",
+      "detail": null
+    }
+  ],
+  "status": "PASS",
+  "failedCount": 0
+}
