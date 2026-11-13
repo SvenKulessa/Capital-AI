@@ -1,4 +1,5 @@
 FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS crypto-base
+LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
 # Use the patched zlib from the base image's existing stable Alpine 3.24 branch.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
 RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' 'zlib>=1.4-r0' \
@@ -194,7 +195,7 @@ COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY --from=build /app/supabase/email-templates/capital-ai-auth-email-shell.html ./supabase/email-templates/capital-ai-auth-email-shell.html
 COPY shared ./shared
-COPY docs/licenses/node-v26.10.0-LICENSE.txt ./licenses/Node-LICENSE.txt
+COPY docs/licenses/node-v26.13.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapter-MIT.txt
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app /opt/ga4-mcp

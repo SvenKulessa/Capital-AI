@@ -1,0 +1,88 @@
+name: TRUST OS Sources (isolated evidence, no publication)
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/trust-os-source-mirror.yml
+      - scripts/collect_os_source_mirror.sh
+      - docs/security/evidence/os-aports-recipe-lock-1b7ee312-20261113.json
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  isolated-os-source-mirror:
+    if: github.event.pull_request.number == 624 && github.event.pull_request.head.repo.full_name == 'SvenKulessa/Capital-AI'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout PR only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Retrieve exact image inventory from existing GitHub artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/os-mirror"
+          gh run download 43381125272 \
+            --repo SvenKulessa/Capital-AI \
+            --name docker-security-817214625057b79ca6c35babe766618ea21b7ec4 \
+            --dir "$RUNNER_TEMP/os-mirror"
+          test -s "$RUNNER_TEMP/os-mirror/os-source-inventory.json"
+          chmod 0777 "$RUNNER_TEMP/os-mirror"
+          chmod 0444 "$RUNNER_TEMP/os-mirror/os-source-inventory.json"
+      - name: Build throwaway non-privileged Alpine source runner
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/SourceRunner.Dockerfile" <<'DOCKERFILE'
+          FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94
+          RUN apk add --no-cache alpine-sdk bash git python3 curl tar \
+              && adduser -D -u 10001 auditor && addgroup auditor abuild
+          USER auditor
+          WORKDIR /work
+          DOCKERFILE
+          docker build --pull=false --no-cache \
+            -f "$RUNNER_TEMP/SourceRunner.Dockerfile" \
+            -t capital-ai-source-collector:local "$RUNNER_TEMP"
+      - name: Collect pinned sources and run existing offline verifier
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --user 10001:10001 \
+            --read-only --tmpfs /tmp:rw,nosuid,noexec,size=128m \
+            --cap-drop=ALL --security-opt=no-new-privileges \
+            --pids-limit=256 --memory=4g --cpus=2 \
+            -e HOME=/work \
+            -v "$RUNNER_TEMP/os-mirror:/work:rw" \
+            -v "$GITHUB_WORKSPACE:/repo:ro" \
+            capital-ai-source-collector:local \
+            /bin/bash /repo/scripts/collect_os_source_mirror.sh \
+              /repo/docs/security/evidence/os-aports-recipe-lock-1b7ee312-20261113.json \
+              /work/os-source-inventory.json /work/mirror /work/reports
+      - name: Hand back private report to unprivileged host upload
+        if: always()
+        run: |
+          set -euo pipefail
+          if test -d "$RUNNER_TEMP/os-mirror/reports"; then
+            sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/os-mirror/reports"
+            chmod -R u+rwX "$RUNNER_TEMP/os-mirror/reports"
+          fi
+      - name: Package private validated source mirror
+        run: |
+          set -euo pipefail
+          jq -e '.status == "SOURCE_HASHES_VERIFIED_NON_AUTHORIZING" and .sourceDeliveryProven == false and .redistributionApproved == false' \
+            "$RUNNER_TEMP/os-mirror/reports/collection-summary.json"
+          test -s "$RUNNER_TEMP/os-mirror/reports/source-mirror.tar.gz"
+          (cd "$RUNNER_TEMP/os-mirror/reports" && sha256sum --check source-mirror.tar.gz.sha256)
+      - name: Preserve private evidence (never publish a container image)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ghcr-aports-source-1b7ee312-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/os-mirror/reports/**
+          if-no-files-found: warn
+          retention-days: 3
