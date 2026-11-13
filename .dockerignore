@@ -168,6 +168,7 @@
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs
+!scripts/growth/social-pipeline-graphic.mjs
 !scripts/growth/pr-merge-social-batch.test.mjs
 !scripts/generate-chart-learning.tsx
 
