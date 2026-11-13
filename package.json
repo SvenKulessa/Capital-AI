@@ -15,6 +15,7 @@
     "dev": "vite --port=3000 --host=127.0.0.1",
     "build": "node scripts/generate-jaja-3d.mjs && vite build",
     "preview": "vite preview --host=127.0.0.1",
+    "growth:search:config": "node scripts/google-search-config.mjs",
     "growth:gsc:auth": "node scripts/gsc-auth-readonly.mjs",
     "growth:gsc:mcp": "node scripts/gsc-mcp-guard.mjs",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
@@ -88,7 +89,7 @@
     "test:learning-portal": "node --test server/enterprise-trial.test.mjs server/learning-simulator.test.mjs server/learning-isolation.test.mjs && node --import tsx --test src/features/learning/learningPolicy.test.tsx src/features/learning/blogPublishing.test.tsx src/features/learning/financialSimulator.test.ts src/features/home/HomeLatestLearning.test.tsx && node --import tsx --test src/components/heroBuddyPosition.test.ts",
     "growth:learning-draft": "node --import tsx scripts/growth/learning-content-draft.mjs",
     "growth:google:mcp": "node scripts/google-maintenance-mcp.mjs",
-    "test:google-maintenance": "node --test server/google-maintenance-api.test.mjs server/google-learning-setup.test.mjs",
+    "test:google-maintenance": "node --test server/google-maintenance-api.test.mjs server/google-learning-setup.test.mjs scripts/google-search-config.test.mjs",
     "growth:agents": "python3 scripts/growth-agent/graph.py",
     "test:cookie-consent-v3": "node --import tsx --test src/privacy/cookieConsentV3.test.ts src/utils/consentedAnalytics.test.ts && node --test server/learning-inquiry.test.mjs scripts/activate-learning-measurement.test.mjs && node --import tsx scripts/generate-cookie-storage-notice.mjs --check",
     "test:mail-templates": "node --test scripts/mail-templates.test.mjs scripts/supabase-auth-config.test.mjs server/learning-inquiry.test.mjs",
@@ -129,6 +130,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@resvg/resvg-wasm": "2.6.2",
     "@types/d3-scale": "4.0.9",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
