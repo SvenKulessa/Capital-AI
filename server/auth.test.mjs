@@ -179,7 +179,8 @@ async function harness(envOverrides = {}, simulatorStore = new Map()) {
         user_id: state.subject,
         tier: state.tier || (state.subject === 'owner-subject' ? 'Enterprise' : 'Free'),
         status: (state.tier && state.tier !== 'Free') || state.subject === 'owner-subject' ? 'active' : 'free',
-        current_period_end: state.subject === 'owner-subject' ? '2026-12-31T00:00:00+00:00' : null,
+        current_period_end: state.tier === 'Pro' || state.subject === 'owner-subject'
+          ? new Date(Date.now() + 60 * 60 * 1000).toISOString() : null,
       }]);
     }
 
