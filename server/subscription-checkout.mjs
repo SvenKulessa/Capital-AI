@@ -59,7 +59,7 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
       signal: AbortSignal.timeout(7000),
     });
     const payload = await boundedJson(response);
-    if (!response.ok || payload?.livemode !== secret.startsWith('sk_live_') || typeof payload?.url !== 'string' || !payload.url.startsWith('https://checkout.stripe.com/')) {
+    if (!/^cs_[A-Za-z0-9_]{4,240}$/.test(payload?.id || '') || !response.ok || payload?.livemode !== secret.startsWith('sk_live_') || typeof payload?.url !== 'string' || !payload.url.startsWith('https://checkout.stripe.com/')) {
       throw new Error('stripe_checkout_rejected');
     }
     return payload;
@@ -170,7 +170,7 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
         allow_promotion_codes: 'true',
         'line_items[0][price]': request.priceId,
         'line_items[0][quantity]': '1',
-        success_url: `${baseUrl}/profile?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${baseUrl}/checkout/confirmation?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/pricing?subscription=cancelled`,
         client_reference_id: user.userId,
         'metadata[user_id]': user.userId,

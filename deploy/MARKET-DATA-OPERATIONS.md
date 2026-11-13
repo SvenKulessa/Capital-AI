@@ -15,6 +15,46 @@ Der Integrationstest schreibt echte Test-Facts in die angegebenen Dienste. Nur i
 
 Bestehenden Webservice und dessen Repo-Zuordnung zuerst prüfen. Redis/Key Value und NATS Private Service müssen im selben bestätigten Workspace und derselben Region liegen. Kein automatisches Anlegen kostenpflichtiger Dienste in diesem PR. `render.yaml` erhält nur manuell zu versorgende Verbindungsvariablen. NATS benötigt persistenten Speicher; einzelne Instanz und `NATS_REPLICAS=1` bieten keine Hochverfügbarkeit. Ein produktiver Cluster benötigt drei geeignete NATS-Instanzen mit Dateispeicher und `NATS_REPLICAS=3`.
 
+## Rootless NATS / persistentes JetStream-Volume (Issue #672)
+
+**Vertrag:** Das immutable Image deklariert `USER 1000:1000` und besitzt
+`/var/data/jetstream` schon beim Build mit UID/GID 1000 und Modus 0700.
+Ein frisches Docker-Named-Volume übernimmt dieses Verzeichnis per Copy-up.
+Der Entrypoint benötigt keine Root-Rechte und keine zusätzlichen Capabilities.
+Er verweigert Start bei fehlendem, symlinked, unbeschreibbarem,
+fremdbesessenem oder nicht auf 0700 gesetztem JetStream-Verzeichnis.
+Keine automatischen `chown`-/`chmod`-/`sudo`-Reparaturen zur Laufzeit.
+
+**Render-/Bind-Mount-Grenze:** Ein leerer an `/var/data` gemounteter
+Provider-Datenträger kann den Image-Inhalt verdecken und übernimmt anders
+als ein neues Docker-Named-Volume nicht automatisch dessen Rechte.
+Ein bereits vorhandenes JetStream-Volume aus der bisherigen Installation
+ist kompatibel, sofern sein tatsächlicher Eigentümer UID/GID 1000 und
+sein Modus 0700 sind. Falsche Rechte sind vor der Aktivierung
+durch den berechtigten Infrastruktur-Owner außerhalb des Containers
+nach separater Prüfung sicher zu berichtigen. Kein rekursives Chown auf
+unbekannten Daten, keine stillschweigende Volume-Neuerstellung.
+Bis ein wirklicher Mount-Readback vorliegt: Render-NATS **NOT_PROVEN/PAUSED**.
+
+**CI-Evidence:** `scripts/verify-nats-runtime.sh` prüft isoliert auf einem
+wegwerfbaren Docker-Runner: frisches Named Volume, Prozessneustart,
+Container-Neuerstellung mit erhaltenen Daten, vorprovisionierter Bind-Mount,
+UID/GID 1000, `CapEff=0`, `--cap-drop ALL`, `--read-only`,
+`--network none`, `no-new-privileges`. Negative Fälle für fehlende
+JetStream-Directory, fremde UID/GID, unsicheren Verzeichnismodus, Symlink,
+Root-User-Override, leeres Bridge-Passwort und zu kurzes Executor-Passwort.
+`.github/workflows/nats-rootless-fixture.yml` startet diese
+synthetische Fixture nur bei PRs mit passenden Änderungen, ohne neue
+Required-Checks und ohne produktive Credentials oder Deployment.
+
+**Security und Rücknahme:** Die abgelaufene Trivy-`DS-0002`-Ausnahme wurde
+entfernt, nicht verlängert. Der bestehende vollständige Source-Gate-Scan
+bleibt fail-closed. `DS-0026/LOW` eines separaten kurzlebigen Renderers
+wird nicht durch einen erfundenen Healthcheck verdeckt. Rücknahme
+als normaler Git-Revert; bestehende persistente Daten und Rollout sind
+separat zu sichern/bewerten. NATS/Provider Bridge bleiben inaktiv
+bis zu ihrer unabhängigen Rechte- und Lizenzprüfung.
+
 ## Fehler und Grenzen
 
 - Nicht konfigurierte Dienste, unvollständige scoped NATS-Credentials, fehlende JetStream-Bestätigung, abgelaufene Quotes und ungültige Evidence werden fail-closed als `unavailable` geliefert.

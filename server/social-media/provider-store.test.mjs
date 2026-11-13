@@ -158,3 +158,108 @@ test('uncertain provider receipt persists UNKNOWN, not a terminal publish log', 
   }), /SOCIAL_STORE_RECEIPT_REQUIRED/);
   assert.equal(posts, 1);
 });
+
+
+test('carousel group claim binds ordered JPEG hashes, owner, rights and editorial fingerprint', async () => {
+  const hashes = ['1','2','3'].map(x => x.repeat(64));
+  const ids = ['etf-1','etf-2','etf-3'];
+  const fingerprint = 'f'.repeat(64);
+  const carouselKey = 'ig-camp:ig-content:INSTAGRAM:CAROUSEL:' + fingerprint;
+  const carouselId = 'c405dbb2-c918-4541-a0e1-840f9f5bca8f';
+  const base = {
+    userId: USER, now,
+    accountRow: { id: ACCOUNT, user_id: USER, platform: 'instagram',status:'connected',
+      scopes:['pages_show_list','instagram_basic','instagram_content_publish','pages_read_engagement'],
+      external_account_id:'17800000000000001',access_token_encrypted:'SYNTHETIC',
+      token_expires_at:'2026-10-08T11:00:00Z' },
+    capability:{ channel:'INSTAGRAM', status:'VERIFIED', loginMethod:'FACEBOOK_LOGIN',
+      apiHost:'graph.facebook.com', publishRightsVerified:true, scopesVerified:true,
+      evidenceRef:'synthetic://verified' },
+    manifest:{ contractVersion:'CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1',
+      publicationAuthority:'SOCIAL_MEDIA_ENGINE_ONLY',campaignId:'ig-camp',
+      contentId:'ig-content',sourceSha,canonicalUrl:'https://capital-ai.online/learning',
+      assets:ids.map((id,i)=>({assetId:id,kind:'IMAGE',mimeType:'image/jpeg',
+        contentId:'ig-content',sourceSha,sha256:hashes[i]})),
+      approvals:ids.map((id,i)=>({approvalRef:'carousel-a'+(i+1),assetId:id,
+        assetSha256:hashes[i],approvedChannels:['INSTAGRAM'],publicPublishAllowed:true})) },
+    editorialReview:{ status:'APPROVED',userId:USER,campaignId:'ig-camp',
+      contentId:'ig-content',sourceSha,editorialFingerprint:fingerprint,
+      evidenceRef:'synthetic://editorial' },
+    handoffs:ids.map((id,i)=>({ contractVersion:'CAPITAL_AI_CONTENT_SOCIAL_PUBLISHER_ADAPTER@1',
+      campaignId:'ig-camp',contentId:'ig-content',sourceSha,
+      canonicalUrl:'https://capital-ai.online/learning',channel:'INSTAGRAM',
+      assetId:id,assetSha256:hashes[i],approvalRef:'carousel-a'+(i+1),
+      deliveryKey:'ig-camp:ig-content:'+id+':INSTAGRAM' })),
+    approvalRows:ids.map((id,i)=>({id:'carousel-a'+(i+1),user_id:USER,
+      status:'approved',public_publish_allowed:true,platforms:['instagram'],
+      campaign_id:'ig-camp',content_id:'ig-content',source_sha:sourceSha,
+      asset_id:id,asset_sha256:hashes[i]})),
+    verifiedAssets:ids.map((id,i)=>({assetId:id,contentId:'ig-content',
+      sourceSha,retrievedBytesSha256:hashes[i],rightsVerified:true})),
+  };
+  let dispatches=0;
+  const store=createSocialProviderStore({env,fetchImpl:async (url,init)=>{
+    dispatches++;
+    assert.equal(new URL(url).pathname,'/rest/v1/rpc/capital_social_claim_carousel_group');
+    const b=JSON.parse(init.body);
+    assert.deepEqual(b.p_asset_ids,ids);assert.deepEqual(b.p_asset_sha256s,hashes);
+    assert.deepEqual(b.p_approval_refs,['carousel-a1','carousel-a2','carousel-a3']);
+    assert.equal(b.p_editorial_fingerprint,fingerprint);
+    return response({id:carouselId,user_id:USER,account_id:ACCOUNT,
+      campaign_id:'ig-camp',content_id:'ig-content',source_sha:sourceSha,
+      editorial_fingerprint:fingerprint,delivery_key:carouselKey,status:'CLAIMED',
+      expires_at:'2026-10-08T10:05:00Z',asset_ids:ids,asset_sha256s:hashes,
+      approval_refs:['carousel-a1','carousel-a2','carousel-a3']});
+  }});
+  const row=await store.claimCarouselGroup(base);
+  assert.equal(row.delivery_key,carouselKey);
+  assert.equal(dispatches,1);
+  for(const invalid of [
+    {userId:'a1bf7f2f-c4d2-4cda-b0a8-0f7bb2723101'},
+    {verifiedAssets:[{...base.verifiedAssets[0],rightsVerified:false},...base.verifiedAssets.slice(1)]},
+    {approvalRows:[{...base.approvalRows[0],asset_sha256:'9'.repeat(64)},...base.approvalRows.slice(1)]},
+    {editorialReview:{...base.editorialReview,status:'DRAFT'}},
+    {handoffs:[base.handoffs[1],base.handoffs[0],base.handoffs[2]]},
+  ]) {
+    await assert.rejects(store.claimCarouselGroup({...base,...invalid}));
+  }
+  assert.equal(dispatches,1,'no invalid review may reach the RPC');
+});
+
+test('carousel CAS and UNKNOWN use tenant-bound RPCs; replay and spoofed readbacks fail closed',async()=>{
+  let calls=0;
+  const id='c405dbb2-c918-4541-a0e1-840f9f5bca8f';
+  const plan={userId:USER,accountId:ACCOUNT,reservationId:id,
+    deliveryKey:'ig-camp:ig-content:INSTAGRAM:CAROUSEL:'+'f'.repeat(64)};
+  const store=createSocialProviderStore({env,fetchImpl:async (url,init)=>{
+    calls++;
+    const path=new URL(url).pathname, body=JSON.parse(init.body);
+    assert.equal(body.p_user_id,USER);
+    assert.equal(body.p_account_id,ACCOUNT);
+    assert.equal(body.p_group_id,id);
+    if(path.endsWith('capital_social_begin_carousel_attempt')){
+      assert.equal(body.p_delivery_key,plan.deliveryKey);
+      return response({...body,id,user_id:USER,account_id:ACCOUNT,
+        delivery_key:plan.deliveryKey,status:'SUBMITTING'});
+    }
+    assert.ok(path.endsWith('capital_social_note_carousel_unknown'));
+    assert.equal(body.p_stage,'CHILD_NOT_READY');
+    assert.equal(body.p_provider_delivery_id,'12345');
+    return response({id,user_id:USER,account_id:ACCOUNT,
+      delivery_key:plan.deliveryKey,status:'UNKNOWN',provider_delivery_id:'12345'});
+  }});
+  const started=await store.beginCarouselAttempt(plan);
+  assert.equal(started.status,'SUBMITTING');
+  const unknown=await store.noteCarouselUnknown({...plan,stage:'CHILD_NOT_READY',
+    providerDeliveryId:'12345',status:'UNKNOWN'});
+  assert.equal(unknown.status,'UNKNOWN');
+  assert.equal(calls,2);
+  await assert.rejects(store.beginCarouselAttempt({...plan,userId:'wrong'}),/CAS_PLAN_INVALID/);
+  await assert.rejects(store.noteCarouselUnknown({...plan,status:'PUBLISHED',stage:'CHILD_NOT_READY',
+    providerDeliveryId:'12345'}),/UNKNOWN_INVALID/);
+  assert.equal(calls,2);
+  const wrong=createSocialProviderStore({env,fetchImpl:async()=>response({
+    id,user_id:USER,account_id:ACCOUNT,delivery_key:plan.deliveryKey,status:'CLAIMED',
+  })});
+  await assert.rejects(wrong.beginCarouselAttempt(plan),/CAS_READBACK_MISMATCH/);
+});

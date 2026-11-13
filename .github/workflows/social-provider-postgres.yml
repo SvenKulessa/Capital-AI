@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/social-provider-postgres.yml'
       - 'supabase/migrations/20261008113000_social_provider_store.sql'
+      - 'supabase/migrations/20261112160000_instagram_carousel_group_cas.sql'
+      - 'scripts/social-carousel-db-*.sql'
       - 'supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql'
       - 'scripts/social-token-refresh-db.sql'
       - 'scripts/youtube-private-receipt-recovery-db.sql'

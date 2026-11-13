@@ -428,7 +428,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-build-stack', name: 'Web Build Stack', domain: 'PRODUCT', kind: 'Frontend Build Toolchain',
-    installedAt: null, activeVersion: 'Vite 8.3.6 / TypeScript 6.0.3 / Tailwind 4.3.5 / React 19.3.1 / Lucide 1.70.0 / Motion 14.10.1 / Three.js 0.187.0', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'Vite 8.3.7 / TypeScript 6.0.3 / Tailwind 4.3.5 / React 19.3.1 / Lucide 1.70.0 / Motion 14.11.1 / Three.js 0.187.0', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Frontend-Kompilierung, Typprüfung, React-Runtime und CSS-Toolchain.',
     webAppBinding: 'package.json + package-lock.json + vite.config.ts + tsconfig.json', license: 'MIT / Apache-2.0', cadsScore: 88.0, scoreState: 'PROVISIONAL',
     domainAssignments: ['web build', 'browser runtime'],
@@ -438,7 +438,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-runtime-dependencies', name: 'Web Runtime Dependency Closure', domain: 'PLATFORM', kind: 'Node Runtime Dependencies',
-    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.1 / zod 4.6.7 / nodemailer 10.3.1', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.1 / zod 4.6.7 / nodemailer 10.4.0', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Minimale Production-Dependency-Closure für NATS, Valkey/Redis und Runtime-Validierung.',
     webAppBinding: 'deploy/runtime/package.json + deploy/runtime/package-lock.json', license: 'Apache-2.0 / MIT', cadsScore: 90.0, scoreState: 'VERIFIED',
     domainAssignments: ['production runtime'],

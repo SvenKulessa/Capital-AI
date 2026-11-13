@@ -56,7 +56,7 @@ test('privacy page renders every processing activity and a truthful email handof
   assert.doesNotMatch(html, /ZITADEL-Anmeldung/);
   assert.ok(html.includes('Eigenen Datenauszug herunterladen'));
   assert.ok(html.includes('kein vollständiger Auskunftsbescheid'));
-  assert.ok(html.includes('serverseitig bestätigte Learning-Käufe'));
+  assert.ok(html.includes('serverseitig bestätigte Erstkäufe von Learning, Blueprints und SaaS-Abos'));
   assert.ok(html.includes('keine Stripe- oder Benutzerkennung'));
   assert.ok(html.includes('gültiger Analytics-Einwilligung'));
   assert.doesNotMatch(html, /Supabase als (?:Verantwortlicher|Anbieter von CAPITAL-AI)|Finance-Dokumentstand|Stripe, Supabase/);

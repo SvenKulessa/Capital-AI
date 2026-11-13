@@ -128,3 +128,12 @@ export function updatePageSEO({
 export function trackVerifiedLearningPurchase(purchase: Parameters<AnalyticsModule['trackVerifiedLearningPurchase']>[0]) {
   if (typeof window !== 'undefined') void analyticsModule().then(module => module.trackVerifiedLearningPurchase(purchase));
 }
+
+export async function trackCommerceEvent(event: 'view_item' | 'begin_checkout' | 'purchase', payload: unknown) {
+  if (typeof window !== 'undefined') {
+    try {
+      const module = await analyticsModule();
+      module.trackCommerceEvent(event, payload);
+    } catch { /* Optional measurement must never block checkout or confirmation. */ }
+  }
+}

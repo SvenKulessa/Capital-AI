@@ -69,6 +69,8 @@
 !server/public-artifact-policy.test.mjs
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
+!server/purchase-receipt.mjs
+!server/purchase-receipt.test.mjs
 !server/subscription-checkout.mjs
 !server/enterprise-trial.mjs
 !server/enterprise-trial.test.mjs
@@ -97,6 +99,7 @@
 !server/google-analytics-mcp.mjs
 !server/google-analytics-readback.mjs
 !server/google-analytics-readback.test.mjs
+!server/tinyfish-owner-readback.mjs
 !server/kraken-order-dry-run.mjs
 !server/kraken-order-dry-run.test.mjs
 !server/uniswap-trading.mjs
@@ -134,6 +137,7 @@
 !shared/architecture-governance-vocabulary.mjs
 !shared/roadmap-source-lineage.mjs
 !shared/vocabulary-access-policy.mjs
+!shared/analytics-measurement-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
 !shared/seo-source-provenance.mjs
@@ -394,6 +398,10 @@
 !server/social-media/provider-publish.test.mjs
 !server/social-media/instagram-carousel.mjs
 !server/social-media/instagram-carousel.test.mjs
+!server/social-media/instagram-oauth-start.mjs
+!server/social-media/instagram-oauth-exchange.mjs
+!server/social-media/instagram-account-status.mjs
+!server/social-media/instagram-oauth.test.mjs
 !server/social-media/provider-execution.mjs
 !server/social-media/google-neural2-tts.mjs
 !server/social-media/google-neural2-tts.test.mjs

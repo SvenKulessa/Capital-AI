@@ -4,6 +4,9 @@ import { AppErrorBoundary } from './shared/ui/AppErrorBoundary';
 import App from './App.tsx';
 import './index.css';
 
+import { captureCheckoutConfirmation } from './utils/checkoutConfirmation';
+captureCheckoutConfirmation();
+
 const host = document.getElementById('root');
 if (!host) {
   throw new Error('APP_ROOT_MISSING');

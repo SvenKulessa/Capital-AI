@@ -1,0 +1,46 @@
+name: TRUST NATS Rootless Fixture (isolated)
+on:
+  pull_request:
+    paths:
+      - 'deploy/Dockerfile.nats'
+      - 'deploy/nats-entrypoint.sh'
+      - 'deploy/trivy-bootstrap-exception.yaml'
+      - 'scripts/verify-nats-runtime.sh'
+      - 'scripts/nats-rootless-contract.test.mjs'
+      - '.github/workflows/nats-rootless-fixture.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nats-rootless-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-nats-acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Verify shell syntax and fail-closed source contract
+        run: |
+          set -euo pipefail
+          sh -n deploy/nats-entrypoint.sh
+          bash -n scripts/verify-nats-runtime.sh
+          node --test scripts/nats-rootless-contract.test.mjs
+      - name: Build pinned NATS fixture (no registry publishing)
+        run: |
+          set -euo pipefail
+          docker build --file deploy/Dockerfile.nats --tag "capital-nats:${GITHUB_SHA}" .
+      - name: Verify rootless volume bootstrap, restart and negative boundaries
+        run: |
+          set -euo pipefail
+          bash scripts/verify-nats-runtime.sh
+      - name: Record no production activation
+        if: always()
+        run: |
+          echo 'This job uses local disposable Docker volumes and --network none.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'NATS/Provider Bridge remain suspended; no Render/GCS/Supabase mutation.' >> "$GITHUB_STEP_SUMMARY"

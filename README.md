@@ -139,6 +139,7 @@ Wichtige Einstiegspunkte:
 - [Governance](docs/governance/)
 - [Compliance](docs/compliance/)
 - [Roadmap-Quelle](src/data/roadmapData.ts)
+- [Ecosystem-Modernisierung, ADR und Vermarktungsroadmap](docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md)
 
 ## Sponsoring und Forschung
 

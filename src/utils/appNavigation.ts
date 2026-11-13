@@ -7,6 +7,8 @@ export const CONTROL_CENTER_SECTION_IDS = [
 
 /** Case-insensitive pathname normalization with existing German/English aliases. */
 export function resolveAppRoute(rawPath: string): string {
+  if (rawPath === '/blueprints') return '/blueprints';
+  if (rawPath === '/checkout/confirmation') return '/checkout/confirmation';
   if (!rawPath) return '/';
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
   const hubRoute = hubRouteForPath(clean);

@@ -50,6 +50,8 @@ test('learning setup is idempotent, exact-bound and preserves existing redaction
   const f = fixture({ omitFalse: true });
   const result = await runLearningSetup('apply', f.api);
   assert.equal(result.configuration.leadEventConfigured, true);
+  assert.equal(result.configuration.purchaseEventConfigured, true);
+  assert.equal(result.configuration.retention.status, "NOT_PROVEN");
   assert.equal(result.configuration.emailRedactionEnabled, true);
   assert.equal(result.configuration.formInteractionsEnabled, false);
   assert.equal(result.configuration.enhancedMeasurementDisabled, true);
@@ -226,4 +228,13 @@ test('audit reports sitemap evidence separately without submitting or blocking i
   assert.equal(denied.sitemapRegistration.status,'NOT_PROVEN');
   assert.equal(denied.reporting.ga4ReadVerified,true);
   assert.doesNotMatch(JSON.stringify(denied),/sentinel-private/);
+});
+
+test('commerce report separates checkout starts from lead and purchase counts', async () => {
+  const f = fixture();
+  await f.api.call('ga4_commerce_report');
+  const report = f.calls.find(call => call.path.endsWith(':runReport')).body;
+  assert.deepEqual(report.dimensions, [{name:'eventName'}]);
+  assert.deepEqual(report.dimensionFilter.filter.inListFilter.values, ['view_item','begin_checkout','generate_lead','purchase']);
+  assert.ok(!report.metrics.some(metric => metric.name === 'keyEvents'));
 });
