@@ -56,5 +56,10 @@ export function normalizeStripeSubscriptionTier(subscription) {
 export function normalizeStoredPaidTier(subscription) {
   const status = String(subscription?.status || '').trim().toLowerCase();
   if (!ACTIVE_SUBSCRIPTION_STATUSES.has(status)) return null;
+  // Keep CADS website access aligned with the Learning SQL period-end gate.
+  const periodEnd = subscription?.currentPeriodEnd;
+  if (typeof periodEnd !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(periodEnd)) return null;
+  const expiresAt = Date.parse(periodEnd);
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) return null;
   return canonicalTier(subscription?.tier);
 }
