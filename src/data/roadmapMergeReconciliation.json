@@ -5,16 +5,16 @@
   "mergeCount": 560,
   "fromPr": 686,
   "toPr": 700,
-  "sourceSha": "213e5230c63ca7d0f21cf06f42cdff90be63b778",
-  "reconciledAt": "2026-11-13T21:47:25.939Z",
+  "sourceSha": "63622d1fa879ddb48b5bfe4800bc78f1d958e3ab",
+  "reconciledAt": "2026-11-13T22:04:45.130Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "075e55a4eda978c4479cfe44e767de26090ce5834bef1e9c29c72c0b6dbb3f4e"
+      "sha256": "6c7c76ea4ddad260fa57a2e5c487d035a4de4c96b2e427c31f821e38c8775533"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
-      "sha256": "d85171396828b6ef026284f5f78cc32fe881b46847c4ba07dd132c0afbb7b25a"
+      "sha256": "b535cf6c0aef56588891ae3eab00b8d45439a6f58e4e4892198f717d633bfc04"
     },
     {
       "path": "src/data/productionWebsiteWorkPackage.ts",
@@ -589,6 +589,83 @@
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
       "effectiveState": "GEHALTEN"
+    },
+    {
+      "id": "CA-PLATFORM-DOCSYNC-01",
+      "owner": "PLATFORM",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-TRUST-DOCSYNC-03",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-PLATFORM-DOCSYNC-02",
+      "owner": "PLATFORM",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-GROWTH-DOCBUILD-04",
+      "owner": "GROWTH",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-PLATFORM-DOCREVIEW-05",
+      "owner": "PLATFORM",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-PLATFORM-IAC-06",
+      "owner": "PLATFORM",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-PRODUCT-ECOSYSTEM-07",
+      "owner": "PRODUCT",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
     },
     {
       "id": "PRODUCTION-WEB-01-PRODUCT",
@@ -1430,7 +1507,7 @@
       "effectiveState": "UNGEKLÄRT"
     }
   ],
-  "examined": 106,
+  "examined": 113,
   "unproven": 25,
   "authority": "SOURCE_AND_DOCUMENT_PRESENCE_ONLY",
   "noAutomaticCompletionPromotion": true

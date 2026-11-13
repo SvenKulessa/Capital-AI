@@ -36,4 +36,4 @@ Die aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumen
 
 Die Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.
 
-Quelle: [213e5230c63c](https://github.com/SvenKulessa/Capital-AI/commit/213e5230c63ca7d0f21cf06f42cdff90be63b778)
+Quelle: [63622d1fa879](https://github.com/SvenKulessa/Capital-AI/commit/63622d1fa879ddb48b5bfe4800bc78f1d958e3ab)
