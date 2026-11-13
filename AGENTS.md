@@ -36,6 +36,14 @@ Beim **ersten Abruf der Chat-/Agentenanweisungen je Domain-Auftrag** beginnt der
 4. Roadmap und Abschluss-Evidence **nur entsprechend tatsächlich nachgewiesener Änderungen** aktualisieren: `VERIFIED`, `IN_PROGRESS`, `BLOCKED`, `NOT_PROVEN` oder `REVIEW_REQUIRED` klar trennen. Keine Behauptung einer Live-Wirkung allein aufgrund grüner Tests; keine privaten Daten, Secrets oder lizenzpflichtigen Inhalte in Roadmap/Evidence übernehmen.
 5. Diese Prüfung ist ein **Arbeitsablauf innerhalb des bestehenden Auftrags**, kein neuer Required Check, keine zusätzliche Genehmigung, keine globale PR-Sperre und keine Pflicht zur vollständigen Bearbeitung der gesamten Roadmap in jedem Chat. Bei späteren Folgeaufträgen gezielt nur geänderten `main`-/Roadmap-Stand erneut abgleichen; vor jedem Merge bleibt die gesonderte bestehende PR-Reihenfolgeprüfung maßgeblich.
 
+## Autonome Roadmap-Iteration
+
+In einem autorisierten Roadmap-Auftrag arbeitet der Agent wiederholt in vollständigen, kleinen Schritten. Er liest den aktuellen Main-Stand und die Roadmap, verknüpft Arbeitspakete mit ihren Abhängigkeiten und Konflikten und wählt den höchstpriorisierten ausführbaren Schritt nach Nutzerwirkung und Risiko. Danach reproduziert er den Befund, implementiert den Fix oder die Verbesserung, prüft die Wirkung über den bestehenden Test- und PR-Pfad und schreibt die Evidence an das bestehende Arbeitspaket. Nach jedem Schritt prüft er erneut, was sich in Main, CI, Abhängigkeiten und Roadmap geändert hat. Er bearbeitet den nächsten unabhängigen Schritt, wenn ein Paket eine Owner-Entscheidung benötigt.
+
+Für Weboptimierung gehören messbare Nutzerwirkungen wie barrierefreie Navigation, mobile Ladezeit, verständliche Finanzbildung und verlässliche Checkout-Pfade zur Priorisierung. Bei einem geeigneten Tool vergleicht der Agent die vorhandene Integration mit einem konkret passenden Open-Source- oder kommerziellen Kandidaten. Er prüft die für die eingesetzte Version geltenden Nutzungs- und Weitergaberechte, Datenflüsse, Kosten, Integrationsaufwand und Rücknahme und nutzt den bestehenden Kosten- und Freigaberahmen. Eine technische Bewertung oder ein CADS-Ergebnis belegt keine Rechtefreigabe.
+
+Die Iteration endet, wenn das Ziel erreicht ist, kein unabhängiger ausführbarer Schritt im beauftragten Umfang bleibt oder sich das beobachtbare Ergebnis trotz eines begründet anderen Ansatzes nicht ändert. Bestehende HOLDs, Merge-Bedingungen und Produktionsgrenzen gelten. Diese Arbeitsweise läuft im aktiven Auftrag. Zeitgesteuerte Ausführung braucht eine gesondert eingerichtete Automation.
+
 ## Entwicklungsfluss
 
 Die Primary Domain (`PRODUCT`, `MARKET`, `PLATFORM`, `TRUST` oder `GROWTH`) bestimmt beide Namen. Verwende das Format auch beim späteren Bearbeiten eines PR-Titels.
