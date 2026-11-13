@@ -138,7 +138,7 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
         const rawBindings = String(env.CAPITAL_AI_OAUTH_CLIENT_REDIRECT_BINDINGS || '').trim();
         if (!rawBindings) {
           if (allowed.size !== 1) throw Error('multiple_clients_require_bindings');
-          clientCallbacks = new Map([[...allowed][0], callbacks]);
+          clientCallbacks = new Map([[[...allowed][0], callbacks]]);
         } else {
           const configured = JSON.parse(rawBindings);
           if (!configured || typeof configured !== 'object' || Array.isArray(configured)) throw Error('invalid_bindings');
