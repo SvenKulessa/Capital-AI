@@ -11,7 +11,7 @@ call, automatic approval or additional required check is installed.
 ## Dependency remediation
 
 Upstream source: `The-PR-Agent/pr-agent@8e5a9295973b24af4b70cafd0b660a230811ef9e`
-(`v0.47.0`). The upstream `pyproject.toml` remains unchanged; its package version
+(`v0.47.0`). The local `pyproject.toml` includes security patches; its upstream package version
 still reads `0.46.0`. Runtime identity must use source SHA and image digests.
 
 The vendored lock was regenerated with upstream's required `uv==0.12.10`:
@@ -134,3 +134,7 @@ In GitHub Actions, select **Optional reviewdog Pilot**, branch **main**, and ent
 The current source scanner reports CVE-2026-49272 on oauthlib 4.0.0. The maintainer's advisory and 4.0.1 release identify 4.0.1 as the fix; older cached advisory summaries naming 4.0.0 are stale. The lock was updated with the required uv 0.12.10, upgrading only oauthlib. uv also filled missing size/upload metadata for the unchanged pyasn1 0.6.5 artifacts; their versions, URLs and hashes are unchanged.
 
 The 4.0.1 wheel and source archive were fetched from PyPI and SHA-256 checked. `smoke.py` now rejects missing and unknown device codes using the installed OAuthLib; it executes offline in both existing reviewer Dockerfiles. `uv lock --check` and the negative regression from the verified wheel pass locally. Full runtime imports, scans and compatibility remain subject to fresh current-head CI. This patch does not claim an exposed OAuth server, activate models, or authorize a reviewer deployment.
+
+## OpenTelemetry traceparent security patch (2026-11-13)
+
+CVE-2026-126360 / [GHSA-mf5v-w3w3-f6cg](https://github.com/advisories/GHSA-mf5v-w3w3-f6cg) affects opentelemetry-api <=1.45.1. The local manifest and lock now use the coherent 1.45.2 family (including optional gRPC), with semantic conventions 0.66b2. Regenerated with uv 0.12.10 and `uv lock --check`. The existing offline smoke rejects oversized/newline traceparent values and accepts valid context. Local isolated regression passed; the normal reviewer workflow validates the complete image. No provider, model or production activation.
