@@ -75,8 +75,9 @@ test('TinyFish rejects mismatched run IDs and never starts a second paid run', a
     if (options.method === 'POST') return sseResponse([data({ type: 'STARTED', run_id: RUN }), data({ type: 'COMPLETE', run_id: 'run_other999', status: 'COMPLETED', result: { authenticated: true } })]);
     return Response.json({ run_id: RUN, status: 'FAILED' });
   } });
-  assert.deepEqual(result, { status: 'BLOCKED', reason: 'TINYFISH_RUN_NOT_COMPLETED', runId: RUN });
-  assert.deepEqual(calls, ['POST', 'GET']);
+  // Reject an untrusted SSE run identity immediately: never recover or POST again.
+  assert.deepEqual(result, { status: 'BLOCKED', reason: 'TINYFISH_STREAM_UNTRUSTED', runId: RUN });
+  assert.deepEqual(calls, ['POST']);
 });
 
 test('TinyFish start failure masks upstream contents and never silently retries', async () => {

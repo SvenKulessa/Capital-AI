@@ -29,6 +29,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
+import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -397,6 +398,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
+  const tinyfishOwnerReadback = createTinyfishOwnerReadback({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).MARKET_BROKER_PAUSED === 'false' &&
     ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
@@ -498,6 +500,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
   if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
+  if (await tinyfishOwnerReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
