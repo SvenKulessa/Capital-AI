@@ -189,6 +189,8 @@
 !scripts/universe-hero.test.mjs
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
+!scripts/qa/
+!scripts/qa/screener-blueprint-reset-browser.mjs
 !scripts/cads-growth-quality.test.mjs
 !scripts/masterclass-templates.test.mjs
 !scripts/static-legal-routes.test.mjs
