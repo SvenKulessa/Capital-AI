@@ -9,12 +9,13 @@ const clientId = 'client_123456789';
 const baseEnv = {
   CAPITAL_AI_OAUTH_SERVER_CONSENT_ENABLED: 'true',
   CAPITAL_AI_OAUTH_ALLOWED_CLIENT_IDS: clientId,
+  CAPITAL_AI_OAUTH_ALLOWED_REDIRECT_URIS: 'https://client.example/cb',
   PUBLIC_APP_ORIGIN: 'https://capital-ai.online',
   SUPABASE_URL: 'https://project.supabase.co',
   SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test_123',
 };
 
-async function harness({ env = {}, loggedIn = true, verify = true, details = null, fail = false, target = 'https://client.example/callback?code=a' } = {}) {
+async function harness({ env = {}, loggedIn = true, verify = true, details = null, fail = false, target = 'https://client.example/cb?code=a' } = {}) {
   const calls = [];
   const auth = {
     verify: async () => loggedIn && verify ? { userId: 'test-user' } : null,
@@ -81,7 +82,7 @@ test('GET renders sanitized consent only for allowlisted client', async () => {
 });
 
 test('unlisted OAuth client denied without allowing approval', async () => {
-  const h = await harness({ details: { authorization_id: id, user: { id: 'test-user' }, client: { id: 'unknown_client_1234', name: 'Unknown' }, scope: 'openid' } });
+  const h = await harness({ details: { authorization_id: id, user: { id: 'test-user' }, client: { id: 'unknown_client_1234', name: 'Unknown' }, redirect_uri: 'https://client.example/cb', scope: 'openid' } });
   try { assert.equal((await h.request(`/oauth/consent?authorization_id=${id}`)).status, 403); assert.equal(h.calls.length, 1); } finally { await h.close(); }
 });
 
@@ -99,7 +100,7 @@ test('POST approve rechecks client and redirects only after upstream consent', a
   try {
     const r = await h.request('/oauth/consent', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://capital-ai.online' }, body: `authorization_id=${id}&decision=approve` });
     assert.equal(r.status, 303);
-    assert.equal(r.headers.get('location'), 'https://client.example/callback?code=a');
+    assert.equal(r.headers.get('location'), 'https://client.example/cb?code=a');
     assert.deepEqual(h.calls.map(x => x.method), ['GET','POST']);
     assert.deepEqual(h.calls.map(x => x.origin), ['https://capital-ai.online', 'https://capital-ai.online']);
     assert.equal(JSON.parse(h.calls[1].body).action, 'approve');
@@ -156,6 +157,55 @@ test('authorization ID and authenticated user must match upstream authorization 
       });
       assert.equal(r.status, 403);
       assert.deepEqual(h.calls.map(x => x.method), ['GET']);
+    } finally { await h.close(); }
+  }
+});
+
+test('missing callback allowlist fails closed before requesting user data', async () => {
+  const h = await harness({ env: { CAPITAL_AI_OAUTH_ALLOWED_REDIRECT_URIS: '' } });
+  try {
+    assert.equal((await h.request(`/oauth/consent?authorization_id=${id}`)).status, 503);
+    assert.equal(h.calls.length, 0);
+  } finally { await h.close(); }
+});
+
+test('unregistered redirect_uri denies even an allowlisted OAuth client', async () => {
+  const h = await harness({ details: {
+    authorization_id: id, user: { id: 'test-user' },
+    client: { id: clientId, name: 'Trusted' },
+    redirect_uri: 'https://evil.example/receive', scope: 'openid',
+  } });
+  try {
+    assert.equal((await h.request(`/oauth/consent?authorization_id=${id}`)).status, 403);
+    assert.deepEqual(h.calls.map(x => x.method), ['GET']);
+  } finally { await h.close(); }
+});
+
+test('already-consented redirect cannot bypass registered callback allowlist', async () => {
+  const h = await harness({ details: { redirect_url: 'https://evil.example/callback?code=token' } });
+  try {
+    const r = await h.request(`/oauth/consent?authorization_id=${id}`);
+    assert.equal(r.status, 502);
+    assert.equal(r.headers.get('location'), null);
+    assert.deepEqual(h.calls.map(x => x.method), ['GET']);
+  } finally { await h.close(); }
+});
+
+test('code redirect to lookalike path or extra query parameter is rejected', async () => {
+  for (const target of [
+    'https://client.example/cb-evil?code=a',
+    'https://client.example/cb?redirect=https://evil.example&code=a',
+    'https://client.example.evil.example/cb?code=a',
+  ]) {
+    const h = await harness({ target });
+    try {
+      const r = await h.request('/oauth/consent', {
+        method:'POST',
+        headers:{'content-type':'application/x-www-form-urlencoded',origin:'https://capital-ai.online'},
+        body:`authorization_id=${id}&decision=approve`,
+      });
+      assert.equal(r.status, 502);
+      assert.equal(r.headers.get('location'), null);
     } finally { await h.close(); }
   }
 });
