@@ -72,7 +72,10 @@ function fixtures() {
     expectedServiceId,
     expectedOwnerId,
     expectedMainSha: sourceSha,
-    registryManifest: { digest, manifests: [{ digest, platform: { os: 'linux', architecture: 'amd64' } }] },
+    registryManifest: {
+      schemaVersion: 2, mediaType: 'application/vnd.oci.image.index.v1+json', digest,
+      manifests: [{ mediaType: 'application/vnd.oci.image.manifest.v1+json', digest, platform: { os: 'linux', architecture: 'amd64' } }],
+    },
     registryPlatformManifest: { digest, manifest: { config: { digest: configDigest } } },
     registryScan: { Metadata: { ImageID: configDigest, ImageConfig: { os: 'linux', architecture: 'amd64' } } },
   };
@@ -199,4 +202,26 @@ test('final handoff report records provider digest in the typed runtime slot', (
   const report = evaluateProductionHandoff(fixtures());
   assert.equal(report.containerIdentity.digests.runtimeProviderDigest, digest);
   assert.equal(report.containerIdentity.digestTypes.runtimeProviderDigest, 'RUNTIME_PROVIDER_PLATFORM_MANIFEST_SHA256');
+});
+
+test('single manifest is valid with null OCI index slot and correct platform digest', () => {
+  const input = fixtures();
+  input.registryManifest = {
+    schemaVersion: 2, mediaType: 'application/vnd.oci.image.manifest.v1+json',
+    digest, config: { digest: configDigest }, layers: [],
+  };
+  input.candidate.containerIdentity.digests.ociIndexDigest = null;
+  const report = evaluateProductionHandoff(input);
+  assert.equal(report.remainingGates.includes('CONTAINER_IDENTITY_CHAIN'), false);
+  assert.equal(report.remainingGates.includes('RUNTIME_DIGEST'), false);
+});
+
+test('a forged analysis PASS without commit-bound provider suite evidence fails closed', () => {
+  const input = fixtures();
+  input.rulesets[0].rules.push({ type: 'code_scanning' });
+  input.analysisResults = [{
+    type: 'code_scanning', sourceSha, status: 'PASS',
+    evidenceUrl: 'https://api.github.com/repos/SvenKulessa/Capital-AI/code-scanning/alerts',
+  }];
+  assert.ok(evaluateProductionHandoff(input).remainingGates.includes('REQUIRED_CODE_SCANNING_RESULTS'));
 });
