@@ -8,7 +8,13 @@ import { SEO_PUBLIC_IMAGE_PATHS } from '../shared/seo-indexing-policy.mjs';
 import { runSearchConfiguration, SEARCH_CONFIGURATION } from './google-search-config.mjs';
 
 const origin = 'https://capital-ai.online';
-async function fixture({ permission = 'siteOwner', sites, blockedImage = false, badLogo = false, inspectFails = false, alreadyRegistered = false, invalidSitemap = false } = {}) {
+test('homepage sitemap date reflects the actual publisher/logo update, not execution time', () => {
+  const home = SEO_CONTENT_MANIFEST.find(entry => entry.path === '/');
+  assert.equal(home.sitemapLastmod, '2026-11-13');
+  assert.equal(home.updatedAt, home.sitemapLastmod);
+  assert.notEqual(home.sitemapLastmod, SEO_CONTENT_MANIFEST.find(entry => entry.path === '/blog').sitemapLastmod);
+});
+async function fixture({ permission = 'siteOwner', sites, blockedImage = false, badLogo = false, inspectFails = false, alreadyRegistered = false, invalidSitemap = false, staleHomeDate = false } = {}) {
   let html;
   try { html = await readFile(new URL('../index.html', import.meta.url), 'utf8'); }
   catch { html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8'); }
@@ -24,7 +30,7 @@ async function fixture({ permission = 'siteOwner', sites, blockedImage = false, 
       assert.equal(options.headers?.Authorization, undefined);
       if (url.pathname === '/') return new Response(html, { headers: { 'content-type': 'text/html' } });
       if (url.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nSitemap: ' + SEARCH_CONFIGURATION.sitemap);
-      if (url.pathname === '/sitemap.xml') return new Response('<urlset>' + SEO_CONTENT_MANIFEST.map(entry => '<url><loc>' + entry.canonical + '</loc></url>').join('') + (invalidSitemap ? '<url><loc>https://capital-ai.online/profile</loc></url>' : '') + '</urlset>', { headers: { 'content-type': 'application/xml' } });
+      if (url.pathname === '/sitemap.xml') return new Response('<urlset>' + SEO_CONTENT_MANIFEST.map(entry => '<url><loc>' + entry.canonical + '</loc>' + (entry.sitemapLastmod ? '<lastmod>' + (staleHomeDate && entry.path === '/' ? '2026-10-14' : entry.sitemapLastmod) + '</lastmod>' : '') + '</url>').join('') + (invalidSitemap ? '<url><loc>https://capital-ai.online/profile</loc></url>' : '') + '</urlset>', { headers: { 'content-type': 'application/xml' } });
       assert.ok(SEO_PUBLIC_IMAGE_PATHS.includes(url.pathname));
       return new Response(png, { headers: { 'content-type': 'image/png', ...(blockedImage ? { 'x-robots-tag': 'noindex' } : {}) } });
     }
@@ -144,7 +150,7 @@ test('restricted readers may audit but cannot apply', async () => {
   assert.equal(f.calls.filter(call => call.method === 'PUT').length, 0);
 });
 
-for (const invalid of [{ blockedImage: true }, { badLogo: true }, { invalidSitemap: true }]) {
+for (const invalid of [{ blockedImage: true }, { badLogo: true }, { invalidSitemap: true }, { staleHomeDate: true }]) {
   test('invalid public configuration blocks apply: ' + JSON.stringify(invalid), async () => {
     const f = await fixture(invalid); const result = await f.run('apply');
     assert.equal(result.publicSurface.status, 'FAIL');

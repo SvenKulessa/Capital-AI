@@ -54,6 +54,9 @@ export async function auditSearchSurface(fetchImpl = fetch) {
         const urls = [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
         const expected = new Set(SEO_CONTENT_MANIFEST.map(entry => entry.canonical));
         add(path, 'PUBLIC_PAGE_SITEMAP', /(?:application|text)\/xml/i.test(type) && urls.length === expected.size && new Set(urls).size === expected.size && urls.every(url => expected.has(url)));
+        const home = [...text.matchAll(/<url\b[^>]*>([\s\S]*?)<\/url>/g)].find(([, block]) => block.includes('<loc>' + ORIGIN + '/</loc>'));
+        const lastmod = SEO_CONTENT_MANIFEST.find(entry => entry.path === '/').sitemapLastmod;
+        add(path, 'HOMEPAGE_LASTMOD', !!home && home[1].includes('<lastmod>' + lastmod + '</lastmod>'));
       } else {
         add(path, 'IMAGE_INDEXABLE', !/noindex|\bnone\b/i.test(response.headers.get('x-robots-tag') || '') && (/image\//i.test(type) || path.endsWith('.ico')));
         if (path === new URL(SEARCH_CONFIGURATION.logo).pathname) add(path, 'LOGO_DIMENSIONS', body.length >= 24 && body.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) && body.readUInt32BE(16) === 512 && body.readUInt32BE(20) === 512);

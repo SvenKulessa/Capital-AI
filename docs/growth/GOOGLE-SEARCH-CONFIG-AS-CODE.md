@@ -126,6 +126,9 @@ registered error-free sitemap and homepage PASS with lastCrawlTime
 tool was offered, so no UI indexing request or delegated-owner grant is claimed.
 Post-merge acceptance is one explicit `target=search, mode=resubmit` invocation;
 its provider result is not a completed crawl or proof of logo selection.
+The homepage sitemap lastmod is corrected to 2026-11-13, when PR #693 actually
+changed its publisher/logo structured data. It is not generated from workflow
+execution time; other pages retain their independently documented dates.
 
 Official permission/crawl references:
 https://support.google.com/webmasters/answer/7687615 and
