@@ -124,10 +124,40 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
         }));
       let origin;
       let issuer;
+      let clientCallbacks;
       try {
         origin = new URL(rawOrigin);
         issuer = new URL(rawUrl);
         if (origin.protocol !== 'https:' || issuer.protocol !== 'https:' || origin.pathname !== '/' || issuer.pathname !== '/' || !apiKey || !allowed.size || !callbacks.size) throw Error();
+
+        // Multiple allowlisted OAuth clients must each be bound to their own
+        // exact registered callbacks. A global callback allowlist is not enough:
+        // client A must never be able to use client B's authorized callback.
+        // A single client inherits the legacy exact callback list, while more
+        // than one client fails closed without an explicit JSON binding map.
+        const rawBindings = String(env.CAPITAL_AI_OAUTH_CLIENT_REDIRECT_BINDINGS || '').trim();
+        if (!rawBindings) {
+          if (allowed.size !== 1) throw Error('multiple_clients_require_bindings');
+          clientCallbacks = new Map([[...allowed][0], callbacks]);
+        } else {
+          const configured = JSON.parse(rawBindings);
+          if (!configured || typeof configured !== 'object' || Array.isArray(configured)) throw Error('invalid_bindings');
+          const entries = Object.entries(configured);
+          if (entries.length !== allowed.size) throw Error('incomplete_bindings');
+          clientCallbacks = new Map();
+          for (const [clientId, uris] of entries) {
+            if (!allowed.has(clientId) || !Array.isArray(uris) || !uris.length) throw Error('unregistered_client_binding');
+            const exact = new Set();
+            for (const uri of uris) {
+              if (typeof uri !== 'string' || !callbacks.has(uri)) throw Error('unregistered_callback_binding');
+              exact.add(uri);
+            }
+            clientCallbacks.set(clientId, exact);
+          }
+          for (const callback of callbacks) {
+            if (![...clientCallbacks.values()].some(uris => uris.has(callback))) throw Error('orphan_callback');
+          }
+        }
       } catch {
         response(res, 503, page('<p>OAuth-Server ist noch nicht bereit.</p>'));
         return true;
@@ -182,6 +212,11 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
           response(res, 403, page('<p>Diese OAuth-App ist nicht zugelassen.</p>'));
           return true;
         }
+        const callbacksForClient = clientCallbacks.get(details.client.id);
+        if (!callbacksForClient?.has(details.redirect_uri)) {
+          response(res, 403, page('<p>OAuth-Client und Rücksprungadresse sind nicht verknüpft.</p>'));
+          return true;
+        }
         if (req.method === 'GET') {
           response(res, 200, displayConsent(details, id));
           return true;
@@ -192,7 +227,7 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
           return true;
         }
         const decision = await upstream(fetchImpl, new URL(endpoint.pathname + '/consent', issuer.origin), apiKey, token, origin.origin, 'POST', action);
-        const target = decision.ok ? trustedRedirect(decision.data?.redirect_url, callbacks) : null;
+        const target = decision.ok ? trustedRedirect(decision.data?.redirect_url, callbacksForClient) : null;
         if (!target) response(res, 502, page('<p>OAuth-Entscheidung konnte nicht verarbeitet werden.</p>'));
         else redirect(res, target);
       } catch {
