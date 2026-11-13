@@ -209,3 +209,78 @@ test('code redirect to lookalike path or extra query parameter is rejected', asy
     } finally { await h.close(); }
   }
 });
+
+const secondClientId = 'client_987654321';
+const exactPairs = {
+  CAPITAL_AI_OAUTH_ALLOWED_CLIENT_IDS: [clientId, secondClientId].join(','),
+  CAPITAL_AI_OAUTH_ALLOWED_REDIRECT_URIS: 'https://client.example/cb,https://client-b.example/cb',
+  CAPITAL_AI_OAUTH_CLIENT_REDIRECT_BINDINGS: JSON.stringify({
+    [clientId]: ['https://client.example/cb'],
+    [secondClientId]: ['https://client-b.example/cb'],
+  }),
+};
+
+test('two allowlisted clients without per-client callback bindings fail closed', async () => {
+  const { CAPITAL_AI_OAUTH_CLIENT_REDIRECT_BINDINGS: unused, ...withoutBindings } = exactPairs;
+  const h = await harness({ env: withoutBindings });
+  try {
+    assert.equal((await h.request('/oauth/consent?authorization_id=' + id)).status, 503);
+    assert.equal(h.calls.length, 0);
+  } finally { await h.close(); }
+});
+
+test('two clients with distinct exact callbacks can each display own consent', async () => {
+  const a = await harness({ env: exactPairs });
+  const b = await harness({ env: exactPairs, details: {
+    authorization_id: id, user: { id: 'test-user' },
+    client: { id: secondClientId, name: 'Second client' },
+    redirect_uri: 'https://client-b.example/cb', scope: 'openid',
+  } });
+  try {
+    assert.equal((await a.request('/oauth/consent?authorization_id=' + id)).status, 200);
+    assert.equal((await b.request('/oauth/consent?authorization_id=' + id)).status, 200);
+    assert.equal(a.calls.length, 1);
+    assert.equal(b.calls.length, 1);
+  } finally { await Promise.all([a.close(), b.close()]); }
+});
+
+test('client A cannot borrow registered callback belonging to client B', async () => {
+  const h = await harness({ env: exactPairs, details: {
+    authorization_id: id, user: { id: 'test-user' },
+    client: { id: clientId, name: 'First client' },
+    redirect_uri: 'https://client-b.example/cb', scope: 'openid',
+  } });
+  try {
+    assert.equal((await h.request('/oauth/consent?authorization_id=' + id)).status, 403);
+    assert.deepEqual(h.calls.map(c => c.method), ['GET']);
+  } finally { await h.close(); }
+});
+
+test('consent response cannot redirect client A to client B callback', async () => {
+  const h = await harness({ env: exactPairs, target: 'https://client-b.example/cb?code=synthetic' });
+  try {
+    const r = await h.request('/oauth/consent', {
+      method: 'POST',
+      headers: { origin: 'https://capital-ai.online', 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'authorization_id=' + id + '&decision=approve',
+    });
+    assert.equal(r.status, 502);
+    assert.equal(r.headers.get('location'), null);
+    assert.deepEqual(h.calls.map(c => c.method), ['GET', 'POST']);
+  } finally { await h.close(); }
+});
+
+test('malformed or orphaned multi-client callback bindings fail before provider call', async () => {
+  for (const bindings of [
+    '{not json',
+    JSON.stringify({ [clientId]: ['https://client.example/cb'] }),
+    JSON.stringify({ [clientId]: ['https://client-b.example/cb'], [secondClientId]: ['https://client-b.example/cb'] }),
+    JSON.stringify({ [clientId]: ['https://evil.example/cb'], [secondClientId]: ['https://client-b.example/cb'] }),
+  ]) {
+    const h = await harness({ env: { ...exactPairs, CAPITAL_AI_OAUTH_CLIENT_REDIRECT_BINDINGS: bindings } });
+    try {
+      assert.equal((await h.request('/oauth/consent?authorization_id=' + id)).status, 503);
+      assert.equal(h.calls.length, 0);
+    } finally { await h.close(); }
+  }
+});
