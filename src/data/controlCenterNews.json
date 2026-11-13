@@ -1,14 +1,18 @@
 {
   "schema": "CAPITAL_AI_CONTROL_CENTER_NEWS@1",
   "state": "DRAFT_NOT_PUBLISHED",
-  "lastBatchPr": 665,
+  "lastBatchPr": 670,
   "mergeCount": 540,
-  "fromPr": 642,
-  "sourceSha": "51c766ad2514e1e4e93bb59c1d8deb0991f6f274",
-  "generatedAt": "2026-11-13T00:45:17.502Z",
-  "title": "CAPITAL-AI: Repository-Updates bis PR #665",
-  "article": "# CAPITAL-AI: Repository-Updates bis PR #665\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #642](https://github.com/SvenKulessa/Capital-AI/pull/642): CAPITAL-AI-PLATFORM Reuse main-scoped BuildKit layers with read-only PR cache\n- [PR #633](https://github.com/SvenKulessa/Capital-AI/pull/633): Repository-Änderung (Details im verlinkten PR)\n- [PR #644](https://github.com/SvenKulessa/Capital-AI/pull/644): CAPITAL-AI-PLATFORM Prepare Domain Governance for merge group without queue activation\n- [PR #645](https://github.com/SvenKulessa/Capital-AI/pull/645): CAPITAL-AI-TRUST Fix public health runtime SHA readback\n- [PR #646](https://github.com/SvenKulessa/Capital-AI/pull/646): CAPITAL-AI-GROWTH Bind AP-DOC residual to verified main snapshot\n- [PR #647](https://github.com/SvenKulessa/Capital-AI/pull/647): CAPITAL-AI-GROWTH Consentierten Commerce-Funnel für Learning, Blueprints und SaaS messen\n- [PR #649](https://github.com/SvenKulessa/Capital-AI/pull/649): CAPITAL-AI-PLATFORM Versionierte Prompt-Bibliothek 010–025 ergänzen\n- [PR #653](https://github.com/SvenKulessa/Capital-AI/pull/653): CAPITAL-AI-TRUST P0 encrypted Supabase stream backup with synthetic recovery\n- [PR #654](https://github.com/SvenKulessa/Capital-AI/pull/654): CAPITAL-AI-PRODUCT Roadmap-Lineage nach 647 neu verankern\n- [PR #650](https://github.com/SvenKulessa/Capital-AI/pull/650): CAPITAL-AI-TRUST Nodemailer 10.4.0 in Root und Runtime absichern\n- [PR #652](https://github.com/SvenKulessa/Capital-AI/pull/652): CAPITAL-AI-TRUST Bump docker/setup-buildx-action from 4.1.0 to 4.4.1\n- [PR #648](https://github.com/SvenKulessa/Capital-AI/pull/648): CAPITAL-AI-PLATFORM Ecosystem-Roadmap im Control Center integrieren\n- [PR #660](https://github.com/SvenKulessa/Capital-AI/pull/660): CAPITAL-AI-GROWTH Atomic Instagram carousel group CAS and isolated PostgreSQL regressions\n- [PR #659](https://github.com/SvenKulessa/Capital-AI/pull/659): CAPITAL-AI-TRUST Support dedicated backup reader in encrypted exporter\n- [PR #663](https://github.com/SvenKulessa/Capital-AI/pull/663): CAPITAL-AI-TRUST Öffentlichen HTTPS-Header-Readback mit Negativtests erfassen\n- [PR #667](https://github.com/SvenKulessa/Capital-AI/pull/667): CAPITAL-AI-GROWTH Drei ETF-JPEGs: hashgebundene Eigentümer-Rechteattestation ohne Publish-Freigabe\n- [PR #666](https://github.com/SvenKulessa/Capital-AI/pull/666): CAPITAL-AI-PRODUCT Blueprint-Vorschau im Server-HTML ausliefern\n- [PR #668](https://github.com/SvenKulessa/Capital-AI/pull/668): CAPITAL-AI-GROWTH Owner-only Instagram Facebook Login OAuth mit verschlüsseltem Page-Token und Negativtests\n- [PR #670](https://github.com/SvenKulessa/Capital-AI/pull/670): CAPITAL-AI-GROWTH LIVE-Blueprint ohne JavaScript per anonymem HTML-Readback prüfen\n- [PR #665](https://github.com/SvenKulessa/Capital-AI/pull/665): CAPITAL-AI-TRUST PostgreSQL-17-Vertrag für den Backup-Reader isoliert prüfen\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuelle: [51c766ad2514](https://github.com/SvenKulessa/Capital-AI/commit/51c766ad2514e1e4e93bb59c1d8deb0991f6f274)\n",
+  "fromPr": 641,
+  "sourceSha": "d0bdbf86bc28c6e68ad4ff9719a749c4656192b3",
+  "generatedAt": "2026-11-13T18:40:47.278Z",
+  "title": "CAPITAL-AI: Repository-Updates bis PR #670",
+  "article": "# CAPITAL-AI: Repository-Updates bis PR #670\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #641](https://github.com/SvenKulessa/Capital-AI/pull/641): CAPITAL-AI-TRUST Align read-only merge correlation and production evidence timing\n- [PR #642](https://github.com/SvenKulessa/Capital-AI/pull/642): CAPITAL-AI-PLATFORM Reuse main-scoped BuildKit layers with read-only PR cache\n- [PR #633](https://github.com/SvenKulessa/Capital-AI/pull/633): Repository-Änderung (Details im verlinkten PR)\n- [PR #644](https://github.com/SvenKulessa/Capital-AI/pull/644): CAPITAL-AI-PLATFORM Prepare Domain Governance for merge group without queue activation\n- [PR #645](https://github.com/SvenKulessa/Capital-AI/pull/645): CAPITAL-AI-TRUST Fix public health runtime SHA readback\n- [PR #646](https://github.com/SvenKulessa/Capital-AI/pull/646): CAPITAL-AI-GROWTH Bind AP-DOC residual to verified main snapshot\n- [PR #647](https://github.com/SvenKulessa/Capital-AI/pull/647): CAPITAL-AI-GROWTH Consentierten Commerce-Funnel für Learning, Blueprints und SaaS messen\n- [PR #649](https://github.com/SvenKulessa/Capital-AI/pull/649): CAPITAL-AI-PLATFORM Versionierte Prompt-Bibliothek 010–025 ergänzen\n- [PR #653](https://github.com/SvenKulessa/Capital-AI/pull/653): CAPITAL-AI-TRUST P0 encrypted Supabase stream backup with synthetic recovery\n- [PR #654](https://github.com/SvenKulessa/Capital-AI/pull/654): CAPITAL-AI-PRODUCT Roadmap-Lineage nach 647 neu verankern\n- [PR #650](https://github.com/SvenKulessa/Capital-AI/pull/650): CAPITAL-AI-TRUST Nodemailer 10.4.0 in Root und Runtime absichern\n- [PR #652](https://github.com/SvenKulessa/Capital-AI/pull/652): CAPITAL-AI-TRUST Bump docker/setup-buildx-action from 4.1.0 to 4.4.1\n- [PR #648](https://github.com/SvenKulessa/Capital-AI/pull/648): CAPITAL-AI-PLATFORM Ecosystem-Roadmap im Control Center integrieren\n- [PR #660](https://github.com/SvenKulessa/Capital-AI/pull/660): CAPITAL-AI-GROWTH Atomic Instagram carousel group CAS and isolated PostgreSQL regressions\n- [PR #659](https://github.com/SvenKulessa/Capital-AI/pull/659): CAPITAL-AI-TRUST Support dedicated backup reader in encrypted exporter\n- [PR #663](https://github.com/SvenKulessa/Capital-AI/pull/663): CAPITAL-AI-TRUST Öffentlichen HTTPS-Header-Readback mit Negativtests erfassen\n- [PR #667](https://github.com/SvenKulessa/Capital-AI/pull/667): CAPITAL-AI-GROWTH Drei ETF-JPEGs: hashgebundene Eigentümer-Rechteattestation ohne Publish-Freigabe\n- [PR #666](https://github.com/SvenKulessa/Capital-AI/pull/666): CAPITAL-AI-PRODUCT Blueprint-Vorschau im Server-HTML ausliefern\n- [PR #668](https://github.com/SvenKulessa/Capital-AI/pull/668): CAPITAL-AI-GROWTH Owner-only Instagram Facebook Login OAuth mit verschlüsseltem Page-Token und Negativtests\n- [PR #670](https://github.com/SvenKulessa/Capital-AI/pull/670): CAPITAL-AI-GROWTH LIVE-Blueprint ohne JavaScript per anonymem HTML-Readback prüfen\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuelle: [d0bdbf86bc28](https://github.com/SvenKulessa/Capital-AI/commit/d0bdbf86bc28c6e68ad4ff9719a749c4656192b3)\n",
   "sourcePrs": [
+    {
+      "number": 641,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/641"
+    },
     {
       "number": 642,
       "url": "https://github.com/SvenKulessa/Capital-AI/pull/642"
@@ -84,18 +88,14 @@
     {
       "number": 670,
       "url": "https://github.com/SvenKulessa/Capital-AI/pull/670"
-    },
-    {
-      "number": 665,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/665"
     }
   ],
   "contentEnginePlan": {
     "contractVersion": "CAPITAL_AI_CONTENT_ENGINE@1",
     "campaign": {
-      "campaignId": "capital-ai-repository-pr-665",
+      "campaignId": "capital-ai-repository-pr-670",
       "productId": "capital-ai-web",
-      "sourceSha": "51c766ad2514e1e4e93bb59c1d8deb0991f6f274",
+      "sourceSha": "d0bdbf86bc28c6e68ad4ff9719a749c4656192b3",
       "canonicalUrl": "https://capital-ai.online/",
       "locale": "de-DE",
       "objective": "Belegte Zusammenfassung der letzten 20 gemergten PRs als Blogentwurf.",
@@ -111,6 +111,7 @@
         "TEXT"
       ],
       "sourceUrls": [
+        "https://github.com/SvenKulessa/Capital-AI/pull/641",
         "https://github.com/SvenKulessa/Capital-AI/pull/642",
         "https://github.com/SvenKulessa/Capital-AI/pull/633",
         "https://github.com/SvenKulessa/Capital-AI/pull/644",
@@ -121,8 +122,7 @@
         "https://github.com/SvenKulessa/Capital-AI/pull/653",
         "https://github.com/SvenKulessa/Capital-AI/pull/654",
         "https://github.com/SvenKulessa/Capital-AI/pull/650",
-        "https://github.com/SvenKulessa/Capital-AI/pull/652",
-        "https://github.com/SvenKulessa/Capital-AI/pull/648"
+        "https://github.com/SvenKulessa/Capital-AI/pull/652"
       ]
     },
     "vocabularyContext": {
