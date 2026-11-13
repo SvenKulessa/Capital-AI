@@ -79,7 +79,11 @@ try {
         })) });
     }
     if (m.method === 'Runtime.consoleAPICalled' && m.params?.type === 'error') {
-      runtimeErrors.push({ kind: 'console.error', frameCount: m.params?.stackTrace?.callFrames?.length || 0 });
+      runtimeErrors.push({ kind: 'console.error',
+        frames: (m.params?.stackTrace?.callFrames || []).slice(0, 5).map(f => ({
+          name: f.functionName, script: String(f.url || '').split(/[?#]/)[0],
+          line: f.lineNumber, column: f.columnNumber,
+        })) });
     }
     const p = pending.get(m.id);
     if (!p) return;
