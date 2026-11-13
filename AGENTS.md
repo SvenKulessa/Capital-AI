@@ -264,7 +264,7 @@ Das gemeinsame, **nicht autorisierende** Presentation-Skill `.agents/skills/visu
 1. **Nach Bedarf statt Dekoration:** Für technische Flüsse Mermaid/Diagramme, für Prioritäten und geprüfte Alternativen kompakte Tabellen, für tatsächlich gemessene Werte beschriftete Charts, für Status VERIFIED/BLOCKED/NOT_PROVEN klare Textkennzeichnung. Einfache Fragen bleiben als verständlicher Fließtext beantwortbar.
 2. **Aktuelle Chat-Laufzeit entscheidet:** Native visuelle Chat-Komponenten, interaktive Widgets, Diagramm-Renderer oder Charts nur verwenden, wenn sie im konkreten Chat tatsächlich angeboten werden. Als universeller Fallback Markdown-Tabellen und Mermaid-Code plus textuelle Erläuterung. **AGENTS.md installiert oder überträgt keine ChatGPT-UI-Engine** in andere Chats oder Agent-Systeme.
 3. **Evidence, Accessibility, Datenschutz:** Keine unbelegten Live-/Kosten-/Messwerte illustrieren, keine geheimen Nutzerdaten/Secrets im UI ausgeben, Diagramme mit nachvollziehbarem Text ergänzen, mobile und Screenreader-Lesbarkeit beachten, Quellen/Stand und Aussagegrenzen nennen.
-4. **Statusformat erhalten:** Die beiden vorgeschriebenen Abschluss-Code-Snippets und das Kennzeichen `👋⚙️` für persönliche Owner-Schritte bleiben erhalten. Der Presentation-Skill ändert weder Permissions noch Domainzuständigkeiten, Required Checks, rechtliche Pflichten, Kostenfreigaben oder die delegierte Agenten-Merge-Regel.
+4. **Statusformat erhalten:** Das Statusformat aus „Status in ChatGPT“ und das Kennzeichen `👋⚙️` für persönliche Owner-Schritte bleiben erhalten. Der Presentation-Skill ändert weder Permissions noch Domainzuständigkeiten, Required Checks, rechtliche Pflichten, Kostenfreigaben oder die delegierte Agenten-Merge-Regel.
 5. **Verifikation:** `npm run test:domain-skills` kontrolliert die fünf Chat-Agent- und Registry-Verweise; tatsächliche native Visualisierung in jeder Chat-Laufzeit ist dadurch **nicht** nachgewiesen.
 6. **Design-Vorschauen direkt einbetten:** Bei neuen oder geänderten CAPITAL-AI-Designs nach Möglichkeit eine **sichtbare, direkt im Chat gerenderte Vorschau** zeigen, bevor ausschließlich Quelltext oder Dateilinks angeboten werden: SVG als eingebettete Grafik, PNG als eingebettetes Bild und HTML/CSS bzw. React-Ansichten als tatsächlich unterstützte visuelle Vorschau. Interaktive Vorschauen für Navigation, Zustände und Komponenten anbieten, **sofern die konkrete Chat-Laufzeit Interaktion unterstützt**. Quellcode/Dateien zusätzlich für die Übernahme ins Repository liefern; nur bei fehlender Renderfunktion verständlich auf Code, Screenshot, Mermaid oder Markdown ausweichen. Niemals eine bloße Code-Ausgabe als getestete oder gerenderte Vorschau bezeichnen.
 7. **Vorschau ist kein Browser-Test:** Für implementierte Frontend-Änderungen Browser-, Mobile-/Tablet-/Desktop-Responsive- und grundlegende Accessibility-Prüfungen **separat** mit tatsächlich ausgeführten Testschritten, konkreten Viewports/Browsern, Befund und zugehörigem Commit/PR dokumentieren. Bei fehlender Testausführung `NOT_PROVEN` ausweisen; ein visuelles Chat-Mockup, Bild oder HTML-Preview ist kein Nachweis einer funktionierenden Live-Website. Keine erfundenen Screenshots, Interaktionsresultate oder Qualitätsfreigaben.
@@ -280,28 +280,25 @@ Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** gilt bei konkreten Chat-Auf
 4. **Autorisierung und Least Privilege:** Weder Plugin-Installation, Kontoverbindung, OAuth-Zustimmung, Berechtigungserweiterung, kostenpflichtige Aktivierung noch Datenweitergabe oder mutierende Aktionen als durch diese Richtlinie genehmigt behandeln. Verfügbare Schreibaktionen nur im Umfang der tatsächlichen Nutzerautorisierung ausführen; persönliche Freigaben und Zahlungen bleiben beim Owner. Secrets niemals in Repository-Dokumentation oder Chat-Antworten offenlegen.
 5. **Laufzeitgrenzen:** Sind Plugin-Verzeichnis oder benötigte Funktionen in einem Chat nicht verfügbar, den Status offen benennen und keine Suche, Installation oder Ausführung behaupten. Diese Repository-Richtlinie installiert oder aktiviert selbst **keine** ChatGPT-Plugins und erzeugt keine neuen CI-Checks, Admissions, Domain-Handoffs oder Entwicklungsblockaden.
 
-## Verbindliche nächste Schritte im Domain-Chat (1–3 Vorschläge)
+## Kopierbare nächste Schritte im Domain-Chat (1–3 Anwendungsbeispiele)
 
-Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie domainübergreifende Chats gilt: Jede inhaltliche Beratungs-, Implementierungs-, Review- oder Statusantwort enthält **am Ende 1 bis 3 konkrete, anhand des tatsächlichen Chat-Inhalts priorisierte Vorschläge**, wie die Arbeit im selben Chat sinnvoll fortgesetzt werden kann. Dies ist eine Kommunikationsvorgabe des Human Repository Owners, **keine** zusätzliche technische, rechtliche oder organisatorische Freigabeschicht.
+Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie domainübergreifende Chats gilt das folgende Format, wenn die Antwort nächste Schritte vorschlägt.
 
-1. **Auftrags- und Evidenzbezug:** Die Vorschläge leiten sich aus Nutzerziel, bereits umgesetztem Scope, aktuellen Befunden, Risiken, Kosten und offenen Abhängigkeiten ab; keine generischen Floskeln oder erfundenen nächsten Aufgaben. Jeder Vorschlag nennt eine ausführbare Aktion oder eine präzise Entscheidungsoption sowie ihren Zweck. Wenn mehrere Wege sinnvoll sind, eine bevorzugte Option zuerst nennen und insgesamt maximal drei Optionen anbieten.
-2. **Weiterarbeit statt Handoff:** Geeignete, bereits autorisierte Arbeit eigenständig erledigen, bevor nächste Schritte vorgeschlagen werden. Domainübergreifende Aufgaben im **gleichen Chat** fortführen; keine künstlichen Domain-Handoffs, unnötigen Rückfragen oder Aufforderungen zur wiederholten Zustimmung. Persönliche Owner-Schritte wie Vertrag, Credential-Eingabe oder kostenpflichtige Aktivierung mit `👋⚙️` kennzeichnen.
-3. **Platzierung und Länge:** Die 1–3 Vorschläge in Status-/Abschlussantworten unter `🔧 OFFEN / NÄCHSTE SCHRITTE` aufführen; andere inhaltliche Antworten erhalten am Ende eine knappe Passage mit 1–3 passenden nächsten Chat-Aktionen. Nicht denselben Vorschlag zusätzlich in einer separaten Liste wiederholen. Bei vollständig abgeschlossenen Aufträgen sinnvolle optionale Folgeaktionen statt fiktiver Blocker nennen.
-4. **Grenzen:** Nur Optionen vorschlagen, die zum Thema und zu vorhandenen Berechtigungen passen. Keine Ausführung, Kosten, Provider-/Lizenzrechte, Security-Freigabe, Merge- oder Production-Fähigkeit behaupten, die nicht belegt sind. Die bisherigen zwei Status-Codeblöcke, Required Checks `Docker Security Gate` und `Domain Governance`, der `SOLO_MAINTAINER_FLOW@2` und die delegierte Agenten-Merge-Regel gelten verbindlich.
+1. **Priorisieren:** Am Ende der Antwort ein bis drei konkrete Anwendungsbeispiele nach Risiko, Abhängigkeiten und Nutzerwirkung ordnen. Bereits autorisierte Arbeit zuerst eigenständig erledigen.
+2. **Eigenständig formulieren:** Jedes Beispiel erhält eine kurze Überschrift und einen eigenen Markdown-Codeblock (`text`). Der Block enthält einen direkt ausführbaren Chat-Auftrag mit Ziel, Projekt oder Repository, relevanten Dateien oder Tickets, konkreten Arbeitsschritten, Grenzen und messbaren Abschlusskriterien. Entscheidende Nachweise und Abhängigkeiten gehören in denselben Block.
+3. **Kopieren und Blocker:** Die Kopierfunktion der jeweiligen Chat-Oberfläche nutzen, soweit sie verfügbar ist. Bei einem blockierten Schritt die konkret fehlende Voraussetzung benennen und den Auftrag auf die bis dahin ausführbare Arbeit begrenzen. Persönliche Owner-Aktionen mit `👋⚙️` kennzeichnen.
+4. **Arbeitsumfang:** Bereits erteilte Berechtigungen, Sicherheitsgrenzen und Freigaben gelten für jeden Folgeauftrag. Das Antwortformat schafft keine zusätzlichen Required Checks oder Berechtigungen.
 
 ## Status in ChatGPT
 
-Status-, Review-, Implementierungs- und Abschlussmeldungen enden mit zwei getrennten Code-Snippets:
+Status-, Review-, Implementierungs- und Abschlussmeldungen verwenden für tatsächlich abgeschlossene Arbeit einen eigenen Codeblock:
 
 ```text
 ✅ ERLEDIGT
 - nur tatsächlich abgeschlossene Punkte
 ```
 
-```text
-🔧 OFFEN / NÄCHSTE SCHRITTE
-- nur offene oder nächste Punkte
-```
+Wenn die Antwort weitere Arbeit vorschlägt, folgen unter `🔧 OFFEN / NÄCHSTE SCHRITTE` die priorisierten Anwendungsbeispiele in jeweils einem eigenen Codeblock. Offene Nachweise und fehlende Voraussetzungen stehen beim jeweiligen Auftrag.
 
 ## Manuelle Owner-Schritte in Chat-Antworten
 
