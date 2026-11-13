@@ -26,13 +26,24 @@ function reviewedNodemailer(root, path, p) {
     && sha256(readFileSync(licensePath)) === '4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78';
 }
 
+function reviewedResvg(root, path, p) {
+  const licensePath = join(root, 'docs/licenses/resvg-wasm-2.6.2-MPL-2.0.txt');
+  return path === 'node_modules/@resvg/resvg-wasm' && p.dev === true && p.version === '2.6.2'
+    && p.license === 'MPL-2.0'
+    && p.resolved === 'https://registry.npmjs.org/@resvg/resvg-wasm/-/resvg-wasm-2.6.2.tgz'
+    && p.integrity === 'sha512-FqALmHI8D4o6lk/LRWDnhw95z5eO+eAa6ORjVg09YRR7BkcM6oPHU9uyC0gtQG5vpFLvgpeU4+zEAz2H8APHNw=='
+    && existsSync(licensePath)
+    && sha256(readFileSync(licensePath)) === '4b89d4518bd135ab4ee154a7bce722246b57a98c3d7efc1a09409898160c2bd1';
+}
+
 export function lockInventory(root) {
   const raw = readFileSync(join(root, 'package-lock.json'));
   const lock = JSON.parse(raw);
   if (lock.lockfileVersion !== 3 || !lock.packages) throw new Error('Expected npm lockfile v3');
   const packages = Object.entries(lock.packages).filter(([path]) => path).sort(([a], [b]) => a.localeCompare(b)).map(([path, p]) => {
     const selectedLicense = alternatives.get(p.license) || p.license || null;
-    const buildReview = selectedLicense === 'MPL-2.0' && /(^|\/)node_modules\/lightningcss(?:-[^/]+)?$/.test(path);
+    const buildReview = (selectedLicense === 'MPL-2.0' && /(^|\/)node_modules\/lightningcss(?:-[^/]+)?$/.test(path))
+      || reviewedResvg(root, path, p);
     const dependencyDistributionReview = (path === 'node_modules/tweetnacl' && p.version === '1.0.3' && selectedLicense === 'Unlicense')
       || reviewedNodemailer(root, path, p);
     const attributionReview = path === 'node_modules/caniuse-lite' && selectedLicense === 'CC-BY-4.0';
