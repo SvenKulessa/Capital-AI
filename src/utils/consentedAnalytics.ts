@@ -76,11 +76,13 @@ async function synchronize() {
       w.dataLayer = [];
       w.gtag = function () { w.dataLayer!.push(arguments); };
       // Basic consent mode: this entire queue and tag exist only after explicit analytics opt-in.
-      w.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+      w.gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
       w.gtag('js', new Date());
       const receipt = readCookieConsent();
       if (!receipt?.analytics) { disable(); return; }
       const remaining = Math.max(1, Math.floor((receipt.savedAt + 180 * 86_400_000 - Date.now()) / 1000));
+      // Mirror the valid explicit analytics choice before configuring or emitting measurements.
+      w.gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
       w.gtag('config', EXPECTED_ID, { send_page_view: false, allow_google_signals: false,
         allow_ad_personalization_signals: false, cookie_expires: remaining, cookie_update: false,
         cookie_flags: 'SameSite=Lax;Secure', page_location: 'https://capital-ai.online' + (cleanPath(window.location.pathname) || '/'), page_referrer: safeReferrer() });

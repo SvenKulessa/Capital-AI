@@ -24,9 +24,9 @@ type StaticRouteMetadata = {
 };
 
 const DEFAULT_METADATA: StaticRouteMetadata = {
-  title: 'Capital-AI | Market Intelligence & BYOK',
+  title: 'Capital-AI | Learning Hub, Blueprints & Screener-Scoring',
   description:
-    'Capital-AI verbindet eigene Providerzugänge mit nachvollziehbarer Marktanalyse, BYOK und überprüfbaren Datenrechten.',
+    'Finanzwissen im Learning Hub lernen, Blueprints für Datenkonzepte erkunden und Screener-Scoring verstehen: mit nachvollziehbaren Methoden und Demo-Beispielen.',
   canonicalPath: '/',
 };
 

@@ -7,7 +7,7 @@ export const LANGUAGES = [
 export type Locale = typeof LANGUAGES[number]['code'];
 const keys = [
   'language','navOpen','navAlerts','navAccount','login',
-  'heroEyebrow','hero1','hero2','hero3','hero4','heroDescription','analyze','assistant','discover',
+  'heroEyebrow','hero1','hero2','heroDescription','heroOpenLearning','heroAnalysisDemo','heroProductTour','analyze','assistant','discover',
   'pillarRealtime','pillarAi','pillarAudience','pillarGlobal',
   'imprint','terms','privacy','pricing','docs','external',
   'contentTitle','contentHighlight','contentDescription','contentSources','contentCampaign','contentPublish',
@@ -16,8 +16,9 @@ export type MessageKey = typeof keys[number];
 const localized: Record<Locale, readonly string[]> = {
   de: [
     'Sprache auswählen','Navigation öffnen','Preisalarme öffnen','Kontomenü öffnen','Login',
-    'Finanzwissen und Analysewerkzeuge','Marktdaten','verstehen.','Chancen besser','erkennen.',
-    'hilft dir, Finanzbegriffe zu lernen und Märkte zu analysieren. Entdecke das Learning Hub und die 50 Komponenten der Finanzanalyse in der Capital-AI Tour. Welche Daten und Funktionen verfügbar sind, zeigen wir direkt an.',
+    'Finanzwissen für deinen Einstieg','Finanzbegriffe verstehen.','Marktdaten einordnen.',
+    'Was bedeuten Spread, Volatilität und Scores? Im Learning Hub findest du kostenlose Lernschritte mit Rechenbeispielen.',
+    'Learning Hub öffnen','Analyse-Demo öffnen','Plattform-Tour ansehen',
     'Analyse starten','Hero Buddy fragen','Produkt entdecken',
     'Quellen und Datenstatus','Nachvollziehbare Modelle','Für Privatanleger und Professionals','Weltweite Märkte auf einer Plattform',
     'Impressum','AGB','Datenschutz','Preiskatalog','Dokumentation & Lizenzen','öffnet in einem neuen Tab',
@@ -27,8 +28,9 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   en: [
     'Select language','Open navigation','Open price alerts','Open account menu','Log in',
-    'Financial learning and analysis tools','Understand','market data.','Spot opportunities','with confidence.',
-    'helps you learn financial terms and analyse markets. Discover the Learning Hub and the 50 financial analysis components in the Capital-AI Tour. Available data and features are clearly labelled.',
+    'Financial learning for beginners','Understand financial terms.','Make sense of market data.',
+    'What do spreads, volatility and scores mean? The Learning Hub offers free lessons with worked examples.',
+    'Open Learning Hub','Open analysis demo','View platform tour',
     'Start analysis','Ask Hero Buddy','Explore product',
     'Sources and data status','Transparent models','For retail and professional investors','Global markets, one platform',
     'Legal notice','Terms','Privacy','Pricing','Documentation & licenses','opens in a new tab',
@@ -38,8 +40,9 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   it: [
     'Seleziona lingua','Apri navigazione','Apri avvisi sui prezzi','Apri menu account','Accedi',
-    'Formazione finanziaria e strumenti di analisi','Comprendere','i dati di mercato.','Riconoscere meglio','le opportunità.',
-    'ti aiuta a conoscere i termini finanziari e ad analizzare i mercati. Scopri il Learning Hub e i 50 componenti di analisi finanziaria nel Capital-AI Tour. Dati e funzioni disponibili sono indicati chiaramente.',
+    'Educazione finanziaria per iniziare','Comprendi i termini finanziari.','Interpreta i dati di mercato.',
+    'Cosa significano spread, volatilità e punteggi? Il Learning Hub offre lezioni gratuite con esempi di calcolo.',
+    'Apri il Learning Hub','Apri la demo di analisi','Guarda il tour della piattaforma',
     'Avvia analisi','Chiedi a Hero Buddy','Scopri il prodotto',
     'Fonti e stato dei dati','Modelli trasparenti','Per investitori privati e professionisti','Mercati globali in un’unica piattaforma',
     'Note legali','Termini e condizioni','Privacy','Prezzi','Documentazione e licenze','si apre in una nuova scheda',
@@ -49,8 +52,9 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   fr: [
     'Choisir la langue','Ouvrir la navigation','Ouvrir les alertes de prix','Ouvrir le menu du compte','Connexion',
-    'Apprentissage financier et outils d’analyse','Comprendre','les marchés.','Mieux repérer','les opportunités.',
-    'vous aide à comprendre les termes financiers et à analyser les marchés. Découvrez le Learning Hub et les 50 composants d’analyse financière dans le Capital-AI Tour. Les données et fonctions disponibles sont clairement indiquées.',
+    'Les bases de la finance','Comprenez les termes financiers.','Interprétez les données de marché.',
+    'Que signifient le spread, la volatilité et les scores ? Le Learning Hub propose des leçons gratuites avec des exemples chiffrés.',
+    'Ouvrir le Learning Hub','Ouvrir la démo d’analyse','Voir la visite de la plateforme',
     'Lancer une analyse','Demander à Hero Buddy','Découvrir le produit',
     'Sources et statut des données','Modèles transparents','Pour particuliers et professionnels','Marchés mondiaux sur une plateforme',
     'Mentions légales','Conditions générales','Confidentialité','Tarifs','Documentation et licences','s’ouvre dans un nouvel onglet',
@@ -60,8 +64,9 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   pt: [
     'Selecionar idioma','Abrir navegação','Abrir alertas de preços','Abrir menu da conta','Entrar',
-    'Educação financeira e ferramentas de análise','Compreenda','os mercados.','Identifique melhor','as oportunidades.',
-    'ajuda a compreender termos financeiros e a analisar os mercados. Descubra o Learning Hub e os 50 componentes de análise financeira no Capital-AI Tour. Os dados e as funções disponíveis são claramente indicados.',
+    'Educação financeira para começar','Compreenda os termos financeiros.','Interprete os dados de mercado.',
+    'O que significam spread, volatilidade e pontuações? O Learning Hub oferece lições gratuitas com exemplos de cálculo.',
+    'Abrir o Learning Hub','Abrir a demonstração de análise','Ver a visita à plataforma',
     'Iniciar análise','Perguntar ao Hero Buddy','Explorar produto',
     'Fontes e estado dos dados','Modelos transparentes','Para investidores individuais e profissionais','Mercados globais numa só plataforma',
     'Aviso legal','Termos e condições','Privacidade','Preços','Documentação e licenças','abre num novo separador',
@@ -71,8 +76,9 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   es: [
     'Seleccionar idioma','Abrir navegación','Abrir alertas de precios','Abrir menú de cuenta','Iniciar sesión',
-    'Educación financiera y herramientas de análisis','Comprende','los mercados.','Detecta mejor','las oportunidades.',
-    'te ayuda a aprender términos financieros y analizar los mercados. Descubre el Learning Hub y los 50 componentes de análisis financiero en el Capital-AI Tour. Los datos y funciones disponibles se indican claramente.',
+    'Educación financiera para empezar','Comprende los términos financieros.','Interpreta los datos de mercado.',
+    '¿Qué significan el diferencial, la volatilidad y las puntuaciones? El Learning Hub ofrece lecciones gratuitas con ejemplos de cálculo.',
+    'Abrir el Learning Hub','Abrir la demo de análisis','Ver el recorrido de la plataforma',
     'Iniciar análisis','Preguntar a Hero Buddy','Explorar el producto',
     'Fuentes y estado de los datos','Modelos transparentes','Para inversores particulares y profesionales','Mercados globales en una sola plataforma',
     'Aviso legal','Términos y condiciones','Privacidad','Precios','Documentación y licencias','se abre en una pestaña nueva',

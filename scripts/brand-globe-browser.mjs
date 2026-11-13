@@ -43,7 +43,8 @@ async function navigate() {
   await until(() => evaluate("document.readyState === 'complete' && !!document.querySelector('.capital-ai-hero .brand-globe-art')"), 'HERO');
   assert.equal(await evaluate('location.origin'), origin);
   await evaluate("[...document.querySelectorAll('[aria-labelledby=\"cookie-consent-v3-title\"] button')].find(b=>b.textContent.trim()==='Nur notwendige')?.click()");
-  await evaluate("document.querySelector('.capital-ai-hero').scrollIntoView()");
+  await until(() => evaluate("!document.getElementById('cookie-consent-v3-title')"), 'CONSENT_PANEL_CLOSED');
+  await evaluate("window.scrollTo({ top: 0, behavior: 'instant' })");
 }
 async function shot(name, clip) {
   const screenshot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false, ...(clip ? { clip } : {}) });
@@ -64,6 +65,8 @@ try {
     if (message.method === 'Page.loadEventFired') loaded = true;
   };
   await send('Page.enable'); await send('Runtime.enable');
+  await send('Network.enable');
+  await send('Network.setExtraHTTPHeaders', { headers: { 'Accept-Language': 'de-DE' } });
   for (const viewport of [{ width: 320, height: 800, mobile: true }, { width: 390, height: 844, mobile: true }, { width: 768, height: 1024, mobile: true }, { width: 1440, height: 1000, mobile: false }]) {
     await send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: 1 });
     await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
@@ -73,6 +76,20 @@ try {
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
     assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy button')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
+    const learningCta = await evaluate(`(() => {
+      const action = document.getElementById('hero-open-learning-link');
+      const bounds = action.getBoundingClientRect();
+      const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+      return { href: action.getAttribute('href'), top: bounds.top, bottom: bounds.bottom,
+        height: bounds.height, clickable: action.contains(hit), obstruction: hit?.id || hit?.tagName || null,
+        primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-explore-product-btn')).backgroundColor };
+    })()`);
+    report.checks.push({ viewport, learningCta });
+    assert.equal(learningCta.href, '/learning');
+    assert.equal(learningCta.primary, true, 'Learning Hub must be the emphasized action');
+    assert.ok(learningCta.top >= 0 && learningCta.bottom <= viewport.height, 'Learning CTA below the initial viewport');
+    assert.ok(learningCta.height >= 44 && learningCta.clickable, 'Learning CTA target is too small or obstructed');
+    await evaluate("document.querySelector('.capital-ai-hero').scrollIntoView()");
     const layout = await evaluate(`(() => {
       const logo=document.querySelector('.hero-brand-logo'), copy=document.querySelector('.hero-copy'), globe=document.querySelector('.hero-globe-background');
       const r=logo.getBoundingClientRect(), style=getComputedStyle(logo);
@@ -108,7 +125,7 @@ try {
     report.checks.push({viewport, layout, decoration});
     await shot('hero-reduced-' + viewport.width);
     // Simulate doubled text while retaining the same viewport.
-    await evaluate("document.querySelectorAll('.hero-copy h1,.hero-copy p,.hero-copy button').forEach(e=>e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*2)+'px')");
+    await evaluate("document.querySelectorAll('.hero-copy h1,.hero-copy p,.hero-copy button,.hero-copy a').forEach(e=>e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*2)+'px')");
     const zoomLayout = await evaluate("(() => { const c=document.querySelector('.hero-copy'); return {scroll:c.scrollWidth,client:c.clientWidth,overflowing:[...c.querySelectorAll('*')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>({tag:e.tagName,className:typeof e.className==='string'?e.className:'svg',scroll:e.scrollWidth,client:e.clientWidth})).slice(0,10)}; })()");
     report.checks.push({viewport, zoomLayout});
     // The shade intentionally extends beyond the copy using ::before. Measure
@@ -134,6 +151,7 @@ try {
     report.checks.push({ viewport, reducedMotion: 'PASS', staticArtwork: 'PASS', touchTargets: 'PASS', doubledText: 'PASS' });
     await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
     await navigate();
+    await evaluate("document.querySelector('.capital-ai-hero').scrollIntoView()");
     await until(() => evaluate("document.querySelector('.brand-globe-art').dataset.globeState === '3d'"), 'WEBGL_READY');
     await pause(900); // Allow poster/copy entrance transitions to finish.
     // JaJa is an independent animated overlay, not part of globe playback.
@@ -171,6 +189,11 @@ try {
     await until(() => evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity === '1'"), 'FALLBACK_POSTER_FULLY_VISIBLE');
     report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', keyboardPauseResume: 'PASS', contextLossFallback: 'PASS' });
   }
+  await navigate();
+  await evaluate("document.getElementById('hero-open-learning-link').focus()");
+  await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13 });
+  await until(() => evaluate("location.pathname === '/learning' && !!document.querySelector('.hub-navigation')"), 'LEARNING_CTA_NAVIGATION');
+  report.checks.push({ learningCtaKeyboardNavigation: 'PASS' });
   assert.deepEqual(errors, [], 'Uncaught exceptions');
   report.status = 'TARGETED_PASS';
 } catch (error) { report.status = 'FAILED'; report.error = error.message; process.exitCode = 1; }

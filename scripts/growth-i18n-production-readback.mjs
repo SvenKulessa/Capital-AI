@@ -5,7 +5,15 @@ import {mkdtempSync, rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 const origin = new URL(process.env.CAPITAL_I18N_ORIGIN || 'https://capital-ai-uvsl.onrender.com').origin;
-const languages = {de:'Marktdaten',en:'Understand',it:'Comprendere',fr:'Comprendre',pt:'Compreenda',es:'Comprende'};
+// A pull request can run against the production version before the CTA deploys.
+const languages = {
+  de: ['Marktdaten', 'Learning Hub öffnen'],
+  en: ['Understand', 'Open Learning Hub'],
+  it: ['Comprendere', 'Apri il Learning Hub'],
+  fr: ['Comprendre', 'Ouvrir le Learning Hub'],
+  pt: ['Compreenda', 'Abrir o Learning Hub'],
+  es: ['Comprende', 'Abrir el Learning Hub'],
+};
 async function get(path, extra={}) {
   const response = await fetch(origin + path, {redirect:'manual',signal:AbortSignal.timeout(20000),
     headers:{'User-Agent':'CAPITAL-AI-I18N-readback/1.0',...extra}});
@@ -49,13 +57,14 @@ function chrome(url,viewport){
   }finally{rmSync(dir,{recursive:true,force:true});}
 }
 function browserTests(){
-  for(const [lang,word] of Object.entries(languages)){
+  for(const [lang,[legacyHeading, learningLabel]] of Object.entries(languages)){
     for(const viewport of [{width:1440,height:900,mobile:false},{width:390,height:844,mobile:true}]){
       console.log('CHROME_READBACK_START',lang,viewport.mobile?'mobile-emulated':'desktop');
       const html=chrome(origin+'/'+lang+'/',viewport);
       assert.match(html,new RegExp(`<html[^>]+lang="${lang}"`));
       assert.ok(html.includes('id="header-language-switcher"'),lang+' language selector absent');
-      assert.ok(html.includes(word),lang+' translated hero absent, hydration may have failed');
+      const hero = html.match(/<section[^>]*class="[^"]*capital-ai-hero[\s\S]*?<\/section>/)?.[0] || '';
+      assert.ok(hero.includes(legacyHeading) || hero.includes(learningLabel),lang+' translated hero absent, hydration may have failed');
       // The source HTML intentionally contains a hidden fallback even after successful React hydration.
       // A visible fallback, not the mere presence of its text, signals bootstrap failure.
       const fallback = html.match(/<main\b[^>]*\bid="capital-ai-bootstrap-fallback"[^>]*>/i)?.[0];
