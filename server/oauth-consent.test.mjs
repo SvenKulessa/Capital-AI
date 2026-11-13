@@ -72,7 +72,7 @@ test('GET renders sanitized consent only for allowlisted client', async () => {
     const body = await r.text();
     assert.equal(r.status, 200);
     assert.match(body, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
-    assert.doesNotMatch(body, /<script>/);
+    assert.doesNotMatch(body, /<script\b/i);
     assert.match(body, /openid/);
     assert.equal(r.headers.get('cache-control'), 'no-store');
     assert.equal(h.calls[0].jwt, 'Bearer test-user-access-token');
