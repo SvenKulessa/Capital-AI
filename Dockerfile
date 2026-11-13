@@ -96,6 +96,7 @@ COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-ro
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs
 COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs
+COPY scripts/qa/screener-blueprint-reset-browser.mjs ./scripts/qa/screener-blueprint-reset-browser.mjs
 COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
 COPY scripts/masterclass-templates.test.mjs ./scripts/masterclass-templates.test.mjs
 COPY supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql ./supabase/migrations/
