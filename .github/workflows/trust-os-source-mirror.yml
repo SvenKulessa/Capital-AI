@@ -62,6 +62,14 @@ jobs:
             /bin/bash /repo/scripts/collect_os_source_mirror.sh \
               /repo/docs/security/evidence/os-aports-recipe-lock-1b7ee312-20261113.json \
               /work/os-source-inventory.json /work/mirror /work/reports
+      - name: Hand back private report to unprivileged host upload
+        if: always()
+        run: |
+          set -euo pipefail
+          if test -d "$RUNNER_TEMP/os-mirror/reports"; then
+            sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/os-mirror/reports"
+            chmod -R u+rwX "$RUNNER_TEMP/os-mirror/reports"
+          fi
       - name: Package private validated source mirror
         run: |
           set -euo pipefail
