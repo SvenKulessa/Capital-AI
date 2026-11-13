@@ -47,11 +47,28 @@ async function upstream(fetchImpl, endpoint, apiKey, token, origin, method = 'GE
   catch { return { ok: false, data: null }; }
 }
 
-function trustedRedirect(value) {
+// Supabase may return only redirect_url (already-consented flow), without
+// client.id. Bind that case to exact owner-configured callback URIs as well.
+function trustedRedirect(value, registeredCallbacks) {
   if (typeof value !== 'string' || value.length > 2048) return null;
   try {
-    const url = new URL(value);
-    return url.protocol === 'https:' && !url.username && !url.password ? url.toString() : null;
+    const target = new URL(value);
+    if (target.protocol !== 'https:' || target.username || target.password || target.hash) return null;
+    for (const callback of registeredCallbacks) {
+      const base = new URL(callback);
+      if (target.origin !== base.origin || target.pathname !== base.pathname) continue;
+      const expected = new URLSearchParams(base.search);
+      const actual = new URLSearchParams(target.search);
+      for (const [key, value] of expected) {
+        const index = actual.getAll(key).indexOf(value);
+        if (index < 0) return null;
+        actual.delete(key, value);
+      }
+      if ([...actual.keys()].every(key => ['code', 'state', 'error', 'error_description', 'iss'].includes(key))) {
+        return target.toString();
+      }
+    }
+    return null;
   } catch { return null; }
 }
 
@@ -96,12 +113,21 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
       const rawUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL || '';
       const apiKey = env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY || '';
       const allowed = new Set(String(env.CAPITAL_AI_OAUTH_ALLOWED_CLIENT_IDS || '').split(',').map(x => x.trim()).filter(x => CLIENT_ID.test(x)));
+      // Separate exact callback allowlist prevents a pre-approved authorization
+      // (OAuthRedirect response has no client ID) from bypassing the client gate.
+      const callbacks = new Set(String(env.CAPITAL_AI_OAUTH_ALLOWED_REDIRECT_URIS || '')
+        .split(',').map(x => x.trim()).filter(Boolean).filter(x => {
+          try {
+            const u = new URL(x);
+            return u.protocol === 'https:' && !u.username && !u.password && !u.hash;
+          } catch { return false; }
+        }));
       let origin;
       let issuer;
       try {
         origin = new URL(rawOrigin);
         issuer = new URL(rawUrl);
-        if (origin.protocol !== 'https:' || issuer.protocol !== 'https:' || origin.pathname !== '/' || issuer.pathname !== '/' || !apiKey || !allowed.size) throw Error();
+        if (origin.protocol !== 'https:' || issuer.protocol !== 'https:' || origin.pathname !== '/' || issuer.pathname !== '/' || !apiKey || !allowed.size || !callbacks.size) throw Error();
       } catch {
         response(res, 503, page('<p>OAuth-Server ist noch nicht bereit.</p>'));
         return true;
@@ -136,7 +162,7 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
           return true;
         }
         if (!('authorization_id' in checked.data)) {
-          const target = trustedRedirect(checked.data.redirect_url);
+          const target = trustedRedirect(checked.data.redirect_url, callbacks);
           if (target) redirect(res, target);
           else response(res, 502, page('<p>OAuth-Rücksprungziel ungültig.</p>'));
           return true;
@@ -146,6 +172,10 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
         // different user's pending request under this website session.
         if (details.authorization_id !== id || details.user?.id !== identity.userId) {
           response(res, 403, page('<p>OAuth-Anfrage stimmt nicht mit deiner Sitzung überein.</p>'));
+          return true;
+        }
+        if (!callbacks.has(details.redirect_uri)) {
+          response(res, 403, page('<p>Die OAuth-Rücksprungadresse ist nicht zugelassen.</p>'));
           return true;
         }
         if (!CLIENT_ID.test(String(details.client?.id || '')) || !allowed.has(details.client.id)) {
@@ -162,7 +192,7 @@ export function createOAuthConsent({ env = process.env, auth, fetchImpl = fetch 
           return true;
         }
         const decision = await upstream(fetchImpl, new URL(endpoint.pathname + '/consent', issuer.origin), apiKey, token, origin.origin, 'POST', action);
-        const target = decision.ok ? trustedRedirect(decision.data?.redirect_url) : null;
+        const target = decision.ok ? trustedRedirect(decision.data?.redirect_url, callbacks) : null;
         if (!target) response(res, 502, page('<p>OAuth-Entscheidung konnte nicht verarbeitet werden.</p>'));
         else redirect(res, target);
       } catch {
