@@ -9,6 +9,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { WORK_PACKAGES } from '../src/data/roadmapData.ts';
 import { planContentCampaign } from '../src/contracts/contentEngine.ts';
+import { serverOnlyBrowserPatterns } from './verify-browser-boundary.mjs';
 
 export const ROADMAP_INTERVAL = 10;
 export const NEWS_INTERVAL = 20;
@@ -34,8 +35,13 @@ export function milestoneDay(mergedAt) {
 }
 
 export function sanitizedTitle(value) {
-  return String(value ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ')
-    .replace(/[\\\`*_{}\[\]#|]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) || 'Repository-Änderung';
+  const title = String(value ?? '');
+  const sanitized = title.replace(/[\u0000-\u001f\u007f<>]/g, ' ')
+    .replace(/[\\\`*_{}\[\]#|]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+  if (serverOnlyBrowserPatterns.some(pattern => pattern.test(title) || pattern.test(sanitized))) {
+    return 'Repository-Änderung (Details im verlinkten PR)';
+  }
+  return sanitized || 'Repository-Änderung';
 }
 
 export function sourcePath(ref) {

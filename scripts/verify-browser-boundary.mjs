@@ -3,9 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
+export const serverOnlyBrowserPatterns = [/GEMINI_API_KEY/, /OIDC_CLIENT_SECRET/, /SUPABASE_SECRET_KEY/, /SUPABASE_SERVICE_ROLE_KEY/, /sb_secret_/, /TELEGRAM_BOT_TOKEN/, /api\.telegram\.org/, /@google\/genai/, /handleAdvisorRequest/];
+
 // Deterministic browser-boundary regression gate; complements the current Trivy secret scan.
 export async function verifyBrowserBoundary(root = path.resolve('dist')) {
-  const forbidden = [/GEMINI_API_KEY/, /OIDC_CLIENT_SECRET/, /SUPABASE_SECRET_KEY/, /SUPABASE_SERVICE_ROLE_KEY/, /sb_secret_/, /TELEGRAM_BOT_TOKEN/, /api\.telegram\.org/, /@google\/genai/, /handleAdvisorRequest/];
   let checked = 0;
   async function visit(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -13,7 +14,7 @@ export async function verifyBrowserBoundary(root = path.resolve('dist')) {
       if (entry.isDirectory()) await visit(target);
       else if (/\.(js|html|map)$/.test(entry.name)) {
         const source = await readFile(target, 'utf8'); checked++;
-        if (forbidden.some(pattern => pattern.test(source))) throw new Error('Server-only symbol found in browser artifact: ' + path.relative(root, target));
+        if (serverOnlyBrowserPatterns.some(pattern => pattern.test(source))) throw new Error('Server-only symbol found in browser artifact: ' + path.relative(root, target));
         if (entry.name.endsWith('.js')) {
           // Parse executable code: documentation strings may legitimately show process.env examples.
           const ast = ts.createSourceFile(target, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);

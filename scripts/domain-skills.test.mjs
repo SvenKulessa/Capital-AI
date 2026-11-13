@@ -47,7 +47,7 @@ test('registry contains exactly five domains, two skills each, and one chat agen
 test('one root policy and chat integrations describe skill routing without authorizing new gates', () => {
   const policy = read('AGENTS.md');
   const copilot = read('.github/copilot-instructions.md');
-  assert.match(policy, /SOLO_MAINTAINER_FLOW@1/);
+  assert.match(policy, /SOLO_MAINTAINER_FLOW@2/);
   assert.match(policy, /Domain Skills und beratende Fähigkeiten im Chat/);
   assert.match(policy, /\.agents\/skills\/registry\.json/);
   assert.match(copilot, /AGENTS\.md/);
@@ -118,7 +118,7 @@ test('ten enterprise specialist skills are shared, discoverable and have bounded
     assert.equal(frontmatter(file).name, id);
     assert.ok(frontmatter(file).description.length > 40);
     assert.match(file, /AGENTS\.md/);
-    assert.match(file, /SOLO_MAINTAINER_FLOW@1/);
+    assert.match(file, /SOLO_MAINTAINER_FLOW@2/);
     assert.match(file, /NOT_PROVEN/);
     assert.match(file, /keine zusätzlichen Required Checks/);
   }

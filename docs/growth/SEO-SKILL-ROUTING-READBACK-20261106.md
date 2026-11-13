@@ -47,4 +47,16 @@ Output is restricted to known enum values, validated crawl timestamp and canonic
 
 Live URL-inspection results remain NOT_PROVEN until this implementation is on main and the existing audit is dispatched again (`google-learning-setup.yml`, `mode=audit`). Existing readonly OAuth scopes are sufficient in design; actual API enablement/authorization must be proven by that readback. Main-only federation restrictions are retained. No service-account keys, new IAM grants, new required checks, provider mutations or separate orchestration service introduced.
 
+## Search configuration follow-up — 2026-11-13
+
+The SEO architecture/readback work package now has a Search-only as-code entry
+point: [GOOGLE-SEARCH-CONFIG-AS-CODE.md](GOOGLE-SEARCH-CONFIG-AS-CODE.md).
+Plan needs no network; audit is read-only; explicit apply is limited to the exact
+canonical sitemap. Existing federation is reused with `target=search`; no GA4 or
+Render activation. Local acceptance: 37 configuration/client tests, 11 authority
+tests and 12 real public HTTP checks passed. Google provider credentials were
+unavailable locally, reported as INCOMPLETE rather than VERIFIED. Google index
+snapshots, connector connection and actual image selection remain separate
+evidence; no broad index promotion or Search-ranking claim.
+
 Validation: focused routing/SEO/privacy/Google/MCP tests include fixed targets, denied arbitrary input, sanitized provider fields, unknown/missing results and inspection-unavailable separation. The earlier live Google audit remains evidence for its original source version and does not verify this new inspection feature.
