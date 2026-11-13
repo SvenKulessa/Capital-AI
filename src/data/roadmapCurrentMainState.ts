@@ -12,6 +12,14 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
   reviewedAt: '2026-10-06',
   packageCount: 105,
   packageSources: [
+  {"id": "CA-PLATFORM-DOCSYNC-01", "source": "src/data/roadmapData.ts"},
+  {"id": "CA-TRUST-DOCSYNC-03", "source": "src/data/roadmapData.ts"},
+  {"id": "CA-PLATFORM-DOCSYNC-02", "source": "src/data/roadmapData.ts"},
+  {"id": "CA-GROWTH-DOCBUILD-04", "source": "src/data/roadmapData.ts"},
+  {"id": "CA-PLATFORM-DOCREVIEW-05", "source": "src/data/roadmapData.ts"},
+  {"id": "CA-PLATFORM-IAC-06", "source": "src/data/roadmapData.ts"},
+  {"id": "CA-PRODUCT-ECOSYSTEM-07", "source": "src/data/roadmapData.ts"},
+
   {
     "id": "AP-AGT-01",
     "source": "src/data/roadmapData.ts"
