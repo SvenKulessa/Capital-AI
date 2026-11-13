@@ -78,7 +78,43 @@ while IFS=$'\t' read -r name commit expected_blob expected_version; do
   # Never grant additional permissions. abuild may source APKBUILD shell code:
   # this step MUST execute inside an unprivileged, no-secret isolated container.
   if ! (cd "$MIRROR/$name" && SRCDEST="$MIRROR/$name/distfiles" abuild fetch verify) >>"$log" 2>&1; then
-    echo 'ABUILD_FETCH_VERIFY_FAILED' >>"$log"; failures=$((failures+1)); continue
+    # Only use a named official Alpine distfiles mirror for known unavailable upstream archives.
+    # A fallback is accepted ONLY after comparing actual bytes to the pinned APKBUILD SHA-512.
+    archive_name=''
+    case "$name" in
+      apk-tools) archive_name='apk-tools-v3.0.8.tar.gz' ;;
+      ca-certificates) archive_name='ca-certificates-20261020.tar.bz2' ;;
+      ncurses) archive_name='ncurses-6.6-20260516.tgz' ;;
+    esac
+    found=0
+    if [[ -n "$archive_name" ]]; then
+      expected_sha=$(python3 - "$MIRROR/$name/APKBUILD" "$archive_name" <<'PYHASH'
+import pathlib,re,sys
+content=pathlib.Path(sys.argv[1]).read_text(encoding='utf8')
+block=re.search(r'^sha512sums="([\s\S]*?)"',content,re.M)
+values=[entry.split() for entry in (block.group(1) if block else '').splitlines() if re.fullmatch(r'[0-9a-f]{128}\s+\S+',entry.strip())]
+matched=[v[0] for v in values if len(v)==2 and v[1]==sys.argv[2]]
+if len(matched)!=1:raise SystemExit('missing or ambiguous pinned source SHA512')
+print(matched[0])
+PYHASH
+)
+      for mirror_release in v3.24 v3.18; do
+        out=$(mktemp "$MIRROR/$name/distfiles/.source-check.XXXXXXXX")
+        if curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+          --connect-timeout 10 --max-time 80 \
+          "https://distfiles.alpinelinux.org/distfiles/$mirror_release/$archive_name" -o "$out" \
+          >>"$log" 2>&1 && [[ "$(sha512sum "$out" | awk '{print $1}')" == "$expected_sha" ]]; then
+          mv -- "$out" "$MIRROR/$name/distfiles/$archive_name"
+          echo "OFFICIAL_ALPINE_SOURCE_MIRROR_SHA512_PASS: $archive_name ($mirror_release)" >>"$log"
+          found=1
+          break
+        fi
+        rm -f -- "$out"
+      done
+    fi
+    if [[ "$found" != 1 ]] || ! (cd "$MIRROR/$name" && SRCDEST="$MIRROR/$name/distfiles" abuild fetch verify) >>"$log" 2>&1; then
+      echo 'ABUILD_FETCH_VERIFY_FAILED' >>"$log"; failures=$((failures+1)); continue
+    fi
   fi
   echo 'APORTS_BLOB_AND_ABUILD_FETCH_VERIFY_PASS' >>"$log"
 done < "$REPORT_DIR/recipes.tsv"
