@@ -15,7 +15,8 @@
         "scripts/google-maintenance-mcp.mjs"
       ],
       "env": {
-        "GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED": "false"
+        "GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED": "false",
+        "GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED": "true"
       }
     }
   }
