@@ -982,6 +982,9 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     try {
       const stored = await resolveSession(req, res);
       if (!stored) return false;
+      // Owner-only APIs must not bypass the verified TOTP AAL2 step-up
+      // required by the normal authenticated session.
+      if (tokenAal(stored.accessToken) !== 'aal2' && hasVerifiedTotpFactor(stored._authUser)) return false;
       const account = await accountProjection(config, stored);
       return account?.available === true && account.iamRole === requiredRole;
     } catch {
