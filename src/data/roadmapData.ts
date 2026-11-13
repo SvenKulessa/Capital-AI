@@ -2229,6 +2229,187 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     "Rollback auf stabile Boundary"
   ]
 },
+// Ecosystem Docs-as-Code/IaC work packages · planning only, no Drive/GCloud activation.
+  {
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps & RC",
+    "progressPercent": null,
+    "evidenceState": "UNGEKLÄRT",
+    "evidenceRefs": [
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+    ],
+    "leadName": "Projektowner",
+    "id": "CA-PLATFORM-DOCSYNC-01",
+    "title": "Docs-as-Code: Drive-Pfad- und Datenklassifizierungs-Mapping",
+    "owner": "PLATFORM",
+    "priority": "Hoch",
+    "targetSprint": "13.–20.11.2026",
+    "description": "Dokumentationsprojektion aus GitHub mit expliziten PUBLIC/INTERNAL/RESTRICTED/SECRET-Ausschlüssen und Wiederverwendung vorhandener CAPITAL-AI-Drive-Ordner; kein Live-Upload.",
+    "nextStep": "Bestehende docs-Pfade und Drive-Ordner read-only zuordnen; Exclusions, Traversal, Symlinks und Duplicate-Names als synthetische Fail-Closed-Tests abbilden.",
+    "deliverables": [
+      "Versioniertes Ordner- und Datenklassen-Mapping",
+      "Dry-Run ohne Google-Drive-Schreiboperationen",
+      "Private-Backups und Kundendaten explizit ausgeschlossen"
+    ]
+  },
+  {
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps & RC",
+    "progressPercent": null,
+    "evidenceState": "UNGEKLÄRT",
+    "evidenceRefs": [
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+    ],
+    "leadName": "Projektowner",
+    "id": "CA-TRUST-DOCSYNC-03",
+    "title": "Drive-Sync: OAuth-/Service-Account-Rechte strikt begrenzen",
+    "owner": "TRUST",
+    "priority": "Hoch",
+    "targetSprint": "23.11.–11.12.2026",
+    "description": "Least-Privilege-/Credential-Grenzen für den Dokumenten-Sync; Owner-OAuth und autorisiertes Shared Drive als getrennte Optionen, keine Backup-Credential-Wiederverwendung.",
+    "nextStep": "Tatsächliche Drive-Owner-/Ordnerrechte und minimalen Auth-Flow gegen Sicherheitsgrenzen prüfen; Cross-User-/Cross-Folder-Negativtests ohne produktiven Credential-Zugriff erstellen.",
+    "deliverables": [
+      "Identitäts-/Scope- und Revocation-Vertrag",
+      "Redaction- und Secret-Exclusions",
+      "Synthetische Rechte- und Tenant-Negativtests"
+    ],
+    "dependencies": [
+      "CA-PLATFORM-DOCSYNC-01"
+    ]
+  },
+  {
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps & RC",
+    "progressPercent": null,
+    "evidenceState": "UNGEKLÄRT",
+    "evidenceRefs": [
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+    ],
+    "leadName": "Projektowner",
+    "id": "CA-PLATFORM-DOCSYNC-02",
+    "title": "Idempotenter Google-Drive-Tree-Synchronizer mit Dry-Run",
+    "owner": "PLATFORM",
+    "priority": "Hoch",
+    "targetSprint": "23.11.–11.12.2026",
+    "description": "GitHub → Drive als kontrollierte Dokumentenprojektion, mit Konflikterkennung und atomarem lokalen State; keine automatischen Löschungen.",
+    "nextStep": "Synchrone Ordner-/Dateizuordnung anhand Pfad und Drive-ID implementieren, zuerst synthetisch; Wiederholung, Hash, Pagination, Retry, Atomic State und Fail-Closed-Konflikte testen.",
+    "deliverables": [
+      "Standardmäßig aktiver Dry-Run und idempotentes Create/Update/Skip",
+      "Delta-/Hash-/Revision-Abgleich mit sanitisiertem Audit",
+      "Keine Orphan-Löschung und kein unkontrolliertes Drive-Apply"
+    ],
+    "dependencies": [
+      "CA-PLATFORM-DOCSYNC-01",
+      "CA-TRUST-DOCSYNC-03"
+    ]
+  },
+  {
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps & RC",
+    "progressPercent": null,
+    "evidenceState": "UNGEKLÄRT",
+    "evidenceRefs": [
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+    ],
+    "leadName": "Projektowner",
+    "id": "CA-GROWTH-DOCBUILD-04",
+    "title": "Markdown-/PDF-Blueprint-Build mit Lizenz- und Provenance-Manifest",
+    "owner": "GROWTH",
+    "priority": "Mittel",
+    "targetSprint": "14.12.2026–15.01.2027",
+    "description": "Deterministische Dokumentableitung aus freigegebenem Markdown; private und öffentliche Artefakte technisch getrennt.",
+    "nextStep": "Minimalen Markdown-Index und reproduzierbaren PDF-Build an Quell-SHA, Artefakt-Hash, Lizenzklasse und Accessibility-Test binden.",
+    "deliverables": [
+      "Markdown-Index und reproduzierbarer PDF-Export",
+      "Source-SHA-/Artefakt-Hash-Manifest",
+      "Private/Public-Trennung und Rechteprüfung"
+    ],
+    "dependencies": [
+      "CA-PLATFORM-DOCSYNC-02"
+    ]
+  },
+  {
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps & RC",
+    "progressPercent": null,
+    "evidenceState": "UNGEKLÄRT",
+    "evidenceRefs": [
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+    ],
+    "leadName": "Projektowner",
+    "id": "CA-PLATFORM-DOCREVIEW-05",
+    "title": "Drive-Delta-Rückkanal als reviewpflichtiger Änderungsvorschlag",
+    "owner": "PLATFORM",
+    "priority": "Mittel",
+    "targetSprint": "Januar–März 2027",
+    "description": "Drive-Änderungen können kontrolliert analysiert werden; keine direkte Rückschreibung in main, keine stillen Überschreibungen.",
+    "nextStep": "Changes-API-Token, Revision, Rename, Move, Delete/Edit und Edit/Edit synthetisch prüfen; Vorschläge ausschließlich für Feature-Branch-/PR-Review ausgeben.",
+    "deliverables": [
+      "Paginierter Change-Feed und Konfliktmatrix",
+      "Privater Diff-/Review-Vorschlag ohne Auto-Merge",
+      "Fail-Closed bei unklaren Remote-Rechten"
+    ],
+    "dependencies": [
+      "CA-PLATFORM-DOCSYNC-02"
+    ]
+  },
+  {
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps & RC",
+    "progressPercent": null,
+    "evidenceState": "UNGEKLÄRT",
+    "evidenceRefs": [
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+    ],
+    "leadName": "Projektowner",
+    "id": "CA-PLATFORM-IAC-06",
+    "title": "GCloud-Terraform als kosten- und sicherheitsgebundener Plan-Only-Pfad",
+    "owner": "PLATFORM",
+    "priority": "Mittel",
+    "targetSprint": "Januar–März 2027",
+    "description": "Optionale Infrastructure-as-Code-Sandbox für Cloud Run/Storage mit GitHub OIDC, ohne Live-Ressourcen oder konkurrierenden Render-Deployment-Pfad.",
+    "nextStep": "Bestehende GCloud-OIDC-Readbacks und Budget-/Least-Privilege-Grenzen abgleichen, danach fmt/validate und unverändernden Terraform-Plan mit synthetischen Variablen testen.",
+    "deliverables": [
+      "Gepinnte IaC-Provider-/State-/IAM-Kontrakte",
+      "Plan-only, Security Checks und Kosten-/Rollback-Betrachtung",
+      "Kein terraform apply -auto-approve oder Public-Ingress-Aktivieren"
+    ],
+    "dependencies": [
+      "CA-PLATFORM-DOCSYNC-01"
+    ]
+  },
+  {
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps & RC",
+    "progressPercent": null,
+    "evidenceState": "UNGEKLÄRT",
+    "evidenceRefs": [
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+    ],
+    "leadName": "Projektowner",
+    "id": "CA-PRODUCT-ECOSYSTEM-07",
+    "title": "Freigegebenen Dokumenten-/Blueprint-Katalog in Website-Commerce projizieren",
+    "owner": "PRODUCT",
+    "priority": "Mittel",
+    "targetSprint": "April–Juni 2027",
+    "description": "Katalog/Knowledge aus freigegebenen Artefaktmetadaten statt neue Zahlungsautorität; geschützte Käuferartefakte bleiben entitlement-gebunden.",
+    "nextStep": "Erst nach echten Blueprint-Rechten und Stripe-A/B-Isolation die öffentliche Katalog-/Sitemap-Projektion und Kauf-/Refund-/Accessibility-Readbacks implementieren.",
+    "deliverables": [
+      "Lizenz- und entitlement-gebundene Produktmetadaten",
+      "Website-/Knowledge-Katalogprojektion ohne private Artefakte",
+      "Mobile-, SEO-, Tenant- und Refund-Negativtests"
+    ],
+    "dependencies": [
+      "CA-GROWTH-DOCBUILD-04"
+    ]
+  },
 ...PRODUCTION_WEBSITE_WORK_PACKAGES,
 ...SOCIAL_CONTENT_WORK_PACKAGES,
 ...ARCHITECTURE_A_TRUST_WORK_PACKAGES,
