@@ -17,7 +17,7 @@ description: "Use for clear, evidence-based visual communication in chat across 
 6. Use lightweight domain-specific **status indicators** when useful, not decorative badges; label missing measurements NOT_PROVEN and blocked capabilities BLOCKED. Never equate source implementation with production readiness.
 7. Respect narrow screens, screen readers, high contrast, concise alt-text and color-independent meaning. Keep a text summary alongside every diagram or chart and avoid dense multi-column layouts on mobile.
 8. Preserve citations, source links and dates alongside visualized external claims; don't expose tokens, keys, raw user data, proprietary prompts, private financial records or hidden reasoning in illustrations.
-9. Retain `AGENTS.md` status format: two separate `text` code snippets for completed / next steps, and `👋⚙️` on manual Owner actions.
+9. Retain `AGENTS.md` status format: one completed-status block and one copyable `text` block per proposed next action. Mark manual Owner actions with `👋⚙️`.
 10. Ask only when a decisive input is missing or a critical irreversible design choice requires authorization; present a safe default otherwise.
 
 ## Embedded CAPITAL-AI design previews and verified UI QA
