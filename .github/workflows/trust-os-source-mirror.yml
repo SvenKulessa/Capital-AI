@@ -75,9 +75,8 @@ jobs:
           set -euo pipefail
           jq -e '.status == "SOURCE_HASHES_VERIFIED_NON_AUTHORIZING" and .sourceDeliveryProven == false and .redistributionApproved == false' \
             "$RUNNER_TEMP/os-mirror/reports/collection-summary.json"
-          tar -C "$RUNNER_TEMP/os-mirror" -czf "$RUNNER_TEMP/os-mirror/reports/source-mirror.tar.gz" mirror
-          sha256sum "$RUNNER_TEMP/os-mirror/reports/source-mirror.tar.gz" \
-            > "$RUNNER_TEMP/os-mirror/reports/source-mirror.tar.gz.sha256"
+          test -s "$RUNNER_TEMP/os-mirror/reports/source-mirror.tar.gz"
+          (cd "$RUNNER_TEMP/os-mirror/reports" && sha256sum --check source-mirror.tar.gz.sha256)
       - name: Preserve private evidence (never publish a container image)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
