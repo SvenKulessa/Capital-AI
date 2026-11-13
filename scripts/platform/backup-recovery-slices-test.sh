@@ -218,18 +218,18 @@ printf 'PASS synthetic pgcrypto wrong-key negative (NOT Supabase Vault proof)\n'
 fingerprint() {
   local port_number=$1
   sql "$port_number" "$fixture_admin" -Atqc "
-  SELECT md5(
+  SELECT (
     (SELECT string_agg(id::text || ':' || tenant, ',' ORDER BY id) FROM auth.users) || '|' ||
     (SELECT string_agg(id || ':' || user_id::text, ',' ORDER BY id) FROM auth.identities) || '|' ||
     (SELECT string_agg(id || ':' || user_id::text, ',' ORDER BY id) FROM auth.sessions) || '|' ||
     (SELECT string_agg(id || ':' || public::text, ',' ORDER BY id) FROM storage.buckets) || '|' ||
     (SELECT string_agg(bucket_id || ':' || name || ':' || owner_id::text || ':' || sha256, ',' ORDER BY bucket_id,name) FROM storage.objects) || '|' ||
     (SELECT string_agg(encode(ciphertext,'hex'), ',' ORDER BY id) FROM vault.secrets)
-  )"
+  )" | sha256sum | cut -d ' ' -f 1
 }
 src_fp="$(fingerprint "$source_port")"
 dst_fp="$(fingerprint "$target_port")"
 assert_eq "$src_fp" "$dst_fp" 'source/restore relational+encrypted-data fingerprint'
 printf 'Scoped synthetic SQL dump SHA-256 %s\n' "$dump_sha"
-printf 'Source/target relational fingerprint MD5 %s\n' "$src_fp"
+printf 'Source/target relational fingerprint SHA-256 %s\n' "$src_fp"
 printf 'PASS synthetic PG17 Auth/Storage/Vault/ACL recovery slices (provider restore NOT_PROVEN)\n'
