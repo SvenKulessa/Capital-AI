@@ -21,7 +21,7 @@ async function harness({ env = {}, loggedIn = true, verify = true, details = nul
     internalAccessToken: async () => loggedIn ? 'test-user-access-token' : null,
   };
   const fetchImpl = async (url, options) => {
-    calls.push({ url: String(url), method: options.method, body: options.body, jwt: options.headers.Authorization });
+    calls.push({ url: String(url), method: options.method, body: options.body, jwt: options.headers.Authorization, origin: options.headers.Origin });
     if (fail) return new Response('{}', { status: 404 });
     if (options.method === 'POST') return Response.json({ redirect_url: target });
     return Response.json(details ?? {
@@ -74,6 +74,7 @@ test('GET renders sanitized consent only for allowlisted client', async () => {
     assert.match(body, /openid/);
     assert.equal(r.headers.get('cache-control'), 'no-store');
     assert.equal(h.calls[0].jwt, 'Bearer test-user-access-token');
+    assert.equal(h.calls[0].origin, 'https://capital-ai.online');
     assert.doesNotMatch(body, /test-user-access-token/);
   } finally { await h.close(); }
 });
@@ -99,6 +100,7 @@ test('POST approve rechecks client and redirects only after upstream consent', a
     assert.equal(r.status, 303);
     assert.equal(r.headers.get('location'), 'https://client.example/callback?code=a');
     assert.deepEqual(h.calls.map(x => x.method), ['GET','POST']);
+    assert.deepEqual(h.calls.map(x => x.origin), ['https://capital-ai.online', 'https://capital-ai.online']);
     assert.equal(JSON.parse(h.calls[1].body).action, 'approve');
   } finally { await h.close(); }
 });
