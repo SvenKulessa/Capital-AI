@@ -55,6 +55,25 @@ Das synthetische Schema `app` umfasst jetzt eine Eltern-Tabelle `app.tenants` mi
 
 **Grenzen:** Dies bestätigt ausschließlich die synthetische PG17.11-Fixture-Recovery. **NOT_PROVEN** bleiben ein vollständiger, separat autorisierter Supabase-Auth-/Storage-/Vault-/ACL-Restore, byte-identische Supabase-Provider-Extension-Binaries, die tatsächlich produktiv nutzbaren Backup-Reader-Rechte sowie unabhängige Recovery eines echten GCS-Backups. **BLOCKED** bleiben produktiver Dump/Provisionierung und der OCC-v2-Cutover von PR #548. Die aktuellsten Required Checks gelten nur für den jeweiligen PR-Head; dieser Dokumentationscommit braucht neue Head-CI.
 
+## P1 – Auth-/Storage-/Vault-/ACL-Recovery-Slices (isolierte Regression)
+
+**Contract:** `CAPITAL_AI_SUPABASE_RECOVERY_SLICES@1`. Dieser zusätzliche, eigenständig ausführbare Test liegt unter [`scripts/platform/backup-recovery-slices-test.sh`](../../scripts/platform/backup-recovery-slices-test.sh) und wird im **bestehenden** Workflow `PG17 Backup Reader Contract (isolated)` neben dem Reader-Vertrag mit PostgreSQL **17.11** ausgeführt. Keine neue Required-Check-Pipeline, kein Provider-Zugriff, keine Produktionsmigration.
+
+- **Auth (synthetisch):** zwei Testbenutzer, zwei Identitäten und zwei Sitzungen; Quell- und separater Zielcluster prüfen Anzahl und echte FK-Referenzen. Verwaiste Auth-Sitzungen müssen mit SQLSTATE `23503` scheitern. Dies testet **nicht** GoTrue, echte MFA, OAuth-Anbieter oder Token-Rotation.
+- **Storage (synthetisch):** zwei private Buckets mit je einem Objekt. Ein eigener lokaler Binary-Payload wird **außerhalb** von PostgreSQL gehalten, per SHA-256 gegen die wiederhergestellten `storage.objects`-Metadaten überprüft und mit separatem Datei-Kopiervorgang in ein isoliertes Ziel überführt. Der alleinige Datenbank-Dump muss den Test **nicht bestehen** (fehlende Bytes); veränderte Datei-Bytes müssen ebenfalls scheitern. Public-Bucket- und Foreign-Key-Negativtests laufen getrennt. Dies testet **keine** Supabase-Storage-API, keinen realen S3-Export und keine tatsächlichen Benutzerdateien.
+- **Vault (nur kryptografisches Prinzip):** ein **offensichtlich synthetischer** `pgcrypto`-Ciphertext lässt sich nach dem Dump im isolierten Ziel mit dem Testschlüssel entschlüsseln; ein falscher Testschlüssel scheitert. `pgcrypto` ist **kein** Nachbau der Provider-Extension `supabase_vault` und beweist **nicht** deren Masterkey-/Rootkey-Portabilität, tatsächlichen Secret-Restore oder KMS-Rechte.
+- **Provider-artige ACL/RLS (synthetisch):** zwei getrennte `tenant_a`-/`tenant_b`-Rollen erhalten über RLS je genau eine Objektzeile. Ein dedizierter `recovery_reader` darf nicht Auth-/Vault-Daten lesen, keine Storage-Metadaten schreiben und nicht `pg_read_all_data` erben. Bei `pg_dump --no-owner --no-privileges` fehlen Ziel-Grants **absichtlich**; erst die getrennte ACL-Rekonstruktion erlaubt den isolierten Tenant-Test. Die realen Supabase-`PUBLIC`-/`pg_net`-Risiken bleiben von diesem Test **unverändert BLOCKED**.
+
+**Reproduktion:** auf dem bereits fest versionierten PostgreSQL-17.11-Fixture-Runner als nicht privilegierter OS-Benutzer, mit `pgcrypto` aus PostgreSQL contrib:
+
+```bash
+bash scripts/platform/backup-recovery-slices-test.sh
+```
+
+Zwei lokale Cluster, dynamische Loopback-Ports, `--network none`-Container ohne Linux-Capabilities. Die Bash-Test-Datei akzeptiert keine Verbindungsargumente, bereinigt libpq-Umgebung, führt keine Netzwerkanfragen außerhalb des Testcontainers aus und löscht ihre temporären SQL-Dumps und Objekt-Bytes beim Beenden. Pro Lauf werden die SHA-256 des synthetischen Dumps und ein lokaler Daten-Fingerprint ausgegeben, **keine** Zugangsdaten oder Auth-/Vault-Werte.
+
+**Evidenzgrenze:** Erst nach **tatsächlich grünem GitHub-Runner** `SYNTHETIC_SLICES_VERIFIED`; bis dahin `IN_PROGRESS`. Ein vollständiger Provider-Restore bleibt **NOT_PROVEN**. Für einen später ausdrücklich autorisierten echten Restore müssen zusätzlich unabhängig nachgewiesen werden: alle 27 realen `auth`-Tabellen inklusive Sessions/MFA/OAuth/Provider-Konfiguration, tatsächliche Storage-Datei-Bytes und private ACLs, die vom Provider freigegebene Vault-Key-Portabilität oder sichere Re-Provisionierung, Rollen/Objekt-Owner/Default-Grants, `cron`/`pg_net`/`pgmq` und deaktivierte Webhooks sowie ein unabhängiger Offsite-Download und RPO/RTO. **Kein** produktiver Dump, keine Secrets und kein OCC-v2-Cutover.
+
 ## Reproduktion
 
 Auf einem isolierten Linux-Einbenutzer-Runner als unprivilegierter OS-Benutzer mit PostgreSQL-17-Server/Client, `pg_net 0.20.4`, Upstream-`pg_cron v1.6.4`, Python 3 und ripgrep. `PG17_BINDIR` kann den Pfad zu den PG17-Binaries angeben.

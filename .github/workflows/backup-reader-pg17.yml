@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'scripts/platform/backup-reader-contract-test.sh'
+      - 'scripts/platform/backup-recovery-slices-test.sh'
       - 'docs/platform/SUPABASE-BACKUP-READER-CONTRACT.md'
       - '.github/workflows/backup-reader-pg17.yml'
   workflow_dispatch:
@@ -24,7 +25,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Validate Bash syntax
-        run: bash -n scripts/platform/backup-reader-contract-test.sh
+        run: |
+          bash -n scripts/platform/backup-reader-contract-test.sh
+          bash -n scripts/platform/backup-recovery-slices-test.sh
       - name: Build PostgreSQL 17 fixture with pinned extension sources
         shell: bash
         run: |
@@ -72,4 +75,4 @@ jobs:
             --workdir /repo \
             --entrypoint /bin/bash \
             capital-ai-pg17-reader-fixture \
-            scripts/platform/backup-reader-contract-test.sh
+            -c 'bash scripts/platform/backup-reader-contract-test.sh && bash scripts/platform/backup-recovery-slices-test.sh'
