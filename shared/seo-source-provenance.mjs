@@ -13,8 +13,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 
   'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: 'f5d0b669403b45157538b48a4eca432ce3f13a26', contentSha256: '13a1c4cc8a3aa3b699bf0f7bb7044e2e1081881c9a038855ed5753341fa0fad2' }),
   'index.html': Object.freeze({
-    sourceBlobSha: 'a9ac24cc0891320e82b75983cbcdc826b1c08450',
-    contentSha256: 'f01fc617617e19ab2929f8735166fa2ed7c5d220560ab598f071f08b03d0b1ce',
+    sourceBlobSha: '41065d1e7025f3b4afec3ee05d60687fc231de37',
+    contentSha256: 'c385d667c66cc02ca92dbaf3becb2ee6f535fed884984a76d725b5c4b5b54d59',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
     sourceBlobSha: '8bfbf4b1159b1e23955c4a025a0c825e10f5d2ae',
@@ -66,7 +66,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '0fdbaf01298830facf680c3c6c37bdeca30d5bf26994cd2c0da2e26c49dea801',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
-  'index.html|src/features/home/HomePage.tsx': '263a0e9efe28ddf485bcf19b9302665f53ea251a3c9e43a3a4ed88034afc32b9',
+  'index.html|src/features/home/HomePage.tsx': '462f90d4463ea291674957f32a8493ec4ad1c3c81446e523a4ab61be49208802',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'c65373efc03ac581d3e3127f8479f29b0f9fb46e6eba17e631ca3863da5d7f0d',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',

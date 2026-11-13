@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { isSeoPublicImage } from '../shared/seo-indexing-policy.mjs';
 
 import { SEO_CONTENT_MANIFEST } from '../shared/seo-content-manifest.mjs';
 import { BLOG_ARTICLES } from '../shared/blog-articles.mjs';
@@ -11,6 +13,31 @@ import {
   seoJsonLdForPath,
   seoMetadataForPath,
 } from '../shared/seo-metadata.mjs';
+
+test('Search logo is an admitted square image and static and dynamic publisher schemas agree', async () => {
+  const readSourceOrDist = async (sourcePath, distPath) => {
+    try { return await readFile(new URL(sourcePath, import.meta.url)); }
+    catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      return readFile(new URL(distPath, import.meta.url));
+    }
+  };
+  const html = (await readSourceOrDist('../index.html', '../dist/index.html')).toString();
+  const staticSchema = JSON.parse(html.match(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/)[1]);
+  const publisher = seoJsonLdForPath('/')['@graph'].find(item => item['@id'].endsWith('#project'));
+  assert.deepEqual(publisher['@type'], ['Organization', 'Project']);
+  assert.deepEqual(staticSchema['@graph'].find(item => item['@id'] === publisher['@id']), publisher);
+  const imagePath = new URL(publisher.logo.url).pathname;
+  assert.equal(isSeoPublicImage(imagePath), true);
+  const image = await readSourceOrDist('../public' + imagePath, '../dist' + imagePath);
+  assert.equal(image.subarray(1, 4).toString(), 'PNG');
+  assert.equal(image.readUInt32BE(16), publisher.logo.width);
+  assert.equal(image.readUInt32BE(20), publisher.logo.height);
+  assert.ok(publisher.logo.width >= 112);
+  assert.equal(publisher.logo.width, publisher.logo.height);
+  assert.doesNotMatch(html, /rel="icon" type="image\/svg\+xml"/);
+  assert.match(html, /rel="icon" type="image\/png" sizes="96x96"/);
+});
 
 test('SEO-02 projects canonical metadata for every manifest entry', () => {
   for (const entry of SEO_CONTENT_MANIFEST) {
