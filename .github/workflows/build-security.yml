@@ -139,7 +139,7 @@ jobs:
         if: steps.nats_scope.outputs.run == 'true'
         run: |
           # No NATS tests or scans run while MARKET_BROKER_PAUSED=true.
-          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/deploy/Dockerfile.nats
           node --test scripts/verify-go-vuln-reachability.test.mjs
       - name: NATS-Disk-Bootstrap und nicht-root Server verifizieren
         if: steps.nats_scope.outputs.run == 'true'

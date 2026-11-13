@@ -50,6 +50,8 @@ This change does **not** create the role, database privileges, secrets, GCS uplo
 
 Reference: https://supabase.com/kb/troubleshooting/pg_dump-fails-with-query-would-be-affected-by-row-level-security-policy-1d5783
 
+Der [isolierte PostgreSQL-17-Berechtigungsvertrag für Issue #664](SUPABASE-BACKUP-READER-CONTRACT.md) dokumentiert die reproduzierten Risiken und den getesteten Exportumfang.
+
 ### Datenbankrolle separat vorbereiten
 
 1. Inventarisiere Exportobjekte, RLS, Tabellenbesitzer, Rollenmitgliedschaften sowie effektive Rechte aus `PUBLIC`. Berücksichtige dabei auch die ausführbaren Funktionen in allen für die Rolle erreichbaren Schemas. Prüfe im isolierten PostgreSQL-17-Ziel anhand derselben relevanten Erweiterungen und Grants.
