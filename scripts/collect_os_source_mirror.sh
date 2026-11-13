@@ -92,14 +92,15 @@ import hashlib,json,pathlib,sys
 root=pathlib.Path(sys.argv[1]); failures=int(sys.argv[2]); p=root/'os-source-verification.json'
 report=json.loads(p.read_text()) if p.exists() else {}
 files=[{'name':q.name,'sha256':hashlib.sha256(q.read_bytes()).hexdigest()} for q in sorted(root.glob('*.log'))]
+failed_recipes=sorted(q.stem for q in root.glob('*.log') if q.read_text(encoding='utf8',errors='replace').rstrip().endswith(('APORTS_FETCH_FAILED','APORTS_ARCHIVE_FAILED','APKBUILD_BLOB_MISMATCH','ABUILD_FETCH_VERIFY_FAILED')))
 # alpine-base is a pure metadata/release recipe with no external source declaration.
 unhashed=[n for n in report.get('noSha512Declarations',[]) if n != 'alpine-base']
 status='SOURCE_HASHES_VERIFIED_NON_AUTHORIZING' if failures==0 and report.get('archiveHashesVerified') is True and not unhashed else 'BLOCKED_NOT_PROVEN'
 summary={'schema':'CAPITAL_AI_ISOLATED_OS_SOURCE_COLLECTION@1','status':status,
          'checksFailClosed':True,'externalFetchFailures':failures,
          'sourceDeliveryProven':False,'redistributionApproved':False,
-         'publishedOCIManifestDigest':None,'verification':report,'logSha256':files}
+         'publishedOCIManifestDigest':None,'verification':report,'logSha256':files,'failedRecipes':failed_recipes}
 (root/'collection-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
-print(json.dumps({k:summary[k] for k in ('status','externalFetchFailures','sourceDeliveryProven','redistributionApproved')}))
+print(json.dumps({k:summary[k] for k in ('status','externalFetchFailures','sourceDeliveryProven','redistributionApproved','failedRecipes')}))
 PY
 if ! grep -q '"status": "SOURCE_HASHES_VERIFIED_NON_AUTHORIZING"' "$REPORT_DIR/collection-summary.json"; then exit 2; fi
