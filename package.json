@@ -6,7 +6,8 @@
   "scripts": {
     "test:domain-skills": "node --test scripts/domain-skills.test.mjs scripts/skill-routing.test.mjs",
     "test:blueprint-commerce": "node --test server/blueprint-commerce.test.mjs server/blueprint-private-cloud.test.mjs",
-    "test:screener-blueprint": "node --import tsx --test scripts/screener-blueprint-preview.test.mjs",
+    "test:screener-blueprint": "node --import tsx --test scripts/screener-blueprint-preview.test.mjs && node --check scripts/qa/screener-blueprint-reset-browser.mjs",
+    "test:screener-blueprint:browser": "node scripts/qa/screener-blueprint-reset-browser.mjs",
     "test:screener-branding-learning": "node --test scripts/media/screener-blueprint-badges.test.mjs scripts/growth/screener-learning-loop.test.mjs",
     "test:cads-growth": "node --import tsx --test scripts/cads-growth-quality.test.mjs",
     "benchmark:oss-market": "node --experimental-strip-types scripts/benchmark-oss-market-pipelines.mjs",
