@@ -85,6 +85,50 @@ test('apply submits only the canonical sitemap once and repeated execution is id
   assert.ok(f.calls.every(call => !['DELETE','PATCH'].includes(call.method)));
 });
 
+test('explicit resubmit performs one PUT even for a registered sitemap, without claiming a crawl', async () => {
+  const f = await fixture({ alreadyRegistered: true });
+  const result = await f.run('resubmit');
+  assert.equal(result.status, 'AUDIT_COMPLETE');
+  assert.equal(result.submission.action, 'RESUBMITTED');
+  assert.equal(result.submission.crawlRequested, false);
+  assert.equal(result.submission.crawlCompleted, false);
+  assert.equal(result.readOnly, false);
+  assert.equal(f.calls.filter(call => call.method === 'PUT').length, 1);
+});
+
+test('resubmit denies restricted roles and disabled write gates, even through direct MCP operation', async () => {
+  const f = await fixture({ permission: 'siteRestrictedUser', alreadyRegistered: true });
+  const result = await f.run('resubmit');
+  assert.equal(result.error, 'GSC_WRITE_PERMISSION_INSUFFICIENT');
+  assert.equal(f.calls.filter(call => call.method === 'PUT').length, 0);
+  const disabled = createGoogleMaintenance({ env: {}, fetchImpl: () => assert.fail('no provider call') });
+  await assert.rejects(disabled.call('gsc_resubmit_canonical_sitemap'), /GSC_WRITES_DISABLED/);
+  const restricted = createGoogleMaintenance({ env: { GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED: 'true', GOOGLE_MAINTENANCE_ACCESS_TOKEN: 'private-token' }, fetchImpl: f.fetchImpl });
+  await assert.rejects(restricted.call('gsc_resubmit_canonical_sitemap'), /GSC_WRITE_PERMISSION_INSUFFICIENT/);
+  assert.equal(f.calls.filter(call => call.method === 'PUT').length, 0);
+});
+
+test('agent MCP advertises exact Search operations with explicit write annotation and keeps GA4 disabled', async () => {
+  const { handleGoogleMaintenanceMessage } = await import('./google-maintenance-mcp.mjs');
+  const listed = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, {});
+  const names = listed.result.tools.map(tool => tool.name);
+  for (const name of ['gsc_get_expected_site','gsc_inspect_search_configuration','gsc_resubmit_canonical_sitemap']) assert.ok(names.includes(name));
+  const resubmit = listed.result.tools.find(tool => tool.name === 'gsc_resubmit_canonical_sitemap');
+  assert.equal(resubmit.annotations.readOnlyHint, false);
+  const config = JSON.parse(await readFile(new URL('../.mcp.json', import.meta.url), 'utf8'));
+  const maintenance = config.mcpServers['capital-ai-google-maintenance'].env;
+  assert.equal(maintenance.GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED, 'true');
+  assert.equal(maintenance.GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED, 'false');
+  assert.deepEqual(config.mcpServers['capital-ai-gsc'].args, ['scripts/gsc-mcp-guard.mjs']);
+  const f = await fixture({ alreadyRegistered: true });
+  const api = createGoogleMaintenance({ env: { GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED: 'true', GOOGLE_MAINTENANCE_ACCESS_TOKEN: 'private-token' }, fetchImpl: f.fetchImpl });
+  const denied = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'gsc_resubmit_canonical_sitemap', arguments: { url: 'https://other.example/' } } }, api);
+  assert.equal(denied.result.isError, true);
+  assert.equal(f.calls.length, 0);
+  const result = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'gsc_resubmit_canonical_sitemap', arguments: {} } }, api);
+  assert.equal(result.result.structuredContent.action, 'RESUBMITTED');
+});
+
 test('an unrelated property cannot be guessed or created', async () => {
   const f = await fixture({ sites: [{ siteUrl: 'https://other.example/', permissionLevel: 'siteOwner' }] });
   const result = await f.run('apply');
