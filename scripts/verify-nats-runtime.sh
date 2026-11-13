@@ -10,7 +10,8 @@ chmod 0755 "$tmp"
 cleanup() {
   docker rm -f "$name" capital-nats-negative >/dev/null 2>&1 || true
   docker volume rm "$volume" >/dev/null 2>&1 || true
-  rm -rf "$tmp"
+  # Only a mktemp-created disposable fixture; sudo is for host cleanup, not NATS.
+  sudo rm -rf -- "$tmp"
 }
 trap cleanup EXIT
 fail() { printf 'FAIL %s\n' "$*" >&2; exit 1; }
