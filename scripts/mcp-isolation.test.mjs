@@ -91,3 +91,6 @@ test('GA4 MCP Docker image contract requires a resolver-consistent patched OTel 
   assert.match(dockerfile, /version\('opentelemetry-api'\) == version\('opentelemetry-sdk'\) == '1\.45\.2'/);
   assert.doesNotMatch(dockerfile, /--no-deps/);
 });
+
+// Exercises the complete owner-only TinyFish readback fixture inside the existing security gate.
+import './tinyfish-owner-readback.test.mjs';

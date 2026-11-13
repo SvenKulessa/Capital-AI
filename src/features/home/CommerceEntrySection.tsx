@@ -4,7 +4,7 @@ import { PRICING_CATALOG, displayPriceEur } from '../../data/pricingCatalog';
 import { VOCABULARY_OFFER } from '../../data/vocabularyOffer';
 
 export const COMMERCE_ENTRY_COPY: Record<Locale, readonly [string, string, string, string, string, string, string, string]> = {
-  de: ['Wissen aufbauen. Werkzeuge vergleichen.', 'Entdecke die Lerninhalte und wähle anschließend den passenden Umfang deiner Analysewerkzeuge.', 'Lerninhalte entdecken', 'Finanzbegriffe, Methoden und Guides kennenlernen.', 'Lernportal öffnen', 'Analysewerkzeuge vergleichen', 'Analysefunktionen nach Tarif vergleichen. Providerdaten und KI-Modelle werden separat abgerechnet.', 'Tarife ansehen'],
+  de: ['Was erwartet dich im Learning Hub?', 'Starte mit dem öffentlichen Glossar oder einer Beispielrechnung. Kostenpflichtige Lernangebote sind separat gekennzeichnet.', 'Mit kostenlosen Lerninhalten starten', 'Lerne, wie ein Spread entsteht und wie Faktoren in einen Score eingehen.', 'Learning Hub öffnen', 'Analysewerkzeuge vergleichen', 'Analysefunktionen nach Tarif vergleichen. Providerdaten und KI-Modelle werden separat abgerechnet.', 'Tarife ansehen'],
   en: ['Build knowledge. Compare tools.', 'Explore learning resources, then choose the right scope for your analysis tools.', 'Explore learning resources', 'Discover financial terms, methods and guides.', 'Open learning portal', 'Compare analysis tools', 'Compare checks by plan. Provider data and AI models are billed separately.', 'View plans'],
   it: ['Impara. Confronta gli strumenti.', 'Esplora le risorse formative e scegli gli strumenti di analisi adatti a te.', 'Scopri le risorse formative', 'Esplora termini finanziari, metodi e guide.', 'Apri il portale formativo', 'Confronta gli strumenti di analisi', 'Confronta le verifiche per piano. Dati dei provider e modelli IA sono fatturati separatamente.', 'Vedi i piani'],
   fr: ['Apprenez. Comparez les outils.', 'Découvrez les ressources pédagogiques puis choisissez vos outils d’analyse.', 'Découvrir les ressources', 'Explorez les termes financiers, méthodes et guides.', 'Ouvrir le portail pédagogique', 'Comparer les outils d’analyse', 'Comparez les contrôles par offre. Les données fournisseurs et modèles IA sont facturés séparément.', 'Voir les offres'],
@@ -32,7 +32,9 @@ export function CommerceEntryContent({ locale, onNavigate }: { locale: Locale; o
           <article key={item.path} className="flex flex-col rounded-2xl border border-slate-700 bg-slate-950 p-5">
             <h3 className="text-lg font-semibold text-white">{item.title}</h3>
             <p className="mb-4 mt-2 flex-1 text-sm leading-relaxed text-slate-300">{item.description}</p>
-            <a href={item.path} onClick={event => follow(event, item.path)} className="self-start rounded-xl bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300">{item.cta}</a>
+            <a href={item.path} onClick={event => follow(event, item.path)} className={item.path === '/learning'
+              ? "self-start rounded-xl bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 hover:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"
+              : "self-start rounded-xl px-4 py-3 text-sm font-semibold text-amber-200 underline underline-offset-4 hover:text-amber-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"}>{item.cta}</a>
           </article>
         ))}
       </div>

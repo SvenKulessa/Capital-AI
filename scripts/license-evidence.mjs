@@ -17,7 +17,7 @@ function reviewedSpdxData(p) {
 
 // Package-bounded review: do not treat arbitrary MIT-0 metadata as reviewed.
 function reviewedNodemailer(root, path, p) {
-  const reviewedArtifacts = {"10.1.0": "sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==", "10.1.4": "sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==", "10.2.1": "sha512-ZrDNsPFoDMwefNs7sJwrYiEJ/CG4ClJWDZv05iNJsEBWa8GRDry1QJHTJxsuTAY9eDDKjX4k+q3SxslXJOao7w==", "10.3.1": "sha512-uF0AFsJC07Y1vdW7p580DKAnh7rAO+4UPSSB3mDCPNDufoiaOebV6JmrzpxB14OjEEEiBsNdYoM2Y+fN8M7BBA=="};
+  const reviewedArtifacts = {"10.1.0": "sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==", "10.1.4": "sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==", "10.2.1": "sha512-ZrDNsPFoDMwefNs7sJwrYiEJ/CG4ClJWDZv05iNJsEBWa8GRDry1QJHTJxsuTAY9eDDKjX4k+q3SxslXJOao7w==", "10.3.1": "sha512-uF0AFsJC07Y1vdW7p580DKAnh7rAO+4UPSSB3mDCPNDufoiaOebV6JmrzpxB14OjEEEiBsNdYoM2Y+fN8M7BBA==", "10.4.0": "sha512-fyy6r4Q5euRJ9Qr3Cts9K7SZrfe9zmz9oLOYiAR02MEJRDRci+99y0OoYBYBgpLffOqkkjXrB/d26VfiMje/kA=="};
   const licensePath = join(root, 'docs/licenses/nodemailer-10.1.0-MIT-0.txt');
   return path === 'node_modules/nodemailer' && Object.hasOwn(reviewedArtifacts, p.version) && p.license === 'MIT-0'
     && p.resolved === `https://registry.npmjs.org/nodemailer/-/nodemailer-${p.version}.tgz`
@@ -26,13 +26,24 @@ function reviewedNodemailer(root, path, p) {
     && sha256(readFileSync(licensePath)) === '4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78';
 }
 
+function reviewedResvg(root, path, p) {
+  const licensePath = join(root, 'docs/licenses/resvg-wasm-2.6.2-MPL-2.0.txt');
+  return path === 'node_modules/@resvg/resvg-wasm' && p.dev === true && p.version === '2.6.2'
+    && p.license === 'MPL-2.0'
+    && p.resolved === 'https://registry.npmjs.org/@resvg/resvg-wasm/-/resvg-wasm-2.6.2.tgz'
+    && p.integrity === 'sha512-FqALmHI8D4o6lk/LRWDnhw95z5eO+eAa6ORjVg09YRR7BkcM6oPHU9uyC0gtQG5vpFLvgpeU4+zEAz2H8APHNw=='
+    && existsSync(licensePath)
+    && sha256(readFileSync(licensePath)) === '4b89d4518bd135ab4ee154a7bce722246b57a98c3d7efc1a09409898160c2bd1';
+}
+
 export function lockInventory(root) {
   const raw = readFileSync(join(root, 'package-lock.json'));
   const lock = JSON.parse(raw);
   if (lock.lockfileVersion !== 3 || !lock.packages) throw new Error('Expected npm lockfile v3');
   const packages = Object.entries(lock.packages).filter(([path]) => path).sort(([a], [b]) => a.localeCompare(b)).map(([path, p]) => {
     const selectedLicense = alternatives.get(p.license) || p.license || null;
-    const buildReview = selectedLicense === 'MPL-2.0' && /(^|\/)node_modules\/lightningcss(?:-[^/]+)?$/.test(path);
+    const buildReview = (selectedLicense === 'MPL-2.0' && /(^|\/)node_modules\/lightningcss(?:-[^/]+)?$/.test(path))
+      || reviewedResvg(root, path, p);
     const dependencyDistributionReview = (path === 'node_modules/tweetnacl' && p.version === '1.0.3' && selectedLicense === 'Unlicense')
       || reviewedNodemailer(root, path, p);
     const attributionReview = path === 'node_modules/caniuse-lite' && selectedLicense === 'CC-BY-4.0';

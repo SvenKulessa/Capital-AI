@@ -75,10 +75,7 @@ export function HomePage({
   return (
     <>
 
-      <Hero
-        onStartAnalysis={onOpenAnalysis}
-        onExploreProduct={onStartProductTour}
-      />
+      <Hero onExploreProduct={onStartProductTour} />
 
       <section aria-label="Produkt entdecken" className="mx-auto max-w-7xl px-5 py-6">
         <button type="button" onClick={onStartProductTour} className="rounded-[3rem] border border-cyan-300/40 bg-cyan-950/60 px-8 py-5 text-left text-cyan-100 shadow-lg motion-safe:animate-[capital-cloud-float_8s_ease-in-out_infinite]">

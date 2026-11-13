@@ -35,7 +35,8 @@ test('homepage uses shared 3D brand artwork with a static fallback and preserves
   assert.match(hero, /<BrandGlobe paused=\{globePaused\}/);
   assert.match(globe, /src=\{BRAND_GLOBE.asset\}/);
   assert.match(globe, /reducedMotion !== false/);
-  assert.match(hero, /onStartAnalysis/);
+  assert.match(hero, /id="hero-open-learning-link" href="\/learning"/);
+  assert.match(hero, /id="hero-start-analysis-btn" href="\/marketscreener"/);
   assert.match(hero, /onExploreProduct/);
   assert.doesNotMatch(hero, /glowing_earth_nodes_1789997454893.jpg/);
 });

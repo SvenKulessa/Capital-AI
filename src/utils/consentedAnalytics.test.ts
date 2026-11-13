@@ -27,6 +27,14 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     const commands = () => w.dataLayer.map((args: IArguments) => Array.from(args));
     const defaults = commands().find((c: any[]) => c[0] === 'consent')[2];
     assert.equal(defaults.ad_storage, 'denied');assert.equal(defaults.ad_user_data, 'denied');assert.equal(defaults.ad_personalization, 'denied');
+    assert.equal(defaults.analytics_storage, 'denied');
+    const consentCommands = commands().filter((command: any[]) => command[0] === 'consent');
+    assert.deepEqual(consentCommands.map((command: any[]) => command[1]), ['default', 'update']);
+    assert.deepEqual(consentCommands[1][2], { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+    const grantIndex = commands().findIndex((command: any[]) => command[0] === 'consent' && command[1] === 'update');
+    assert.ok(grantIndex < commands().findIndex((command: any[]) => command[0] === 'config'));
+    assert.ok(grantIndex < commands().findIndex((command: any[]) => command[0] === 'event'));
+
     sendPageView('/learning?email=private@example.test#private');sendPageView('/blog?token=private-token');
     const receipt = '5cf37f93-3eaf-4d6d-9c4c-4247d05a7d72';trackReceivedLearningInquiry(receipt);trackReceivedLearningInquiry(receipt);
     const events = commands().filter((c: any[]) => c[0] === 'event');

@@ -13,6 +13,9 @@ import { fileURLToPath } from 'node:url';
 import { assessCadsContentCampaign, assessCadsAssetIdentity } from '../../packages/benchmark-core/growth-quality.mjs';
 import { buildDraftContentSocialPackage } from '../../src/contracts/contentSocialPackage.ts';
 import { NEWS_INTERVAL } from '../merge-milestone.mjs';
+import { PIPELINE_GRAPHIC_ALT, PIPELINE_GRAPHIC_HEIGHT, PIPELINE_GRAPHIC_WIDTH, renderSocialPipelineGraphic } from './social-pipeline-graphic.mjs';
+
+const PIPELINE_GRAPHIC_EVIDENCE = 'docs/licenses/SOCIAL-PIPELINE-RENDERER.md';
 
 export const BRAND_ASSET = 'public/branding/universe/hero-universe-globe.webp';
 export const BRAND_SHA256 = 'd510ac752e79314d69475a7645c554625b86ed676b0b04aabbc2869599de8eb4';
@@ -120,12 +123,17 @@ export async function accessibilityWorker(news, {fileStat=stat}={}) {
   }};
 }
 
-export function renderDraftHtml(bundle, watermarkBytes) {
+export function renderDraftHtml(bundle, watermarkBytes, pipelinePng) {
   if (!watermarkBytes || digest(watermarkBytes) !== BRAND_SHA256) {
     throw Error('SOCIAL_BATCH_WATERMARK_DIGEST_MISMATCH');
   }
   // Standalone previews must not depend on remote same-origin-only resources.
   const watermarkSrc = 'data:image/webp;base64,' + Buffer.from(watermarkBytes).toString('base64');
+  const pipelineFigure = pipelinePng
+    ? '<figure><img width="' + PIPELINE_GRAPHIC_WIDTH + '" height="' + PIPELINE_GRAPHIC_HEIGHT
+      + '" src="data:image/png;base64,' + pipelinePng.toString('base64') + '" alt="'
+      + escapeHtml(PIPELINE_GRAPHIC_ALT) + '"></figure>'
+    : '';
   const headline = escapeHtml(bundle.headline);
   const body = escapeHtml(bundle.article);
   const sources=(bundle.sourcePrs || []).filter(p=>Number.isSafeInteger(p.number)&&p.number>0)
@@ -138,13 +146,14 @@ export function renderDraftHtml(bundle, watermarkBytes) {
     'main{position:relative;isolation:isolate;max-width:58rem;margin:3rem auto;padding:clamp(1rem,4vw,3rem);border:1px solid #53607b;background:#090e21;border-radius:1.5rem}'+
     '.watermark{position:absolute;z-index:0;pointer-events:none;inset:10% auto auto 15%;width:75%;height:auto;opacity:.09}main>:not(.watermark){position:relative;z-index:1}'+
     'h1{color:#f5c453;font-size:clamp(1.5rem,4vw,2.7rem);line-height:1.2}'+
+    'figure{margin:1rem 0}figure img{width:100%;height:auto}'+
     '.status{font-weight:bold;color:#f5c453}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}'+
     'a{color:#77d9ff}a:focus-visible{outline:3px solid #f5c453;outline-offset:4px}'+
     '@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}'+
     '</style></head><body><main><img class="watermark" src="'+watermarkSrc+'" alt="" aria-hidden="true">'+
     '<p class="status">ENTWURF · NICHT VERÖFFENTLICHT</p><h1>'+headline+'</h1>'+
     '<p>Quellengebundener Entwicklungsbericht. Keine Bestätigung eines Live-Deployments und keine Anlageberatung.</p>'+
-    '<pre>'+body+'</pre><section aria-labelledby="sources-heading"><h2 id="sources-heading">Quellen</h2><ol>'+sources+'</ol></section>'+
+    pipelineFigure+'<pre>'+body+'</pre><section aria-labelledby="sources-heading"><h2 id="sources-heading">Quellen</h2><ol>'+sources+'</ol></section>'+
     '<p>CADS: technische Prüfung; redaktionelle und rechtliche Freigabe weiterhin erforderlich.</p></main></body></html>';
 }
 
@@ -165,10 +174,15 @@ export async function runBatch(news, {expectedLast,mergedSha,env=process.env,fet
   const campaign=news.contentEnginePlan.campaign,contentId='merge-batch-'+news.lastBatchPr+'-'+news.sourceSha.slice(0,12);
   const asset={assetId:'capital-ai-watermark-'+contentId,contentId,kind:'IMAGE',
     sha256:verifiedBrandSha,mimeType:'image/webp',evidenceRef:BRAND_RIGHTS_REF,sourceSha:mergedSha};
-  const manifest=buildDraftContentSocialPackage({campaign,contentId,assets:[asset]});
+  await loadFile(PIPELINE_GRAPHIC_EVIDENCE);
+  const {png}=await renderSocialPipelineGraphic();
+  const graphicAsset={assetId:'capital-ai-pipeline-'+contentId,contentId,kind:'IMAGE',
+    sha256:digest(png),mimeType:'image/png',evidenceRef:PIPELINE_GRAPHIC_EVIDENCE,sourceSha:mergedSha};
+  const manifest=buildDraftContentSocialPackage({campaign,contentId,assets:[asset,graphicAsset]});
   const cadsCampaign=assessCadsContentCampaign(campaign);
   const cadsAsset=assessCadsAssetIdentity(asset,{sourceSha:mergedSha,contentId});
-  if(cadsCampaign.technicalStatus!=='PASS'||cadsAsset.technicalStatus!=='PASS')throw Error('SOCIAL_BATCH_CADS_REJECTED');
+  const cadsGraphic=assessCadsAssetIdentity(graphicAsset,{sourceSha:mergedSha,contentId});
+  if([cadsCampaign,cadsAsset,cadsGraphic].some(result=>result.technicalStatus!=='PASS'))throw Error('SOCIAL_BATCH_CADS_REJECTED');
 
   const headline=plain(news.title).slice(0,160);
   const fallback='CAPITAL-AI Entwicklungsupdate: '+NEWS_INTERVAL+' gemergte Pull Requests, belegbar über GitHub. Funktionen und Produktionsstatus separat prüfen.';
@@ -185,18 +199,20 @@ export async function runBatch(news, {expectedLast,mergedSha,env=process.env,fet
     vocabularyContext:contentVocabularyContext(news.article),
     watermark:{asset:BRAND_ASSET,url:BRAND_URL,opacity:0.09,
       sha256:verifiedBrandSha,licenseEvidence:BRAND_RIGHTS_REF,decorative:true},
+    graphic:{assetId:graphicAsset.assetId,sha256:graphicAsset.sha256,mimeType:graphicAsset.mimeType,
+      width:PIPELINE_GRAPHIC_WIDTH,height:PIPELINE_GRAPHIC_HEIGHT,alt:PIPELINE_GRAPHIC_ALT,renderer:'@resvg/resvg-wasm@2.6.2'},
     workerIntegration:{contract:WORKER_CONTRACT,mode:'PROMISE_ALL_PARALLEL',
       openai:{status:openai.status},firecrawl:{status:firecrawl.status,
         checkedUrls:firecrawl.data?.map(x=>x.url)||[],
         sourceSnippets:firecrawl.data||[],provenance:'UNTRUSTED_ADVISORY_ONLY'},
       accessibility:accessibility.data,tools:toolSuitability()},
     cads:{sequence:'AFTER_SOCIAL_ENGINE',technicalStatus:'PASS',campaign:cadsCampaign,
-      asset:cadsAsset,editorialReview:'REVIEW_REQUIRED',rightsReview:'REVIEW_REQUIRED',
+      asset:cadsAsset,graphic:cadsGraphic,editorialReview:'REVIEW_REQUIRED',rightsReview:'REVIEW_REQUIRED',
       accessibilityReadback:'NOT_PROVEN',publicationApproval:false},
     socialEngine:{adapter:'CONTENT_SOCIAL_PACKAGE',publicationAuthority:'SOCIAL_MEDIA_ENGINE_ONLY',
       approvalRefs:[],deliveryReceipts:[],publicPublishAllowed:false},
   };
-  return {outcome,html:renderDraftHtml({headline,article:news.article,sourcePrs:news.sourcePrs},watermarkBytes)};
+  return {outcome,png,html:renderDraftHtml({headline,article:news.article,sourcePrs:news.sourcePrs},watermarkBytes,png)};
 }
 
 async function cli(){
@@ -212,12 +228,13 @@ async function cli(){
     throw Error('SOCIAL_BATCH_MERGE_EVENT_INVALID');
   }
   const record=JSON.parse(await readFile('src/data/controlCenterNews.json','utf8'));
-  const {outcome,html}=await runBatch(record,{expectedLast:expected,mergedSha:sha});
+  const {outcome,html,png}=await runBatch(record,{expectedLast:expected,mergedSha:sha});
   const dir='artifacts/social-content-candidates';
   const stem=dir+'/merge-batch-'+expected+'-'+sha.slice(0,12);
   await mkdir(dir,{recursive:true});
   await writeFile(stem+'.json',JSON.stringify(outcome,null,2)+'\n',{flag:'wx',mode:0o600});
   await writeFile(stem+'.html',html,{flag:'wx',mode:0o600});
+  await writeFile(stem+'.png',png,{flag:'wx',mode:0o600});
   process.stdout.write('SOCIAL_BATCH_DRAFT_READY pr='+expected+
     ' cads='+outcome.cads.technicalStatus+' published=false\n');
 }

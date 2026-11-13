@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-11-06",
+  "observedAt": "2026-11-13",
   "sourceRepository": "The-PR-Agent/pr-agent",
   "release": "v0.47.0",
   "sourceSha": "8e5a9295973b24af4b70cafd0b660a230811ef9e",
-  "correlatedMainSha": "bea9223d1d661259d147d2cd22dc09004e62351f",
+  "correlatedMainSha": "99d310888ad81e4bcc7981a4982801094579136c",
   "lockGenerator": "uv==0.12.10",
   "patchedVersions": {
     "fsspec": [
@@ -38,23 +38,23 @@
       "1.2.19"
     ],
     "opentelemetry-api": [
-      "1.45.1"
+      "1.45.2"
     ],
     "opentelemetry-sdk": [
-      "1.45.1"
+      "1.45.2"
     ],
     "opentelemetry-exporter-otlp-proto-http": [
-      "1.45.1"
+      "1.45.2"
     ],
     "pyasn1": [
       "0.6.5"
     ]
   },
   "sha256": {
-    "uv.lock": "eca113b5ff44695eb256c8508a76bddf594bc300a932a5fb7e98e3058f9214e5",
-    "pyproject.toml": "b16cabb0da3cc57e23d90903935113a54a4acfa3d7f7c9709a77320fc53e5831",
+    "uv.lock": "91a9c7bd5b0a0e15be3d02ad510eac5680e0286d296030003afb8669043fd50d",
+    "pyproject.toml": "5dbc0984c04fb82b29946e6356561395963cd9b13d94c9c3b9bd3ce286cb330c",
     "UPSTREAM-LICENSE.txt": "ea19f3b6bfd70ce0bf8d60fc5b15cdb789fcf86a63c0d6542977f888519f5788",
-    "smoke.py": "aaa1a05e24da495f584a3137975cae11be73a1023f528bb0fd4621bb72a002ed"
+    "smoke.py": "4e9990c93537d65dae0db1524cd18d7f40fae89a228cb6b7a8d02b09bf1ce371"
   },
   "pythonImage": "python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d",
   "uvImage": "ghcr.io/astral-sh/uv:0.12.10@sha256:2bb3ebca0a796a155094a27773d290c4b074572e6107f171d88d086682fd2500",
@@ -86,13 +86,14 @@
   },
   "audit": {
     "status": "PENDING_FRESH_CI",
-    "scope": "oauthlib 4.0.1 security patch requires fresh current-head source/image scan and offline reviewer runtime regression; historical audit does not clear this revision"
+    "scope": "OpenTelemetry 1.45.2 traceparent ReDoS patch; lock check and isolated positive/negative propagator regression passed locally; full reviewer image/compatibility scan requires current PR CI."
   },
   "localPatches": [
     "Security dependency floors and coherent OpenTelemetry 1.45.1 family.",
     "Unused pre-commit development hook removed from runtime candidate: no repository workflow uses it; its virtualenv>=21.14.9 needs packaging>=26.3, incompatible with runtime langfuse packaging<26. No resolver override or vulnerability suppression.",
     "2026-10-31: pyasn1 locked 0.6.4 \u2192 0.6.5 (four HIGH security advisories); PyPI 0.6.5 wheel and sdist SHA-256 pinned. Offline integrity is checked by the primary and comparison reviewer build workflows.",
-    "2026-11-06: oauthlib 4.0.0 -> 4.0.1 for CVE-2026-49272 / GHSA-3jp2-3mrg-2vxc. uv 0.12.10 target-only resolver update; wheel and sdist bytes verified against PyPI SHA-256. Offline smoke rejects missing/unknown device codes. No vulnerability suppression or model/provider activation."
+    "2026-11-06: oauthlib 4.0.0 -> 4.0.1 for CVE-2026-49272 / GHSA-3jp2-3mrg-2vxc. uv 0.12.10 target-only resolver update; wheel and sdist bytes verified against PyPI SHA-256. Offline smoke rejects missing/unknown device codes. No vulnerability suppression or model/provider activation.",
+    "2026-11-13: coherent OpenTelemetry 1.45.2 / semantic conventions 0.66b2 family resolves CVE-2026-126360 / GHSA-mf5v-w3w3-f6cg; regenerated with uv 0.12.10, no dependency overrides or suppressions. Offline smoke includes malformed/oversized traceparent and valid context regression."
   ],
   "oauthlibSecurityReview": {
     "advisory": "https://github.com/oauthlib/oauthlib/security/advisories/GHSA-3jp2-3mrg-2vxc",

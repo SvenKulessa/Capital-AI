@@ -12,9 +12,49 @@ import {
   SEO_INDEXING_STATES,
   SEO_ROUTE_POLICY,
   isSeoIndexable,
+  SEO_PUBLIC_IMAGE_PATHS,
   resolveSeoIndexingPolicy,
   seoIndexableStaticPaths,
 } from '../shared/seo-indexing-policy.mjs';
+
+test('Search images are indexable only after an exact successful static read; pages and other artifacts stay excluded', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'capital-search-images-'));
+  await writeFile(path.join(root, 'index.html'), await readIndexTemplate());
+  for (const imagePath of SEO_PUBLIC_IMAGE_PATHS) {
+    const target = path.join(root, imagePath);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, 'image-fixture');
+  }
+  const unlisted = '/branding/asset-pack/avatars/unlisted.png';
+  await writeFile(path.join(root, unlisted), 'not-admitted');
+  const server = createApp(root);
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  try {
+    for (const imagePath of SEO_PUBLIC_IMAGE_PATHS) {
+      const response = await fetch(origin + imagePath);
+      assert.equal(response.status, 200, imagePath);
+      assert.equal(response.headers.get('x-robots-tag'), null, imagePath);
+      assert.equal(isSeoIndexable(imagePath), false, 'images must not join the HTML sitemap');
+      await response.arrayBuffer();
+    }
+    for (const excluded of [unlisted, '/studio/blueprints', '/marketscreener/scorer', '/profile', '/dashboard', '/branding/asset-pack/favicon/favicon.svg']) {
+      const response = await fetch(origin + excluded);
+      assert.match(response.headers.get('x-robots-tag'), /noindex/, excluded);
+      await response.arrayBuffer();
+    }
+    await rm(path.join(root, SEO_PUBLIC_IMAGE_PATHS[0]));
+    const missing = await fetch(origin + SEO_PUBLIC_IMAGE_PATHS[0]);
+    assert.equal(missing.status, 404);
+    assert.match(missing.headers.get('x-robots-tag'), /noindex/);
+    await missing.arrayBuffer();
+    const sitemap = await (await fetch(origin + '/sitemap.xml')).text();
+    for (const imagePath of SEO_PUBLIC_IMAGE_PATHS) assert.ok(!sitemap.includes(imagePath));
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 async function readLegalTemplate(route) {
   try {
@@ -297,6 +337,19 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
       const html = await response.text();
       assert.doesNotMatch(html, /capital-ai-public-snapshot/, route);
     }
+    const articleResponse = await fetch(origin + '/blog/datenkonzept-blueprint');
+    assert.equal(articleResponse.status, 200);
+    assert.match(await articleResponse.text(), /href="https:\/\/capital-ai\.online\/marketscreener\/dokumentation"/);
+
+    const blueprintResponse = await fetch(origin + '/marketscreener/dokumentation');
+    assert.equal(blueprintResponse.status, 200);
+    assert.equal(blueprintResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
+    const blueprintHtml = await blueprintResponse.text();
+    assert.match(blueprintHtml, /<main id="capital-ai-blueprint-preview" lang="de"/);
+    assert.match(blueprintHtml, /Synthetisches Beispiel/);
+    assert.match(blueprintHtml, /href="\/pricing">Bestehende Angebote vergleichen<\/a>/);
+    assert.doesNotMatch(blueprintHtml, /rel="canonical"|type="application\/ld\+json"|\/api\/billing/);
+
     const pricingResponse = await fetch(origin + '/pricing');
     assert.equal(pricingResponse.status, 200);
     assert.equal(pricingResponse.headers.get('x-robots-tag'), 'noindex, nofollow');

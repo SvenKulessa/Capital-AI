@@ -12,6 +12,9 @@ import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
 import { createYouTubePrivateUpload } from './social-media/youtube-private-upload.mjs';
 import { createSocialYouTubeOAuthStart } from './social-media/youtube-oauth-start.mjs';
+import { createInstagramFacebookStart } from './social-media/instagram-oauth-start.mjs';
+import { createInstagramFacebookExchange } from './social-media/instagram-oauth-exchange.mjs';
+import { createInstagramFacebookStatus } from './social-media/instagram-account-status.mjs';
 import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-exchange.mjs';
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
@@ -26,6 +29,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
+import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -47,6 +51,7 @@ import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
 import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
+  isSeoPublicImage,
   robotsDirectiveFor,
   seoIndexableStaticPaths,
 } from '../shared/seo-indexing-policy.mjs';
@@ -262,6 +267,21 @@ function injectPricingFallback(html, pathname) {
       '$1Tarifinformationen und Learning-Zugang: Verfügbarkeit, Preise und Checkout-Voraussetzungen prüfen.$2');
 }
 
+function injectBlueprintPreview(html, pathname) {
+  if (pathname !== '/marketscreener/dokumentation' || !html.includes('<div id="root"></div>')) return html;
+  const preview = `<main id="capital-ai-blueprint-preview" lang="de" class="mx-auto max-w-2xl space-y-4 px-4 py-8">
+    <h1 class="text-2xl font-bold">Screener-Blueprint · Vorschau</h1>
+    <p>Der Blueprint zeigt, wie eine Analyse Datenquellen prüft, Faktoren gewichtet und einen Score nachvollziehbar berechnet.</p>
+    <h2 class="text-xl font-semibold">Synthetisches Beispiel</h2>
+    <p>Ein Faktor mit 80 von 100 Punkten und einem Gewicht von 50 % trägt 40 Punkte zum Gesamtscore bei.</p>
+    <p>Die Vorschau verwendet synthetische Daten. Sie enthält keine Live-Marktdaten und bietet keinen Kauf des Blueprint-Bundles an.</p>
+    <a class="inline-flex min-h-11 items-center underline" href="/pricing">Bestehende Angebote vergleichen</a>
+  </main>`;
+  return html
+    .replace('<div id="root"></div>', `<div id="root">${preview}</div>`)
+    .replace(/<title>[^<]*<\/title>/, '<title>Screener-Blueprint · Vorschau | Capital-AI</title>');
+}
+
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
   const lesson = [['Erklärung',entry.detailedExplanation],['Regel / Formel',entry.formulaOrRule],['Synthetisches Praxisbeispiel',entry.practicalExample],['Merksatz',entry.keyTakeaway]].filter(([,text])=>text).map(([title,text])=>`<section><h2>${escapeHtml(title)}</h2><p>${escapeHtml(text)}</p></section>`).join('');
@@ -329,6 +349,16 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
   });
+  const socialInstagramOAuthStart = createInstagramFacebookStart({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+  });
+  const socialInstagramAccountStatus = createInstagramFacebookStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const instagramExchange = createInstagramFacebookExchange({
+    env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+  });
   const xExchange = createSocialXOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const youtubeExchange = createSocialYouTubeOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeAccountStatus = createSocialYouTubeAccountStatus({
@@ -355,7 +385,10 @@ export function createApp(root = defaultRoot, options = {}) {
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
     exchangeCode: options.socialOAuthCodeExchange
-      || (trusted => trusted.channel === 'YOUTUBE' ? youtubeExchange(trusted) : xExchange(trusted)),
+      || (trusted => trusted.channel === 'YOUTUBE' ? youtubeExchange(trusted)
+          : trusted.channel === 'INSTAGRAM' ? instagramExchange(trusted)
+          : trusted.channel === 'X' ? xExchange(trusted)
+          : Promise.reject(new Error('SOCIAL_OAUTH_CHANNEL_NOT_IMPLEMENTED'))),
   });
   const privateMarketCache = options.privateMarketCache || createPrivateMarketCache({
     env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
@@ -366,6 +399,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
+  const tinyfishOwnerReadback = createTinyfishOwnerReadback({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).MARKET_BROKER_PAUSED === 'false' &&
     ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
@@ -450,6 +484,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
+    if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
+    if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
   if (await youtubePrivateUpload.handle(req, res, url, json)) return;
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
@@ -465,6 +501,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
   if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
+  if (await tinyfishOwnerReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
@@ -687,6 +724,12 @@ export function createApp(root = defaultRoot, options = {}) {
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
     let body = await readFile(resolved);
+    // Lift noindex only after an exact, existing, non-HTML image was read.
+    // Missing images, SPA fallbacks and all other artifacts stay fail-closed.
+    if (isSeoPublicImage(url.pathname) && resolved === asset &&
+        ['.png', '.ico', '.jpg'].includes(path.extname(file))) {
+      res.removeHeader('X-Robots-Tag');
+    }
     let documentLocale = null;
     // Reuse the outer canonical publicPath; redeclaring here would cause a TDZ in static route resolution.
     if (path.extname(file) === '.html') {
@@ -712,7 +755,8 @@ export function createApp(root = defaultRoot, options = {}) {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));
-       body = Buffer.from(injectPricingFallback(body.toString('utf8'), publicPath));
+      body = Buffer.from(injectPricingFallback(body.toString('utf8'), publicPath));
+      body = Buffer.from(injectBlueprintPreview(body.toString('utf8'), publicPath));
       const pathLocale = localeFromLandingPath(publicPath);
       if (pathLocale && publicPath !== '/') {
         body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));

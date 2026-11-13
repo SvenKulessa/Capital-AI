@@ -6,7 +6,7 @@
   "contentId": "capital-ai-instagram-etf-kosten-20261110",
   "campaignId": "capital-ai-instagram-etf-learning-v1",
   "altTextEditorialStatus": "TEXT_REVIEWED",
-  "commercialRightsStatus": "REVIEW_REQUIRED",
+  "commercialRightsStatus": "OWNER_ATTESTED",
   "rightsVerified": false,
   "approvalRef": null,
   "approvals": [],
@@ -25,7 +25,7 @@
       "sha256": "3fbfb6eafd563d2f301f138222dfc34f3ab917ae7d3524aae2ff7c932342891b",
       "altText": "Folie 1 von 3: Drei Kostenbestandteile beim ETF-Kauf: Ordergebühren des Brokers, Geld-Brief-Spanne (Bid-Ask-Spread) und laufende Fondskosten. Der angezeigte Kurs allein zeigt nicht alle Kosten.",
       "editorialStatus": "TEXT_REVIEWED",
-      "rightsStatus": "REVIEW_REQUIRED"
+      "rightsStatus": "OWNER_ATTESTED"
     },
     {
       "assetId": "etf-kosten-02-jpeg",
@@ -33,7 +33,7 @@
       "sha256": "9df49fedeb3982dfd70be6dacf0e064ee0ad408caf48e46aaba9f6f556076aae",
       "altText": "Folie 2 von 3: Fiktives Spread-Beispiel. Kaufkurs (Ask): 100,10 Euro. Verkaufskurs (Bid): 99,90 Euro. Differenz: 0,20 Euro je Anteil zu einem fiktiven Zeitpunkt. Keine Echtzeitkurse.",
       "editorialStatus": "TEXT_REVIEWED",
-      "rightsStatus": "REVIEW_REQUIRED"
+      "rightsStatus": "OWNER_ATTESTED"
     },
     {
       "assetId": "etf-kosten-03-jpeg",
@@ -41,9 +41,13 @@
       "sha256": "2ef5b75783c7c704fa1a596a8910d3d74aebcc5f55728729f36ba80326372fc5",
       "altText": "Folie 3 von 3: Prüfliste vor dem ETF-Kauf mit vier Punkten: Orderkosten, Spread, laufende Fondskosten beziehungsweise TER sowie Verlustrisiken und Anlagehorizont. Allgemeine Finanzbildung, keine individuelle Anlageberatung.",
       "editorialStatus": "TEXT_REVIEWED",
-      "rightsStatus": "REVIEW_REQUIRED"
+      "rightsStatus": "OWNER_ATTESTED"
     }
   ],
   "captionStatus": "REVIEW_REQUIRED",
-  "evidenceNote": "JPEG hashes are distinct from verified original PNG and SVG hashes. This is public-safe review metadata, not private Drive access or a publication approval."
+  "evidenceNote": "JPEG hashes are distinct from verified original PNG and SVG hashes. This is public-safe review metadata, not private Drive access or a publication approval.",
+  "rightsAttestationStatus": "OWNER_SELF_ATTESTED",
+  "rightsAttestationRef": "docs/growth/evidence/instagram-etf-jpeg-owner-rights-20261112.json",
+  "rightsAttestationDate": "2026-11-12",
+  "rightsVerificationNote": "Owner declaration for exactly these JPEG hashes, not independent legal verification or trusted immutable-byte rights readback; rightsVerified=false is deliberate, and no publishing approval is granted."
 }

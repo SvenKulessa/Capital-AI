@@ -36,6 +36,7 @@ export const FIRST_X_PILOT_PACKAGE = buildDraftContentSocialPackage({
   }],
 });
 export const FIRST_X_PILOT_STATE = Object.freeze({
+  snapshotDate: '2026-10-14',
   status: 'DRAFT',
   review: 'REVIEW_REQUIRED',
   published: 'NOT_PROVEN',

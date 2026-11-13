@@ -99,6 +99,7 @@
 !server/google-analytics-mcp.mjs
 !server/google-analytics-readback.mjs
 !server/google-analytics-readback.test.mjs
+!server/tinyfish-owner-readback.mjs
 !server/kraken-order-dry-run.mjs
 !server/kraken-order-dry-run.test.mjs
 !server/uniswap-trading.mjs
@@ -167,6 +168,7 @@
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs
+!scripts/growth/social-pipeline-graphic.mjs
 !scripts/growth/pr-merge-social-batch.test.mjs
 !scripts/generate-chart-learning.tsx
 
@@ -185,9 +187,12 @@
 !scripts/independent-review-manifest.mjs
 !scripts/independent-review-manifest.test.mjs
 !scripts/domain-skills.test.mjs
+!scripts/solo-maintainer-flow.test.mjs
 !scripts/universe-hero.test.mjs
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
+!scripts/qa/
+!scripts/qa/screener-blueprint-reset-browser.mjs
 !scripts/cads-growth-quality.test.mjs
 !scripts/masterclass-templates.test.mjs
 !scripts/static-legal-routes.test.mjs
@@ -397,6 +402,10 @@
 !server/social-media/provider-publish.test.mjs
 !server/social-media/instagram-carousel.mjs
 !server/social-media/instagram-carousel.test.mjs
+!server/social-media/instagram-oauth-start.mjs
+!server/social-media/instagram-oauth-exchange.mjs
+!server/social-media/instagram-account-status.mjs
+!server/social-media/instagram-oauth.test.mjs
 !server/social-media/provider-execution.mjs
 !server/social-media/google-neural2-tts.mjs
 !server/social-media/google-neural2-tts.test.mjs

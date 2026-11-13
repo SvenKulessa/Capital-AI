@@ -1,0 +1,60 @@
+name: PRODUCT Blueprint Mobile No-JavaScript QA
+on:
+  pull_request:
+    paths:
+      - 'server/index.mjs'
+      - 'server/seo-indexing-policy.test.mjs'
+      - 'scripts/qa/blueprint-mobile-nojs.mjs'
+      - '.github/workflows/product-blueprint-mobile-nojs.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  blueprint-browser:
+    name: Blueprint Chromium Mobile No-JS
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26.10.0'
+          cache: npm
+      - name: Build exact PR tree
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build
+      - name: Start isolated local BFF
+        env:
+          PORT: '17871'
+          NODE_ENV: production
+          MARKET_BROKER_PAUSED: 'true'
+        run: |
+          set -euo pipefail
+          node server/index.mjs > /tmp/blueprint-bff.log 2>&1 &
+          for i in $(seq 1 100); do
+            if curl -fsS -o /dev/null 'http://127.0.0.1:17871/marketscreener/dokumentation'; then exit 0; fi
+            sleep 0.2
+          done
+          echo 'BFF_NOT_READY'
+          exit 1
+      - name: Verify 320/390 CSS px, JS on/off, native touch navigation
+        env:
+          CAPITAL_AI_BROWSER_EVIDENCE_DIR: artifacts/blueprint-mobile
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          "$CHROME_BIN" --version
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/blueprint-mobile-nojs.mjs http://127.0.0.1:17871
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: blueprint-mobile-nojs
+          path: |
+            artifacts/blueprint-mobile/*.png
+            artifacts/blueprint-mobile/result.json
+          if-no-files-found: warn
+          retention-days: 7
