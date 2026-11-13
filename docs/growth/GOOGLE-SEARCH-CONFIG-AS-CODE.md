@@ -118,8 +118,8 @@ actual SERP image selection still belongs to Google. A direct homepage crawl
 request is made in Search Console's URL Inspection UI with "Request indexing";
 no API result is described as having pressed that UI action.
 
-2026-11-13 acceptance for the owner-authorized write extension: 40 configuration
-and maintenance tests plus six existing Google-authority tests passed; test
+2026-11-13 acceptance for the owner-authorized write extension: 42 configuration
+and maintenance tests, 44 SEO/provenance tests and six existing Google-authority tests passed; test
 wiring passed. Real read-only workflow run 43526581432 verified siteFullUser,
 registered error-free sitemap and homepage PASS with lastCrawlTime
 2026-11-08T05:58:15Z. Browser fallback timed out and no shared desktop browser
