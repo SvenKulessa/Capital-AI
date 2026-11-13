@@ -51,11 +51,26 @@ test('unknown prices and inactive subscriptions never grant paid tiers', () => {
   }), null);
 });
 
-test('stored subscription projection requires active or trialing status', () => {
-  assert.equal(normalizeStoredPaidTier({ tier: 'Starter', status: 'active' }), 'starter');
-  assert.equal(normalizeStoredPaidTier({ tier: 'Pro', status: 'trialing' }), 'pro');
-  assert.equal(normalizeStoredPaidTier({ tier: 'Enterprise', status: 'past_due' }), null);
-  assert.equal(normalizeStoredPaidTier({ tier: 'Free', status: 'active' }), null);
+test('stored paid tiers require an active or trialing subscription with unexpired period', () => {
+  const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  assert.equal(normalizeStoredPaidTier({ tier: 'Starter', status: 'active', currentPeriodEnd: future }), 'starter');
+  assert.equal(normalizeStoredPaidTier({ tier: 'Pro', status: 'trialing', currentPeriodEnd: future.replace('Z', '+00:00') }), 'pro');
+  assert.equal(normalizeStoredPaidTier({ tier: 'Enterprise', status: 'past_due', currentPeriodEnd: future }), null);
+  assert.equal(normalizeStoredPaidTier({ tier: 'Free', status: 'active', currentPeriodEnd: future }), null);
+});
+
+test('stored paid tiers fail closed when their subscription period has ended', () => {
+  const expired = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  for (const [tier, status] of [['Starter', 'active'], ['Pro', 'trialing'], ['Enterprise', 'active']]) {
+    assert.equal(normalizeStoredPaidTier({ tier, status, currentPeriodEnd: expired }), null);
+  }
+});
+
+test('stored paid tiers fail closed for missing, malformed, or timezone-ambiguous period', () => {
+  const base = { tier: 'Pro', status: 'active' };
+  for (const currentPeriodEnd of [undefined, null, '', 1234567890000, 'not-a-date', '2030-01-01', '2030-01-01T00:00:00']) {
+    assert.equal(normalizeStoredPaidTier({ ...base, currentPeriodEnd }), null);
+  }
 });
 
 for (const invalid of [
