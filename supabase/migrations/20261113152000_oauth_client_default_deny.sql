@@ -2,7 +2,8 @@
 -- Deploy SQL BEFORE enabling Supabase OAuth Server / registering clients.
 -- Native first-party Supabase sessions (no client_id claim) retain existing RLS behavior.
 -- OAuth access tokens are denied by BOTH restrictive RLS and PostgREST pre-request
--- (the latter also protects invoker RPCs and exposed views).
+-- (the latter also protects invoker RPCs and exposed views). Storage is
+-- deny-by-default today (no permissive policies); monitor for future grants.
 -- P0: Never modify live database without an isolated recovery/negative-test gate.
 
 DO $preflight$
@@ -19,6 +20,13 @@ BEGIN
         OR has_table_privilege('authenticated',c.oid,'DELETE'))
   ) THEN
     RAISE EXCEPTION 'OAUTH_RLS_PREFLIGHT_EXPOSED_TABLE_WITHOUT_RLS';
+  END IF;
+
+  -- No Storage RLS policy currently permits authenticated access. Storage
+  -- belongs to supabase_storage_admin and cannot be altered by this migration.
+  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='storage' AND permissive='PERMISSIVE'
+    AND ('authenticated'=ANY(roles) OR 'public'=ANY(roles))) THEN
+    RAISE EXCEPTION 'OAUTH_RLS_PREFLIGHT_STORAGE_POLICY_REVIEW_REQUIRED';
   END IF;
 
   SELECT split_part(setting,'=',2) INTO preexisting
@@ -53,8 +61,9 @@ GRANT EXECUTE ON FUNCTION public.capital_ai_oauth_data_api_deny()
   TO anon, authenticated, service_role;
 
 -- Restrictive policies are AND-ed with existing permissive policies.
--- Protect every existing RLS-enabled table in these exposed/product schemas,
--- including tables that are currently service_role-only.
+-- Protect every application-owned public RLS table, including currently
+-- service_role-only tables. Supabase-managed storage objects have a different
+-- owner; their independent fail-closed state is asserted below, not mutated.
 DO $guard$
 DECLARE
   t record;
@@ -62,7 +71,7 @@ BEGIN
   FOR t IN
     SELECT n.nspname AS schema_name, c.relname AS table_name
     FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-    WHERE n.nspname IN ('public','storage')
+    WHERE n.nspname='public'
       AND c.relkind IN ('r','p')
       AND c.relrowsecurity
     ORDER BY n.nspname,c.relname
