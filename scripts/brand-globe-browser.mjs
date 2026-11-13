@@ -43,6 +43,8 @@ async function navigate() {
   await until(() => evaluate("document.readyState === 'complete' && !!document.querySelector('.capital-ai-hero .brand-globe-art')"), 'HERO');
   assert.equal(await evaluate('location.origin'), origin);
   await evaluate("[...document.querySelectorAll('[aria-labelledby=\"cookie-consent-v3-title\"] button')].find(b=>b.textContent.trim()==='Nur notwendige')?.click()");
+  await until(() => evaluate("!document.getElementById('cookie-consent-v3-title')"), 'CONSENT_PANEL_CLOSED');
+  await evaluate("window.scrollTo({ top: 0, behavior: 'instant' })");
 }
 async function shot(name, clip) {
   const screenshot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false, ...(clip ? { clip } : {}) });
@@ -63,6 +65,8 @@ try {
     if (message.method === 'Page.loadEventFired') loaded = true;
   };
   await send('Page.enable'); await send('Runtime.enable');
+  await send('Network.enable');
+  await send('Network.setExtraHTTPHeaders', { headers: { 'Accept-Language': 'de-DE' } });
   for (const viewport of [{ width: 320, height: 800, mobile: true }, { width: 390, height: 844, mobile: true }, { width: 768, height: 1024, mobile: true }, { width: 1440, height: 1000, mobile: false }]) {
     await send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: 1 });
     await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
@@ -77,14 +81,14 @@ try {
       const bounds = action.getBoundingClientRect();
       const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
       return { href: action.getAttribute('href'), top: bounds.top, bottom: bounds.bottom,
-        height: bounds.height, clickable: action.contains(hit),
+        height: bounds.height, clickable: action.contains(hit), obstruction: hit?.id || hit?.tagName || null,
         primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-explore-product-btn')).backgroundColor };
     })()`);
+    report.checks.push({ viewport, learningCta });
     assert.equal(learningCta.href, '/learning');
     assert.equal(learningCta.primary, true, 'Learning Hub must be the emphasized action');
     assert.ok(learningCta.top >= 0 && learningCta.bottom <= viewport.height, 'Learning CTA below the initial viewport');
     assert.ok(learningCta.height >= 44 && learningCta.clickable, 'Learning CTA target is too small or obstructed');
-    report.checks.push({ viewport, learningCta });
     await evaluate("document.querySelector('.capital-ai-hero').scrollIntoView()");
     const layout = await evaluate(`(() => {
       const logo=document.querySelector('.hero-brand-logo'), copy=document.querySelector('.hero-copy'), globe=document.querySelector('.hero-globe-background');

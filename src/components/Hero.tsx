@@ -33,7 +33,7 @@ export const Hero: React.FC<HeroProps> = ({ onExploreProduct }) => {
         <div className="hero-brand-artwork relative mb-3 inline-flex max-w-full">
           <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
             width={320} height={180} loading="eager" decoding="async"
-            className="hero-brand-logo block h-auto max-h-28 w-auto max-w-full rounded-xl" />
+            className="hero-brand-logo block h-auto max-h-16 w-auto sm:max-h-28 max-w-full rounded-xl" />
 
         </div>
         {/* Eyebrow */}
@@ -53,7 +53,7 @@ export const Hero: React.FC<HeroProps> = ({ onExploreProduct }) => {
           initial={reduceMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-[34px] sm:text-[40px] font-extrabold tracking-tight leading-[1.08] mb-4 text-left"
+          className="text-[30px] sm:text-[40px] font-extrabold tracking-tight leading-[1.08] mb-4 text-left"
         >
           <span className="text-brand-gold block">{t('hero1')} </span>
           <span className="text-white block">{t('hero2')}</span>
@@ -64,7 +64,7 @@ export const Hero: React.FC<HeroProps> = ({ onExploreProduct }) => {
           initial={reduceMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-slate-200 text-base leading-relaxed max-w-[38ch] mb-6 font-normal"
+          className="text-slate-200 text-base leading-relaxed max-w-[38ch] mb-4 sm:mb-6 font-normal"
         >
           {t('heroDescription')}
         </motion.p>

@@ -33,8 +33,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CORE_MODULES } from '../data/mockData';
-import { VOCABULARY_PUBLIC_COUNT } from '../../shared/vocabulary-metadata.mjs';
 import { CoreModule } from '../types';
+
+declare const __VOCABULARY_PUBLIC_COUNT__: number;
 
 interface CoreModulesProps {
   onSelectModule: (module: CoreModule) => void;
@@ -214,7 +215,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
                   {module.id === 'market-screener'
                     ? 'Datenprüfung'
                     : module.id === 'learning-portal'
-                    ? `${VOCABULARY_PUBLIC_COUNT} Begriffe`
+                    ? `${__VOCABULARY_PUBLIC_COUNT__} Begriffe`
                     : 'Datenpipeline'}
                 </span>
               </div>
