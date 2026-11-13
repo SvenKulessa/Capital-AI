@@ -142,7 +142,7 @@ PY
 if ! grep -q '"status": "SOURCE_HASHES_VERIFIED_NON_AUTHORIZING"' "$REPORT_DIR/collection-summary.json"; then exit 2; fi
 # Package only after all real SHA512 checks passed, as the SAME nonprivileged user.
 # This is a private CI source mirror, NOT proof of corresponding-source legal delivery.
-tar -C "$(dirname "$MIRROR")" -czf "$REPORT_DIR/source-mirror.tar.gz" "$(basename "$MIRROR")"
+tar -C "$(dirname "$MIRROR")" --exclude="$(basename "$MIRROR")/*/src" --exclude="$(basename "$MIRROR")/*/src/*" -czf "$REPORT_DIR/source-mirror.tar.gz" "$(basename "$MIRROR")"
 ( cd "$REPORT_DIR" && sha256sum source-mirror.tar.gz > source-mirror.tar.gz.sha256 )
 python3 - "$REPORT_DIR" <<'PYARCHIVE'
 import json,pathlib,sys
