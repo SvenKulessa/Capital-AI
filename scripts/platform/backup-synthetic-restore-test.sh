@@ -5,7 +5,7 @@ set -Eeuo pipefail
 umask 077
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-for cmd in sudo psql pg_dump age age-keygen sha256sum; do
+for cmd in sudo psql pg_dump age age-keygen sha256sum python3; do
   command -v "$cmd" >/dev/null 2>&1 || { echo "SYNTHETIC_RESTORE_BLOCKED: missing $cmd" >&2; exit 2; }
 done
 
@@ -47,8 +47,61 @@ export CAPITAL_BACKUP_AGE_RECIPIENT="$(age-keygen -y "$scratch/identity.txt")"
 bash "$root/scripts/platform/drive-encrypt.sh" "$scratch/fixture.sql" "$scratch/fixture.sql.age" > "$scratch/encryption-metadata.txt"
 test -s "$scratch/fixture.sql.age"
 expected_sha="$(sha256sum "$scratch/fixture.sql" | cut -d ' ' -f1)"
-rm -f -- "$scratch/fixture.sql"
-age --decrypt -i "$scratch/identity.txt" -o "$scratch/restore.sql" "$scratch/fixture.sql.age"
+cipher_sha="$(sha256sum "$scratch/fixture.sql.age" | cut -d ' ' -f1)"
+
+# Simulated offsite handoff: copy ciphertext to a separate local fixture
+# directory, delete the original, then independently retrieve. This is NOT
+# evidence for Google Drive, GCS or production recoverability.
+mkdir -m 700 "$scratch/offsite" "$scratch/retrieved"
+cp -- "$scratch/fixture.sql.age" "$scratch/offsite/fixture.sql.age"
+[[ "$cipher_sha" == "$(sha256sum "$scratch/offsite/fixture.sql.age" | cut -d ' ' -f1)" ]] || {
+  echo 'SYNTHETIC_RESTORE_FAIL: offsite copy checksum mismatch' >&2; exit 1;
+}
+rm -f -- "$scratch/fixture.sql" "$scratch/fixture.sql.age"
+[[ ! -e "$scratch/fixture.sql" && ! -e "$scratch/fixture.sql.age" ]] || {
+  echo 'SYNTHETIC_RESTORE_FAIL: source archive was not removed' >&2; exit 1;
+}
+cp -- "$scratch/offsite/fixture.sql.age" "$scratch/retrieved/fixture.sql.age"
+retrieved="$scratch/retrieved/fixture.sql.age"
+[[ "$cipher_sha" == "$(sha256sum "$retrieved" | cut -d ' ' -f1)" ]] || {
+  echo 'SYNTHETIC_RESTORE_FAIL: retrieved ciphertext checksum mismatch' >&2; exit 1;
+}
+echo 'SYNTHETIC_OFFSITE_COPY_PASS: local ciphertext-only copy and retrieval'
+
+# Reject wrong decryption identity. Never use failed decryptions as restore input.
+age-keygen -o "$scratch/wrong-identity.txt" 2>/dev/null
+if age --decrypt -i "$scratch/wrong-identity.txt" -o "$scratch/wrong-key.sql" "$retrieved" >/dev/null 2>&1; then
+  echo 'SYNTHETIC_RESTORE_FAIL: wrong key unexpectedly decrypted archive' >&2; exit 1;
+fi
+rm -f -- "$scratch/wrong-key.sql"
+echo 'SYNTHETIC_WRONG_KEY_DENIED'
+
+# Flip the final ciphertext byte and verify BOTH checksum rejection and
+# authenticated decryption failure. All plaintext remains synthetic and local.
+cp -- "$retrieved" "$scratch/tampered.age"
+python3 - "$scratch/tampered.age" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+with p.open("r+b") as f:
+    f.seek(-1, 2)
+    last = f.read(1)
+    if not last:
+        raise SystemExit("empty ciphertext")
+    f.seek(-1, 2)
+    f.write(bytes([last[0] ^ 1]))
+PY
+if [[ "$cipher_sha" == "$(sha256sum "$scratch/tampered.age" | cut -d ' ' -f1)" ]]; then
+  echo 'SYNTHETIC_RESTORE_FAIL: tampered ciphertext passed SHA-256' >&2; exit 1;
+fi
+if age --decrypt -i "$scratch/identity.txt" -o "$scratch/tampered.sql" "$scratch/tampered.age" >/dev/null 2>&1; then
+  echo 'SYNTHETIC_RESTORE_FAIL: tampered ciphertext decrypted successfully' >&2; exit 1;
+fi
+rm -f -- "$scratch/tampered.sql"
+echo 'SYNTHETIC_TAMPER_DENIED'
+
+# Restore only from the independently retrieved ciphertext, never the original.
+age --decrypt -i "$scratch/identity.txt" -o "$scratch/restore.sql" "$retrieved"
 [[ "$expected_sha" == "$(sha256sum "$scratch/restore.sql" | cut -d ' ' -f1)" ]] || {
   echo 'SYNTHETIC_RESTORE_FAIL: decrypted SQL checksum mismatch' >&2; exit 1;
 }
@@ -61,4 +114,4 @@ restore_rows="$(sudo -u postgres psql --host=/var/run/postgresql --port=5432 -At
   echo 'SYNTHETIC_RESTORE_FAIL: unexpected fixture' >&2; exit 1;
 }
 # Never publish plaintext, database output or test-key material in CI evidence.
-echo 'SYNTHETIC_POSTGRES_RESTORE_PASS: isolated destination, age roundtrip, hash and tenant fixture verified'
+echo 'SYNTHETIC_POSTGRES_RESTORE_PASS: isolated destination, age offsite-copy roundtrip, wrong-key/tamper rejection, hash and tenant fixture verified'
