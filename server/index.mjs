@@ -15,6 +15,9 @@ import { createSocialYouTubeOAuthStart } from './social-media/youtube-oauth-star
 import { createInstagramFacebookStart } from './social-media/instagram-oauth-start.mjs';
 import { createInstagramFacebookExchange } from './social-media/instagram-oauth-exchange.mjs';
 import { createInstagramFacebookStatus } from './social-media/instagram-account-status.mjs';
+import { createFacebookPageStart } from './social-media/facebook-oauth-start.mjs';
+import { createFacebookPageExchange } from './social-media/facebook-oauth-exchange.mjs';
+import { createFacebookPageStatus } from './social-media/facebook-account-status.mjs';
 import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-exchange.mjs';
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
@@ -355,6 +358,16 @@ export function createApp(root = defaultRoot, options = {}) {
   const socialInstagramAccountStatus = createInstagramFacebookStatus({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
+  const socialFacebookOAuthStart = createFacebookPageStart({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+  });
+  const socialFacebookAccountStatus = createFacebookPageStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const facebookExchange = createFacebookPageExchange({
+    env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+  });
   const instagramExchange = createInstagramFacebookExchange({
     env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
   });
@@ -386,6 +399,7 @@ export function createApp(root = defaultRoot, options = {}) {
     exchangeCode: options.socialOAuthCodeExchange
       || (trusted => trusted.channel === 'YOUTUBE' ? youtubeExchange(trusted)
           : trusted.channel === 'INSTAGRAM' ? instagramExchange(trusted)
+           : trusted.channel === 'FACEBOOK' ? facebookExchange(trusted)
           : trusted.channel === 'X' ? xExchange(trusted)
           : Promise.reject(new Error('SOCIAL_OAUTH_CHANNEL_NOT_IMPLEMENTED'))),
   });
@@ -485,6 +499,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
+  if (await socialFacebookOAuthStart.handle(req, res, url, json)) return;
+  if (await socialFacebookAccountStatus.handle(req, res, url, json)) return;
   if (await youtubePrivateUpload.handle(req, res, url, json)) return;
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
