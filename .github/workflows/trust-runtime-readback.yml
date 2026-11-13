@@ -1,0 +1,50 @@
+name: TRUST Runtime Readback (read-only)
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/trust-runtime-readback.yml
+      - scripts/trust-runtime-readback.mjs
+      - scripts/trust-runtime-readback.test.mjs
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/trust-runtime-readback.yml
+      - scripts/trust-runtime-readback.mjs
+      - scripts/trust-runtime-readback.test.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-http:
+    name: Anonymous health identity (read-only)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Offline readback, isolation and negative regressions
+        run: node --test scripts/trust-runtime-readback.test.mjs
+      - name: Public /healthz – only sanitized identity fields
+        env:
+          CAPITAL_RUNTIME_ORIGIN: https://capital-ai-uvsl.onrender.com
+          CAPITAL_EXPECTED_MAIN_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+        run: node scripts/trust-runtime-readback.mjs --health
+
+  tinyfish-render-config:
+    name: Targeted TinyFish Render boolean (read-only)
+    # Never supply provider credentials to unmerged PR code.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Read one Render flag, output Boolean or NOT_PROVEN only
+        env:
+          RENDER_API_KEY_TEST: ${{ secrets.RENDER_API_KEY_TEST }}
+        run: node scripts/trust-runtime-readback.mjs --flag
