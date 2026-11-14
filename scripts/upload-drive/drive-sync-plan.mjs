@@ -209,6 +209,23 @@ export function buildPlan({ mapping, docsRoot, inventory = null }) {
     }
     rows.push(row);
   }
+  // Distinct source paths can flatten to the same Drive folder/name.
+  // Fail closed before future create operations can produce ambiguous duplicates.
+  const targets = new Map();
+  for (const row of rows) {
+    if (!['PLAN_CREATE', 'PLAN_UPDATE', 'SKIP', 'CONFLICT'].includes(row.action)) continue;
+    const key = `${row.targetKey}/${row.targetName.toLocaleLowerCase('en-US')}`;
+    const list = targets.get(key) || [];
+    list.push(row);
+    targets.set(key, list);
+  }
+  for (const group of targets.values()) {
+    if (group.length < 2) continue;
+    for (const row of group) {
+      row.action = 'CONFLICT';
+      row.reason = 'LOCAL_TARGET_NAME_COLLISION';
+    }
+  }
   return {
     schemaVersion: 'capital-ai.doc-tree-plan.v1',
     sourceRepository: mapping.sourceRepository,
