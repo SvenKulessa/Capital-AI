@@ -24,7 +24,7 @@ Deterministische Visualisierungen (resvg) + CADS-Qualitätschecks.
 **Text:**  
 LangGraph ermöglicht zustandsbehaftete Agenten.  
 CAPITAL-AI setzt auf SOLO_MAINTAINER_FLOW@2 mit risikobasierten Gates.  
-Human-in-the-Loop bleibt Standard.  
+Persönliche Owner-Schritte sind auf erforderliche Rechte-, Kosten- und Publishing-Entscheidungen begrenzt.  
 #AIGovernance #FinTech  
 
 **CTA:** Architektur im Repo prüfen  
@@ -81,7 +81,7 @@ Die EZB treibt Tokenisierung und digitales Zentralbankgeld voran. CAPITAL-AI üb
 ### IG-2: Governance-Gates
 1. Cover: „Agenten brauchen Grenzen“  
 2. Zustandsdiagramm  
-3. Human-Gate  
+3. Tatsächlich erforderliche Rechte- und Publishing-Grenzen  
 4. SOLO_MAINTAINER_FLOW  
 5. CTA: Mehr erfahren  
 
