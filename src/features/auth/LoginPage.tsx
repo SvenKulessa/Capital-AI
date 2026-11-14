@@ -81,6 +81,9 @@ function safePostAuthPath(): string {
     const parsed = new URL(candidate, window.location.origin);
     if (parsed.origin !== window.location.origin) return '/';
     if (parsed.pathname === '/founder' && !parsed.search && !parsed.hash) return '/founder';
+    if (parsed.pathname === '/oauth/consent' && !parsed.hash && parsed.searchParams.size === 1 && /^[A-Za-z0-9_-]{8,128}$/.test(parsed.searchParams.get('authorization_id') || '')) {
+      return `/oauth/consent?authorization_id=${encodeURIComponent(parsed.searchParams.get('authorization_id')!)}`;
+    }
     if (parsed.pathname !== '/api/cads/marketplace/setup') return '/';
     const installationId = Number(parsed.searchParams.get('installation_id'));
     if (!Number.isSafeInteger(installationId) || installationId <= 0) return '/';
