@@ -92,10 +92,70 @@ test('uncertain network result never retries a PUT automatically', async () => {
   assert.equal(writes,1);
 });
 
-test('legacy GET response without revision is backend unavailable, not session changed', async () => {
-  await withMockFetch(async () => Response.json({userId:alice,notes:'old text'}), async () => {
-    await assert.rejects(readNotes(alice),
-      (error:unknown) => error instanceof NotesClientError && error.code==='NOTES_UNAVAILABLE');
+test('legacy GET and PUT preserve existing contract without fake CAS revision', async()=>{
+  const calls: {url:string;init?:RequestInit}[]=[];
+  await withMockFetch(async(url,init)=>{
+    calls.push({url:String(url),init});
+    if(String(url).endsWith('/api/auth/session')) {
+      return Response.json({authenticated:true,mfaRequired:false,user:{id:alice}});
+    }
+    if(init?.method==='PUT') return Response.json({userId:alice,notes:'Legacy edit'});
+    return Response.json({userId:alice,notes:'old text'});
+  },async()=>{
+    const snapshot=await readNotes(alice);
+    assert.deepEqual(snapshot,{userId:alice,notes:'old text',revision:'legacy'});
+    const result=await saveNotes(snapshot,'Legacy edit');
+    assert.equal(result.kind,'saved');
+    if(result.kind==='saved') assert.deepEqual(result.snapshot,{
+      userId:alice,notes:'Legacy edit',revision:'legacy',
+    });
+  });
+  const put=calls.find(call=>call.init?.method==='PUT');
+  assert.ok(put);
+  assert.deepEqual(JSON.parse(String(put.init?.body)),{
+    expectedUserId:alice,notes:'Legacy edit',
+  });
+});
+
+test('legacy snapshot fails closed if feature changes before PUT',async()=>{
+  let writes=0;
+  await withMockFetch(async(url,init)=>{
+    if(String(url).endsWith('/api/auth/session')) {
+      return Response.json({authenticated:true,mfaRequired:false,user:{id:alice}});
+    }
+    if(init?.method==='PUT') {
+      writes++;
+      return Response.json({error:'revision_required'},{status:428});
+    }
+    throw new Error('unexpected request');
+  },async()=>{
+    await assert.rejects(saveNotes({userId:alice,notes:'legacy',revision:'legacy'},'draft'),
+      (error:unknown)=>error instanceof NotesClientError && error.code==='NOTES_UNAVAILABLE');
+  });
+  assert.equal(writes,1);
+});
+
+test('legacy protocol rejects malformed revisions and inconsistent save echoes',async()=>{
+  for(const result of [
+    {userId:alice,notes:'text',revision:null},
+    {userId:alice,notes:'text',revision:'legacy'},
+    {userId:alice,notes:123},
+    {userId:alice,notes:'text',revision:'invalid'},
+  ]) {
+    await withMockFetch(async()=>Response.json(result),async()=>{
+      await assert.rejects(readNotes(alice),
+        (error:unknown)=>error instanceof NotesClientError && error.code==='NOTES_UNAVAILABLE');
+    });
+  }
+  await withMockFetch(async(url,init)=>{
+    if(String(url).endsWith('/api/auth/session')) {
+      return Response.json({authenticated:true,mfaRequired:false,user:{id:alice}});
+    }
+    if(init?.method==='PUT') return Response.json({userId:alice,notes:'different'});
+    throw new Error('unexpected request');
+  },async()=>{
+    await assert.rejects(saveNotes({userId:alice,notes:'old',revision:'legacy'},'draft'),
+      (error:unknown)=>error instanceof NotesClientError && error.code==='NOTES_UNAVAILABLE');
   });
 });
 

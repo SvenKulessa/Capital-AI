@@ -100,6 +100,8 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
   const trialCampaign=createEnterpriseTrial({env,fetchImpl});
   const secret = env.STRIPE_SECRET_KEY || '';
   const supabase = adminConfig(env);
+  // Only exact server-side 'true' activates OCC v2. Never infer activation from SQL or requests.
+  const privateNotesOccV2Enabled = env.CAPITAL_AI_PRIVATE_NOTES_OCC_V2_ENABLED === 'true';
   const priceId = env.STRIPE_LEARNING_PORTAL_PRICE_ID || '';
   const learningProductId = env.STRIPE_LEARNING_PORTAL_PRODUCT_ID || '';
   const productId = env.STRIPE_VOCABULARY_PRODUCT_ID || DEFAULT_VOCABULARY_PRODUCT_ID;
@@ -334,10 +336,30 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
             return json(res,400,{error:'invalid_notes'}),true;
           }
           if (body.expectedUserId !== user.userId) return json(res,409,{error:'session_changed'}),true;
-          if (!Object.hasOwn(body,'expectedRevision')) return json(res,428,{error:'revision_required'}),true;
-          if (!validNotesRevision(body.expectedRevision,true)) return json(res,400,{error:'invalid_revision'}),true;
+          if (privateNotesOccV2Enabled) {
+            if (!Object.hasOwn(body,'expectedRevision')) return json(res,428,{error:'revision_required'}),true;
+            if (!validNotesRevision(body.expectedRevision,true)) return json(res,400,{error:'invalid_revision'}),true;
+            expectedRevision = body.expectedRevision;
+          } else if (Object.hasOwn(body,'expectedRevision')) {
+            // A mid-session feature toggle must not downgrade an OCC write to legacy.
+            return json(res,409,{error:'notes_contract_changed'}),true;
+          }
           notes = body.notes;
-          expectedRevision = body.expectedRevision;
+        }
+        if (!privateNotesOccV2Enabled) {
+          // Existing production schema has no revision column / v2 RPC.
+          try {
+            const result = await rpc(fetchImpl,supabase,'capital_ai_private_notes',{
+              _user_id:user.userId, _notes:notes, _action:req.method,
+            });
+            if (typeof result !== 'string' || (req.method === 'PUT' && result !== notes)) {
+              throw new Error('INVALID_LEGACY_NOTES_RESPONSE');
+            }
+            json(res,200,{notes:result,userId:user.userId});
+          } catch {
+            json(res,503,{error:'notes_unavailable'});
+          }
+          return true;
         }
         try {
           const result = notesRpcPayload(await rpc(fetchImpl,supabase,'capital_ai_private_notes_v2',{

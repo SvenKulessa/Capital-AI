@@ -231,6 +231,84 @@ test('badge download is denied without Vocabulary entitlement', async () => {
   assert.equal(res.payload.error,'vocabulary_entitlement_required');
 });
 
+
+test('private notes legacy defaults off and works without a revision column or v2 RPC', async () => {
+  const a='11111111-1111-4111-8111-111111111111';
+  const b='22222222-2222-4222-8222-222222222222';
+  for (const flag of [undefined,'','false','TRUE','1']) {
+    const stored=new Map();
+    const calls=[];
+    const fetchImpl=async(url,options)=>{
+      const path=new URL(url).pathname;
+      assert.ok(path.endsWith('/rpc/capital_ai_private_notes'),'v2 RPC must never be called');
+      const args=JSON.parse(options.body);
+      calls.push(args);
+      if(args._action==='PUT') stored.set(args._user_id,args._notes);
+      return Response.json(stored.get(args._user_id)??'');
+    };
+    async function call(userId,method='GET',body) {
+      const checkout=createVocabularyCheckout({
+        env:{...env,CAPITAL_AI_PRIVATE_NOTES_OCC_V2_ENABLED:flag},fetchImpl,auth:auth(userId),
+      });
+      const res=response();
+      await checkout.handle(request({method,body:body&&JSON.stringify(body)}),res,
+        new URL('https://capital-ai.online/api/profile/notes'),json);
+      return res;
+    }
+    assert.deepEqual((await call(a)).payload,{notes:'',userId:a});
+    const saved=await call(a,'PUT',{expectedUserId:a,notes:'Legacy text'});
+    assert.equal(saved.status,200);
+    assert.deepEqual(saved.payload,{notes:'Legacy text',userId:a});
+    assert.deepEqual((await call(a)).payload,{notes:'Legacy text',userId:a});
+    assert.deepEqual((await call(b)).payload,{notes:'',userId:b});
+    const before=calls.length;
+    assert.equal((await call(b,'PUT',{expectedUserId:a,notes:'cross-user'})).status,409);
+    assert.equal((await call(a,'PUT',{expectedUserId:a,expectedRevision:'1',notes:'downgrade'})).status,409);
+    assert.equal(calls.length,before);
+    assert.equal(stored.get(a),'Legacy text');
+    assert.equal(stored.has(b),false);
+    assert.ok(calls.every(item=>['GET','PUT'].includes(item._action)));
+    assert.ok(calls.every(item=>[a,b].includes(item._user_id)));
+  }
+});
+
+test('private notes explicit v2 flag fails closed if migration / v2 RPC is absent', async()=>{
+  const userId='11111111-1111-4111-8111-111111111111';
+  const calls=[];
+  const fetchImpl=async(url)=>{
+    const path=new URL(url).pathname;
+    calls.push(path);
+    assert.ok(path.endsWith('/rpc/capital_ai_private_notes_v2'));
+    return Response.json({message:'RPC absent'},{status:404});
+  };
+  const checkout=createVocabularyCheckout({env:occEnv,fetchImpl,auth:auth(userId)});
+  const get=response();
+  await checkout.handle(request(),get,new URL('https://capital-ai.online/api/profile/notes'),json);
+  assert.equal(get.status,503);
+  const put=response();
+  await checkout.handle(request({method:'PUT',body:JSON.stringify({
+    expectedUserId:userId,expectedRevision:'0',notes:'no write',
+  })}),put,new URL('https://capital-ai.online/api/profile/notes'),json);
+  assert.equal(put.status,503);
+  assert.equal(calls.length,2);
+});
+
+test('private notes legacy PUT rejects unconfirmed RPC echoes, without retry',async()=>{
+  const userId='11111111-1111-4111-8111-111111111111';
+  let calls=0;
+  const checkout=createVocabularyCheckout({env,auth:auth(userId),fetchImpl:async()=>{
+    calls++;
+    return Response.json('unexpected echo');
+  }});
+  const res=response();
+  await checkout.handle(request({method:'PUT',body:JSON.stringify({expectedUserId:userId,notes:'new'})}),
+    res,new URL('https://capital-ai.online/api/profile/notes'),json);
+  assert.equal(res.status,503);
+  assert.equal(calls,1);
+});
+
+const occEnv={...env,CAPITAL_AI_PRIVATE_NOTES_OCC_V2_ENABLED:'true'};
+
 test('private notes OCC v2: initial revision, stale CAS and explicit merge', async () => {
   const saved = new Map();
   const calls = [];
@@ -248,7 +326,7 @@ test('private notes OCC v2: initial revision, stale CAS and explicit merge', asy
     return Response.json({ status:'saved', ...next });
   };
   async function call(userId,method='GET',body) {
-    const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth(userId)});
+    const checkout=createVocabularyCheckout({env:occEnv,fetchImpl,auth:auth(userId)});
     const res=response();
     await checkout.handle(request({method,body:body&&JSON.stringify(body)}),res,
       new URL('https://capital-ai.online/api/profile/notes'),json);
@@ -281,7 +359,7 @@ test('private notes OCC v2: missing and invalid revision fail before RPC', async
   let calls=0;
   const fetchImpl=async()=>{calls++;return Response.json({ status:'ok',notes:'',revision:'0' });};
   async function call(overrides={},method='PUT',body={}) {
-    const checkout=createVocabularyCheckout({env,fetchImpl,auth:{...auth(),...overrides}});
+    const checkout=createVocabularyCheckout({env:occEnv,fetchImpl,auth:{...auth(),...overrides}});
     const res=response();
     await checkout.handle(request({method,body:JSON.stringify({
       notes:'test',expectedUserId:'11111111-1111-4111-8111-111111111111',...body,
@@ -314,7 +392,7 @@ test('private notes OCC v2: malformed/unconfirmed RPC fails closed', async () =>
     {status:'saved',notes:'wrong',revision:'1'},
     {status:'unexpected',notes:'Text',revision:'1'},
   ]) {
-    const checkout=createVocabularyCheckout({env,
+    const checkout=createVocabularyCheckout({env:occEnv,
       fetchImpl:async()=>Response.json(result),auth:auth(userId)});
     const res=response();
     await checkout.handle(request({method:'PUT',

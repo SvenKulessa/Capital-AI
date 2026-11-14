@@ -12,6 +12,8 @@ export class NotesClientError extends Error {
   }
 }
 
+// Client-only marker: legacy notes have no persisted CAS revision.
+const LEGACY_NOTES_REVISION = 'legacy';
 const MAX_REVISION = 9223372036854775807n;
 export function validRevision(value: unknown): value is string {
   return typeof value === 'string' &&
@@ -51,6 +53,16 @@ export async function readNotes(userId: string, signal?: AbortSignal): Promise<N
         (body as { userId?: unknown }).userId !== userId) {
       throw new NotesClientError('SESSION_CHANGED');
     }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      throw new NotesClientError('NOTES_UNAVAILABLE');
+    }
+    if (!Object.hasOwn(body,'revision')) {
+      const legacy = body as {userId?: unknown; notes?: unknown};
+      if (legacy.userId !== userId || typeof legacy.notes !== 'string') {
+        throw new NotesClientError('NOTES_UNAVAILABLE');
+      }
+      return {userId,notes:legacy.notes,revision:LEGACY_NOTES_REVISION};
+    }
     if (!isNotesSnapshot(body,userId)) throw new NotesClientError('NOTES_UNAVAILABLE');
     return body;
   } catch (error) {
@@ -62,7 +74,8 @@ export async function readNotes(userId: string, signal?: AbortSignal): Promise<N
 export async function saveNotes(
   snapshot: NotesSnapshot, localDraft: string, signal?: AbortSignal,
 ): Promise<NotesSaveResult> {
-  if (!validRevision(snapshot.revision) || snapshot.revision === MAX_REVISION.toString() ||
+  const legacy = snapshot.revision === LEGACY_NOTES_REVISION;
+  if ((!legacy && (!validRevision(snapshot.revision) || snapshot.revision === MAX_REVISION.toString())) ||
       typeof localDraft !== 'string' || localDraft.length > 10000) {
     throw new NotesClientError('INVALID_NOTES');
   }
@@ -73,7 +86,9 @@ export async function saveNotes(
       method: 'PUT', credentials: 'same-origin', cache: 'no-store', signal,
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
-        expectedUserId: snapshot.userId, expectedRevision: snapshot.revision, notes: localDraft,
+        expectedUserId: snapshot.userId,
+        ...(legacy ? {} : {expectedRevision:snapshot.revision}),
+        notes: localDraft,
       }),
     });
     const body: unknown = await response.json();
@@ -93,6 +108,16 @@ export async function saveNotes(
         localDraft, baseRevision:snapshot.revision,
         serverNotes:conflict.currentNotes, serverRevision:conflict.currentRevision,
       }};
+    }
+    if (legacy) {
+      // Do not fabricate a CAS revision for legacy storage.
+      if (!response.ok || !body || typeof body !== 'object' || Array.isArray(body) ||
+          (body as {userId?: unknown}).userId !== snapshot.userId ||
+          (body as {notes?: unknown}).notes !== localDraft ||
+          Object.hasOwn(body,'revision')) {
+        throw new NotesClientError('NOTES_UNAVAILABLE');
+      }
+      return {kind:'saved',snapshot:{userId:snapshot.userId,notes:localDraft,revision:LEGACY_NOTES_REVISION}};
     }
     if (!response.ok || !isNotesSnapshot(body,snapshot.userId) ||
         body.notes !== localDraft ||
