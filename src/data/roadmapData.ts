@@ -2288,13 +2288,16 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     ]
   },
   {
-    "status": "planning",
+    "status": "aktiv",
     "phase": 4,
     "phaseName": "Phase 4: DevSecOps & RC",
     "progressPercent": null,
-    "evidenceState": "UNGEKLÄRT",
+    "evidenceState": "OFFEN",
     "evidenceRefs": [
-      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md",
+      "scripts/upload-drive/drive-sync-delta.mjs",
+      "scripts/upload-drive/drive-sync-delta.test.mjs",
+      "docs/platform/DRIVE-DOCSYNC-DELTA-20261114.md"
     ],
     "leadName": "Projektowner",
     "id": "CA-PLATFORM-DOCSYNC-02",
@@ -2303,7 +2306,7 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     "priority": "Hoch",
     "targetSprint": "23.11.–11.12.2026",
     "description": "GitHub → Drive als kontrollierte Dokumentenprojektion, mit Konflikterkennung und atomarem lokalen State; keine automatischen Löschungen.",
-    "nextStep": "Synchrone Ordner-/Dateizuordnung anhand Pfad und Drive-ID implementieren, zuerst synthetisch; Wiederholung, Hash, Pagination, Retry, Atomic State und Fail-Closed-Konflikte testen.",
+    "nextStep": "Synthetischer Dry-Run-Delta-Planner mit Pagination, Hash, Remote-Revision, Audit und Crash-safe Local State implementiert; echte Provider-Pagination, Quota-/Retry-Semantik, Credentials und Apply weiterhin getrennt und NOT_PROVEN.",
     "deliverables": [
       "Standardmäßig aktiver Dry-Run und idempotentes Create/Update/Skip",
       "Delta-/Hash-/Revision-Abgleich mit sanitisiertem Audit",
