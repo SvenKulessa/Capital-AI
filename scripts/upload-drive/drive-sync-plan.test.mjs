@@ -241,6 +241,7 @@ test('remote names with traversal separators are rejected', (t) => {
   assert.throws(() => buildPlan({mapping:f.mapping,docsRoot:f.docsRoot,inventory:inventory({files})}), /INVALID_REMOTE_NAME/);
 });
 
+
 test('different local paths flattened to one target folder/name are conflicts', (t) => {
   const f = fixture(t, { 'platform/same.md': 'one', 'architecture/same.md': 'two' }, { approved: ['docs/platform/same.md', 'docs/architecture/same.md'] });
   const plan = buildPlan({ mapping: f.mapping, docsRoot: f.docsRoot, inventory: inventory() });
