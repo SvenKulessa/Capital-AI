@@ -8,3 +8,10 @@ coverage/
 !.env.example
 
 security-reports/
+
+# DOCSYNC-02 private local state/inventory; never commit provider snapshots
+scripts/upload-drive/state.json
+scripts/upload-drive/state.json.lock
+scripts/upload-drive/state.json.tmp-*
+scripts/upload-drive/private/
+scripts/upload-drive/logs/
