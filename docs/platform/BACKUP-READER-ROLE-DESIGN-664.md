@@ -46,16 +46,34 @@ All of the following must fail when executed as `capital_ai_backup_reader`:
 - `net.http_get(...)`
 - Any write while `default_transaction_read_only = on`
 
+## Isolated Test Runner
+
+`scripts/platform/backup-reader-isolated-test.sh` automates:
+
+1. Building the pinned PostgreSQL 17 fixture
+2. Starting an isolated container
+3. Creating sample data
+4. Running the inventory script
+5. Creating the backup reader role
+6. Executing the negative tests
+7. Cleaning up
+
+Run locally with Docker:
+
+```bash
+chmod +x scripts/platform/backup-reader-isolated-test.sh
+./scripts/platform/backup-reader-isolated-test.sh
+```
+
 ## Residual Risk
 
 `pg_net` `PUBLIC` privileges cannot be selectively revoked in Supabase managed environments. This residual risk must be documented as **BLOCKED** or mitigated by a time-bounded, isolated backup procedure with explicit owner approval.
 
 ## Execution Plan
 
-1. Run `scripts/platform/backup-reader-inventory.sql` in an isolated PostgreSQL 17 instance.
-2. Finalize the exact GRANT list based on the inventory output.
-3. Create the role in the isolated instance and execute `backup-reader-negative-tests.sql`.
-4. Document results (all negative tests must fail).
-5. Obtain explicit owner approval before any productive role creation.
+1. Run the isolated test runner and review output.
+2. Finalize the exact GRANT list based on the inventory.
+3. Confirm all negative tests fail.
+4. Obtain explicit owner approval before any productive role creation.
 
-**No productive changes until step 5 is completed.**
+**No productive changes until step 4 is completed.**
