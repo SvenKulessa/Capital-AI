@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
+import { createCryptoSignalWorkflow } from './social-media/crypto-signal-workflow.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
 import { createYouTubePrivateUpload } from './social-media/youtube-private-upload.mjs';
@@ -475,6 +476,7 @@ export function createApp(root = defaultRoot, options = {}) {
   cadsMarketplace.start();
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
   const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
+  const cryptoSignals = createCryptoSignalWorkflow({ auth, env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -500,6 +502,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
+  if (await cryptoSignals.handle(req, res, url, json)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
@@ -800,6 +803,8 @@ export function createApp(root = defaultRoot, options = {}) {
 });
   server.maxConnections = 256;
   server.once('close', () => { cadsMarketplace.close(); void privateProviderQuery.close(); });
+  server.on('listening', cryptoSignals.start);
+  server.on('close', cryptoSignals.stop);
   return server;
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
