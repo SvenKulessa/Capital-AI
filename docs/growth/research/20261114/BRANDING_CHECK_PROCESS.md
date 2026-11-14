@@ -1,4 +1,4 @@
-# Branding-Check-Prozess
+# Branding-Check-Prozess (redaktioneller Entwurf)
 **Status:** PROPOSED  
 **Gültig für:** Videos, Social-Media-Entwürfe, Learning-Hub-Grafiken, Content Engine Outputs  
 **Governance:** AGENTS.md / SOLO_MAINTAINER_FLOW@2  
@@ -6,7 +6,7 @@
 
 ## Zweck
 
-Der Branding-Check stellt sicher, dass vor jeder Veröffentlichung ausschließlich CAPITAL-AI-konformes Branding verwendet wird. Externe Tool-Logos (insbesondere das Gemini Notebook Logo) werden entfernt. Der Prozess ist verpflichtend und unterliegt dem Human-Gate.
+Diese Checkliste unterstützt die redaktionelle Qualität von Entwürfen. Externe Tool-Logos werden vor einer geplanten Veröffentlichung auf Rechte und mögliche Irreführung geprüft. Dieses Dokument schafft weder einen neuen verpflichtenden Freigabeprozess noch ein Human-Gate über AGENTS.md hinaus.
 
 ## Checkliste vor Veröffentlichung
 
@@ -43,22 +43,22 @@ Der Branding-Check stellt sicher, dass vor jeder Veröffentlichung ausschließli
 1. **Draft erstellen** → Status: `DRAFT`
 2. **Branding-Check durchführen** → Status: `BRANDING_CHECK_PENDING`
 3. **Checkliste abarbeiten** → bei Abweichungen korrigieren
-4. **Human-Review** → explizite Freigabe durch Maintainer
-5. **Statuswechsel** → `READY_FOR_APPROVAL` oder `BLOCKED`
+4. **Redaktionelle Sichtung** → offene Marken- und Nutzungsrechte kennzeichnen
+5. **Status dokumentieren** → `PROPOSED`, `REVIEW_REQUIRED` oder `BLOCKED`
 6. **Dokumentation** → SHA und Evidence festhalten
 
 ## Verantwortlichkeiten
 
 - Content-Ersteller: Erste Prüfung und Korrektur
-- Maintainer: Finale Freigabe (SOLO_MAINTAINER_FLOW@2)
-- Kein automatisches Publishing ohne abgeschlossenen Check
+- Maintainer: Rechte-, Kosten- oder Publishing-Entscheidungen nur im Rahmen der bestehenden Zuständigkeiten aus AGENTS.md
+- Diese Dokumentation aktiviert kein Publishing und ist kein zusätzlicher Required Check
 
 ## Verknüpfung
 
-Diese Richtlinie ergänzt:
+Diese redaktionelle Arbeitshilfe verweist auf:
 - VIDEO_PUBLISHING_POLICY.md
 - CONTENT_ENGINE_IMAGE_LICENSE_POLICY.md
 
-Alle Learning-Module und Social-Entwürfe in diesem Package unterliegen dem Branding-Check.
+Die Checkliste ist eine Orientierung für die Learning-Module und Social-Entwürfe, keine zusätzliche PR-Merge-Bedingung. Bei Abweichungen gilt ausschließlich AGENTS.md.
 
 Diese Richtlinie ersetzt keine rechtliche Beratung und ändert keine bestehenden Governance-Dateien.

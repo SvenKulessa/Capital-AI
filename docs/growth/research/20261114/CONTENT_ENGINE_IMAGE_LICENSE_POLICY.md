@@ -1,4 +1,4 @@
-# Content Engine – Richtlinie für Bildlizenzierung
+# Content Engine – redaktionelle Hinweise zur Bildlizenzierung
 **Status:** PROPOSED  
 **Gültig für:** ContentEngine, SocialMediaEngine, MediaProjectV2, resvg-Pipeline  
 **Governance:** AGENTS.md / SOLO_MAINTAINER_FLOW@2  
@@ -6,12 +6,12 @@
 
 ## Grundsatz
 
-Alle von der Content Engine oder verbundenen Pipelines erzeugten oder eingebundenen Bilder müssen vor Verwendung mit einer klaren Lizenz versehen und dokumentiert werden. Unlizenzierte oder unklare Bildquellen dürfen nicht in Learning-Hub-Inhalte, Social-Media-Entwürfe oder öffentliche Ausgaben übernommen werden.
+Vor externer oder kommerzieller Verwendung müssen die jeweils einschlägigen Rechte an Bildern und eingebetteten Elementen geklärt sein. Für interne Entwürfe genügen eindeutige Quellen- und Prüfstatuskennzeichnungen; unklare Rechte erlauben keine öffentliche Nutzung. Diese Hinweise ergänzen keine verpflichtenden PR-Gates über AGENTS.md hinaus.
 
 ## Anforderungen
 
 1. **Lizenzdokumentation**  
-   Jedes Bild erhält eine eindeutige Lizenzangabe (z. B. first-party, MPL-2.0 für resvg-Outputs, Abonnement-generiert, oder explizit freigegebene Drittquelle).
+   Jedes zur Veröffentlichung vorgesehene Bild erhält eine nachvollziehbare Rechte- und Quellenangabe (z. B. eigene Gestaltung, abonnementgeneriert mit geprüften Nutzungsbedingungen oder lizenzierte Drittquelle). **Die Softwarelizenz des Renderers resvg bestimmt nicht automatisch die Lizenz des erzeugten Bildes.**
 
 2. **Quellenkennzeichnung**  
    Herkunft und Erstellungsdatum müssen nachvollziehbar sein. Bei generierten Bildern ist der Generator (z. B. Grok Imagine) und der Status (didaktisch / Entwurf) anzugeben.
@@ -20,10 +20,10 @@ Alle von der Content Engine oder verbundenen Pipelines erzeugten oder eingebunde
    Drittinhalte (insbesondere offizielle Quellen wie EZB) bleiben LICENSE_REVIEW_REQUIRED, bis eine explizite Freigabe vorliegt.
 
 4. **Deterministische Pipeline bevorzugt**  
-   Wo möglich, resvg-basierte, reproduzierbare Grafiken verwenden. Diese sind first-party und unterliegen den im Repository dokumentierten Bedingungen.
+   Wo sinnvoll, reproduzierbare SVG-/resvg-Grafiken verwenden. First-party-Status gilt nur, wenn auch die enthaltenen Eingabebilder, Schrift- und Gestaltungselemente entsprechend berechtigt sind.
 
-5. **Human-Gate**  
-   Vor jeder öffentlichen oder produktiven Verwendung ist eine redaktionelle und lizenzrechtliche Freigabe erforderlich. Kein automatisches Publishing.
+5. **Rechte- und Publishing-Grenzen**  
+   Tatsächlich erforderliche Rechtefreigaben und konkrete Publishing-Befugnisse richten sich ausschließlich nach AGENTS.md und den jeweiligen Lizenzbedingungen. Dieses Dokument schafft weder einen allgemeinen Human-Gate noch einen zusätzlichen Required Check; kein automatisches Publishing durch dieses Paket.
 
 ## Statuskennzeichnungen
 
@@ -34,6 +34,6 @@ Alle von der Content Engine oder verbundenen Pipelines erzeugten oder eingebunde
 
 ## Umsetzung in bestehenden Modulen
 
-Die Learning-Module und Social-Entwürfe in diesem Package verwenden ausschließlich `SUBSCRIPTION_GENERATED` oder first-party Diagramme. Keine fremden Medien wurden übernommen.
+Das Package enthält redaktionelle Modultexte und Medienkonzepte; eine pauschale Lizenzfreigabe für später zu erzeugende Bilder lässt sich daraus nicht ableiten. `SUBSCRIPTION_GENERATED` belegt nur die Herkunft, nicht automatisch kommerzielle Nutzungsrechte.
 
-Diese Richtlinie ersetzt keine rechtliche Beratung und ändert keine bestehenden Governance-Dateien.
+Diese Hinweise ersetzen keine rechtliche Beratung, ändern keine bestehenden Governance-Dateien und schaffen keine zusätzlichen Freigaben.

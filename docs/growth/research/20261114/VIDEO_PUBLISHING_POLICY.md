@@ -1,4 +1,4 @@
-# Content Engine – Richtlinie für Video-Veröffentlichung
+# Content Engine – redaktionelle Orientierung für Video-Entwürfe
 **Status:** PROPOSED  
 **Gültig für:** SocialMediaEngine, MediaProjectV2, ContentSocialPackage, Learning Hub Videos  
 **Governance:** AGENTS.md / SOLO_MAINTAINER_FLOW@2  
@@ -6,7 +6,7 @@
 
 ## Grundsatz
 
-Videos dürfen erst nach expliziter redaktioneller, lizenzrechtlicher und technischer Freigabe veröffentlicht werden. Kein automatisches Publishing. Alle Videos müssen den Produktstand korrekt wiedergeben (implementiert / Entwurf / blockiert).
+Dieses Dokument ist ein Entwurf zur redaktionellen Qualitätssicherung und kein zusätzlicher verpflichtender Gate- oder Review-Prozess. Rechtlich erforderliche Nutzungsrechte und bereits geltende Publishing-Sperren aus AGENTS.md bleiben maßgeblich. Dieses Paket aktiviert kein automatisches Publishing. Videos sollen den tatsächlichen Produktstand korrekt wiedergeben (implementiert / Entwurf / blockiert).
 
 ## Vorgaben vor Veröffentlichung
 
@@ -30,9 +30,9 @@ Videos dürfen erst nach expliziter redaktioneller, lizenzrechtlicher und techni
    - Deterministische Elemente (resvg) bevorzugt für wiederholbare Grafiken.  
    - Voice-over sachlich und ohne übertriebene Claims.
 
-5. **Human-Gate**  
-   - Explizite Freigabe durch Maintainer erforderlich.  
-   - Dokumentierter SHA und Evidence vor Statuswechsel auf „publish-ready“.
+5. **Rechte und Evidence**  
+   - Nur tatsächlich erforderliche Rechte-, Kosten- und Publishing-Entscheidungen folgen AGENTS.md.  
+   - Quelle und gegebenenfalls SHA/Evidence nachvollziehbar dokumentieren; daraus entsteht kein neuer Required Check.
 
 ## Statuskennzeichnungen für Videos
 
@@ -44,6 +44,6 @@ Videos dürfen erst nach expliziter redaktioneller, lizenzrechtlicher und techni
 
 ## Umsetzung in bestehenden Entwürfen
 
-Die Storyboards und Kurzvideo-Konzepte in SOCIAL_MEDIA_ENTWUERFE_20261114.md unterliegen dieser Richtlinie. Das Gemini Notebook Logo ist vor jeder Veröffentlichung zu entfernen und durch CAPITAL-AI-Branding zu ersetzen.
+Die Storyboards und Kurzvideo-Konzepte in SOCIAL_MEDIA_ENTWUERFE_20261114.md können diese redaktionelle Orientierung nutzen. Drittanbieterlogos dürfen nicht irreführend eingesetzt werden; ihre Verwendung oder Entfernung richtet sich nach tatsächlichen Marken- und Nutzungsrechten.
 
-Diese Richtlinie ersetzt keine rechtliche Beratung und ändert keine bestehenden Governance-Dateien.
+Diese Hinweise ersetzen keine rechtliche Beratung, ändern keine bestehenden Governance-Dateien und schaffen keine neuen PR- oder Publishing-Freigaben.
