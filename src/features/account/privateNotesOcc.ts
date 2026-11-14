@@ -87,7 +87,7 @@ export async function saveNotes(
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
         expectedUserId: snapshot.userId,
-        ...(legacy ? {} : {expectedRevision:snapshot.revision}),
+        ...(legacy ? {} : {expectedRevision: snapshot.revision}),
         notes: localDraft,
       }),
     });
