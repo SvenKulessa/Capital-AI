@@ -7,6 +7,22 @@ import { PROCESSING_ACTIVITIES, PRIVACY_NOTICE_VERSION } from '../src/privacy/pr
 const path = new URL('../public/datenschutz/index.html', import.meta.url);
 let html = await readFile(path, 'utf8');
 const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+// Prominent Google disclosure is derived from the canonical privacy registry.
+const googleDataActivities = ['google-oauth', 'youtube-owner-oauth'].map(id => PROCESSING_ACTIVITIES.find(activity => activity.id === id));
+if (googleDataActivities.some(activity => !activity)) throw Error('GOOGLE_DATA_DISCLOSURE_ACTIVITY_MISSING');
+const googleDataDisclosure = '<section id="google-data-sharing" aria-labelledby="google-data-sharing-heading"><h2 id="google-data-sharing-heading">Weitergabe von Google-Nutzerdaten</h2>' +
+  '<p>Google-Anmeldung und YouTube-Kanalverbindung sind getrennte, optional gewählte Funktionen. CAPITAL-AI verkauft darüber erhaltene Google-Nutzerdaten nicht und gibt sie weder für Werbung noch zum Training allgemeiner KI-Modelle weiter. Je nach gewählter Funktion werden die Daten ausschließlich für die nachfolgend genannten Zwecke an diese Empfänger übermittelt oder offengelegt:</p>' +
+  googleDataActivities.map(activity => '<h3>' + escape(activity.title) + '</h3>' +
+    '<p><strong>Empfänger und Zweck:</strong> ' + escape(activity.recipients.join(' · ')) + '</p>' +
+    '<p><strong>Drittland / Transfer:</strong> ' + escape(activity.transfer) + '</p>').join('') +
+  '<p>Die Datenkategorien, Aufbewahrung, Löschung und technischen Schutzmaßnahmen stehen in den folgenden Detailabschnitten zu Google OAuth und YouTube.</p></section>';
+const existingSummaryStart = html.indexOf('<section id="google-data-sharing"');
+if (existingSummaryStart !== -1) {
+  const existingSummaryEnd = html.indexOf('</section>', existingSummaryStart);
+  if (existingSummaryEnd === -1) throw Error('GOOGLE_DATA_DISCLOSURE_UNCLOSED');
+  html = html.slice(0, existingSummaryStart) + html.slice(existingSummaryEnd + '</section>'.length).trimStart();
+}
+html = html.replace('<section data-processing-id="learning-inquiry">', googleDataDisclosure + '\n<section data-processing-id="learning-inquiry">');
 for (const activity of PROCESSING_ACTIVITIES) {
   const section = `<section data-processing-id="${activity.id}"><h2>${escape(activity.title)}</h2>` +
     [['Zweck',activity.purpose],['Datenkategorien',activity.dataCategories.join(' · ')],['Rechtsgrundlage',activity.legalBasis],['Empfänger',activity.recipients.join(' · ')],['Drittland / Transfer',activity.transfer],['Speicherung / Löschung',activity.retention],['Technische Kontrollen',activity.technicalControls.join(' · ')]].map(([label,value])=>`<p><strong>${label}:</strong> ${escape(value)}</p>`).join('') + '</section>';
