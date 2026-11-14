@@ -259,6 +259,13 @@ Diese Regel gilt für alle Domains, Skills und Chat-Agenten. Allgemeines Selbsts
 - **Auftrag abschließen:** Keine ungefragten Frameworkwechsel, Dependency-Upgrades oder Regeländerungen aus Recherche ableiten. Erkenntnisse nur verwenden, soweit sie das konkrete Problem lösen. Fehlende Evidence präzise kennzeichnen und unabhängige autorisierte Arbeit fortsetzen.
 - **Reale Grenzen erhalten:** Diese Vereinfachung ersetzt keine notwendigen Tests, Required Checks, Auth-/Tenant-/Secret-Grenzen oder tatsächlich anwendbaren gesetzlichen und vertraglichen Anforderungen. Es entstehen keine neuen Gates oder Pflichtberichte.
 
+## Standard für Medienprompts in Gemini Notebook (NotebookLM)
+
+- Bei Aufträgen für die Notebook-App pro Medienformat ein separates, eigenständig verständliches und textdurchsuchbares PDF liefern. Den kopierbaren Studio-Prompt und das Produktionsskript klar kennzeichnen. Beide erhalten Zielgruppe, Sprache, Format, Zielzeit, redaktionellen Stand und überprüfbare Quellen. Bei Aufträgen mit einem bestehenden Skript dessen Wortlaut im Skriptteil erhalten.
+- **Video:** Szenen mit Zeitmarken, Bild- und Schnittanweisungen, ausformulierter deutscher Sprechertext bei deutschsprachigem Auftrag, Untertitel sowie Bild- und Tonhinweise. **Podcast:** Kapitel und Zeitmarken, Rollen, ausformulierter Dialog oder Sprechertext, Regiehinweise und Shownotes. Abweichende Vorgaben des konkreten Auftrags haben Vorrang.
+- PDFs in Notebook als Quellen verwenden. Den Studio-Prompt bei Bedarf in die Anpassungsanweisung des gewählten Medienformats übernehmen. Wortlaut und Dauer sind Produktionsziele. Generierte Ausgaben vor Verwendung gegen Quellen, Skript, tatsächliche Laufzeit und Medienrechte prüfen.
+- In externen Notebook-Quellen ausschließlich freigegebenes Material verwenden. Redaktionelle Aussagen von technischen Nachweisen und Anbieterankündigungen abgrenzen. Bei Aktualitätsbezug Quellen mit Herausgeber und Datum aufführen. Interne PR-Details gehören nur bei ausdrücklichem Auftrag in die redaktionelle Fassung.
+
 ## Frontend: Verständlichkeit, Accessibility und Appearance
 
 Bei jeder Frontend-Änderung die betroffenen Ansichten nutzerfreundlich, lesbar, konsistent und zugänglich gestalten. PRODUCT-Skills situativ nutzen; „State of the Art“ nach dem aufgabenbezogenen Recherchemodus anwenden.
