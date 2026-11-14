@@ -1,0 +1,21 @@
+# Krypto-Marktsignale
+
+Der Webdienst prüft XRP, SOL und POL alle vier Stunden ab 00:10 UTC. Pro Zeitfenster entsteht höchstens ein Entwurf. Der Owner sieht ihn unter **Control Center → News** und gibt den konkreten Inhalt für die Startseite frei oder weist ihn zurück. Jede Freigabe gilt für das jeweilige Zeitfenster. Der Owner kann einen veröffentlichten Entwurf dort zurücknehmen.
+
+## Daten und Methodik
+
+- Offizielle stabile Releases aus XRPLF/rippled, anza-xyz/agave und 0xPolygon/bor werden über die [GitHub Releases API](https://docs.github.com/en/rest/releases/releases#list-releases) gelesen. Veröffentlichungsdatum, Link und der Inhalt des begrenzten Auszugs gehen in die Quellenevidenz ein. Die öffentliche Ansicht zeigt Links und Datum.
+- [CoinGecko Pro OHLC](https://docs.coingecko.com/reference/coins-id-ohlc) liefert abgeschlossene Stundenkerzen in EUR. Die Auswertung verlangt 25 lückenlose Kerzen. Die neueste darf beim Abruf höchstens zwei Stunden alt sein. Die Methode nutzt einen aggregierten Anbieter. Sie belegt keine Ausführbarkeit an einer bestimmten Börse.
+- [Ollama (MIT)](https://github.com/ollama/ollama/blob/main/LICENSE) klassifiziert Releases mit [Qwen2.5-1.5B-Instruct (Apache-2.0)](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct). Das Modell gibt ausschließlich klassifizierte Labels zurück. Die Richtung des Kursausbruchs und alle Preisniveaus werden rechnerisch ermittelt.
+- Ein Kauf- oder Short-Setup erfordert den Ausbruch aus der Spanne der vorigen 24 Stunden, mindestens 0,5 Prozent Abstand zum mittleren Schlusskurs in Ausbruchsrichtung und passendes Nachrichtensentiment. Bei zu hoher Handelsspanne oder fehlender Bestätigung bleibt das Ergebnis „Beobachten“. Einstieg ist der letzte Schlusskurs, Invalidation liegt eine mittlere Stundenhandelsspanne entfernt und das Szenarioziel zwei. Der Score setzt sich aus bis zu 45 Punkten für den Ausbruch, 35 für Momentum und 20 für passendes Sentiment zusammen. Der Score ist keine Erfolgswahrscheinlichkeit. Die Strategie hat hier keinen nachgewiesenen historischen Renditenachweis.
+
+## Betrieb und Aktivierung
+
+Der Lauf ist standardmäßig deaktiviert. Die bestehenden Content-Engine- und CADS-Verträge prüfen die Form des Entwurfs. Das Social Package bindet die Website-Freigabe an den Hash des Inhalts. Ein neues Zeitfenster benötigt seine eigene redaktionelle Freigabe. Externe Social-Provider und Order-Schnittstellen werden nicht aufgerufen.
+
+1. Bestätige die Nutzungsrechte für Datenanalyse und öffentliche Darstellung der abgeleiteten Setups in der vorgesehenen kommerziellen Nutzung, einschließlich der KI-Verarbeitung der Release-Auszüge. [CoinGecko-Lizenzumfang](https://support.coingecko.com/articles/1043089972-what-are-the-differences-between-commercial-and-custom-licenses) prüfen. CoinGecko verlangt einen kommerziell nutzbaren Tarif mit Attribution. Die Anwendung zeigt die Attribution an.
+2. Trage serverseitig den freigegebenen CoinGecko-Schlüssel als `CAPITAL_AI_CRYPTO_COINGECKO_KEY` und die HTTPS-Nachweisreferenzen in `CAPITAL_AI_CRYPTO_SIGNAL_RIGHTS` ein. Format: `{"market":"https://…","news":{"XRPLF/rippled":"https://…","anza-xyz/agave":"https://…","0xPolygon/bor":"https://…"}}`. Referenzen dienen als Nachweisspur. Die Anwendung validiert das Format, der Betreiber prüft den Rechteinhalt.
+3. Stelle das Modell `qwen2.5:1.5b` in einer autorisierten Ollama-Instanz bereit. Der lokale Standard-Endpunkt ist `http://127.0.0.1:11434/api/generate`. Ein externer Dienst benötigt HTTPS und einen authentifizierenden Proxy mit `CAPITAL_AI_CRYPTO_OLLAMA_URL` und `CAPITAL_AI_CRYPTO_OLLAMA_TOKEN`. Rechenleistung und dedizierter Speicher können Kosten verursachen.
+4. Prüfe das vorhandene persistente Volume unter `/var/data`. Der Webdienst nutzt den geschützten Unterordner `capital-ai-crypto-signals`. Der Lauf muss auf dem Dienst mit diesem Volume ausgeführt werden. Setze anschließend `CAPITAL_AI_CRYPTO_SIGNALS_ENABLED=true` und prüfe einen kompletten Lauf mit einem frisch authentifizierten Owner.
+
+Bei einem fehlgeschlagenen Abruf bleiben betroffene Assets aus dem Entwurf. Ohne gültigen oder rechtzeitig freigegebenen Entwurf zeigt die Startseite keinen Beitrag. Für die Rücknahme laufender Veröffentlichungen steht im Control Center die Rücknahme bereit. Das Feature-Flag kann den gesamten Workflow deaktivieren.

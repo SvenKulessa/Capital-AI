@@ -16,6 +16,7 @@ import { APP_NAVIGATION_EVENT, CONTROL_CENTER_SECTION_IDS, navigateAppLocation, 
 
 export type ControlCenterTab = (typeof CONTROL_CENTER_SECTION_IDS)[number];
 
+const CryptoSignalReview = React.lazy(() => import('../features/home/CryptoMarketSignals').then(module => ({ default: module.CryptoSignalReview })));
 const SECTIONS = MAIN_HUBS_CONFIG['control-center'].subpages;
 
 function readSection(fallback: ControlCenterTab): ControlCenterTab {
@@ -129,7 +130,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
           {activeTab === 'components' && <><ComponentInventoryDashboard />{analysisUiEnabled('components') && <AnalysisComponentExplorer compact />}</>}
           {activeTab === 'tools' && <RepositoryToolCatalogDashboard />}
           {activeTab === 'observability' && <ObservabilityDashboard />}
-          {activeTab === 'news' && <ControlCenterNewsPanel />}
+          {activeTab === 'news' && <><React.Suspense fallback={null}><CryptoSignalReview /></React.Suspense><ControlCenterNewsPanel /></>}
           {activeTab === 'licenses' && <LicenseEnginePanel />}
 
           {activeTab === 'console' && <PipelineConfiguratorConsole />}
