@@ -38,8 +38,9 @@ export function normalizeSha256(value, required = false) {
 export function createContainerIdentity(env = process.env) {
   const eventName = env.GITHUB_EVENT_NAME || 'local';
   const testedSha = normalizeSha(env.GITHUB_SHA, true);
-  const pullRequestHeadSha = normalizeSha(env.CAPITAL_PR_HEAD_SHA);
-  const baseMainSha = normalizeSha(env.CAPITAL_BASE_MAIN_SHA);
+  const isPullRequest = eventName === 'pull_request';
+  const pullRequestHeadSha = isPullRequest ? normalizeSha(env.CAPITAL_PR_HEAD_SHA) : null;
+  const baseMainSha = isPullRequest ? normalizeSha(env.CAPITAL_BASE_MAIN_SHA) : null;
   if (eventName === 'pull_request' && (!pullRequestHeadSha || !baseMainSha)) {
     throw new Error('pull_request identity requires CAPITAL_PR_HEAD_SHA and CAPITAL_BASE_MAIN_SHA');
   }
@@ -48,7 +49,7 @@ export function createContainerIdentity(env = process.env) {
     schemaVersion: 1,
     source: {
       eventName,
-      sourceSha: pullRequestHeadSha || testedSha,
+      sourceSha: isPullRequest ? pullRequestHeadSha : testedSha,
       testedSha,
       testedMergeSha: eventName === 'pull_request' ? testedSha : null,
       pullRequestHeadSha,
@@ -73,8 +74,12 @@ export function validateContainerIdentity(document) {
     if (source.testedMergeSha !== source.testedSha) throw new Error('testedMergeSha must equal testedSha for pull_request');
     if (source.sourceSha !== source.pullRequestHeadSha) throw new Error('sourceSha must equal pullRequestHeadSha for pull_request');
     if (!source.baseMainSha) throw new Error('baseMainSha is required for pull_request');
-  } else if (source.testedMergeSha !== null) {
-    throw new Error('testedMergeSha must be null outside pull_request');
+  } else {
+    if (source.testedMergeSha !== null) throw new Error('testedMergeSha must be null outside pull_request');
+    if (source.sourceSha !== source.testedSha) throw new Error('sourceSha must equal testedSha outside pull_request');
+    if (source.pullRequestHeadSha !== null || source.baseMainSha !== null) {
+      throw new Error('pullRequestHeadSha and baseMainSha must be null outside pull_request');
+    }
   }
   for (const [key, type] of Object.entries(DIGEST_TYPES)) {
     if (document.digestTypes?.[key] !== type) throw new Error('Digest type mismatch: ' + key);

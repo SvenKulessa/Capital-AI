@@ -195,16 +195,22 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
         browserTrackingActivated: false, actualLeadsVerified: false,
         note: 'Configuration only. Real enquiries require a confirmed receipt and consented measurement; this tool never invents events.' };
     }
-    if (name === 'gsc_submit_canonical_sitemap') {
+    if (name === 'gsc_submit_canonical_sitemap' || name === 'gsc_resubmit_canonical_sitemap') {
       exact(input, []);
       if (env.GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED !== 'true') throw new Error('GSC_WRITES_DISABLED');
+      const resubmit = name === 'gsc_resubmit_canonical_sitemap';
+      if (resubmit) {
+        const site = await call('gsc_get_expected_site');
+        if (!['siteOwner', 'siteFullUser'].includes(site.permissionLevel)) throw new Error('GSC_WRITE_PERMISSION_INSUFFICIENT');
+      }
       const current = await call('gsc_list_sitemaps');
-      if (!current.sitemaps.some(item => item.path === SITEMAP_URL)) {
+      if (resubmit || !current.sitemaps.some(item => item.path === SITEMAP_URL)) {
         await request(GSC_ORIGIN, '/webmasters/v3/sites/' + encodeURIComponent(GSC_PROPERTY) + '/sitemaps/' + encodeURIComponent(SITEMAP_URL), { method: 'PUT' });
       }
       const after = await call('gsc_list_sitemaps');
       if (!after.sitemaps.some(item => item.path === SITEMAP_URL)) throw new Error('GSC_SITEMAP_NOT_VERIFIED');
-      return { property: GSC_PROPERTY, sitemap: SITEMAP_URL, status: 'SITEMAP_SUBMISSION_VERIFIED', indexingGuaranteed: false };
+      return { property: GSC_PROPERTY, sitemap: SITEMAP_URL, status: 'SITEMAP_SUBMISSION_VERIFIED',
+        ...(resubmit ? { action: 'RESUBMITTED', crawlRequested: false, crawlCompleted: false } : {}), indexingGuaranteed: false };
     }
     if (name === 'google_maintenance_status') {
       exact(input, []);

@@ -17,6 +17,9 @@ npm run growth:search:config -- audit
 
 # Explicitly register only the canonical sitemap, if not registered already.
 npm run growth:search:config -- apply
+
+# Explicit user-authorized re-submission, even when already registered.
+npm run growth:search:config -- resubmit
 ```
 
 In an environment that supplies an HTTP(S) proxy, run Node with its inherited
@@ -44,7 +47,13 @@ After this change is merged, use the existing main-only workflow:
 ```sh
 gh workflow run google-learning-setup.yml --ref main -f target=search -f mode=audit
 gh workflow run google-learning-setup.yml --ref main -f target=search -f mode=apply
+gh workflow run google-learning-setup.yml --ref main -f target=search -f mode=resubmit
 ```
+
+`resubmit` is accepted only with `target=search`. It checks the existing exact
+property and owner/full permission, performs one sitemap PUT and verifies
+readback. It neither requests individual URL indexing nor reports a completed
+crawl. Repeated re-submissions are not automatic and do not accelerate crawling.
 
 `target=search` requests only the selected Search Console scope. It skips the
 GA4/learning script and the Render measurement activation step. The existing
@@ -78,6 +87,52 @@ prove that the Google identity currently has property access.
   separate personal consent and is not created by API credentials or this script.
   If needed, the owner can request homepage indexing in Search Console manually.
   No Indexing API or deprecated sitemap ping is used.
+
+## Agent Reader and permission boundary
+
+The existing `capital-ai-google-maintenance` MCP now exposes exact-property role
+discovery, the four Search index snapshots and explicit canonical sitemap
+re-submission. The owner's 2026-11-13 instruction authorizes Search configuration
+writes: `.mcp.json` enables only `GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED`; GA4 writes
+remain disabled. The separate `capital-ai-gsc` OAuth reader/guard remains read-only.
+No token is stored in this configuration. The trusted worker still needs its
+existing short-lived token or ADC; the existing federated workflow is the proven
+execution path. Reload a repository MCP client to discover newly registered
+tools; repository metadata cannot hot-install a connector into an ongoing chat.
+
+`siteFullUser` already permits sitemap submission and the Search Console UI's
+indexing request. User administration needs the Search Console property owner
+role (`siteOwner`), not a Google Cloud project Owner grant. The public Search
+Console API has no user/owner-management endpoint. To grant the explicitly
+requested delegated-owner role, an existing verified owner must use Search
+Console → Settings → Users and permissions for `sc-domain:capital-ai.online`,
+and select the existing identity
+`capital-ai-google-audit@aifinancial-500208.iam.gserviceaccount.com`. This personal
+UI step remains unperformed until actually verified; no role is silently claimed
+or global Cloud/IAM permission broadened.
+
+Googlebot/Googlebot-Image have crawl access through the public robots policy and
+indexable logo/favicon responses. They are Google crawlers, not service accounts
+that can be assigned an administrator role. Logo eligibility is already deployed;
+actual SERP image selection still belongs to Google. A direct homepage crawl
+request is made in Search Console's URL Inspection UI with "Request indexing";
+no API result is described as having pressed that UI action.
+
+2026-11-13 acceptance for the owner-authorized write extension: 42 configuration
+and maintenance tests, 44 SEO/provenance tests and six existing Google-authority tests passed; test
+wiring passed. Real read-only workflow run 43526581432 verified siteFullUser,
+registered error-free sitemap and homepage PASS with lastCrawlTime
+2026-11-08T05:58:15Z. Browser fallback timed out and no shared desktop browser
+tool was offered, so no UI indexing request or delegated-owner grant is claimed.
+Post-merge acceptance is one explicit `target=search, mode=resubmit` invocation;
+its provider result is not a completed crawl or proof of logo selection.
+The homepage sitemap lastmod is corrected to 2026-11-13, when PR #693 actually
+changed its publisher/logo structured data. It is not generated from workflow
+execution time; other pages retain their independently documented dates.
+
+Official permission/crawl references:
+https://support.google.com/webmasters/answer/7687615 and
+https://developers.google.com/search/docs/crawling-indexing/ask-google-to-recrawl.
 
 ## Validation and rollback
 

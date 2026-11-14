@@ -13,7 +13,7 @@ export const SEARCH_CONFIGURATION = Object.freeze({
   inspectionPaths: GSC_SEARCH_CONFIGURATION_PATHS,
   logo: ORIGIN + '/branding/asset-pack/avatars/capital-ai-avatar-512x512.png',
   favicon: ORIGIN + '/branding/asset-pack/favicon/favicon-96x96.png',
-  scopes: Object.freeze({ audit: 'https://www.googleapis.com/auth/webmasters.readonly', apply: 'https://www.googleapis.com/auth/webmasters' }),
+  scopes: Object.freeze({ audit: 'https://www.googleapis.com/auth/webmasters.readonly', apply: 'https://www.googleapis.com/auth/webmasters', resubmit: 'https://www.googleapis.com/auth/webmasters' }),
 });
 
 async function publicResponse(fetchImpl, path) {
@@ -54,6 +54,9 @@ export async function auditSearchSurface(fetchImpl = fetch) {
         const urls = [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
         const expected = new Set(SEO_CONTENT_MANIFEST.map(entry => entry.canonical));
         add(path, 'PUBLIC_PAGE_SITEMAP', /(?:application|text)\/xml/i.test(type) && urls.length === expected.size && new Set(urls).size === expected.size && urls.every(url => expected.has(url)));
+        const home = [...text.matchAll(/<url\b[^>]*>([\s\S]*?)<\/url>/g)].find(([, block]) => block.includes('<loc>' + ORIGIN + '/</loc>'));
+        const lastmod = SEO_CONTENT_MANIFEST.find(entry => entry.path === '/').sitemapLastmod;
+        add(path, 'HOMEPAGE_LASTMOD', !!home && home[1].includes('<lastmod>' + lastmod + '</lastmod>'));
       } else {
         add(path, 'IMAGE_INDEXABLE', !/noindex|\bnone\b/i.test(response.headers.get('x-robots-tag') || '') && (/image\//i.test(type) || path.endsWith('.ico')));
         if (path === new URL(SEARCH_CONFIGURATION.logo).pathname) add(path, 'LOGO_DIMENSIONS', body.length >= 24 && body.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) && body.readUInt32BE(16) === 512 && body.readUInt32BE(20) === 512);
@@ -64,8 +67,9 @@ export async function auditSearchSurface(fetchImpl = fetch) {
 }
 
 export async function runSearchConfiguration(mode = 'audit', { env = process.env, fetchImpl = fetch, maintenance } = {}) {
-  if (!['plan', 'audit', 'apply'].includes(mode)) throw new Error('INVALID_MODE');
-  const result = { configuration: SEARCH_CONFIGURATION, mode, readOnly: mode !== 'apply',
+  if (!['plan', 'audit', 'apply', 'resubmit'].includes(mode)) throw new Error('INVALID_MODE');
+  const writing = mode === 'apply' || mode === 'resubmit';
+  const result = { configuration: SEARCH_CONFIGURATION, mode, readOnly: !writing,
     crawlRequested: false, googleLogoDisplayed: 'NOT_PROVEN', connectorConnected: 'NOT_PROVEN' };
   if (mode === 'plan') return { ...result, status: 'PLAN_ONLY',
     ownerSteps: ['Grant an existing Google identity access to the exact Search Console property if missing.',
@@ -73,13 +77,13 @@ export async function runSearchConfiguration(mode = 'audit', { env = process.env
       'Request homepage indexing manually in Search Console if needed; URL Inspection API reads snapshots only.'] };
   result.publicSurface = await auditSearchSurface(fetchImpl);
   const api = maintenance || createGoogleMaintenance({ fetchImpl, env: { ...env,
-    GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED: 'false', GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED: String(mode === 'apply') } });
+    GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED: 'false', GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED: String(writing) } });
   try {
     result.property = await api.call('gsc_get_expected_site');
-    if (mode === 'apply') {
+    if (writing) {
       if (result.publicSurface.status !== 'PASS') throw new Error('PUBLIC_CONFIGURATION_INVALID');
       if (!['siteOwner', 'siteFullUser'].includes(result.property.permissionLevel)) throw new Error('GSC_WRITE_PERMISSION_INSUFFICIENT');
-      result.submission = await api.call('gsc_submit_canonical_sitemap');
+      result.submission = await api.call(mode === 'resubmit' ? 'gsc_resubmit_canonical_sitemap' : 'gsc_submit_canonical_sitemap');
     }
     const report = await api.call('gsc_list_sitemaps');
     const canonical = report.sitemaps.filter(item => item.path === SEARCH_CONFIGURATION.sitemap);

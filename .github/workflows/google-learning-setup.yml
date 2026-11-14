@@ -3,11 +3,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'audit reads settings; apply configures lead definition/privacy settings and canonical sitemap'
+        description: 'audit reads; apply configures; resubmit explicitly resubmits the sitemap (search only)'
         required: true
         default: audit
         type: choice
-        options: [audit, apply]
+        options: [audit, apply, resubmit]
       target:
         description: 'search: Search Console/logo only; learning: existing GA4 and learning setup'
         required: true
@@ -43,9 +43,10 @@ jobs:
           set -euo pipefail
           [[ "$PROVIDER" == projects/542877602707/locations/global/workloadIdentityPools/capital-ai-github-read/providers/capital-ai-dispatch ]]
           [[ "$SERVICE_ACCOUNT" == capital-ai-google-audit@aifinancial-500208.iam.gserviceaccount.com ]]
-          [[ "$MODE" == audit || "$MODE" == apply ]]
+          [[ "$MODE" == audit || "$MODE" == apply || "$MODE" == resubmit ]]
           [[ "$TARGET" == learning || "$TARGET" == search ]]
           if [[ "$TARGET" == learning ]]; then
+            [[ "$MODE" != resubmit ]]
             [[ "$PROPERTY" == 548187678 ]]
           fi
       - id: google_auth
@@ -59,7 +60,7 @@ jobs:
           access_token_scopes: |
             ${{ inputs.target != 'search' && (inputs.mode == 'apply' && 'https://www.googleapis.com/auth/analytics.edit' || 'https://www.googleapis.com/auth/analytics.readonly') || '' }}
             ${{ inputs.target != 'search' && 'https://www.googleapis.com/auth/analytics.readonly' || '' }}
-            ${{ inputs.mode == 'apply' && 'https://www.googleapis.com/auth/webmasters' || 'https://www.googleapis.com/auth/webmasters.readonly' }}
+            ${{ inputs.mode != 'audit' && 'https://www.googleapis.com/auth/webmasters' || 'https://www.googleapis.com/auth/webmasters.readonly' }}
           create_credentials_file: false
           export_environment_variables: false
       - name: Run bounded setup with provider readback
