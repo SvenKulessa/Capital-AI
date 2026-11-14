@@ -20,6 +20,7 @@ const frontmatter = (file) => {
 test('registry contains exactly five domains, two skills each, and one chat agent each', () => {
   assert.equal(registry.schemaVersion, 'CAPITAL_AI_DOMAIN_SKILLS@1');
   assert.equal(registry.authority, 'AGENTS.md');
+  assert.equal(registry.contract, 'SOLO_MAINTAINER_FLOW@2');
   assert.deepEqual(Object.keys(registry.domains).sort(), [...expected].sort());
   const ids = new Set();
   for (const domain of expected) {

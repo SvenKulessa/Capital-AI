@@ -1,7 +1,7 @@
 # CAPITAL-AI Growth Research Package — 14.11.2026
 
 **Status:** PROPOSED / LICENSE_REVIEW_REQUIRED  
-**Branch:** growth/learning-social-drafts-20261114  
+**Branch:** capital-ai-growth/learning-social-drafts-20261114  
 **Governance:** AGENTS.md / SOLO_MAINTAINER_FLOW@2
 
 ## Inhalt

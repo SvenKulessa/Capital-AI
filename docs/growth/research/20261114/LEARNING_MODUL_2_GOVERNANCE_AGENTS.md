@@ -22,7 +22,7 @@ Deterministischer Zustandsmaschine:
 Nur bei explizitem Human-Override und dokumentiertem SHA wird der Status auf „draft ready“ gesetzt. Kein automatisches Publishing.
 
 ### Grafik
-**Lizenz:** SUBSCRIPTION_GENERATED (Grok Imagine, didaktischer Entwurf)  
+**Herkunftsangabe (ungeprüft):** SUBSCRIPTION_GENERATED (Grok Imagine, didaktischer Entwurf); konkrete kommerzielle Nutzungsrechte sind NOT_PROVEN. Keine Publishing-Freigabe.  
 ![Governance Diagramm](https://drive.google.com/uc?export=view&id=1dbgh0poX2fOahqRngEjVtNOd3c3vmHj4)
 
 Zustandsdiagramm mit drei Knoten: Ingestion → Quality Gate → Human Gate. Rote Stop-Kante bei fehlender Freigabe, grüne Fortsetzung nur nach Approval. Farben Navy/Gold/Cyan.
