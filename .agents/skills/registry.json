@@ -1,7 +1,7 @@
 {
   "schemaVersion": "CAPITAL_AI_DOMAIN_SKILLS@1",
   "authority": "AGENTS.md",
-  "contract": "SOLO_MAINTAINER_FLOW@1",
+  "contract": "SOLO_MAINTAINER_FLOW@2",
   "discoveryRoot": ".agents/skills",
   "domains": {
     "PRODUCT": {

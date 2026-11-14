@@ -1,16 +1,16 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 700,
-  "mergeCount": 560,
-  "fromPr": 686,
-  "toPr": 700,
-  "sourceSha": "63622d1fa879ddb48b5bfe4800bc78f1d958e3ab",
-  "reconciledAt": "2026-11-13T22:04:45.130Z",
+  "lastReconciledPr": 705,
+  "mergeCount": 570,
+  "fromPr": 697,
+  "toPr": 705,
+  "sourceSha": "8a5b81200ad4a0e592031107a5c46d76e0b7b69c",
+  "reconciledAt": "2026-11-14T13:53:36.904Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "6c7c76ea4ddad260fa57a2e5c487d035a4de4c96b2e427c31f821e38c8775533"
+      "sha256": "bc5efa37a58fb1645ea8677c06a35f2e42459a026c88600b042a55c89e441aaf"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
@@ -593,24 +593,32 @@
     {
       "id": "CA-PLATFORM-DOCSYNC-01",
       "owner": "PLATFORM",
-      "recordedState": "UNGEKLÄRT",
+      "recordedState": "OFFEN",
       "evidencePathsPresent": [
-        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md",
+        "scripts/upload-drive/mapping.v1.json",
+        "scripts/upload-drive/drive-sync-plan.mjs",
+        "scripts/upload-drive/drive-sync-plan.test.mjs",
+        "docs/platform/DRIVE-DOCSYNC-ADMISSION-20261114.md"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
-      "effectiveState": "UNGEKLÄRT"
+      "effectiveState": "OFFEN"
     },
     {
       "id": "CA-TRUST-DOCSYNC-03",
       "owner": "TRUST",
-      "recordedState": "UNGEKLÄRT",
+      "recordedState": "OFFEN",
       "evidencePathsPresent": [
-        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md",
+        "scripts/upload-drive/mapping.v1.json",
+        "scripts/upload-drive/drive-sync-plan.mjs",
+        "scripts/upload-drive/drive-sync-plan.test.mjs",
+        "docs/platform/DRIVE-DOCSYNC-ADMISSION-20261114.md"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
-      "effectiveState": "UNGEKLÄRT"
+      "effectiveState": "OFFEN"
     },
     {
       "id": "CA-PLATFORM-DOCSYNC-02",

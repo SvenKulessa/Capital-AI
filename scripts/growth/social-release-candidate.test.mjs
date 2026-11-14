@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildCandidate,readMergedFileInventory} from './social-release-candidate.mjs';
 const sha='a'.repeat(40);
-const registry={authority:'AGENTS.md',contract:'SOLO_MAINTAINER_FLOW@1',domains:Object.fromEntries(['PRODUCT','MARKET','PLATFORM','TRUST','GROWTH'].map(d=>[d,{engineering:d+'-engineering',advisory:d+'-advisory'}]))};
+const registry={authority:'AGENTS.md',contract:'SOLO_MAINTAINER_FLOW@2',domains:Object.fromEntries(['PRODUCT','MARKET','PLATFORM','TRUST','GROWTH'].map(d=>[d,{engineering:d+'-engineering',advisory:d+'-advisory'}]))};
 const event={action:'closed',repository:{id:1293009324,owner:{id:84307769}},pull_request:{merged:true,number:475,merge_commit_sha:sha,title:'Fix <script> **summary**',base:{ref:'main',repo:{id:1293009324,full_name:'SvenKulessa/Capital-AI'}}}};
 const files=['server/social-media/provider-store.mjs','src/features/home/ContentEngineConcept.tsx'];
 test('PR source identity, stable fingerprint, routing and zero publishing rights',()=>{
@@ -19,6 +19,14 @@ test('wrong account, branch, event, digest, source path or registry must fail cl
  for(const edit of edits){const e=structuredClone(event);edit(e);assert.throws(()=>buildCandidate(e,files,registry),/MERGE_SOURCE_NOT_AUTHORIZED/);}
  assert.throws(()=>buildCandidate(event,['../secrets'],registry),/MERGE_FILE_INVENTORY_INVALID/);
  assert.throws(()=>buildCandidate(event,files,{...registry,authority:'other'}),/MERGE_SKILL_REGISTRY_INVALID/);
+});
+test('V2 skill registry is accepted and legacy V1 fails closed',()=>{
+ assert.equal(registry.contract,'SOLO_MAINTAINER_FLOW@2');
+ const candidate=buildCandidate(event,files,registry);
+ assert.equal(candidate.state,'DRAFT_ONLY');
+ assert.equal(candidate.publicPublishAllowed,false);
+ assert.equal(candidate.delivery.publishAttempts,0);
+ assert.throws(()=>buildCandidate(event,files,{...registry,contract:'SOLO_MAINTAINER_FLOW@1'}),/MERGE_SKILL_REGISTRY_INVALID/);
 });
 test('crawl uses fixed source and rejects provider failures',async()=>{
  const urls=[];const fetchImpl=async url=>{urls.push(url);return{ok:true,json:async()=>[{filename:'src/features/Test.tsx'}]};};
