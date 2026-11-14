@@ -71,3 +71,12 @@ test('the V2 regression executes in the existing offline Docker test stage', () 
   assert.match(dockerfile, /^COPY scripts\/domain-skills\.test\.mjs scripts\/solo-maintainer-flow\.test\.mjs \.\/scripts\/$/m);
   assert.match(dockerignore, /^!scripts\/solo-maintainer-flow\.test\.mjs$/m);
 });
+
+test('lean merge risk budget keeps core checks and limits unrelated evidence', () => {
+  const merge = section(policy, '## Delegierte Agenten-Merge-Regel');
+  const required = ['Docker Security Gate', 'Domain Governance', 'Post-Deployment-Abnahme', 'verlinken statt kopieren', 'expected_head_sha', 'MERGE_BLOCKED', 'Risikobudget'];
+  for (const item of required) assert.ok(merge.includes(item), `missing lean-merge contract: ${item}`);
+  assert.match(merge, /aktivierten Effekt/);
+  // PR templates are intentionally excluded from the offline Docker test context.
+  // Guard the effective policy here; review the template through the PR diff.
+});
