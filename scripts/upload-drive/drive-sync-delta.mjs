@@ -80,8 +80,8 @@ export function buildDeltaPlan({ mapping, docsRoot, pages, state = null, sourceS
       row.action = 'CONFLICT'; row.reason = 'REMOTE_IDENTITY_CHANGED';
     } else if (remote && prior && (remote.revision !== prior.revision || remote.etag !== prior.etag || remote.sha256 !== prior.sha256)) {
       row.action = 'CONFLICT'; row.reason = 'STALE_REMOTE_REVISION';
-    } else if (remote && !prior && row.action === 'PLAN_UPDATE') {
-      row.action = 'CONFLICT'; row.reason = 'UNTRACKED_REMOTE_UPDATE';
+    } else if (remote && !prior && ['PLAN_UPDATE', 'SKIP'].includes(row.action)) {
+      row.action = 'CONFLICT'; row.reason = 'UNTRACKED_REMOTE_OBJECT';
     } else if (prior && !remote && row.action === 'PLAN_CREATE') {
       row.action = 'CONFLICT'; row.reason = 'TRACKED_REMOTE_MISSING';
     }
@@ -92,6 +92,14 @@ export function buildDeltaPlan({ mapping, docsRoot, pages, state = null, sourceS
     }
     return row;
   });
+  // Never silently forget a previously tracked document removed from the local source.
+  const localSources = new Set(base.rows.map((row) => row.sourceId));
+  for (const [sourceId] of past) {
+    if (!localSources.has(sourceId)) {
+      resultRows.push({ sourceId, classification: 'UNRESOLVED', targetKey: null,
+        action: 'CONFLICT', reason: 'TRACKED_LOCAL_MISSING' });
+    }
+  }
   // State is a confirmation of identical remote content, not a claim that proposed writes happened.
   const confirmed = resultRows.filter((r) => r.action === 'SKIP').map((r) => {
     const remote = remoteBySource.get(r.sourceId);
