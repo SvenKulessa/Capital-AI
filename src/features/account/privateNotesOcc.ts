@@ -85,11 +85,9 @@ export async function saveNotes(
     const response = await fetch('/api/profile/notes', {
       method: 'PUT', credentials: 'same-origin', cache: 'no-store', signal,
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        expectedUserId: snapshot.userId,
-        ...(legacy ? {} : {expectedRevision: snapshot.revision}),
-        notes: localDraft,
-      }),
+      body: JSON.stringify(legacy
+        ? {expectedUserId: snapshot.userId, notes: localDraft}
+        : {expectedUserId: snapshot.userId, expectedRevision: snapshot.revision, notes: localDraft}),
     });
     const body: unknown = await response.json();
     if (response.status === 401 ||
