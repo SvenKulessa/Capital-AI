@@ -240,3 +240,11 @@ test('remote names with traversal separators are rejected', (t) => {
   const files = [{ id: 'f1', name: '../demo.md', parentId:'folder-platform', syncKey:docKey() }];
   assert.throws(() => buildPlan({mapping:f.mapping,docsRoot:f.docsRoot,inventory:inventory({files})}), /INVALID_REMOTE_NAME/);
 });
+
+test('different local paths flattened to one target folder/name are conflicts', (t) => {
+  const f = fixture(t, { 'platform/same.md': 'one', 'architecture/same.md': 'two' }, { approved: ['docs/platform/same.md', 'docs/architecture/same.md'] });
+  const plan = buildPlan({ mapping: f.mapping, docsRoot: f.docsRoot, inventory: inventory() });
+  assert.equal(plan.summary.CONFLICT, 2);
+  assert.equal(plan.summary.PLAN_CREATE, 0);
+  assert.ok(plan.rows.every((r) => r.reason === 'LOCAL_TARGET_NAME_COLLISION'));
+});
