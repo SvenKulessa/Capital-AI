@@ -32,3 +32,10 @@ Negative cases: unapproved/cross-origin/credentialed/HTTP/port/path-escape URLs,
 - Rollback: revert the feature-branch commit(s) containing this isolated module, test and documentation. No migration or persistent state to reverse.
 
 Statuses: CODE/LOCAL FIXTURE **VERIFIED**; LIVE FEED **NOT_PROVEN**; PRODUCTION INTEGRATION **NOT_PROVEN**; LICENSE/PUBLISH **BLOCKED**.
+
+## Official ECB feed and reuse policy — read-only source check, 2026-11-14
+
+- Official ECB feed directory: https://www.ecb.europa.eu/home/html/rss.en.html. The official press feed link resolves to `https://www.ecb.europa.eu/rss/press.html` with `application/rss+xml`. This establishes the named endpoint and its RSS MIME type, **not** a successful parse of real feed items: the independent web reader does not render the XML body. LIVE_FEED_ITEM_SCHEMA and live item-count/freshness compatibility remain **NOT_PROVEN**; fixtures are not evidence of real ECB feed structure.
+- Official conditions: https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html. Ordinary website information may be reused under the ECB's conditions: accuracy, ECB source attribution, disclosure of modifications, full-window business links, and special disclosure of free ECB availability when information is incorporated into material sold. Authored papers and similar named-author documents have an **explicit prior written permission** exception for reprinting. The ECB name/logo does not imply endorsement.
+- This implementation uses metadata and links only and intentionally preserves `LICENSE_REVIEW_REQUIRED` for each item. No legal clearance, redistribution authority, provider rights, live article content validation, published Learning article, or Social publication is claimed. Commercial/editorial publication needs an individual rights and attribution review.
+- Source lookup is an evidence review only; no token, paid API, scheduled network action, publishing or productive database write.
