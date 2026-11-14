@@ -29,7 +29,7 @@ async function fixture({ permission = 'siteOwner', sites, blockedImage = false, 
     if (url.origin === origin) {
       assert.equal(options.headers?.Authorization, undefined);
       if (url.pathname === '/') return new Response(html, { headers: { 'content-type': 'text/html' } });
-      if (url.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nSitemap: ' + SEARCH_CONFIGURATION.sitemap);
+      if (url.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nDisallow: /docs/growth/research/\nDisallow: /generated/\nDisallow: /evidence/\nSitemap: ' + SEARCH_CONFIGURATION.sitemap);
       if (url.pathname === '/sitemap.xml') return new Response('<urlset>' + SEO_CONTENT_MANIFEST.map(entry => '<url><loc>' + entry.canonical + '</loc>' + (entry.sitemapLastmod ? '<lastmod>' + (staleHomeDate && entry.path === '/' ? '2026-10-14' : entry.sitemapLastmod) + '</lastmod>' : '') + '</url>').join('') + (invalidSitemap ? '<url><loc>https://capital-ai.online/profile</loc></url>' : '') + '</urlset>', { headers: { 'content-type': 'application/xml' } });
       assert.ok(SEO_PUBLIC_IMAGE_PATHS.includes(url.pathname));
       return new Response(png, { headers: { 'content-type': 'image/png', ...(blockedImage ? { 'x-robots-tag': 'noindex' } : {}) } });

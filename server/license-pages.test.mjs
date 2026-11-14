@@ -136,6 +136,21 @@ test('Vocabulary remains public while only search-eligible terms enter the sitem
     const robots = await robotsResponse.text();
     assert.match(robots, /User-agent: \*/);
     assert.match(robots, /Sitemap: https:\/\/capital-ai\.online\/sitemap\.xml/);
+    for (const prefix of ['/docs/growth/research/', '/generated/', '/evidence/']) {
+      assert.ok(robots.includes('Disallow: ' + prefix), prefix);
+    }
+    const sitemapMainResponse = await fetch(origin + '/sitemap-main.xml');
+    assert.equal(sitemapMainResponse.status, 200);
+    assert.match(sitemapMainResponse.headers.get('content-type') || '', /application\/xml/);
+    assert.equal(await sitemapMainResponse.text(), sitemap);
+    const sitemapIndexResponse = await fetch(origin + '/sitemap-index.xml');
+    assert.equal(sitemapIndexResponse.status, 200);
+    assert.match(sitemapIndexResponse.headers.get('content-type') || '', /application\/xml/);
+    const sitemapIndex = await sitemapIndexResponse.text();
+    assert.match(sitemapIndex, /<sitemapindex\b/);
+    assert.match(sitemapIndex, /<loc>https:\/\/capital-ai\.online\/sitemap-main\.xml<\/loc>/);
+    assert.doesNotMatch(sitemapIndex, /\/profile|\/control-center|\/api\//);
+    assert.doesNotMatch(sitemap, /<loc>https:\/\/capital-ai\.online\/(?:profile|control-center|api\/)/);
 
     assert.equal((await fetch(origin + '/vocabulary/not-a-real-term')).status, 404);
   } finally {
