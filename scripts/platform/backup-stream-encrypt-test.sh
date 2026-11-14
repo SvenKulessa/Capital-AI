@@ -69,6 +69,31 @@ expected_hash="$(sudo sha256sum "$archive" | cut -d ' ' -f1)"
 [[ "$(node -p "JSON.parse(require('node:fs').readFileSync('$scratch/manifest.json')).ciphertextSha256")" == "$expected_hash" ]] || {
   echo 'ENCRYPTED_ARCHIVE_CHECKSUM_MISMATCH' >&2; exit 1;
 }
+# Simulate independent offsite retrieval using a separate local fixture directory.
+# This is deliberately NOT evidence of Google Drive/GCS upload or provider restore.
+mkdir -m 700 "$scratch/retrieved"
+sudo cat "$archive" > "$scratch/retrieved/backup.sql.age"
+retrieved_hash="$(sha256sum "$scratch/retrieved/backup.sql.age" | cut -d ' ' -f1)"
+[[ "$retrieved_hash" == "$expected_hash" ]] || {
+  echo 'INDEPENDENT_COPY_SHA256_MISMATCH' >&2; exit 1;
+}
+# Tamper with the retrieved copy: the manifest hash must reject it before decryption.
+cp -- "$scratch/retrieved/backup.sql.age" "$scratch/retrieved/tampered.sql.age"
+python3 - "$scratch/retrieved/tampered.sql.age" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+data = bytearray(p.read_bytes())
+data[-1] ^= 1
+p.write_bytes(data)
+PY
+[[ "$(sha256sum "$scratch/retrieved/tampered.sql.age" | cut -d ' ' -f1)" != "$expected_hash" ]] || {
+  echo 'TAMPERED_RETRIEVAL_HASH_ACCEPTED' >&2; exit 1;
+}
+# Restore only from the independently copied, hash-verified synthetic archive.
+archive="$scratch/retrieved/backup.sql.age"
+echo 'PASS synthetic independent archive copy, SHA-256 and tamper rejection (no cloud provider)'
+
 # Decrypted SQL exists only in the pipe to the disposable target database.
 sudo cat "$archive" | age --decrypt -i "$scratch/identity.txt" | \
   sudo -u postgres psql --host=/var/run/postgresql --port=5432 --dbname="$target_db" --set ON_ERROR_STOP=1 >/dev/null

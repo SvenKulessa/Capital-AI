@@ -8,7 +8,7 @@ const REQUIRED = Object.freeze(['Docker Security Gate', 'Domain Governance']);
 const SHA = /^[0-9a-f]{40}$/;
 
 const securityPath = name =>
-  /^(?:\.github\/workflows\/|deploy\/|supabase\/|docs\/security\/|server\/auth|server\/security|Dockerfile|Dockerfile\.security|package(?:-lock)?\.json$)/.test(name);
+  /^(?:AGENTS\.md$|\.agents\/skills\/registry\.json$|scripts\/(?:container-evidence-identity|verify-production-handoff|registry-manifest-evidence|post-merge-followup|verify-main-ruleset)(?:\.test)?\.mjs$|\.github\/workflows\/|deploy\/|supabase\/|docs\/security\/|server\/auth|server\/security|Dockerfile|Dockerfile\.security|package(?:-lock)?\.json$)/.test(name);
 const licensePath = name =>
   /(?:^|\/)(?:LICENSE|NOTICE)(?:[./-]|$)|licen[cs]e|provider|rights|attribution|terms/i.test(name);
 
