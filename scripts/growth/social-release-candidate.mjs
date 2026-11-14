@@ -28,7 +28,7 @@ export function buildCandidate(event,filenames,registry){
  }
  domains.add('GROWTH'); // Editorial pipeline is always GROWTH even for non-domain file changes.
  const route=[...domains].sort();
- if(registry?.authority!=='AGENTS.md'||registry?.contract!=='SOLO_MAINTAINER_FLOW@1'||
+ if(registry?.authority!=='AGENTS.md'||registry?.contract!=='SOLO_MAINTAINER_FLOW@2'||
  route.some(d=>!registry.domains?.[d]?.engineering||!registry.domains?.[d]?.advisory))throw Error('MERGE_SKILL_REGISTRY_INVALID');
  const fingerprint=digest(JSON.stringify({repoId:REPO_ID,pr:p.number,sha:p.merge_commit_sha,paths}));
  const campaignId='pr-merge-'+p.number+'-'+p.merge_commit_sha.slice(0,12);
