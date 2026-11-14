@@ -21,6 +21,11 @@ Deterministischer Zustandsmaschine:
 
 Nur bei explizitem Human-Override und dokumentiertem SHA wird der Status auf „draft ready“ gesetzt. Kein automatisches Publishing.
 
+### Grafik
+![Governance Diagramm](https://drive.google.com/uc?export=view&id=1dbgh0poX2fOahqRngEjVtNOd3c3vmHj4)
+
+Zustandsdiagramm mit drei Knoten: Ingestion → Quality Gate → Human Gate. Rote Stop-Kante bei fehlender Freigabe, grüne Fortsetzung nur nach Approval. Farben Navy/Gold/Cyan.
+
 ### Quiz (5 Fragen)
 1. Was bedeutet Governance as Code primär? → Kontrollen sind ausführbar und versioniert.  
 2. Welchen Vorteil hat ein Human-in-the-Loop bei LangGraph-Agenten? → Aufsicht und Eingriffsmöglichkeit.  
