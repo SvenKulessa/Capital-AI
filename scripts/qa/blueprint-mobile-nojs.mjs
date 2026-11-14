@@ -47,8 +47,13 @@ async function check(width, jsEnabled) {
   await send('Emulation.setDeviceMetricsOverride', { width, height: 820, deviceScaleFactor: 2, mobile: true });
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
   await send('Emulation.setScriptExecutionDisabled', { value: !jsEnabled });
-  await navigate('/blog/datenkonzept-blueprint', "document.body.textContent.includes('Datenkonzept-Blueprint')");
-  assert.equal(await evaluate("document.body.textContent.includes('Datenkonzept-Blueprint')"), true, 'article missing');
+  // The server provides an immediate article snapshot; React createRoot replaces it.
+  // Never treat the SEO snapshot as evidence of successful client-side rendering.
+  const articleReady = jsEnabled
+    ? "document.querySelector('#root article[aria-labelledby=\"blog-title\"] h1#blog-title')?.textContent?.includes('Datenkonzept-Blueprint') === true"
+    : "document.querySelector('#capital-ai-public-snapshot h1')?.textContent?.includes('Datenkonzept-Blueprint') === true";
+  await navigate('/blog/datenkonzept-blueprint', articleReady);
+  assert.equal(await evaluate(articleReady), true, 'article missing in expected rendering mode');
   await navigate('/marketscreener/dokumentation');
   const state = await snapshot();
   assert.equal(state.width, width, 'CSS viewport mismatch');

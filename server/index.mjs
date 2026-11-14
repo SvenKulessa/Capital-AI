@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
+import { createOAuthConsent } from './oauth-consent.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
 import { createYouTubePrivateUpload } from './social-media/youtube-private-upload.mjs';
@@ -340,6 +341,7 @@ export function createApp(root = defaultRoot, options = {}) {
     : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
+  const oauthConsent = createOAuthConsent({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const learningInquiry = createLearningInquiry({ ...options, auth });
   const learningSimulator = createLearningSimulator({ ...options, auth });
   const socialXOAuthStart = createSocialXOAuthStart({
@@ -497,6 +499,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
