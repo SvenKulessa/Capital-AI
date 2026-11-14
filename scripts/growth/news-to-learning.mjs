@@ -17,7 +17,8 @@ export const OFFICIAL_NEWS_FEEDS = Object.freeze({
   }),
 });
 const MAX_FEED_BYTES = 160_000;
-const MAX_ITEMS = 12;
+// The official ECB press RSS listed 15 dated entries on 2026-11-14; preserve a bounded headroom.
+const MAX_ITEMS = 32;
 const MAX_AGE_DAYS = 45;
 const LEARNING_URL = 'https://capital-ai.online/learning';
 const sha256 = data => createHash('sha256').update(data).digest('hex');
