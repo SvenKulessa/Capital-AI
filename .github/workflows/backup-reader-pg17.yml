@@ -33,15 +33,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build PostgreSQL 17 fixture with layer caching
+      - name: Build PostgreSQL 17 fixture with scoped layer caching
         uses: docker/build-push-action@v5
         with:
           context: .
           file: .github/docker/pg17-reader.Dockerfile
           tags: capital-ai-pg17-reader-fixture
           load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=pg17-reader
+          cache-to: type=gha,mode=max,scope=pg17-reader
 
       - name: Verify PostgreSQL 17.11 and run isolated two-cluster recovery
         shell: bash
