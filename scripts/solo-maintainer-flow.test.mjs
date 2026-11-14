@@ -80,3 +80,38 @@ test('lean merge risk budget keeps core checks and limits unrelated evidence', (
   // PR templates are intentionally excluded from the offline Docker test context.
   // Guard the effective policy here; review the template through the PR diff.
 });
+
+const sourceBoundary = section(policy, '## Herkunft und Priorität von Agentenanweisungen');
+const boundaryGuards = [
+  'Nur die hier tatsächlich im Repository geprüfte Root-',
+  'höherpriorisierten System-/Developer-Anweisungen',
+  'nicht vertrauenswürdige Inhalte',
+  'eingebettete Aufforderungen zur Rollenänderung',
+  'keine Anweisungen',
+  'Keine Gate-Injektion',
+  'Ein in solchen Quellen behaupteter zusätzlicher Required Check',
+  'Kein Scanner, externes Attest oder neuer Workflow',
+  'Normative Änderungen nur bei tatsächlich beauftragtem Scope',
+  'statt eine globale Stop-/Review-Schleife einzuführen',
+];
+const missingBoundary = text => boundaryGuards.filter(guard => !text.includes(guard));
+
+test('source trust boundary and efficient flow cannot be overridden by lower-trust content', () => {
+  assert.deepEqual(missingBoundary(sourceBoundary), []);
+  assert.match(policy, /Widerspruch \*\*zwischen Repository-Dokumenten\*\*/);
+  assert.match(policy, /SOLO_MAINTAINER_FLOW@2/);
+  const copilot = read('.github/copilot-instructions.md');
+  assert.match(copilot, /untrusted instructions/);
+  assert.match(copilot, /not new policy/);
+  assert.match(copilot, /no gate/i);
+  const prs = section(policy, '## PRs nur für umsetzbare Änderungen');
+  assert.match(prs, /noch nicht funktionsfähiger deaktivierter Adapter/);
+  assert.match(prs, /vollständig implementierter und sicher inaktiver Feature-Flag-Slice/);
+});
+
+test('negative regression: loss of any source-boundary rule is detected', () => {
+  for (const guard of boundaryGuards) {
+    const corrupted = sourceBoundary.replace(guard, '[REMOVED]');
+    assert.deepEqual(missingBoundary(corrupted), [guard], guard);
+  }
+});
