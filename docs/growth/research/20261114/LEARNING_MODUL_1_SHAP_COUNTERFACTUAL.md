@@ -43,6 +43,11 @@ Summe: 0,28 + 0,09 − 0,12 + 0,16 = 0,41.
 
 Counterfactual (minimal): Eine Erhöhung des Einkommens auf 54 000 oder eine Senkung des Verschuldungsgrads auf 0,27 würde die vorhergesagte Wahrscheinlichkeit unter 0,30 senken. Beide Änderungen liegen innerhalb realistischer Bandbreiten und werden im Simulator als interaktive Slider angeboten.
 
+### Grafik
+![SHAP Diagramm](https://drive.google.com/uc?export=view&id=1erXG1gj7aZoyrz6a_EVCou2zvhpMU4kf)
+
+Horizontales Balkendiagramm. Positive Beiträge (Einkommen) in Gold, negative Beiträge (Verschuldungsgrad) in Navy. Der Basiswert als gestrichelte Referenzlinie in Cyan. Beschriftungen links, Werte rechts. Keine überlappenden Elemente, ausreichender Kontrast.
+
 ### Fünf Quizfragen
 
 1. **Frage:** Welches mathematische Prinzip liegt SHAP zugrunde?  
