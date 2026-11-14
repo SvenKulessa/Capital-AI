@@ -27,9 +27,6 @@
 - HREFLANG_VALIDATION_PROCESS.md
 - REACT_HYDRATION_SEO_SPEC.md
 - RSC_EVALUATION_DECISION.md
-- BRANDING_CHECK_PROCESS.md
-- CONTENT_ENGINE_IMAGE_LICENSE_POLICY.md
-- VIDEO_PUBLISHING_POLICY.md
 - ROADMAP_PUBLIC_CONTENT_SEO_SECURITY.md
 
 ## Bewusst nicht aktiviert
@@ -43,7 +40,7 @@
 ## Nächste Schritte
 
 1. Review des Branches.  
-2. Anpassung der SEO-Readback-Tests für die neuen Disallow- und Sitemap-Index-Pfade.  
+2. Bestehende Google-Search-Vertragsprüfung an die explizite robots.txt-Policy angepasst; neue Sitemap-Index-Pfade vor Production-Aktivierung mit bestehenden SEO-Readbacks prüfen.  
 3. Merge nach Domain-Governance.  
 4. Deployment und Live-Validierung.  
 5. Hreflang erst nach Content-/TRUST-Abnahme.

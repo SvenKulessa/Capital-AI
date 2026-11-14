@@ -1,5 +1,5 @@
 # SEO-Security – Aktivierungsstatus
-**Status:** TEILWEISE AKTIVIERT  
+**Status:** AUF FEATURE-BRANCH IMPLEMENTIERT / NICHT PRODUKTIV  
 **Arbeitspaket:** CA-GROWTH-PUBLIC-CONTENT-SEO-SECURITY  
 **Governance:** AGENTS.md / SOLO_MAINTAINER_FLOW@2  
 **Datum:** 14.11.2026
@@ -47,4 +47,4 @@
 3. Nach Deployment Live-Validierung durchführen.
 4. Hreflang erst nach Content-/TRUST-Abnahme aktivieren.
 
-**Gesamtstatus:** Freigegebene technische Maßnahmen sind im Branch umgesetzt. Production-Aktivierung erfolgt nach Merge und Deployment.
+**Gesamtstatus:** Im Branch implementiert, nicht produktiv aktiviert. robots.txt ist keine Zugriffssperre; private Ressourcen bleiben serverseitig durch Autorisierung und Routengrenzen geschützt. Production-Aktivierung und HTTP-Readback bleiben bis zum regulären Merge/Deployment NOT_PROVEN.
