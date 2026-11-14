@@ -16,6 +16,11 @@ Synthetische Settlement-Kette:
 - Settlement in Zentralbankgeld via Pontes T+0 (simuliert)  
 Gegenüberstellung zu traditionellem T+2 mit höheren Gegenparteirisiken.
 
+### Grafik
+![Settlement Diagramm](https://drive.google.com/uc?export=view&id=1oAK2dMIc_lDlZPB_5FVMUCrgvqifxlXP)
+
+Zeitstrahl mit zwei parallelen Pfaden: traditionell (T+2) und Pontes (T+0). Navy für Zentralbankgeld, Gold für Effizienzgewinn, Cyan für Risikoreduktion.
+
 ### Quiz
 1. Was ist der primäre Zweck des Digital Euro? → Digitales Zentralbankgeld für den Einzelhandel.  
 2. Was ermöglicht Pontes? → Settlement tokenisierter Assets in Zentralbankgeld.  
