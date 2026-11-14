@@ -15,8 +15,8 @@ The planner reuses `drive-sync-plan.mjs` and its fail-closed classification, `O_
 
 - `PLAN_CREATE` is proposed only when target root and parent folders have been verified within the *synthetic* snapshot, the document is explicitly approved, the target name has no collision, and no remote tracking entry existed. A proposed create is **never recorded as completed** in private state.
 - `PLAN_UPDATE` requires a previously confirmed private record with identical remote ID, parent, SHA-256, ETag and revision. The audit contains the **expected ETag and revision** for a hypothetical future conditional write and a **hash of the target ID**, not the raw remote ID. Any remote change is a `CONFLICT`, never an overwrite.
-- `SKIP` requires identical document/content digest. Only SKIP may be reflected in the proposed `confirmedState` (which is not persisted by the CLI).
-- Missing previously tracked remote IDs, duplicate remote IDs or names across pages, escaped paths, cross-folder ancestry, stale ETags/revisions, invalid page token sequence and malformed state fail closed.
+- `SKIP` requires identical document/content digest **and a previously tracked, revision-matching remote identity**. Untracked matching content is a `CONFLICT`, never silently adopted. Only verified SKIP entries may be reflected in the proposed `confirmedState` (which is not persisted by the CLI).
+- Previously tracked local files that disappear, missing previously tracked remote IDs, duplicate remote IDs or names across pages, escaped paths, cross-folder ancestry, stale ETags/revisions, invalid page token sequence and malformed state fail closed.
 - The JSON CLI prints sanitized audit rows and summaries, excludes the `confirmedState` with raw private IDs, and rejects `--apply`, `--write-state`, `--oauth` or other unknown flags. It performs **no provider API operation**.
 
 ## Atomic local state mechanism
