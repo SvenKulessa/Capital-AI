@@ -285,3 +285,29 @@ blocking_issue: 664
 - **Gates:** `MOBILE_QA=VERIFIED_ON_bf8e135`; `MIGRATION_VERSION_HISTORY=VERIFIED`; `DOCKER_SECURITY_ON_bf8e135=IN_PROGRESS`; `REAL_OFFSITE_RETRIEVAL=NOT_PROVEN`; `REAL_PROVIDER_RESTORE=BLOCKED`; `SIGNED_OAUTH_CROSS_CLIENT_HTTP=NOT_PROVEN`; `PRODUCTION_OAUTH_RLS_CUTOVER=BLOCKED`.
 
 **Rollback:** Der Mobile-Testfix kann durch Revert des einen `scripts/qa/blueprint-mobile-nojs.mjs`-Commits `bf8e135` zurückgenommen werden; das würde die bekannte zeitabhängige Browser-QA allerdings wiederherstellen. Für SQL/Provider gibt es **keinen** Rollbackvorgang, weil nichts Produktives geändert wurde. Der neue Dokumentationscommit benötigt eigene exakte CI-Readbacks.
+
+
+## 14. 2026-11-14 – Exakte finale CI-Korrelation nach Mobile-QA-Fix
+
+**Referenzen (lesend verifiziert):** GitHub `main` `986038f3a734f9350418149440ac0327dfbe095a`; PR #691 Head vor diesem Evidence-Commit `37e0f170a55db59368819144f6fcd51172fc7605`; Compare **ahead 41 / behind 1**. Die Main-Synchronisierung ist daher **nicht vollständig**; dieser Dokumentationscommit selbst benötigt erneute CI. Kein Merge/Rebase.
+
+**Vorheriger Fehler:** [Mobile-QA 43519078930](https://github.com/SvenKulessa/Capital-AI/actions/runs/43519078930), Job `132208459885`: 320px/JS-aus PASS, danach `article missing / false !== true` bei 320px/JS-an, Exit 1. Der Test las den serverseitigen SEO-Snapshot als JS-React-Bereitschaftssignal; der dokumentierte gezielte Testfix `bf8e135336f6ccdfc53a9d8ac7dd333a905fa7b2` unterscheidet den No-JS-Snapshot von `#root article[aria-labelledby="blog-title"] h1#blog-title`. Die konkrete zeitliche React-Transition wurde im ursprünglichen Lauf nicht separat geloggt; der Race-Befund ist code- und regressionsgestützt.
+
+**CI am exakten Head `37e0f170` (alle acht Runs SUCCESS):**
+
+| Workflow | Run | Ergebnis |
+| --- | --- | --- |
+| PRODUCT Blueprint Mobile No-JavaScript QA | [43531226475](https://github.com/SvenKulessa/Capital-AI/actions/runs/43531226475) | SUCCESS, Job `132249145385`: 4/4 Szenarien 320/390px × JS aus/an, Artikel/Preview/Pricing PASS, Overflow 0 |
+| Docker Build Sicherheit / Docker Security Gate | [43531226380](https://github.com/SvenKulessa/Capital-AI/actions/runs/43531226380) | SUCCESS, Job `132249315092` |
+| Domain Governance | [43531226447](https://github.com/SvenKulessa/Capital-AI/actions/runs/43531226447) | SUCCESS, Job `132249143502` |
+| Drive Backup Encryption Test | [43531226491](https://github.com/SvenKulessa/Capital-AI/actions/runs/43531226491) | SUCCESS, Job `132249143861` |
+| TRUST npm Update Capsule | 43531226602 | SUCCESS |
+| CADS Package Acceptance | 43531226514 | SUCCESS |
+| GROWTH I18N Production Browser Readback (read-only) | 43531226410 | SUCCESS |
+| Financial Learning Simulator Browser QA | 43531226676 | SUCCESS |
+
+**Backup-Logmarker am exakten Head:** `DRIVE_ENCRYPTION_TEST_PASS`, `SYNTHETIC_OFFSITE_COPY_PASS`, `SYNTHETIC_WRONG_KEY_DENIED`, `SYNTHETIC_TAMPER_DENIED`, `SYNTHETIC_POSTGRES_RESTORE_PASS`, `BACKUP_STREAM_SYNTHETIC_PASS`, `PASS synthetic independent archive copy, SHA-256 and tamper rejection (no cloud provider)`. Die zusätzlichen Node-Testgruppen im selben Job melden 1/1, 5/5 und 6/6 PASS, 0 FAIL. **Nur synthetische lokale Evidence; kein externer Cloud-Download und keine vollständige Provider-Recovery.** Der Recovery-Slice aus PR #698 ist bereits in Main gemergt.
+
+**Supabase-Readback (PostgreSQL 17.11, ausschließlich SELECT):** 128 installierte Migrationen; OAuth-Migration `20261113152000` **0**, OAuth-Guard-Policies **0**, OAuth-Hook **0**, `capital_ai_backup_reader` **0**. Der PR-Branch enthält weiterhin 129 SQL-Migrationsdateien (128 Versionsmatches + genau eine nicht installierte OAuth-Migration). Historische SQL-Body-Parität und echte provider-signierte HTTP-/PKCE-/Cross-Client-/Cross-User-Tests bleiben **NOT_PROVEN**.
+
+**Entscheidung:** `MOBILE_QA_ON_37e0f170=VERIFIED`, `DOCKER_SECURITY_ON_37e0f170=VERIFIED`, `DOMAIN_GOVERNANCE_ON_37e0f170=VERIFIED`, `SYNTHETIC_RECOVERY_ON_37e0f170=VERIFIED`, `MAIN_SYNC=BEHIND_1`, `REAL_BACKUP_AND_OFFSITE=NOT_PROVEN`, `FULL_ISOLATED_PROVIDER_RESTORE=BLOCKED`, `OAUTH_HTTP_CROSS_CLIENT=NOT_PROVEN`, `PRODUCTION_CUTOVER=BLOCKED`. Kein produktiver SQL-/OAuth-/Backup-Schreibzugriff, kein Merge oder Deployment. Keine zusätzliche Browser-QA-Codeänderung erforderlich, da der Fix bereits auf dem Branch liegt und die vier Regressionen bestanden hat.
