@@ -58,9 +58,10 @@ function contentEntry({
     domain,
     language: DEFAULT_LANGUAGE,
     author: DEFAULT_AUTHOR,
-    updatedAt: ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : path === '/' ? '2026-10-14' : SEO_CONTENT_MANIFEST_VERSION,
+    updatedAt: ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : path === '/' ? '2026-11-13' : SEO_CONTENT_MANIFEST_VERSION,
     // Explicit reviewed content change, never deployment/crawl time.
-    sitemapLastmod: ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : ['/', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen'].includes(path) ? '2026-10-14' : null,
+    // Home publisher/logo structured data actually changed in PR #693 on 2026-11-13.
+    sitemapLastmod: path === '/' ? '2026-11-13' : ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : ['/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen'].includes(path) ? '2026-10-14' : null,
     sourceSha: SEO_CONTENT_SOURCE_SHA,
     license: DEFAULT_LICENSE,
     robots: DEFAULT_ROBOTS,

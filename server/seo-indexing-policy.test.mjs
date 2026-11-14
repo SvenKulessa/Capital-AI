@@ -273,7 +273,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.match(sitemapResponse.headers.get('content-type') || '', /^application\/xml/i);
     const sitemap = await sitemapResponse.text();
     assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
-    assert.match(sitemap, /<loc>https:\/\/capital-ai.online\/<\/loc><lastmod>2026-10-14<\/lastmod>/);
+    assert.match(sitemap, /<loc>https:\/\/capital-ai.online\/<\/loc><lastmod>2026-11-13<\/lastmod>/);
     assert.equal((sitemap.match(/<lastmod>/g) || []).length, 5, 'Only reviewed homepage, article listing and three dated articles have lastmod');
     for (const route of EXPECTED_INDEX_PATHS) {
       const url = route === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${route}`;

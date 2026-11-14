@@ -8,7 +8,13 @@ import { SEO_PUBLIC_IMAGE_PATHS } from '../shared/seo-indexing-policy.mjs';
 import { runSearchConfiguration, SEARCH_CONFIGURATION } from './google-search-config.mjs';
 
 const origin = 'https://capital-ai.online';
-async function fixture({ permission = 'siteOwner', sites, blockedImage = false, badLogo = false, inspectFails = false, alreadyRegistered = false, invalidSitemap = false } = {}) {
+test('homepage sitemap date reflects the actual publisher/logo update, not execution time', () => {
+  const home = SEO_CONTENT_MANIFEST.find(entry => entry.path === '/');
+  assert.equal(home.sitemapLastmod, '2026-11-13');
+  assert.equal(home.updatedAt, home.sitemapLastmod);
+  assert.notEqual(home.sitemapLastmod, SEO_CONTENT_MANIFEST.find(entry => entry.path === '/blog').sitemapLastmod);
+});
+async function fixture({ permission = 'siteOwner', sites, blockedImage = false, badLogo = false, inspectFails = false, alreadyRegistered = false, invalidSitemap = false, staleHomeDate = false } = {}) {
   let html;
   try { html = await readFile(new URL('../index.html', import.meta.url), 'utf8'); }
   catch { html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8'); }
@@ -24,7 +30,7 @@ async function fixture({ permission = 'siteOwner', sites, blockedImage = false, 
       assert.equal(options.headers?.Authorization, undefined);
       if (url.pathname === '/') return new Response(html, { headers: { 'content-type': 'text/html' } });
       if (url.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nSitemap: ' + SEARCH_CONFIGURATION.sitemap);
-      if (url.pathname === '/sitemap.xml') return new Response('<urlset>' + SEO_CONTENT_MANIFEST.map(entry => '<url><loc>' + entry.canonical + '</loc></url>').join('') + (invalidSitemap ? '<url><loc>https://capital-ai.online/profile</loc></url>' : '') + '</urlset>', { headers: { 'content-type': 'application/xml' } });
+      if (url.pathname === '/sitemap.xml') return new Response('<urlset>' + SEO_CONTENT_MANIFEST.map(entry => '<url><loc>' + entry.canonical + '</loc>' + (entry.sitemapLastmod ? '<lastmod>' + (staleHomeDate && entry.path === '/' ? '2026-10-14' : entry.sitemapLastmod) + '</lastmod>' : '') + '</url>').join('') + (invalidSitemap ? '<url><loc>https://capital-ai.online/profile</loc></url>' : '') + '</urlset>', { headers: { 'content-type': 'application/xml' } });
       assert.ok(SEO_PUBLIC_IMAGE_PATHS.includes(url.pathname));
       return new Response(png, { headers: { 'content-type': 'image/png', ...(blockedImage ? { 'x-robots-tag': 'noindex' } : {}) } });
     }
@@ -85,6 +91,50 @@ test('apply submits only the canonical sitemap once and repeated execution is id
   assert.ok(f.calls.every(call => !['DELETE','PATCH'].includes(call.method)));
 });
 
+test('explicit resubmit performs one PUT even for a registered sitemap, without claiming a crawl', async () => {
+  const f = await fixture({ alreadyRegistered: true });
+  const result = await f.run('resubmit');
+  assert.equal(result.status, 'AUDIT_COMPLETE');
+  assert.equal(result.submission.action, 'RESUBMITTED');
+  assert.equal(result.submission.crawlRequested, false);
+  assert.equal(result.submission.crawlCompleted, false);
+  assert.equal(result.readOnly, false);
+  assert.equal(f.calls.filter(call => call.method === 'PUT').length, 1);
+});
+
+test('resubmit denies restricted roles and disabled write gates, even through direct MCP operation', async () => {
+  const f = await fixture({ permission: 'siteRestrictedUser', alreadyRegistered: true });
+  const result = await f.run('resubmit');
+  assert.equal(result.error, 'GSC_WRITE_PERMISSION_INSUFFICIENT');
+  assert.equal(f.calls.filter(call => call.method === 'PUT').length, 0);
+  const disabled = createGoogleMaintenance({ env: {}, fetchImpl: () => assert.fail('no provider call') });
+  await assert.rejects(disabled.call('gsc_resubmit_canonical_sitemap'), /GSC_WRITES_DISABLED/);
+  const restricted = createGoogleMaintenance({ env: { GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED: 'true', GOOGLE_MAINTENANCE_ACCESS_TOKEN: 'private-token' }, fetchImpl: f.fetchImpl });
+  await assert.rejects(restricted.call('gsc_resubmit_canonical_sitemap'), /GSC_WRITE_PERMISSION_INSUFFICIENT/);
+  assert.equal(f.calls.filter(call => call.method === 'PUT').length, 0);
+});
+
+test('agent MCP advertises exact Search operations with explicit write annotation and keeps GA4 disabled', async () => {
+  const { handleGoogleMaintenanceMessage } = await import('./google-maintenance-mcp.mjs');
+  const listed = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, {});
+  const names = listed.result.tools.map(tool => tool.name);
+  for (const name of ['gsc_get_expected_site','gsc_inspect_search_configuration','gsc_resubmit_canonical_sitemap']) assert.ok(names.includes(name));
+  const resubmit = listed.result.tools.find(tool => tool.name === 'gsc_resubmit_canonical_sitemap');
+  assert.equal(resubmit.annotations.readOnlyHint, false);
+  const config = JSON.parse(await readFile(new URL('../.mcp.json', import.meta.url), 'utf8'));
+  const maintenance = config.mcpServers['capital-ai-google-maintenance'].env;
+  assert.equal(maintenance.GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED, 'true');
+  assert.equal(maintenance.GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED, 'false');
+  assert.deepEqual(config.mcpServers['capital-ai-gsc'].args, ['scripts/gsc-mcp-guard.mjs']);
+  const f = await fixture({ alreadyRegistered: true });
+  const api = createGoogleMaintenance({ env: { GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED: 'true', GOOGLE_MAINTENANCE_ACCESS_TOKEN: 'private-token' }, fetchImpl: f.fetchImpl });
+  const denied = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'gsc_resubmit_canonical_sitemap', arguments: { url: 'https://other.example/' } } }, api);
+  assert.equal(denied.result.isError, true);
+  assert.equal(f.calls.length, 0);
+  const result = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'gsc_resubmit_canonical_sitemap', arguments: {} } }, api);
+  assert.equal(result.result.structuredContent.action, 'RESUBMITTED');
+});
+
 test('an unrelated property cannot be guessed or created', async () => {
   const f = await fixture({ sites: [{ siteUrl: 'https://other.example/', permissionLevel: 'siteOwner' }] });
   const result = await f.run('apply');
@@ -100,7 +150,7 @@ test('restricted readers may audit but cannot apply', async () => {
   assert.equal(f.calls.filter(call => call.method === 'PUT').length, 0);
 });
 
-for (const invalid of [{ blockedImage: true }, { badLogo: true }, { invalidSitemap: true }]) {
+for (const invalid of [{ blockedImage: true }, { badLogo: true }, { invalidSitemap: true }, { staleHomeDate: true }]) {
   test('invalid public configuration blocks apply: ' + JSON.stringify(invalid), async () => {
     const f = await fixture(invalid); const result = await f.run('apply');
     assert.equal(result.publicSurface.status, 'FAIL');
