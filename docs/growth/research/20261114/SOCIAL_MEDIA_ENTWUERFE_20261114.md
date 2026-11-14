@@ -2,7 +2,8 @@
 ## Für bestehende MediaProjectV2 / ContentSocialPackage-Verträge
 **Status:** PROPOSED (redaktionelle und Lizenzprüfung erforderlich)  
 **Farben:** Navy #0A1628, Gold #C9A227, Cyan #00D4FF, Violett #7B68EE  
-**Hinweis:** Alle Inhalte geben den tatsächlichen Produktstand korrekt wieder. Implementierte Funktionen, Entwürfe und blockierte Integrationen sind klar gekennzeichnet. Kein automatisches Publishing.
+**Hinweis:** Alle Inhalte geben den tatsächlichen Produktstand korrekt wieder. Implementierte Funktionen, Entwürfe und blockierte Integrationen sind klar gekennzeichnet. Kein automatisches Publishing.  
+**Video-Richtlinie:** Siehe VIDEO_PUBLISHING_POLICY.md – Gemini Notebook Logo vor jeder Veröffentlichung entfernen und durch CAPITAL-AI-Branding ersetzen.
 
 ---
 
@@ -99,9 +100,10 @@ Die EZB treibt Tokenisierung und digitales Zentralbankgeld voran. CAPITAL-AI üb
 15–35s: SHAP-Zerlegung (animiertes Balkendiagramm, Navy/Gold)  
 35–55s: Counterfactual als Handlungsoption  
 55–75s: Hinweis auf synthetische Daten + CADS/resvg  
-75–90s: CTA Learning Hub + Logo  
+75–90s: CTA Learning Hub + CAPITAL-AI Logo (kein Gemini Notebook Logo)  
 
 **Voice-over:** Sachlich, deutsch, keine Leistungsversprechen.  
+**Vor Veröffentlichung:** Gemini Notebook Logo entfernen (siehe VIDEO_PUBLISHING_POLICY.md).
 
 ---
 
@@ -111,7 +113,7 @@ Die EZB treibt Tokenisierung und digitales Zentralbankgeld voran. CAPITAL-AI üb
 3. Counterfactual zeigt den Weg  
 4. Governance sichert die Qualität  
 5. Nur synthetische Daten im Simulator  
-6. CTA + CAPITAL-AI Branding  
+6. CTA + CAPITAL-AI Branding (kein externes Tool-Logo)  
 
 **Tags:** #ExplainableAI #FinTech #Learning #CAPITALAI  
-**Beschreibung:** Didaktische Einführung in erklärbare Kreditrisiko-Modelle. Alle Beispiele synthetisch. Produktions-Publishing blockiert bis Freigabe.
+**Beschreibung:** Didaktische Einführung in erklärbare Kreditrisiko-Modelle. Alle Beispiele synthetisch. Produktions-Publishing blockiert bis Freigabe. Gemini Notebook Logo vor Veröffentlichung entfernen.
