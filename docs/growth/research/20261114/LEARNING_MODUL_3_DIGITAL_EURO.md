@@ -17,6 +17,7 @@ Synthetische Settlement-Kette:
 Gegenüberstellung zu traditionellem T+2 mit höheren Gegenparteirisiken.
 
 ### Grafik
+**Lizenz:** SUBSCRIPTION_GENERATED (Grok Imagine, didaktischer Entwurf)  
 ![Settlement Diagramm](https://drive.google.com/uc?export=view&id=1oAK2dMIc_lDlZPB_5FVMUCrgvqifxlXP)
 
 Zeitstrahl mit zwei parallelen Pfaden: traditionell (T+2) und Pontes (T+0). Navy für Zentralbankgeld, Gold für Effizienzgewinn, Cyan für Risikoreduktion.
