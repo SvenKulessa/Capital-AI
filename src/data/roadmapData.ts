@@ -2250,7 +2250,7 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     "priority": "Hoch",
     "targetSprint": "13.–20.11.2026",
     "description": "Dokumentationsprojektion aus GitHub mit expliziten PUBLIC/INTERNAL/RESTRICTED/SECRET-Ausschlüssen und Wiederverwendung vorhandener CAPITAL-AI-Drive-Ordner; kein Live-Upload.",
-    "nextStep": "Offline-Mapping und Dry-Run-Plan mit 25 synthetischen Negativ-/Regressionstests implementiert; PR-CI und vollständigen Repo-Readback prüfen. Echte Drive-Rechte und Remote-Inventur bleiben NOT_PROVEN.",
+    "nextStep": "Offline-Mapping und Dry-Run-Plan mit 26 synthetischen Negativ-/Regressionstests implementiert; PR-CI und vollständigen Repo-Readback prüfen. Echte Drive-Rechte und Remote-Inventur bleiben NOT_PROVEN.",
     "deliverables": [
       "Versioniertes Ordner- und Datenklassen-Mapping",
       "Dry-Run ohne Google-Drive-Schreiboperationen",
