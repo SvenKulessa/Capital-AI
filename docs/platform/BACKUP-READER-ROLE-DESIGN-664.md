@@ -34,9 +34,14 @@ REVOKE ALL ON ALL FUNCTIONS IN SCHEMA cron FROM capital_ai_backup_reader;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA net FROM capital_ai_backup_reader;
 ```
 
-## Negative Tests (must fail)
+## Negative Tests
 
-- `INSERT` / `UPDATE` / `DELETE` / `DDL`
+Implemented in `scripts/platform/backup-reader-negative-tests.sql`.
+
+All of the following must fail when executed as `capital_ai_backup_reader`:
+
+- `INSERT` / `UPDATE` / `DELETE`
+- `CREATE` / `DROP` (DDL)
 - `cron.schedule(...)`
 - `net.http_get(...)`
 - Any write while `default_transaction_read_only = on`
@@ -45,11 +50,12 @@ REVOKE ALL ON ALL FUNCTIONS IN SCHEMA net FROM capital_ai_backup_reader;
 
 `pg_net` `PUBLIC` privileges cannot be selectively revoked in Supabase managed environments. This residual risk must be documented as **BLOCKED** or mitigated by a time-bounded, isolated backup procedure with explicit owner approval.
 
-## Next Steps
+## Execution Plan
 
-1. Run inventory script in isolated PG17
-2. Finalize exact GRANT list based on inventory
-3. Implement and execute negative tests
-4. Obtain owner approval before any productive role creation
+1. Run `scripts/platform/backup-reader-inventory.sql` in an isolated PostgreSQL 17 instance.
+2. Finalize the exact GRANT list based on the inventory output.
+3. Create the role in the isolated instance and execute `backup-reader-negative-tests.sql`.
+4. Document results (all negative tests must fail).
+5. Obtain explicit owner approval before any productive role creation.
 
-**No productive changes in this document.**
+**No productive changes until step 5 is completed.**
