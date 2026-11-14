@@ -59,3 +59,62 @@ test('no affected PR creates no mutation or fake check success', () => {
   assert.equal(result.securityEvidence.state, 'NOT_APPLICABLE');
   assert.equal(result.autoMerge, false);
 });
+
+test('governance and provenance changes are security evidence paths', () => {
+  const files = [
+    'AGENTS.md',
+    '.agents/skills/registry.json',
+    'scripts/container-evidence-identity.mjs',
+    'scripts/container-evidence-identity.test.mjs',
+    'scripts/verify-production-handoff.mjs',
+    'scripts/registry-manifest-evidence.test.mjs',
+    'scripts/post-merge-followup.mjs',
+    'scripts/verify-main-ruleset.test.mjs',
+  ];
+  const result = summarizePostMerge({
+    eventSha: a, currentMainSha: a, mergedPr: 703, targetPr: 705,
+    selectedHead: b, liveHead: b, files,
+  });
+  assert.deepEqual(result.securityEvidence.affectedPaths, files);
+  assert.equal(result.securityEvidence.state, 'REVIEW_REQUIRED');
+  assert.equal(result.securityEvidence.evidenceCompleteness, 'NOT_PROVEN');
+  assert.equal(result.requiredChecks.mergeApproval, false);
+  assert.equal(result.autoMerge, false);
+  assert.equal(result.productionApproval, false);
+});
+
+test('security evidence classification rejects lookalike and unrelated paths', () => {
+  const files = [
+    'AGENTS.md.bak',
+    '.agents/skills/registry.json.old',
+    'docs/AGENTS.md',
+    'scripts/container-evidence-identity-extra.mjs',
+    'scripts/post-merge-followup.test.mjs.tmp',
+    'scripts/verify-main-ruleset.mjs.backup',
+    'scripts/unrelated.mjs',
+    'src/components/Hero.tsx',
+  ];
+  const result = summarizePostMerge({
+    eventSha: a, currentMainSha: a, mergedPr: 703, targetPr: 705,
+    selectedHead: b, liveHead: b, files,
+  });
+  assert.deepEqual(result.securityEvidence.affectedPaths, []);
+  assert.equal(result.securityEvidence.evidenceCompleteness, 'NOT_PROVEN');
+});
+
+test('existing workflow, infrastructure and auth security paths remain recognized', () => {
+  const files = [
+    '.github/workflows/build-security.yml',
+    'deploy/Dockerfile.nats',
+    'supabase/migrations/20261113152000_oauth_client_default_deny.sql',
+    'docs/security/OAUTH-RLS-P0-CUTOVER-20261113.md',
+    'server/auth.mjs',
+    'package-lock.json',
+  ];
+  const result = summarizePostMerge({
+    eventSha: a, currentMainSha: a, mergedPr: 703, targetPr: 705,
+    selectedHead: b, liveHead: b, files,
+  });
+  assert.deepEqual(result.securityEvidence.affectedPaths, files);
+  assert.equal(result.licenseEvidence.rightsApproval, false);
+});

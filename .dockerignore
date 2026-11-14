@@ -170,6 +170,9 @@
 !scripts/growth/pr-merge-social-batch.mjs
 !scripts/growth/social-pipeline-graphic.mjs
 !scripts/growth/pr-merge-social-batch.test.mjs
+!scripts/growth/news-to-learning.mjs
+!scripts/growth/news-to-learning.test.mjs
+!scripts/growth/news-to-learning.integration.test.mjs
 !scripts/generate-chart-learning.tsx
 
 !public/learning/

@@ -128,3 +128,39 @@ test('Git-based Render LIVE metadata and health SHA cannot satisfy OCI release g
     assert.equal(report.containerIdentity.digests.runtimeProviderDigest, null);
   }
 });
+
+test('non-PR identity ignores inherited PR environment and binds source to tested SHA', () => {
+  for (const eventName of ['push', 'workflow_dispatch', 'schedule', 'local']) {
+    const identity = createContainerIdentity({
+      GITHUB_EVENT_NAME: eventName,
+      GITHUB_SHA: head,
+      CAPITAL_PR_HEAD_SHA: merge,
+      CAPITAL_BASE_MAIN_SHA: base,
+    });
+    assert.equal(identity.source.sourceSha, head, eventName);
+    assert.equal(identity.source.testedSha, head, eventName);
+    assert.equal(identity.source.pullRequestHeadSha, null, eventName);
+    assert.equal(identity.source.baseMainSha, null, eventName);
+  }
+});
+
+test('non-PR identity validator rejects a forged source SHA', () => {
+  const identity = createContainerIdentity({ GITHUB_EVENT_NAME: 'push', GITHUB_SHA: head });
+  assert.throws(
+    () => validateContainerIdentity({ ...identity, source: { ...identity.source, sourceSha: merge } }),
+    /sourceSha must equal testedSha outside pull_request/,
+  );
+});
+
+test('non-PR identity validator rejects injected PR fields', () => {
+  const identity = createContainerIdentity({ GITHUB_EVENT_NAME: 'push', GITHUB_SHA: head });
+  for (const injected of [
+    { pullRequestHeadSha: merge },
+    { baseMainSha: base },
+  ]) {
+    assert.throws(
+      () => validateContainerIdentity({ ...identity, source: { ...identity.source, ...injected } }),
+      /pullRequestHeadSha and baseMainSha must be null outside pull_request/,
+    );
+  }
+});
