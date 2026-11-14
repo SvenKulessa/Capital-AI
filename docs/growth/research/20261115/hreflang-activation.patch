@@ -1,0 +1,51 @@
+--- a/shared/seo-indexing-policy.mjs
++++ b/shared/seo-indexing-policy.mjs
+@@ -48,12 +48,12 @@
+   { path: '/.well-known/change-password', classification: 'NOINDEX', contentType: 'account-security', reason: 'Temporärer Discovery-Redirect für Passwortmanager zur kanonischen Sicherheitsseite; keine Search-Landingpage.' },
+   { path: '/.well-known/mta-sts.txt', classification: 'NOINDEX', contentType: 'mail-security', reason: 'MTA-STS Policy-Endpunkt; operativer Standardpfad, keine Search-Landingpage.' },
+ 
+-  { path: '/de', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+-  { path: '/en', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+-  { path: '/it', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+-  { path: '/fr', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+-  { path: '/pt', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+-  { path: '/es', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
++  { path: '/de', classification: 'INDEX', contentType: 'localized-landing', reason: 'Sprachversion – CADS-freigegeben, hreflang aktiv.' },
++  { path: '/en', classification: 'INDEX', contentType: 'localized-landing', reason: 'Sprachversion – CADS-freigegeben, hreflang aktiv.' },
++  { path: '/it', classification: 'INDEX', contentType: 'localized-landing', reason: 'Sprachversion – CADS-freigegeben, hreflang aktiv.' },
++  { path: '/fr', classification: 'INDEX', contentType: 'localized-landing', reason: 'Sprachversion – CADS-freigegeben, hreflang aktiv.' },
++  { path: '/pt', classification: 'INDEX', contentType: 'localized-landing', reason: 'Sprachversion – CADS-freigegeben, hreflang aktiv.' },
++  { path: '/es', classification: 'INDEX', contentType: 'localized-landing', reason: 'Sprachversion – CADS-freigegeben, hreflang aktiv.' },
+ 
+   { path: '/login', classification: 'NOINDEX', contentType: 'auth', reason: 'Öffentlicher Auth-Einstieg ohne eigenständigen Suchwert.' },
+   { path: '/architecture', classification: 'NOINDEX', contentType: 'product-doc', reason: 'Öffentlich erreichbar, aber noch nicht gegen SEO-Manifest/Claim-Evidence gehärtet.' },
+--- a/server/index.mjs
++++ b/server/index.mjs
+@@ -195,7 +195,26 @@
+     .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`);
+ }
+ 
+-function applySeoIndexingPolicy(html, pathname) {
++
++const HREFLANG_LOCALES = Object.freeze([
++  { code: "de", path: "/de" },
++  { code: "en", path: "/en" },
++  { code: "it", path: "/it" },
++  { code: "fr", path: "/fr" },
++  { code: "pt", path: "/pt" },
++  { code: "es", path: "/es" },
++]);
++
++function injectHreflang(html, pathname) {
++  if (!isSeoIndexable(pathname)) return html;
++  if (!HREFLANG_LOCALES.every(l => isSeoIndexable(l.path))) return html;
++  const tags = HREFLANG_LOCALES
++    .map(l => `<link rel="alternate" hreflang="${l.code}" href="https://capital-ai.online${l.path}" />`)
++    .join("\n  ");
++  const block = `  ${tags}\n  <link rel="alternate" hreflang="x-default" href="https://capital-ai.online/" />`;
++  return html.replace("</head>", block + "\n</head>");
++}
++function applySeoIndexingPolicy(html, pathname) {
+   const directive = robotsDirectiveFor(pathname);
+   let body = html.replace(
+     /(<meta name="robots" content=")[^"]*("\s*\/?>)/,
