@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "capital-ai.doc-tree-map.v1",
+  "sourceRepository": "SvenKulessa/Capital-AI",
+  "sourceRoot": "docs",
+  "targetRootKey": "CAPITAL-AI",
+  "mode": "DRY_RUN_ONLY",
+  "auth": {
+    "mode": "NONE",
+    "remoteAccess": false,
+    "credentialFilesAllowed": false,
+    "futureAuthOptions": ["OWNER_OAUTH_REVIEW", "AUTHORIZED_SHARED_DRIVE_REVIEW"]
+  },
+  "allowedExtensions": [".md"],
+  "maxFileBytes": 2097152,
+  "approvedFiles": [
+    "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+  ],
+  "folders": [
+    { "key": "PLATFORM", "name": "PLATFORM", "parentKey": "CAPITAL-AI" },
+    { "key": "TRUST", "name": "TRUST", "parentKey": "CAPITAL-AI" },
+    { "key": "PRODUCT", "name": "PRODUCT", "parentKey": "CAPITAL-AI" },
+    { "key": "MARKET", "name": "MARKET", "parentKey": "CAPITAL-AI" },
+    { "key": "GROWTH", "name": "GROWTH", "parentKey": "CAPITAL-AI" },
+    { "key": "Learning-Hub", "name": "Learning-Hub", "parentKey": "CAPITAL-AI" },
+    { "key": "Evidence", "name": "Evidence", "parentKey": "CAPITAL-AI" }
+  ],
+  "pathRules": [
+    { "prefix": "docs/security/", "folderKey": "TRUST", "classification": "RESTRICTED" },
+    { "prefix": "docs/compliance/", "folderKey": "TRUST", "classification": "RESTRICTED" },
+    { "prefix": "docs/evidence/", "folderKey": "Evidence", "classification": "RESTRICTED" },
+    { "prefix": "docs/licenses/", "folderKey": "TRUST", "classification": "RESTRICTED" },
+    { "prefix": "docs/platform/", "folderKey": "PLATFORM", "classification": "INTERNAL" },
+    { "prefix": "docs/architecture/", "folderKey": "PLATFORM", "classification": "INTERNAL" },
+    { "prefix": "docs/governance/", "folderKey": "TRUST", "classification": "INTERNAL" },
+    { "prefix": "docs/product/", "folderKey": "PRODUCT", "classification": "INTERNAL" },
+    { "prefix": "docs/market/", "folderKey": "MARKET", "classification": "INTERNAL" },
+    { "prefix": "docs/growth/", "folderKey": "GROWTH", "classification": "INTERNAL" },
+    { "prefix": "docs/learning/", "folderKey": "Learning-Hub", "classification": "INTERNAL" }
+  ],
+  "fileRules": [],
+  "denySegments": [
+    ".git", "node_modules", "private-backups", "private-knowledge", "vault", "secrets", "credentials", "customer-data"
+  ],
+  "denyNames": ["service-account.json", "credentials.json", "token.json", "state.json"],
+  "denyExtensions": [".age", ".caikb", ".pem", ".key", ".p12", ".pfx", ".sqlite", ".db", ".env"],
+  "denyNameFragments": ["secret", "private-key", "access-token", "refresh-token", "password", "backup"]
+}

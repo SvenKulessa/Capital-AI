@@ -2231,13 +2231,17 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
 },
 // Ecosystem Docs-as-Code/IaC work packages · planning only, no Drive/GCloud activation.
   {
-    "status": "planning",
+    "status": "aktiv",
     "phase": 4,
     "phaseName": "Phase 4: DevSecOps & RC",
     "progressPercent": null,
-    "evidenceState": "UNGEKLÄRT",
+    "evidenceState": "OFFEN",
     "evidenceRefs": [
-      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md",
+      "scripts/upload-drive/mapping.v1.json",
+      "scripts/upload-drive/drive-sync-plan.mjs",
+      "scripts/upload-drive/drive-sync-plan.test.mjs",
+      "docs/platform/DRIVE-DOCSYNC-ADMISSION-20261114.md"
     ],
     "leadName": "Projektowner",
     "id": "CA-PLATFORM-DOCSYNC-01",
@@ -2246,7 +2250,7 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     "priority": "Hoch",
     "targetSprint": "13.–20.11.2026",
     "description": "Dokumentationsprojektion aus GitHub mit expliziten PUBLIC/INTERNAL/RESTRICTED/SECRET-Ausschlüssen und Wiederverwendung vorhandener CAPITAL-AI-Drive-Ordner; kein Live-Upload.",
-    "nextStep": "Bestehende docs-Pfade und Drive-Ordner read-only zuordnen; Exclusions, Traversal, Symlinks und Duplicate-Names als synthetische Fail-Closed-Tests abbilden.",
+    "nextStep": "Offline-Mapping und Dry-Run-Plan mit 26 synthetischen Negativ-/Regressionstests implementiert; PR-CI und vollständigen Repo-Readback prüfen. Echte Drive-Rechte und Remote-Inventur bleiben NOT_PROVEN.",
     "deliverables": [
       "Versioniertes Ordner- und Datenklassen-Mapping",
       "Dry-Run ohne Google-Drive-Schreiboperationen",
@@ -2254,13 +2258,17 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     ]
   },
   {
-    "status": "planning",
+    "status": "aktiv",
     "phase": 4,
     "phaseName": "Phase 4: DevSecOps & RC",
     "progressPercent": null,
-    "evidenceState": "UNGEKLÄRT",
+    "evidenceState": "OFFEN",
     "evidenceRefs": [
-      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+      "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md",
+      "scripts/upload-drive/mapping.v1.json",
+      "scripts/upload-drive/drive-sync-plan.mjs",
+      "scripts/upload-drive/drive-sync-plan.test.mjs",
+      "docs/platform/DRIVE-DOCSYNC-ADMISSION-20261114.md"
     ],
     "leadName": "Projektowner",
     "id": "CA-TRUST-DOCSYNC-03",
@@ -2269,7 +2277,7 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     "priority": "Hoch",
     "targetSprint": "23.11.–11.12.2026",
     "description": "Least-Privilege-/Credential-Grenzen für den Dokumenten-Sync; Owner-OAuth und autorisiertes Shared Drive als getrennte Optionen, keine Backup-Credential-Wiederverwendung.",
-    "nextStep": "Tatsächliche Drive-Owner-/Ordnerrechte und minimalen Auth-Flow gegen Sicherheitsgrenzen prüfen; Cross-User-/Cross-Folder-Negativtests ohne produktiven Credential-Zugriff erstellen.",
+    "nextStep": "Offline-Identitäts-/Least-Privilege-Vertrag und Cross-Folder-/Secret-Negativtests implementiert; nur synthetisch geprüft. Reale Owner-/Shared-Drive-Rechte, OAuth-Scopes und Credential-Revocation bleiben BLOCKED ohne getrennte Providerautorisierung.",
     "deliverables": [
       "Identitäts-/Scope- und Revocation-Vertrag",
       "Redaction- und Secret-Exclusions",
