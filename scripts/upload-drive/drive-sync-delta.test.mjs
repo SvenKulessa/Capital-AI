@@ -72,7 +72,7 @@ test('changed local bytes propose conditional update with revision and target di
 });
 test('untracked remote update never overwrites existing file', (t) => {
  const f=fixture(t); const p=plan(f,pages([remote()]));
- assert.equal(p.audit[0].reason,'UNTRACKED_REMOTE_UPDATE'); assert.equal(p.summary.CONFLICT,1);
+ assert.equal(p.audit[0].reason,'UNTRACKED_REMOTE_OBJECT'); assert.equal(p.summary.CONFLICT,1);
 });
 test('stale revision, etag or remote body produce conflicts', (t) => {
  const f=fixture(t); const old=remote('1'.repeat(64));
@@ -147,4 +147,21 @@ test('symlinked private state is never followed', (t) => {
  assert.throws(()=>readPrivateState(link,'root-test'),/INVALID_STATE_FILE/);
  assert.throws(()=>savePrivateStateAtomic(link,state()),/INVALID_STATE_FILE/);
  assert.equal(fs.readFileSync(privateFile,'utf8'),JSON.stringify(state()));
+});
+
+test('untracked matching remote content cannot be silently adopted as confirmed state', (t) => {
+ const f=fixture(t); const hash=plan(f,pages()).audit[0].sha256;
+ const p=plan(f,pages([remote(hash)]));
+ assert.equal(p.summary.CONFLICT,1);
+ assert.equal(p.audit[0].reason,'UNTRACKED_REMOTE_OBJECT');
+ assert.equal(p.confirmedState.entries.length,0);
+});
+test('previously tracked local file missing reports conflict and preserves zero-write boundary', (t) => {
+ const f=fixture(t); const tracked=record(remote());
+ fs.rmSync(path.join(f.docsRoot,'platform/demo.md'));
+ const p=plan(f,pages([remote()]),state([tracked]));
+ assert.equal(p.summary.CONFLICT,1);
+ assert.equal(p.audit[0].reason,'TRACKED_LOCAL_MISSING');
+ assert.equal(p.writes,0);
+ assert.equal(p.confirmedState.entries.length,0);
 });
