@@ -22,6 +22,12 @@ test('official feed is bounded, source-dated and deduplicated deterministically'
   assert.equal(records[0].eventAt,null);
   assert.equal(records[0].rights,'LICENSE_REVIEW_REQUIRED');
   assert.equal(records[0].feedUrl,OFFICIAL_NEWS_FEEDS.ECB_PRESS.url);
+  // Read-only ECB feed extraction on 2026-11-14 contained 15 dated headlines.
+  const liveSized = Array.from({length:15},(_,i)=>({
+    ...first,
+    url:`https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261112~item${i}.en.html`,
+  }));
+  assert.equal(parseOfficialRss(feed(...liveSized),{asOf}).length,15);
 });
 
 test('unapproved feed and hostile URLs fail closed',()=>{
@@ -47,7 +53,7 @@ test('XML entity payloads, duplicate conflicts, missing dates and XSS are reject
   assert.throws(()=>parseOfficialRss(feed({...first,pubDate:'nonsense'}),{asOf}),/NEWS_DATE_UNVERIFIED/);
   assert.throws(()=>parseOfficialRss(feed({...first,pubDate:'Mon, 01 Jan 2018 12:00:00 GMT'}),{asOf}),/NEWS_DATE_UNVERIFIED/);
   assert.throws(()=>parseOfficialRss(feed({...first,pubDate:'Sat, 21 Nov 2026 12:00:00 GMT'}),{asOf}),/NEWS_DATE_UNVERIFIED/);
-  assert.throws(()=>parseOfficialRss(feed(...Array(13).fill(first)),{asOf}),/NEWS_RSS_ITEM_COUNT/);
+  assert.throws(()=>parseOfficialRss(feed(...Array(33).fill(first)),{asOf}),/NEWS_RSS_ITEM_COUNT/);
 });
 
 test('official feed fetch is opt-in and rejects redirects, status and wrong MIME',async()=>{
