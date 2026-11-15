@@ -5,12 +5,12 @@
     {
       "id": "polygon",
       "topic": "Polygon · Stablecoins",
-      "title": "SoFiUSD startet auf Polygon",
-      "summary": "SoFi-Mitglieder können den Dollar-Stablecoin SoFiUSD in der App kaufen, verkaufen, halten und umtauschen. Polygon kommt als weiteres unterstütztes Netzwerk hinzu.",
-      "context": "Ein Stablecoin ist der Token. Das Netzwerk bestimmt, wo er übertragen wird.",
+      "title": "SoFiUSD: Polygon als zusätzliches Netzwerk",
+      "summary": "Polygon meldet, dass SoFiUSD nun auch auf Polygon unterstützt wird. Für SoFi-Mitglieder nennt die Quelle Kauf, Verkauf, Verwahrung und Umtausch innerhalb der SoFi-App. Ethereum und Solana werden als weitere Netzwerke aufgeführt.",
+      "context": "SoFiUSD ist laut Originalbeitrag kein Bankguthaben. Der Stablecoin selbst ist weder durch FDIC noch SIPC versichert.",
       "graphic": {
         "kind": "network",
-        "caption": "Ein Stablecoin, mehrere Netzwerke",
+        "caption": "Von Polygon genannte Netzwerke",
         "center": "SoFiUSD",
         "labels": [
           "Polygon",
