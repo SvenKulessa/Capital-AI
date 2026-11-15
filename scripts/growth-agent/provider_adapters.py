@@ -221,7 +221,11 @@ class GitHubRenderActions:
             return ({"merged": True, "sha": merge_sha, "expected_head_sha": evidence["head_sha"]}
                     if sha(merge_sha) and pr.get("head", {}).get("sha") == evidence["head_sha"] else {})
         # Recompute evidence immediately before the mutation.
-        current = self.evidence(state)
+        try:
+            current = self.evidence(state)
+        except (ValueError, TypeError):
+            # Stale head/base or incomplete provider evidence: deny the merge.
+            return {}
         from auto_loop import merge_evidence_verified
         if current != evidence or not merge_evidence_verified(current):
             return {}
