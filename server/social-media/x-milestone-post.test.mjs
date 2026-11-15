@@ -238,8 +238,8 @@ test('X launch page and status are isolated from original milestone receipt',asy
   await f.handler.handle(request('GET'),js,
     new URL('https://capital-ai.online/x-milestone-launch.js'),json);
   assert.equal(js.code,200);
-  assert.match(js.data,/\\/milestone\\/launch\\/status/);
-  assert.match(js.data,/\\/milestone\\/launch\\/publish/);
+  assert.ok(js.data.includes('/milestone/launch/status'));
+  assert.ok(js.data.includes('/milestone/launch/publish'));
   const denied=response();
   await f.handler.handle(request('GET'),denied,new URL(root+'/status'),json);
   assert.equal(denied.code,403);
