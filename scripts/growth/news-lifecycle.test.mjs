@@ -8,7 +8,7 @@ import {
   advanceNewsEdition, retireNews, newsArchivePath, proposeMarketImpact, newsBiCsv, publishedNews,
 } from '../../shared/news-lifecycle.mjs';
 import { selectHomeEdition } from './home-editorial-edition.mjs';
-import { archiveContentSnapshot, archiveRightsAdmitted, marketImpactAdmitted, NEWS_ARCHIVE_REVIEW_VERSION, NEWS_ARCHIVE_USE_CASE } from '../../shared/news-archive-rights.mjs';
+import { archiveContentSnapshot, archiveRightsAdmitted, marketImpactAdmitted, NEWS_ARCHIVE_REVIEW_VERSION, NEWS_ARCHIVE_USE_CASES } from '../../shared/news-archive-rights.mjs';
 import { plannedNewsFiles, writeNewsLifecycle } from './news-lifecycle-materialize.mjs';
 
 const original = JSON.parse(readFileSync(new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url), 'utf8'));
@@ -69,11 +69,17 @@ test('public projection and CSV fail closed, avoid formula injection', () => {
   assert.equal(publishedNews([story]).length, 0);
   const presented = {...story, rights:{status:'APPROVED',evidenceRef:'review:123'}};
   assert.equal(publishedNews([presented]).length, 0); // Candidate metadata cannot grant public display.
-  const record = {version:NEWS_ARCHIVE_REVIEW_VERSION, decision:'APPROVED', allowedUse:NEWS_ARCHIVE_USE_CASE,
-    storyId:story.id, evidenceRef:'review:123', reviewedAt:'2026-11-15', contentSnapshot:archiveContentSnapshot(presented)};
-  assert.equal(publishedNews([presented], [record]).length, 1);
-  assert.equal(publishedNews([{...presented, summary:'Tampered'}], [record]).length, 0);
-  assert.equal(publishedNews([presented], [{...record, evidenceRef:'fake'}]).length, 0);
+  const records = Object.entries(NEWS_ARCHIVE_USE_CASES).map(([kind, allowedUse]) => ({
+    version:NEWS_ARCHIVE_REVIEW_VERSION, decision:'APPROVED', kind, allowedUse,
+    storyId:story.id, evidenceRef:'review:123', reviewer:'synthetic-test-owner',
+    reviewedAt:'2026-11-15', contentSnapshot:archiveContentSnapshot(presented),
+  }));
+  assert.equal(publishedNews([presented], records).length, 1);
+  assert.equal(publishedNews([presented], records.slice(0, 2)).length, 0, 'no approval without independent graphic receipt');
+  assert.equal(publishedNews([{...presented, summary:'Tampered'}], records).length, 0);
+  assert.equal(publishedNews([{...presented, graphic:{kind:'flow',caption:'Tampered',labels:['X','Y']}}], records).length, 0);
+  assert.equal(publishedNews([presented], records.map(record => ({...record, evidenceRef:'fake'}))).length, 0);
+  assert.equal(publishedNews([{...presented,source:{...presented.source,url:'javascript:alert(1)'}}], records).length, 0);
   const csv = newsBiCsv([{...story, id:'=HYPERLINK("evil")'}]);
   assert.match(csv, /'=/);
   assert.match(csv, /NOT_PROVEN/);
@@ -85,11 +91,11 @@ test('market impact cannot self-certify a verified publication score', () => {
   const fake = {...story,marketImpact:{status:'VERIFIED',verifiedScore:95,assessments:[]}};
   assert.equal(marketImpactAdmitted(fake), false);
   assert.equal(marketImpactAdmitted(fake, [{version:'CAPITAL_AI_NEWS_MARKET_IMPACT_REVIEW@1',
-    decision:'APPROVED',storyId:story.id,evidenceRef:'review:123',
+    decision:'APPROVED',storyId:story.id,reviewer:'synthetic-test-owner',evidenceRef:'review:123',
     assessmentSnapshot:JSON.stringify(fake.marketImpact)}]), true);
   assert.equal(marketImpactAdmitted({...fake,marketImpact:{...fake.marketImpact,verifiedScore:96}},
     [{version:'CAPITAL_AI_NEWS_MARKET_IMPACT_REVIEW@1',decision:'APPROVED',
-      storyId:story.id,evidenceRef:'review:123',assessmentSnapshot:JSON.stringify(fake.marketImpact)}]),false);
+      storyId:story.id,reviewer:'synthetic-test-owner',evidenceRef:'review:123',assessmentSnapshot:JSON.stringify(fake.marketImpact)}]),false);
 });
 test('materializer rejects unapproved news and writes only an empty reviewed manifest offline', async () => {
   const displaced = retireNews(original, nextWith(original, 1), empty);
