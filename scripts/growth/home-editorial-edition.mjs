@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import {homeStoryDigest, homepageApproval} from './home-editorial-review.mjs';
 
 const editionPath = new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url);
 const officialHosts = new Set(['xrpl.org', 'solana.com', 'polygon.technology', 'docs.polygon.technology']);
@@ -44,9 +45,17 @@ function normalizeStory(story, asOf) {
   } else {
     throw new Error('Missing or invalid infographic');
   }
+  const provenance = story.provenance;
+  if (provenance !== undefined && (provenance?.sourceKind !== 'OFFICIAL_PRIMARY' ||
+      provenance?.sourceRights !== 'LINK_ONLY' || provenance?.graphicRights !== 'ORIGINAL' ||
+      !/^[a-f0-9]{64}$/.test(provenance?.approvalSha256 ?? '') ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(provenance?.reviewedAt ?? ''))) {
+    throw new Error('Invalid published provenance');
+  }
   return {id, topic, title, summary, context, graphic: visual,
     source: {name: source.name, url: sourceUrl.href, date: source.date, label: dateLabel(source.date)},
-    editorial: {relevance: editorial.relevance, impact: editorial.impact}};
+    editorial: {relevance: editorial.relevance, impact: editorial.impact},
+    ...(provenance ? {provenance} : {})};
 }
 
 export function editorialScore(story, asOf) {
@@ -54,7 +63,7 @@ export function editorialScore(story, asOf) {
   return Math.max(0, 30 - 2 * ageDays) + 8 * story.editorial.relevance + 6 * story.editorial.impact;
 }
 
-export function selectHomeEdition(current, candidates, asOf) {
+export function selectHomeEdition(current, candidates, asOf, approvalManifest = null) {
   if (isoDay(asOf) < isoDay(current.date) || !Array.isArray(candidates) || candidates.length > 20 ||
       !Array.isArray(current.stories) || current.stories.length !== 3) throw new Error('Invalid editorial edition');
   const stories = current.stories.map(story => normalizeStory(story, asOf));
@@ -73,7 +82,10 @@ export function selectHomeEdition(current, candidates, asOf) {
       candidate.source.date > story.source.date && score(candidate) > score(story) &&
       (best === -1 || score(story) < score(stories[best])) ? i : best, -1);
     if (slot < 0) continue;
-    stories[slot] = candidate;
+    // A verified candidate score is insufficient: require a separate, exact approval.
+    const provenance = homepageApproval(candidate, approvalManifest, asOf);
+    if (!provenance) continue;
+    stories[slot] = {...candidate, provenance};
     seenIds.add(candidate.id);
     seenUrls.add(candidate.source.url);
     seenTitles.add(titleKey(candidate));
@@ -82,10 +94,51 @@ export function selectHomeEdition(current, candidates, asOf) {
   return changed ? {date: asOf, label: dateLabel(asOf), stories} : current;
 }
 
+/**
+ * Read-only four-hour candidate inspection. No approval or publication is implied.
+ * Run through the existing single scheduler; this module creates no cron job.
+ */
+export function scoreHomeCandidates(current, candidates, asOf) {
+  if (isoDay(asOf) < isoDay(current?.date) || !Array.isArray(candidates) || candidates.length > 20 ||
+      !Array.isArray(current?.stories) || current.stories.length !== 3) throw new Error('Invalid editorial edition');
+  const published = current.stories.map(story => normalizeStory(story, asOf));
+  const ids = new Set(published.map(story => story.id));
+  const urls = new Set(published.map(story => story.source.url));
+  const titleKey = story => story.title.normalize('NFKC').trim().toLowerCase();
+  const titles = new Set(published.map(titleKey));
+  if (ids.size !== 3 || urls.size !== 3 || titles.size !== 3) throw new Error('Duplicate published story');
+  const examined = new Set();
+  return candidates.map(input => {
+    const story = normalizeStory(input, asOf);
+    const score = editorialScore(story, asOf);
+    const key = titleKey(story);
+    const duplicate = ids.has(story.id) || urls.has(story.source.url) || titles.has(key) ||
+      examined.has(story.id) || examined.has(story.source.url) || examined.has(key);
+    examined.add(story.id);
+    examined.add(story.source.url);
+    examined.add(key);
+    const better = published.some(existing =>
+      story.source.date > existing.source.date && score > editorialScore(existing, asOf));
+    const reason = duplicate ? 'DUPLICATE' : score < 65 ? 'SCORE_BELOW_65' :
+      !better ? 'NOT_NEWER_AND_BETTER' : 'REVIEW_REQUIRED';
+    return {id: story.id, score, sourceUrl: story.source.url, sourceDate: story.source.date,
+      digest: homeStoryDigest(story), eligibleForReview: reason === 'REVIEW_REQUIRED',
+      reason, publicationAllowed: false};
+  }).sort((a, b) => b.score - a.score || b.sourceDate.localeCompare(a.sourceDate) ||
+    a.id.localeCompare(b.id));
+}
+
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
-  const [, , asOf, candidatesPath] = process.argv;
-  if (!asOf || !candidatesPath) throw new Error('Usage: node scripts/growth/home-editorial-edition.mjs YYYY-MM-DD candidates.json');
+  const [, , mode, asOf, candidatesPath, approvalsPath] = process.argv;
+  if (!['--score', '--propose'].includes(mode) || !asOf || !candidatesPath ||
+      (mode === '--propose' && !approvalsPath) || (mode === '--score' && approvalsPath)) {
+    throw new Error('Usage: node scripts/growth/home-editorial-edition.mjs --score YYYY-MM-DD candidates.json | --propose YYYY-MM-DD candidates.json approvals.json');
+  }
   const current = JSON.parse(await readFile(editionPath, 'utf8'));
   const candidates = JSON.parse(await readFile(candidatesPath, 'utf8'));
-  process.stdout.write(JSON.stringify(selectHomeEdition(current, candidates, asOf), null, 2) + '\n');
+  const output = mode === '--score' ?
+    {schema: 'CAPITAL_AI_HOME_CANDIDATE_SCORING@1', asOf, publicationAllowed: false,
+      candidates: scoreHomeCandidates(current, candidates, asOf)} :
+    selectHomeEdition(current, candidates, asOf, JSON.parse(await readFile(approvalsPath, 'utf8')));
+  process.stdout.write(JSON.stringify(output, null, 2) + '\n');
 }
