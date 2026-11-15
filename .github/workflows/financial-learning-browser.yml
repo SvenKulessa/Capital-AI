@@ -28,6 +28,7 @@ on:
       - 'shared/hub-routes.mjs'
       - 'scripts/product-accessibility-browser.mjs'
       - 'scripts/qa/course-inquiry-browser.mjs'
+      - 'scripts/qa/news-archive-browser.mjs'
       - 'src/components/ContactForm.tsx'
       - '.github/workflows/financial-learning-browser.yml'
   workflow_dispatch:
@@ -114,6 +115,15 @@ jobs:
             sudo apt-get install -y --no-install-recommends ffmpeg
           fi
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/scorer-methodology-browser.mjs
+      - name: Analytics news overview and archive viewport QA
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          if [ -z "$CHROME_BIN" ]; then
+            echo 'Chromium unavailable: archive viewport QA NOT_PROVEN'
+            exit 1
+          fi
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/news-archive-browser.mjs http://127.0.0.1:17871
       - name: Homepage globe responsive, rotation, pause and failure QA
         run: |
           set -euo pipefail
@@ -144,6 +154,8 @@ jobs:
             artifacts/universe-content-studio/*.png
             artifacts/universe-content-studio/result.json
             artifacts/course-inquiry-browser/result.json
+            artifacts/news-archive-browser/*.png
+            artifacts/news-archive-browser/result.json
             simulator-server.log
           if-no-files-found: warn
           retention-days: 7
