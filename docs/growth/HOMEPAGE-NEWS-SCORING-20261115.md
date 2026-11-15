@@ -28,7 +28,7 @@ The score does not call a crawler or external provider. A reviewer must independ
 
 ## Explicit review + proposed edition (no write)
 
-Only a **separately supplied Owner-reviewed manifest**, exact `CAPITAL_AI_HOME_EDITORIAL_APPROVALS@1`, can permit a candidate to enter the generated **proposal**. Each approval must bind exact candidate ID, source URL, source date, SHA-256 story digest, owner review (within 7 days), VERIFIED primary facts, `LINK_ONLY` source-rights assessment and `ORIGINAL` infographic rights. No manifest, duplicate review, modified bytes, invalid rights, future/expired review or review from any other authority → fail closed (retain current edition). Candidate-contained approval flags are ignored.
+Only a **separately supplied Owner-reviewed manifest**, exact `CAPITAL_AI_HOME_EDITORIAL_APPROVALS@1`, can permit a candidate to enter the generated **proposal**. Each approval must bind exact candidate ID, source URL, source date, SHA-256 story digest, owner review (within 7 days), VERIFIED primary facts, `LINK_ONLY` source-rights assessment and `ORIGINAL` infographic rights. No manifest, duplicate review, modified bytes, invalid rights, future/expired review or review from any other authority → fail closed (retain current edition). Candidate-contained approval flags are ignored. **Important trust boundary:** a JSON field `reviewer: OWNER` is a content-bound review assertion, not cryptographic proof of the Owner's identity. Before any publication, confirm the human review or authorized approval in trusted GitHub evidence; the automation may not create its own Owner approval manifest.
 
 ```bash
 node scripts/growth/home-editorial-edition.mjs --propose 2026-11-15 \
