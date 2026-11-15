@@ -131,3 +131,30 @@ test('link-only evidence must not substitute for an original-summary or graphic 
   const reviews=fixtureReviews(item).filter(r=>r.kind==='source');
   assert.equal(projectHomeEditorial(item,day,planContentCampaign,reviews).status,'RIGHTS_BLOCKED');
 });
+
+test('real XRPL and revised Polygon drafts are not self-licensed; outdated Polygon OMS is excluded',()=>{
+  const polygon=edition.stories.find(story=>story.id==='polygon');
+  const xrpl=edition.stories.find(story=>story.id==='xrpl');
+  const old=edition.stories.find(story=>story.id==='solana');
+  assert.ok(polygon && xrpl && old);
+  assert.equal(polygon.source.date,'2026-11-12');
+  assert.match(polygon.title,/SoFiUSD/);
+  assert.match(polygon.summary,/SoFi-App/);
+  assert.match(polygon.context,/kein Bankguthaben/);
+  assert.match(polygon.context,/FDIC/);
+  assert.match(polygon.context,/SIPC/);
+  for(const story of [polygon,xrpl,old]) {
+    for(const kind of ['story','source','graphic'] as const) {
+      assert.equal(story.evidence.rights[kind].decision,'REVIEW_REQUIRED');
+      assert.equal(story.evidence.rights[kind].websiteAllowed,false);
+      assert.equal(story.evidence.rights[kind].evidenceRef,null);
+    }
+  }
+  assert.equal(old.source.date,'2026-10-29');
+  assert.equal(projectHomeEditorial(edition,day,planContentCampaign).status,'RIGHTS_BLOCKED');
+  const fixture=admitFixture();
+  const review=fixtureReviews(fixture);
+  const eligible=projectHomeEditorial(fixture,day,planContentCampaign,review);
+  assert.equal(eligible.status,'READY');
+  assert.deepEqual(eligible.stories.map((story:{id:string})=>story.id),['polygon','xrpl']);
+});
