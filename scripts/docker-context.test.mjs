@@ -66,6 +66,22 @@ function readdirOrFile(path) {
   catch (error) { if (error.code === 'ENOTDIR') return [path]; throw error; }
 }
 
+
+test('homepage editorial approval dependency is present in the isolated build stage', () => {
+  const entry = readFileSync(resolve(root, 'scripts/growth/home-editorial-edition.mjs'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const source = 'scripts/growth/home-editorial-review.mjs';
+  assert.match(entry, /from ['"]\.\/home-editorial-review\.mjs['"]/,
+    'Homepage selector must import the independent review boundary');
+  assert.ok(existsSync(resolve(root, source)), 'Required approval module must exist');
+  assert.equal(reachable(source), true, 'Approval module must be in Docker context');
+  assert.ok(dockerfile.split(/\r?\n/).some(line => line.startsWith('COPY ') &&
+    line.split(/\s+/).slice(1, -1).includes(source) &&
+    line.trim().endsWith('./scripts/growth/')),
+    'Build stage running homepage tests must explicitly COPY independent approval module');
+});
+
+
 test('secrets, git metadata, reports and unrelated server files remain excluded', () => {
   for (const name of ['.env', '.env.production', '.git/config',
     'security-reports/image.json', 'docs/security/private-evidence.json',
