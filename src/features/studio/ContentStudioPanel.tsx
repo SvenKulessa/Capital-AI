@@ -1,5 +1,6 @@
 import { createYouTubeDescription as youtubeDescription } from '../../platform/SocialMediaEngine/Editing/MediaStudioTemplates';
 import React from 'react';
+import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { BrandGlobeStudio } from './BrandGlobeStudio';
 import { InstagramLearningPilot } from './InstagramLearningPilot';
 import { ChartLearningAtlas } from '../learning/ChartLearningAtlas';
@@ -16,6 +17,7 @@ import {
 
 import {
   CONTENT_ENGINE_CONTRACT_VERSION,
+  CONTENT_ENGINE_UNIVERSE,
   planContentCampaign,
 } from '../../contracts/contentEngine.ts';
 import { CONTENT_SOCIAL_PACKAGE_VERSION } from '../../contracts/contentSocialPackage.ts';
@@ -45,6 +47,29 @@ export const ContentStudioPanel: React.FC = () => {
   return (
     <div className="space-y-5">
       <BrandGlobeStudio />
+      <section aria-labelledby="capital-universe-profile" className="relative isolate overflow-hidden rounded-2xl border border-violet-400/30 bg-[#050914] p-4 sm:p-6">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-60" style={{
+          backgroundImage: 'radial-gradient(ellipse at 86% 13%, rgba(183,148,244,.22), transparent 36%), radial-gradient(ellipse at 8% 92%, rgba(103,232,249,.14), transparent 46%)',
+        }} />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-200">CAPITAL-AI / Universe Design</p>
+        <h2 id="capital-universe-profile" className="mt-2 text-xl font-bold text-white">Finanzwissen als eigenes Universum</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-200">
+          Orbital-HUD, Datenkonstellationen und sieben Markenfarben für neue Grafiken,
+          Artikelillustrationen, Video-Frames und Podcast-Cover. Inhalte bleiben bis zur
+          Quellen-, Rechte- und Redaktionsprüfung Entwürfe.
+        </p>
+        <div className="mt-4 grid grid-cols-7 gap-1 sm:gap-3" aria-label="Sieben CAPITAL-AI-Markenfarben">
+          {CONTENT_ENGINE_UNIVERSE.palette.map((family) => (
+            <div key={family} className="min-w-0 text-center">
+              <span aria-hidden="true" className="mx-auto block h-3 w-3 rounded-full ring-2 ring-white/10 sm:h-5 sm:w-5" style={{ backgroundColor: BRAND_COLORS[family] }} />
+              <span className="mt-2 block text-[8px] capitalize text-slate-300 sm:text-[11px]">{family}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[11px] text-slate-400">
+          {CONTENT_ENGINE_UNIVERSE.id} · Originale Sci-Fi-Elemente · Keine externen Franchise-Assets · DRAFT_ONLY
+        </p>
+      </section>
       <ChartLearningAtlas studio />
       <InstagramLearningPilot />
       <section className="rounded-2xl border border-cyan-400/30 p-5">

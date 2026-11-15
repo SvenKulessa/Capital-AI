@@ -84,6 +84,9 @@ export function createCapitalAiMediaStudioProject(
     metadata: {
       editor: 'capital-ai-media-studio-mvp',
       draftOnly: true,
+      universeIdentity: 'CAPITAL_AI_UNIVERSE@1',
+      visualRule: 'ALL_SEVEN_COLORS_PER_VISUAL',
+      podcastCoverRenderer: 'scripts/media/capital_ai_media.py:render_brand_card',
     },
   }, 'Media Studio');
 }
@@ -156,6 +159,8 @@ export function createCapitalAiProTrialCouponProject(
       draftOnly: true,
       campaign: 'pro-trial-3d',
       designAuthority: MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
+      universeIdentity: 'CAPITAL_AI_UNIVERSE@1',
+      visualRule: 'ALL_SEVEN_COLORS_PER_VISUAL',
     },
   }, 'Pro Trial Coupon');
 }
@@ -212,9 +217,9 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
       body: 'Finanzanalyse und Methoden verständlich erleben.',
     },
     {
-      kicker: 'DESIGN / FOUR-COLOR ORBIT',
+      kicker: 'DESIGN / SEVEN-COLOR UNIVERSE',
       title: 'GLOBALE PERSPEKTIVEN',
-      body: 'Gold · Grün · Magenta · Violett / Pulsierendes 3D-Netz.',
+      body: 'Cyan · Violett · Gold · Pink · Rosé · Blau · Grün. Originale Datenorbits.'
     },
     {
       kicker: 'CAPITAL-AI / BLUEPRINT BUNDLES',
@@ -298,6 +303,8 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
     metadata: {
       campaign: 'homepage-blueprint-bundles',
       editor: 'capital-ai-media-studio-mvp',
+      universeIdentity: 'CAPITAL_AI_UNIVERSE@1',
+      visualRule: 'ALL_SEVEN_COLORS_PER_VISUAL',
       audioProviderRequested: 'GEMINI',
       audioStatus: 'NOT_PROVEN',
       voiceoverLanguage: 'de-DE',
@@ -407,6 +414,9 @@ export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3
       campaign: 'chartanalyse-masterclass-v2',
       chapter,
       designAuthority: MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
+      universeIdentity: 'CAPITAL_AI_UNIVERSE@1',
+      visualRule: 'ALL_SEVEN_COLORS_PER_VISUAL',
+      podcastCoverRenderer: 'scripts/media/capital_ai_media.py:render_brand_card',
       chapterOneStyleReference: true,
       website: 'https://capital-ai.online',
       audioSource: 'original-source-track-only',
@@ -459,5 +469,5 @@ export function createCapitalAiTourVideoProject(): MediaProjectV2 {
   {title:'Dein privates Lernfeld',body:'Deine Begriffe. Dein Lerntempo. Dein persönliches Lernfeld.'},
   {title:'Hero Buddy',body:'Dein Buddy begleitet dich beim Entdecken.'},
  ];
- return assertValid({...project,projectId:'capital-ai-tour-20261011',slug:'capital-ai-tour',title:'Capital-AI Tour',description:'20 Sekunden, tonlos: Elite-Vokabelkarte, Sentiment-Tachometer mit Greed, persönliches Lernfeld und winkender Buddy.',durationFrames,canvas:structuredClone(MEDIA_STUDIO_CANVAS_PRESETS['9:16']),assets:[],tracks:[{id:'tour-scenes',kind:'graphics',enabled:true,layers:chapters.map((chapter,index)=>({id:`tour-${index+1}`,kind:'scene' as const,enabled:true,kicker:'CAPITAL-AI',...chapter,range:{startFrame:index*150,durationFrames:150},disclaimer:'Bildung und Produktvorschau. Keine Anlageberatung.'}))}],metadata:{campaign:'capital-ai-tour',audioStatus:'SILENT',draftOnly:true}},'Capital-AI Tour');
+ return assertValid({...project,projectId:'capital-ai-tour-20261011',slug:'capital-ai-tour',title:'Capital-AI Tour',description:'20 Sekunden, tonlos: Elite-Vokabelkarte, Sentiment-Tachometer mit Greed, persönliches Lernfeld und winkender Buddy.',durationFrames,canvas:structuredClone(MEDIA_STUDIO_CANVAS_PRESETS['9:16']),assets:[],tracks:[{id:'tour-scenes',kind:'graphics',enabled:true,layers:chapters.map((chapter,index)=>({id:`tour-${index+1}`,kind:'scene' as const,enabled:true,kicker:'CAPITAL-AI',...chapter,range:{startFrame:index*150,durationFrames:150},disclaimer:'Bildung und Produktvorschau. Keine Anlageberatung.'}))}],metadata:{...project.metadata,campaign:'capital-ai-tour',audioStatus:'SILENT',draftOnly:true}},'Capital-AI Tour');
 }
