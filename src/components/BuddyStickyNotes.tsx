@@ -69,6 +69,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   const [summaryLine, setSummaryLine] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [writeLocked, setWriteLocked] = useState(false);
   const [status, setStatus] = useState('');
 
   useEffect(() => { setDraft(initialText); }, [initialText]);
@@ -84,6 +85,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
       setConflict(null);
       conflictRef.current = false;
       setStatus('');
+      setWriteLocked(false);
       setError('Anmeldung geändert. Bitte JaJa Buddy erneut öffnen.');
     };
     const refresh = async () => {
@@ -132,7 +134,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   }, []);
 
   const mutate = async (transform: (raw: string) => string, successMessage: string): Promise<boolean> => {
-    if (!userId || !snapshot || busyRef.current || conflictRef.current) return false;
+    if (!userId || !snapshot || busyRef.current || conflictRef.current || writeLocked) return false;
     busyRef.current = true;
     setBusy(true);
     setError('');
@@ -165,6 +167,9 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         setConflict(null);
         conflictRef.current = false;
         setError('Anmeldung geändert. Bitte erneut anmelden.');
+      } else if (reason instanceof NotesClientError && reason.code === 'NOTES_WRITE_LOCKED') {
+        setWriteLocked(true);
+        setError('Notizablage ist serverseitig schreibgeschützt. Deine Eingabe bleibt zum Kopieren erhalten.');
       } else {
         // Keep local input and last confirmed notes on uncertain backend results.
         setError('Notiz nicht bestätigt. Deine Eingabe bleibt erhalten. Bitte Serverstand erneut prüfen.');
@@ -177,7 +182,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   };
 
   const resolveMerge = async (text: string) => {
-    if (!conflict || !userId || busyRef.current) return;
+    if (!conflict || !userId || busyRef.current || writeLocked) return;
     busyRef.current = true;
     setBusy(true);
     setError('');
@@ -210,6 +215,9 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         setConflict(null);
         conflictRef.current = false;
         setError('Anmeldung geändert. Bitte erneut anmelden.');
+      } else if (reason instanceof NotesClientError && reason.code === 'NOTES_WRITE_LOCKED') {
+        setWriteLocked(true);
+        setError('Zusammenführung ist serverseitig gesperrt. Bitte kopiere deinen Entwurf.');
       } else {
         setError('Speicherung nicht bestätigt. Dein Entwurf bleibt im Konfliktfenster erhalten.');
       }
@@ -264,15 +272,15 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
             disabled={!userId || busy} className="min-h-10 rounded border border-slate-500 bg-slate-900 px-2 text-white">
             {COLORS.map(item => <option key={item.color} value={item.color}>{item.label}</option>)}
           </select>
-          <button type="submit" disabled={!userId || busy || !!conflict || !draft.trim()}
+          <button type="submit" disabled={!userId || busy || !!conflict || writeLocked || !draft.trim()}
             className="min-h-10 rounded bg-amber-400 px-3 font-bold text-black disabled:opacity-40">
             {busy ? 'Speichere …' : 'Notiz speichern'}
           </button>
         </div>
       </form>
-      {error && <p role="alert" className="text-rose-200">{error} <a href="/login" className="underline">Anmelden</a></p>}
+      {error && <p role="alert" className="text-rose-200">{error} {!userId && <a href="/login" className="underline">Anmelden</a>}</p>}
       {status && <p role="status" className="text-emerald-200">{status}</p>}
-      {conflict && <NotesConflictPanel conflict={conflict} busy={busy} onUseServer={acceptServer} onMerge={text => void resolveMerge(text)} />}
+      {conflict && <NotesConflictPanel conflict={conflict} busy={busy || writeLocked} onUseServer={acceptServer} onMerge={text => void resolveMerge(text)} />}
       {userId && notes.length === 0 && <p role="status" className="text-slate-300">Noch keine JaJa-Notizen.</p>}
       <ul className="grid gap-2">
         {notes.map(note => {
@@ -281,14 +289,14 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
             <li key={note.line} className="rounded border border-slate-300/30 p-2" style={{ backgroundColor: selection.background, color: '#111827' }}>
               <div className="flex items-start gap-2">
                 <input type="checkbox" checked={note.checked} onChange={() => updateOne(note, 'check')}
-                  disabled={busy || !!conflict} aria-label="Notiz erledigt" className="mt-1 h-4 w-4" />
+                  disabled={busy || !!conflict || writeLocked} aria-label="Notiz erledigt" className="mt-1 h-4 w-4" />
                 <p className={'min-w-0 flex-1 whitespace-pre-wrap break-words text-sm ' + (note.checked ? 'line-through' : '')}>{note.text}</p>
               </div>
               {summaryLine === note.line && <p className="mt-2 text-xs italic">Kurzfassung: {localSummary(note.text)}</p>}
               <div className="mt-2 flex flex-wrap gap-2">
                 <button type="button" onClick={() => setSummaryLine(value => value === note.line ? null : note.line)}
                   className="min-h-9 underline" aria-pressed={summaryLine === note.line}>Lokal zusammenfassen</button>
-                <button type="button" disabled={busy} onClick={() => updateOne(note, 'remove')}
+                <button type="button" disabled={busy || writeLocked} onClick={() => updateOne(note, 'remove')}
                   className="min-h-9 text-red-700 underline" aria-label="Notiz löschen">Löschen</button>
               </div>
             </li>

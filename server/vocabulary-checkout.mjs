@@ -31,6 +31,29 @@ function rpcHeaders(key) {
   return headers;
 }
 
+// Non-2xx provider errors are intentionally rejected by boundedJson(). Decode
+// only the one expected, nonsecret legacy-write lock within a strict byte cap.
+async function boundedRpcErrorJson(response, maxBytes = 4096) {
+  if (!response.body) return null;
+  const reader = response.body.getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > maxBytes) return null;
+      chunks.push(value);
+    }
+    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  } catch {
+    return null;
+  } finally {
+    await reader.cancel().catch(() => {});
+  }
+}
+
 async function rpc(fetchImpl, config, name, body) {
   const response = await fetchImpl(new URL(`/rest/v1/rpc/${name}`, config.url), {
     method: 'POST',
@@ -39,15 +62,29 @@ async function rpc(fetchImpl, config, name, body) {
     redirect: 'error',
     signal: AbortSignal.timeout(7000),
   });
+  const legacyLockCandidate = response.status === 400 &&
+    name === 'capital_ai_private_notes' && body?._action === 'PUT';
   let payload = null;
-  if (response.status !== 204) {
+  if (legacyLockCandidate) {
+    payload = await boundedRpcErrorJson(response);
+  } else if (response.status !== 204) {
     try {
       payload = await boundedJson(response);
     } catch {
       payload = null;
     }
   }
-  if (!response.ok) throw new Error(`SUPABASE_RPC_${response.status}`);
+  if (!response.ok) {
+    const error = new Error(`SUPABASE_RPC_${response.status}`);
+    // Do not leak provider messages or interpret unrelated RPC failures as
+    // a notes write lock; all unrecognized errors retain generic HTTP 503.
+    if (legacyLockCandidate && payload && typeof payload === 'object' &&
+        !Array.isArray(payload) && payload.code === 'P0001' &&
+        payload.message === 'notes_revision_required') {
+      error.notesLegacyWriteLocked = true;
+    }
+    throw error;
+  }
   return payload;
 }
 
@@ -356,8 +393,12 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
               throw new Error('INVALID_LEGACY_NOTES_RESPONSE');
             }
             json(res,200,{notes:result,userId:user.userId});
-          } catch {
-            json(res,503,{error:'notes_unavailable'});
+          } catch (reason) {
+            if (req.method === 'PUT' && reason?.notesLegacyWriteLocked === true) {
+              json(res,409,{error:'notes_write_locked'});
+            } else {
+              json(res,503,{error:'notes_unavailable'});
+            }
           }
           return true;
         }
