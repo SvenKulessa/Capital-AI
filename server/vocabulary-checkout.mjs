@@ -47,7 +47,16 @@ async function rpc(fetchImpl, config, name, body) {
       payload = null;
     }
   }
-  if (!response.ok) throw new Error(`SUPABASE_RPC_${response.status}`);
+  if (!response.ok) {
+    const error = new Error(`SUPABASE_RPC_${response.status}`);
+    // The migrated legacy RPC is read-only. Preserve the precise, nonsecret
+    // failure reason without exposing arbitrary provider errors to clients.
+    if (payload && typeof payload === 'object' && !Array.isArray(payload) &&
+        payload.code === 'P0001' && payload.message === 'notes_revision_required') {
+      error.notesLegacyWriteLocked = true;
+    }
+    throw error;
+  }
   return payload;
 }
 
@@ -356,8 +365,12 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
               throw new Error('INVALID_LEGACY_NOTES_RESPONSE');
             }
             json(res,200,{notes:result,userId:user.userId});
-          } catch {
-            json(res,503,{error:'notes_unavailable'});
+          } catch (reason) {
+            if (req.method === 'PUT' && reason?.notesLegacyWriteLocked === true) {
+              json(res,409,{error:'notes_write_locked'});
+            } else {
+              json(res,503,{error:'notes_unavailable'});
+            }
           }
           return true;
         }
