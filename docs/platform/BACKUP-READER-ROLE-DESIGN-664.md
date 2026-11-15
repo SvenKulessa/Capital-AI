@@ -4,7 +4,7 @@
 
 ## What is actually verified
 
-The repository already contains the isolated PostgreSQL 17.11 role-and-restore contract in `scripts/platform/backup-reader-contract-test.sh` and the supplementary recovery slices in `scripts/platform/backup-recovery-slices-test.sh`. The existing `.github/workflows/backup-reader-pg17.yml` executes them in a disposable environment. The current PR adds **no new runnable role-definition SQL**. Test evidence applies only to the exact commit and synthetic fixture where it ran.
+The repository already contains the isolated PostgreSQL 17.11 role-and-restore contract in `scripts/platform/backup-reader-contract-test.sh`, the read-only ACL inventory in `scripts/platform/backup-reader-inventory.sql` (merged via PR #729), and supplementary recovery slices in `scripts/platform/backup-recovery-slices-test.sh`. The existing `.github/workflows/backup-reader-pg17.yml` builds `.github/docker/pg17-reader.Dockerfile` and executes these contracts in a disposable environment. The current PR adds **no new runnable role-definition SQL**. Test evidence applies only to the exact commit and synthetic fixture where it ran.
 
 The fixture tests `LOGIN`, `NOSUPERUSER`, `NOCREATEDB`, `NOCREATEROLE`, `NOREPLICATION`, `NOINHERIT`, `CONNECTION LIMIT 1`, absence of group memberships, and named-object `CONNECT`/`USAGE`/`SELECT` grants. `BYPASSRLS` is a separate, high-risk decision: the isolated tests establish its relevance to a complete `pg_dump` while also demonstrating its broader effect. No production `BYPASSRLS` or blanket `pg_read_all_data` grant is approved.
 
