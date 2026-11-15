@@ -9,6 +9,7 @@ export const ASSETS = Object.freeze([
   { symbol: 'POL', coin: 'polygon-ecosystem-token', project: '0xPolygon/bor' },
 ]);
 export const MARKET_ATTRIBUTION = 'https://www.coingecko.com/en/api';
+export const MARKET_PROVIDER_ID = 'coingecko';
 const MODEL = 'qwen2.5:1.5b';
 
 async function requestJson(fetchImpl, url, options = {}, maxBytes = 65_536) {

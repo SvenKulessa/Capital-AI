@@ -2,9 +2,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdir, open, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readJson, secureUrl } from '../http-security.mjs';
+import { rightsAdmittedMarketSourcesFor } from '../open-source-market-policy.mjs';
 import { buildDraftContentSocialPackage, findContentSocialApproval, withContentSocialApproval } from '../../src/contracts/contentSocialPackage.ts';
 import { planContentCampaign } from '../../src/contracts/contentEngine.ts';
-import { ASSETS, collectCryptoSignals, MARKET_ATTRIBUTION, WINDOW_MS } from './crypto-signal-sources.mjs';
+import { ASSETS, collectCryptoSignals, MARKET_ATTRIBUTION, MARKET_PROVIDER_ID, WINDOW_MS } from './crypto-signal-sources.mjs';
 
 const PUBLIC = '/api/crypto-signals';
 const OWNER = '/api/internal/crypto-signals';
@@ -13,8 +14,11 @@ const WINDOW_DELAY = 10 * 60_000;
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const currentWindow = now => Math.floor((now - WINDOW_DELAY) / WINDOW_MS) * WINDOW_MS + WINDOW_DELAY;
 
-function configFrom(env) {
+function configFrom(env, marketSources) {
   if (env.CAPITAL_AI_CRYPTO_SIGNALS_ENABLED !== 'true') return null;
+  const marketAdmitted = marketSources.some(source => source.providerId === MARKET_PROVIDER_ID
+    && source.runtimeEligible === true && source.capabilities.scoringAssetClasses?.includes('crypto'));
+  if (!marketAdmitted) return null;
   try {
     const { market, news } = JSON.parse(env.CAPITAL_AI_CRYPTO_SIGNAL_RIGHTS || '{}');
     // Operator records the contractual rights covering each source, derived display and inference.
@@ -61,8 +65,9 @@ function validDraft(draft, now, rightsHash) {
 export function createCryptoSignalWorkflow({
   auth, env = process.env, fetchImpl = fetch, root = ROOT, now = Date.now,
   collect = collectCryptoSignals,
+  marketSources = rightsAdmittedMarketSourcesFor('scoringPriceInput'),
 } = {}) {
-  const config = configFrom(env);
+  const config = configFrom(env, marketSources);
   const stateFile = window => join(root, 'cycle-' + window + '.json');
   let timer;
   let stopped = true;

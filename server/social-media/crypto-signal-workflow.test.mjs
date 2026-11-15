@@ -23,6 +23,23 @@ const env = {
     news: { 'XRPLF/rippled': rights, 'anza-xyz/agave': rights, '0xPolygon/bor': rights },
   }),
 };
+const marketSources = [{
+  providerId: 'coingecko',
+  runtimeEligible: true,
+  capabilities: { scoringAssetClasses: ['crypto'] },
+}];
+
+test('production market policy blocks the configured legacy provider before any collection', async () => {
+  let requests = 0;
+  const workflow = createCryptoSignalWorkflow({ env, fetchImpl: () => { requests++; } });
+  await workflow.tick();
+  assert.equal(requests, 0);
+  for (const path of ['/api/crypto-signals', '/api/internal/crypto-signals']) {
+    let status;
+    await workflow.handle({ method: 'GET' }, {}, new URL(path, 'http://localhost'), (_, code) => { status = code; });
+    assert.equal(status, 404);
+  }
+});
 
 test('long and short need closed-candle breakout plus aligned sentiment', () => {
   const buy = assessSignal(prices(105), { label: 'POSITIVE' });
@@ -87,12 +104,14 @@ test('HTTP workflow requires rights, authenticated owner, same origin and exact 
     sameOrigin: req => req.headers.origin === 'https://capital-ai.online',
     verify: () => ({ userId: 'owner-fixture', emailVerified: true }),
   };
-  const workflow = createCryptoSignalWorkflow({ env, auth, root, now: () => clock, collect });
-  const disabled = createCryptoSignalWorkflow({ env: { ...env, CAPITAL_AI_CRYPTO_SIGNAL_RIGHTS: '{}' }, root, collect });
+  const workflow = createCryptoSignalWorkflow({ env, auth, root, now: () => clock, collect, marketSources });
+  const disabled = createCryptoSignalWorkflow({
+    env: { ...env, CAPITAL_AI_CRYPTO_SIGNAL_RIGHTS: '{}' }, root, collect, marketSources,
+  });
   await disabled.tick();
   assert.equal(collections, 0);
   await Promise.all([workflow.tick(), workflow.tick()]);
-  await createCryptoSignalWorkflow({ env, root, now: () => clock, collect }).tick();
+  await createCryptoSignalWorkflow({ env, root, now: () => clock, collect, marketSources }).tick();
   assert.equal(collections, 1);
   const server = createServer(async (req, res) => {
     const matched = await workflow.handle(req, res, new URL(req.url, 'http://localhost'), (out, status, body) => {

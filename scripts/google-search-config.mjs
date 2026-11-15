@@ -46,9 +46,9 @@ export async function auditSearchSurface(fetchImpl = fetch) {
         const meta = [...text.matchAll(/<meta\b[^>]*>/gi)].map(m => m[0]).filter(tag => /name=["'](?:robots|googlebot)["']/i.test(tag));
         add(path, 'HOME_INDEXABLE', /text\/html/i.test(type) && !/noindex|\bnone\b/i.test(response.headers.get('x-robots-tag') || '') && !meta.some(tag => /content=["'][^"']*\b(?:noindex|none)\b/i.test(tag)));
       } else if (path === '/robots.txt') {
-        // Match the site's deliberately simple crawl-all policy; do not guess at complex rules.
+        // Only the reviewed public-content crawl policy; robots.txt is not an access-control boundary.
         const lines = text.split(/\r?\n/).map(line => line.split('#')[0].trim()).filter(Boolean);
-        add(path, 'CRAWL_POLICY', lines.length === 3 && lines.includes('User-agent: *') && lines.includes('Allow: /'));
+        add(path, 'CRAWL_POLICY', lines.length === 6 && ['User-agent: *', 'Allow: /', 'Disallow: /docs/growth/research/', 'Disallow: /generated/', 'Disallow: /evidence/'].every(line => lines.includes(line)));
         add(path, 'SITEMAP_REFERENCE', lines.includes('Sitemap: ' + SEARCH_CONFIGURATION.sitemap));
       } else if (path === '/sitemap.xml') {
         const urls = [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
