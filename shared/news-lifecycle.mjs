@@ -117,6 +117,45 @@ export function newsBiRows(items) {
     impact_status: marketImpactAdmitted(item) ? 'VERIFIED' : 'NOT_PROVEN',
   }));
 }
+
+/** Adds an unapproved, versioned observation without overwriting historic assessments. */
+export function appendMarketImpactAssessment(item, input) {
+  const assessment = proposeMarketImpact(item, input);
+  const prior = item.marketImpact?.assessments ?? [];
+  if (!Array.isArray(prior) || prior.length > 500) throw Error('Invalid market impact history');
+  const key = value => [value.asset,value.benchmark,value.windowDays,value.observedAt,value.assessedAt].join('|');
+  if (prior.some(value => key(value) === key(assessment))) throw Error('Duplicate market impact assessment');
+  return {...structuredClone(item),marketImpact:{
+    status:'NOT_PROVEN',
+    verifiedScore:null,
+    assessments:[...prior,assessment],
+  }};
+}
+/** BI-ready fact grain: news × asset × benchmark × horizon × assessment date. */
+export function newsBiImpactRows(items) {
+  const rows = [];
+  for (const item of items) {
+    // Exact-contents evidence must independently admit the entire impact snapshot.
+    if (!marketImpactAdmitted(item)) continue;
+    for (const entry of item.marketImpact.assessments ?? []) {
+      rows.push({
+        news_id:item.id,
+        category:item.category,
+        publication_date:item.publishedAt,
+        asset:entry.asset,
+        benchmark:entry.benchmark,
+        horizon_days:entry.windowDays,
+        observation_date:entry.observedAt,
+        assessed_at:entry.assessedAt,
+        relative_change_pp:entry.relativeChangePp,
+        proposed_score:entry.proposedScore,
+        impact_status:'VERIFIED',
+      });
+    }
+  }
+  return rows;
+}
+
 export function newsBiCsv(items) {
   const rows = newsBiRows(items);
   const columns = ['news_id', 'publication_date', 'retired_at', 'category', 'archive_path', 'source_url',
