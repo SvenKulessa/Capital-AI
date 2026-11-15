@@ -55,7 +55,7 @@
   text-shadow: 0 2px 14px rgb(2 5 14 / 90%);
 }
 .hero-action {
-  @apply flex min-h-12 items-center gap-3 rounded-2xl px-4 py-3 text-left;
+  @apply flex min-h-12 items-center gap-2 rounded-2xl px-3 py-3 text-left sm:gap-3 sm:px-4;
 }
 .hero-action span { @apply min-w-0 flex-1; }
 .hero-action svg { @apply size-5 shrink-0; }

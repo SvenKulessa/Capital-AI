@@ -3,6 +3,10 @@ import { LEARNING_ARTICLES, LEARNING_ARTICLE_DATE } from '../../data/learningArt
 
 /** Public, educational entry points only; checkout is handled by LearningPurchase. */
 export function LearningArticles() {
+  React.useEffect(() => {
+    const article = LEARNING_ARTICLES.find(item => window.location.hash === `#${item.id}`);
+    if (article) document.getElementById(article.id)?.scrollIntoView();
+  }, []);
   return (
     <section aria-labelledby="public-learning-articles" className="space-y-4">
       <h2 id="public-learning-articles" className="text-2xl font-bold text-amber-200">Lernimpulse · Wissen für alle</h2>
@@ -23,7 +27,7 @@ export function LearningArticles() {
         </p>
       </article>
       {LEARNING_ARTICLES.map(article => (
-        <article id={article.id} key={article.id} className="rounded-xl border border-amber-400/20 bg-[#090e21] p-5">
+        <article id={article.id} key={article.id} className="scroll-mt-24 rounded-xl border border-amber-400/20 bg-[#090e21] p-5">
           {article.coverImage && (
             <img 
               src={article.coverImage} 

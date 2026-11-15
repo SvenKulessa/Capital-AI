@@ -1,8 +1,8 @@
 export const SEO_PROVENANCE_GENERATED_AT_MAIN_SHA = '6add02eac321c8b4dfc40fca8f904afb0adcd186';
 
 export const SEO_SOURCE_ARTIFACTS = Object.freeze({
-  'src/i18n/landingSectionCopy.ts': Object.freeze({ sourceBlobSha: '6ee674a1b8afea86e6cbee33175da78f43b289a2', contentSha256: '7b1595c3fc7c728d86321c8991932708ac9dc8af91abecc4f579dc74b809cf79' }),
-  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: '36ccb4ec8b2212260634b362ceefc2242108f2b9', contentSha256: 'd6bcfcb7841baa614b5a4007c5ed9846a2c56640aace518072b3342436ff9add' }),
+  'src/i18n/landingSectionCopy.ts': Object.freeze({ sourceBlobSha: '0b845b24a15f710b02bc5740ac5a00a53a8e112b', contentSha256: 'b3ae90f8714804da050cb8e62734b6fd0efc5eb3f0ba0b3050c7a2251407a904' }),
+  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: 'da1bc882303fde14c0a1520807db2c31bf710167', contentSha256: 'd9da6e11f978d171c59e785f929e61e2bd6dbd19539b1e146c0d0941825b0adb' }),
   'shared/architecture-governance-vocabulary.mjs': Object.freeze({ sourceBlobSha: '086dce314dc661a0e169667e7ebc1bd8ec3a1631', contentSha256: 'f87c8d3f79133e4aa056ce7ffe1ee14e7f4283ac66a4b1f01e2744e2143ad646' }),
   'src/components/ContactForm.tsx': Object.freeze({ sourceBlobSha: 'a9253f4c2c8d775bbafa2977a7e62c4b2f8943db', contentSha256: '61ce8299bf918d853a14f054280395f232394a1071a5eae1e6d571adef47dde4' }),
   'shared/researched-vocabulary.json': Object.freeze({ sourceBlobSha: 'cf4e634f349481e2062e699d897fd5631249744c', contentSha256: '88a076f2f0e003ac0acfed62bfd6fd3cff50c8c64329054f402ec02abf7d5120' }),
@@ -19,8 +19,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: 'c385d667c66cc02ca92dbaf3becb2ee6f535fed884984a76d725b5c4b5b54d59',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: '8bfbf4b1159b1e23955c4a025a0c825e10f5d2ae',
-    contentSha256: '7f61488276336657a0530f002aa0c8b6baadcd09e4c80804cc6f2f7b9a9ca5c5',
+    sourceBlobSha: '8663435483927caa460448548eabaf9e1d8686aa',
+    contentSha256: 'ba00a47fed3c8490f5aba314c9a48f4679a43fe316b88ced5ba080f8f8443d8d',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
     sourceBlobSha: '05604f09429f309467fa9251ca28fa2dfe01c193', contentSha256: 'bc97a21178ec31c2e247c0591161a395a402bcbd0693af59c9cfa0eaff757864',
@@ -66,10 +66,10 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '33c107c3638cd25133b72c0fd8728758aa50d33814b0982d7af0f2e75bf2db09',
+  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '0e809eaf86887dbc990b70fc18582bd73b6db821b58594d40aa8b9f7a565027b',
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '0fdbaf01298830facf680c3c6c37bdeca30d5bf26994cd2c0da2e26c49dea801',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
-  'index.html|src/features/home/HomePage.tsx': '462f90d4463ea291674957f32a8493ec4ad1c3c81446e523a4ab61be49208802',
+  'index.html|src/features/home/HomePage.tsx': 'da88748d771be266061625e2a822331f07a354e4823a29fc6a9e0f9d324c4580',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'c65373efc03ac581d3e3127f8479f29b0f9fb46e6eba17e631ca3863da5d7f0d',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',

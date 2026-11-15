@@ -253,10 +253,13 @@ function injectPublicSeoSnapshot(html, pathname) {
   const editorial = article
     ? `<p>Eigene Redaktion · <time datetime="${escapeHtml(article.date)}">${escapeHtml(article.date)}</time></p><p>${escapeHtml(article.intro)}</p><figure><img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.imageAlt)}" width="1200" height="630" style="max-width:100%;height:auto"><figcaption>Eigene Illustration; keine realen Kursdaten.</figcaption></figure>` + article.sections.map(section => `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.body)}</p></section>`).join('') + `<p>Technische und didaktische Information; keine Anlageberatung.</p><h2>Quellen</h2><ul>` + article.sources.map(source => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label)}</a></li>`).join('') + '</ul><p><a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a></p>'
     : pathname === '/blog' ? BLOG_ARTICLES.map(item => `<section><h2><a href="${escapeHtml(item.path)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description)}</p></section>`).join('') : '';
+  const hero = pathname === '/'
+    ? `<h1>${escapeHtml(messages.de.hero1)} ${escapeHtml(messages.de.hero2)}</h1><p>${escapeHtml(messages.de.heroDescription)}</p><p><a href="/learning">${escapeHtml(messages.de.heroOpenLearning)}</a></p>`
+    : `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>`;
   const snapshot =
     '<a href="#capital-ai-public-snapshot" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-amber-400 focus:text-black focus:font-bold focus:rounded-xl focus:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-500">Zum Hauptinhalt springen</a>' +
     `<main id="capital-ai-public-snapshot" lang="de"><article>` +
-    `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>` +
+    hero +
     `${focus}${editorial}${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
     '</article></main>';
   return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);

@@ -77,10 +77,10 @@ export function HomePage({
 
       <Hero onExploreProduct={onStartProductTour} />
 
-      <section aria-label="Produkt entdecken" className="mx-auto max-w-7xl px-5 py-6">
+      <section aria-label="CAPITAL-AI entdecken" className="mx-auto max-w-7xl px-5 py-6">
         <button type="button" onClick={onStartProductTour} className="rounded-[3rem] border border-cyan-300/40 bg-cyan-950/60 px-8 py-5 text-left text-cyan-100 shadow-lg motion-safe:animate-[capital-cloud-float_8s_ease-in-out_infinite]">
-          <strong className="block text-lg">Produkt entdecken</strong>
-          <span className="text-sm">Finanzwissen lernen. Analysemethoden verstehen.</span>
+          <strong className="block text-lg">CAPITAL-AI entdecken</strong>
+          <span className="text-sm">Finde den Einstieg, der zu deiner Frage passt.</span>
         </button>
       </section>
       <HomeSearchFocus />
