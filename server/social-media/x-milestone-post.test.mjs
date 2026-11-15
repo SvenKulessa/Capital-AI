@@ -232,6 +232,8 @@ test('X launch page and status are isolated from original milestone receipt',asy
   assert.equal(resp.code,200);
   assert.match(resp.data,/X-Launch mit Infografik/);
   assert.match(resp.data,/Studio Hub/);
+  assert.match(resp.data,/branding\/social\/CAPITAL-AI-Universe-X-Launch-Final-20261115.png/);
+  assert.match(resp.data,/alt="CAPITAL-AI Universe:/);
   const js=response();
   await f.handler.handle(request('GET'),js,
     new URL('https://capital-ai.online/x-milestone-launch.js'),json);
