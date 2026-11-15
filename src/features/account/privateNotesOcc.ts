@@ -7,7 +7,7 @@ export type NotesSaveResult =
   | { kind: 'conflict'; conflict: NotesConflict };
 
 export class NotesClientError extends Error {
-  constructor(public readonly code: 'SESSION_CHANGED' | 'NOTES_UNAVAILABLE' | 'INVALID_NOTES') {
+  constructor(public readonly code: 'SESSION_CHANGED' | 'NOTES_UNAVAILABLE' | 'INVALID_NOTES' | 'NOTES_WRITE_LOCKED') {
     super(code);
   }
 }
@@ -93,6 +93,10 @@ export async function saveNotes(
     if (response.status === 401 ||
         (response.status === 409 && (body as { error?: string })?.error === 'session_changed')) {
       throw new NotesClientError('SESSION_CHANGED');
+    }
+    if (response.status === 409 &&
+        (body as {error?: string})?.error === 'notes_write_locked') {
+      throw new NotesClientError('NOTES_WRITE_LOCKED');
     }
     if (response.status === 409) {
       const conflict = body as {
