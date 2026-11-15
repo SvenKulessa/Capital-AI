@@ -16,6 +16,18 @@ export function localeFromLandingPath(pathname) {
   const found = /^\/(de|en|it|fr|pt|es)\/?$/.exec(String(pathname || '').toLowerCase());
   return found ? found[1] : null;
 }
+// Keep the HTML, sitemap and client metadata on the same canonical URL set.
+export function localizedLandingPath(locale) {
+  return `/${locale}/`;
+}
+export function landingAlternatesForPath(pathname) {
+  if (pathname !== '/' && !localeFromLandingPath(pathname)) return [];
+  const origin = 'https://capital-ai.online';
+  return [
+    ...SUPPORTED_LOCALES.map(locale => [locale, origin + localizedLandingPath(locale)]),
+    ['x-default', origin + '/'],
+  ];
+}
 export function localeFromCountry(country) {
   const code = typeof country === 'string' ? country.trim().toUpperCase() : '';
   return COUNTRY_LANGUAGES[code] || 'en';

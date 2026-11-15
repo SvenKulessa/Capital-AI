@@ -48,7 +48,14 @@ async function withSeoDocument(location, run) {
     querySelector: select,
     getElementById: id => elements.find(element => element.attributes.id === id) ?? null,
     createElement,
-    head: { appendChild(element) { elements.push(element); } },
+    head: {
+      appendChild(element) { elements.push(element); },
+      querySelectorAll(selector) {
+        assert.equal(selector, 'link[rel="alternate"][hreflang]');
+        return elements.filter(element => element.tag === 'link' &&
+          element.attributes.rel === 'alternate' && Object.hasOwn(element.attributes, 'hreflang'));
+      },
+    },
   };
   try { await run(select, elements); } finally {
     if (previousWindow === undefined) delete globalThis.window; else globalThis.window = previousWindow;
@@ -159,4 +166,19 @@ test('SPA vocabulary messaging references the public, not restricted, catalog co
   assert.match(build, /__VOCABULARY_PUBLIC_COUNT__: JSON.stringify\(VOCABULARY_PUBLIC_COUNT\)/);
   assert.doesNotMatch(source, /from ['"]\.\.\/\.\.\/\.\.\/shared\/vocabulary-metadata\.mjs['"]/, 'avoid full vocabulary corpus in SPA entry');
   assert.doesNotMatch(source, /294 Fachbegriffe|294 konsolidierte/);
+});
+
+
+test('SPA navigation replaces the locale alternate group and removes it on private paths', async () => {
+  await withSeoDocument({ origin: 'https://preview.example', pathname: '/en/' }, async (select, elements) => {
+    for (const code of ['en', 'fr']) {
+      await updatePageSEO({ title: code, description: code, canonicalPath: `/${code}/` });
+      assert.equal(select('link[rel="canonical"]').attributes.href, `https://capital-ai.online/${code}/`);
+      const alternates = elements.filter(element => element.attributes.rel === 'alternate');
+      assert.equal(alternates.length, 7);
+      assert.equal(alternates.find(element => element.attributes.hreflang === 'x-default').attributes.href, 'https://capital-ai.online/');
+    }
+    await updatePageSEO({ title: 'Profile', description: 'Private', canonicalPath: '/profile' });
+    assert.equal(elements.filter(element => element.attributes.rel === 'alternate').length, 0);
+  });
 });

@@ -1,3 +1,4 @@
+import { SUPPORTED_LOCALES, localizedLandingPath } from './locale-policy.mjs';
 import { HUB_ROUTES, DOCUMENT_ROUTES } from './hub-routes.mjs';
 
 // Image eligibility is separate from the HTML route inventory and XML sitemap.
@@ -48,12 +49,12 @@ const routes = [
   { path: '/.well-known/change-password', classification: 'NOINDEX', contentType: 'account-security', reason: 'Temporärer Discovery-Redirect für Passwortmanager zur kanonischen Sicherheitsseite; keine Search-Landingpage.' },
   { path: '/.well-known/mta-sts.txt', classification: 'NOINDEX', contentType: 'mail-security', reason: 'MTA-STS Policy-Endpunkt; operativer Standardpfad, keine Search-Landingpage.' },
 
-  { path: '/de', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/en', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/it', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/fr', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/pt', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/es', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+  ...SUPPORTED_LOCALES.map(locale => ({
+    path: localizedLandingPath(locale),
+    classification: 'INDEX',
+    contentType: 'localized-landing',
+    reason: 'Öffentlicher Sprach-Einstieg mit vollständigem Hauptinhalt im HTTP-HTML.',
+  })),
 
   { path: '/login', classification: 'NOINDEX', contentType: 'auth', reason: 'Öffentlicher Auth-Einstieg ohne eigenständigen Suchwert.' },
   { path: '/architecture', classification: 'NOINDEX', contentType: 'product-doc', reason: 'Öffentlich erreichbar, aber noch nicht gegen SEO-Manifest/Claim-Evidence gehärtet.' },
@@ -89,7 +90,7 @@ export const SEO_ROUTE_POLICY = Object.freeze(routes.map((route) => Object.freez
 const exactRoutes = new Map(
   SEO_ROUTE_POLICY
     .filter((route) => !route.dynamic)
-    .map((route) => [route.path, route]),
+    .map((route) => [normalize(route.path), route]),
 );
 
 const DEFAULT_BLOCKED_POLICY = Object.freeze({

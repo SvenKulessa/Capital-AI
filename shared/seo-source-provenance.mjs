@@ -1,6 +1,8 @@
 export const SEO_PROVENANCE_GENERATED_AT_MAIN_SHA = '6add02eac321c8b4dfc40fca8f904afb0adcd186';
 
 export const SEO_SOURCE_ARTIFACTS = Object.freeze({
+  'src/i18n/landingSectionCopy.ts': Object.freeze({ sourceBlobSha: '6ee674a1b8afea86e6cbee33175da78f43b289a2', contentSha256: '7b1595c3fc7c728d86321c8991932708ac9dc8af91abecc4f579dc74b809cf79' }),
+  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: '36ccb4ec8b2212260634b362ceefc2242108f2b9', contentSha256: 'd6bcfcb7841baa614b5a4007c5ed9846a2c56640aace518072b3342436ff9add' }),
   'shared/architecture-governance-vocabulary.mjs': Object.freeze({ sourceBlobSha: '086dce314dc661a0e169667e7ebc1bd8ec3a1631', contentSha256: 'f87c8d3f79133e4aa056ce7ffe1ee14e7f4283ac66a4b1f01e2744e2143ad646' }),
   'src/components/ContactForm.tsx': Object.freeze({ sourceBlobSha: 'a9253f4c2c8d775bbafa2977a7e62c4b2f8943db', contentSha256: '61ce8299bf918d853a14f054280395f232394a1071a5eae1e6d571adef47dde4' }),
   'shared/researched-vocabulary.json': Object.freeze({ sourceBlobSha: 'cf4e634f349481e2062e699d897fd5631249744c', contentSha256: '88a076f2f0e003ac0acfed62bfd6fd3cff50c8c64329054f402ec02abf7d5120' }),
@@ -64,6 +66,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
+  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '33c107c3638cd25133b72c0fd8728758aa50d33814b0982d7af0f2e75bf2db09',
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '0fdbaf01298830facf680c3c6c37bdeca30d5bf26994cd2c0da2e26c49dea801',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
   'index.html|src/features/home/HomePage.tsx': '462f90d4463ea291674957f32a8493ec4ad1c3c81446e523a4ab61be49208802',

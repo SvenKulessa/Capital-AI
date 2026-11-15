@@ -28,7 +28,7 @@ async function boundedText(response) {
   }
 }
 
-export async function productionReadback({ origin = CANONICAL_ORIGIN, full = false, fetchImpl = fetch } = {}) {
+export async function productionReadback({ origin = CANONICAL_ORIGIN, full = false, allowLocalePreview = false, fetchImpl = fetch } = {}) {
   const target = new URL(origin);
   if (target.protocol !== 'https:' || target.username || target.password || target.search || target.hash || target.pathname !== '/') {
     throw new Error('origin_must_be_https_without_credentials_or_path');
@@ -37,6 +37,7 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
     entry.contentType !== 'vocabulary-term' || index === SEO_CONTENT_MANIFEST.length - 1 ||
     entry === SEO_CONTENT_MANIFEST.find(item => item.contentType === 'vocabulary-term'));
   const checks = [];
+  const localePreviews = new Set();
   // Public HTTP status and deployment runtime provenance are independent of build attestation.
   const healthReadback = { httpStatus: null, status: 'NOT_PROVEN', buildIdentityBound: false };
   const add = (path, check, pass) => checks.push({ path, check, status: pass ? 'PASS' : 'FAIL' });
@@ -58,6 +59,15 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
   for (const entry of entries) {
     await get(entry.path, (response, html) => {
       add(entry.path, 'HTML_CONTENT_TYPE', /text\/html/i.test(response.headers.get('content-type') || ''));
+      if (allowLocalePreview && entry.contentType === 'localized-landing'
+        && response.headers.get('content-language') === entry.language
+        && response.headers.get('x-robots-tag') === 'noindex, nofollow'
+        && /<meta name="robots" content="noindex, nofollow"/.test(html)
+        && !/<link[^>]+(?:rel="canonical"|hreflang=)/i.test(html)) {
+        localePreviews.add(entry.path);
+        checks.push({ path: entry.path, check: 'LOCALIZED_LANDING', status: 'NOT_DEPLOYED' });
+        return;
+      }
       add(entry.path, 'CANONICAL', html.includes(`<link rel="canonical" href="${entry.canonical}"`));
       // Standalone legal documents use Google's default INDEX semantics and
       // intentionally have no React root. Still reject explicit indexing bans.
@@ -106,14 +116,19 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
       }
     });
   }
+  if (localePreviews.size) {
+    const expectedLocales = entries.filter(entry => entry.contentType === 'localized-landing').length;
+    add('/', 'CONSISTENT_LOCALE_DEPLOYMENT', localePreviews.size === expectedLocales);
+  }
   await get(X_ARTICLE.image, (response, svg) => add(X_ARTICLE.image, 'X_ARTICLE_SVG',
     /image\/svg\+xml/i.test(response.headers.get('content-type') || '')
     && /<svg\b/i.test(svg) && /<title(?:\s|>)/i.test(svg)));
   await get('/robots.txt', (_response, body) => add('/robots.txt', 'CANONICAL_SITEMAP', body.includes(`Sitemap: ${CANONICAL_ORIGIN}/sitemap.xml`)));
   await get('/sitemap.xml', (_response, body) => {
     const locations = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
-    add('/sitemap.xml', 'EXACT_INDEX_ALLOWLIST', locations.length === SEO_CONTENT_MANIFEST.length &&
-      new Set(locations).size === locations.length && SEO_CONTENT_MANIFEST.every(entry => locations.includes(entry.canonical)));
+    const expected = SEO_CONTENT_MANIFEST.filter(entry => !localePreviews.has(entry.path));
+    add('/sitemap.xml', 'EXACT_INDEX_ALLOWLIST', locations.length === expected.length &&
+      new Set(locations).size === locations.length && expected.every(entry => locations.includes(entry.canonical)));
   });
   for (const path of ['/llms.txt', '/sitemap.md']) {
     await get(path, (_response, body) => add(path, 'PUBLIC_DISCOVERY', body.includes(`${CANONICAL_ORIGIN}/learning`) &&
@@ -162,7 +177,8 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
   return {
     schema: 'CAPITAL_AI_PUBLIC_PRODUCTION_READBACK@1', observedAt: new Date().toISOString(),
     origin: target.origin, scope: full ? 'ALL_INDEX_ROUTES' : 'STATIC_AND_TWO_VOCABULARY_SAMPLES',
-    fetchedIndexRoutes: entries.length, seoStatus: checks.every(check => check.status === 'PASS') ? 'PASS' : 'FAIL',
+    fetchedIndexRoutes: entries.length, seoStatus: checks.some(check => check.status === 'FAIL') ? 'FAIL' : 'PASS',
+    localeDeployment: localePreviews.size ? 'NOT_DEPLOYED' : 'CHECKED',
     healthReadback, runtimeIdentity, commerce, productionReady: false, checks,
   };
 }
@@ -176,7 +192,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       if (!args[index + 1] || args[index + 1].startsWith('--')) throw new Error(`missing_${flag}_value`);
       return args[index + 1];
     };
-    const report = await productionReadback({ origin: value('--origin'), full: args.includes('--full') });
+    const report = await productionReadback({ origin: value('--origin'), full: args.includes('--full'), allowLocalePreview: args.includes('--allow-locale-preview') });
     const output = value('--output');
     if (output) await writeFile(output, JSON.stringify(report, null, 2) + '\n');
     console.log(JSON.stringify(report, null, 2));
