@@ -28,7 +28,7 @@ class UniverseBrandTests(unittest.TestCase):
         self.assertEqual(len(colors), 7)
         hub = (REPO / "shared" / "hub-branding.mjs").read_text(encoding="utf-8")
         for name, actual in zip(FAMILIES, colors):
-            match = re.search(r"\\b" + name + r":\\s*'(#(?:[a-fA-F0-9]{6}))'", hub)
+            match = re.search(r"\b" + name + r":\s*'(#(?:[a-fA-F0-9]{6}))'", hub)
             self.assertIsNotNone(match, f"hub colour missing: {name}")
             self.assertEqual(actual.lower(), match.group(1).lower())
 
