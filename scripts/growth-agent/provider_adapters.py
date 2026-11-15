@@ -199,7 +199,9 @@ class GitHubRenderActions:
             "head_sha": pr["head"]["sha"],
             "checks": checks,
             "applicable_checks_green": valid and self.assessment.applicable_checks_green is True,
-            "mergeable": pr.get("mergeable") is True and pr["base"]["sha"] == main_sha,
+            "mergeable": (pr.get("mergeable") is True
+                          and pr.get("mergeable_state") == "clean"
+                          and pr["base"]["sha"] == main_sha),
             "trust_boundaries_clear": self.assessment.trust_boundaries_clear is True,
             "scope_complete": self.assessment.scope_complete is True,
             "current_main": pr["base"]["sha"] == main_sha,

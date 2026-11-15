@@ -64,7 +64,9 @@ readback through a fixed-origin HTTPS client. The **only supported mutation** is
 `PUT /repos/SvenKulessa/Capital-AI/pulls/{pr}/merge`, using the expected
 PR head SHA. Render reads are strictly GET-only; no manual deployment is issued.
 
-The adapter checks branch naming, current Main and head, actual GitHub check
+The adapter checks branch naming, current Main and head, GitHub's native
+`mergeable_state == "clean"` (a merely true `mergeable` boolean is insufficient),
+actual GitHub check
 runs (including required Docker Security Gate and Domain Governance), applicable
 checks, unresolved/unknown results and a separately trusted semantic assessment.
 An unknown check skip, an incomplete check-run page or an unproven assessment
@@ -123,7 +125,9 @@ the offline `test_*.py` suites on relevant PRs using the pinned Python lock.
 Existing Docker Security Gate and Domain Governance are unchanged.
 
 The trusted CLI keeps state under `/var/lib/capital-ai-agent/checkpoints/`
-with the task-id-derived filename and reads the approval for PR 123 only
+with a collision-resistant filename derived from task ID, PR number, immutable
+PR head SHA and read-only/merge mode (never the raw task label) and reads the
+approval for PR 123 only
 from `/var/lib/capital-ai-agent/approvals/123.json`. Both directories must
 be configured owner-private by the existing trusted operator. No arbitrary
 checkpoint or approval filesystem path is accepted from CLI input.

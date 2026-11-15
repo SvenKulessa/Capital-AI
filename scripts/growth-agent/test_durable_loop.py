@@ -38,7 +38,8 @@ class FakeTransport:
                     "head": {"sha": B, "ref": "capital-ai-platform/checkpoint-20261115",
                              "repo": {"full_name": "SvenKulessa/Capital-AI"}},
                     "base": {"sha": A, "ref": "main"},
-                    "mergeable": True, "changed_files": 1}
+                    "mergeable": True, "mergeable_state": "clean",
+                    "changed_files": 1}
         if path == "/branches/main":
             return {"commit": {"sha": A}}
         if path.startswith("/commits/"):
