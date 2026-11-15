@@ -117,6 +117,27 @@ test('legacy GET and PUT preserve existing contract without fake CAS revision', 
   });
 });
 
+test('migrated legacy write-lock preserves draft and never retries a write',async()=> {
+  let writes=0;
+  await withMockFetch(async(url,init)=>{
+    if(String(url).endsWith('/api/auth/session')) {
+      return Response.json({authenticated:true,mfaRequired:false,user:{id:alice}});
+    }
+    if(init?.method==='PUT') {
+      writes++;
+      return Response.json({error:'notes_write_locked'},{status:409});
+    }
+    return Response.json({userId:alice,notes:'Existing notes'});
+  },async()=>{
+    const snapshot=await readNotes(alice);
+    assert.equal(snapshot.revision,'legacy');
+    await assert.rejects(saveNotes(snapshot,'Keep this draft'),(error:unknown)=>
+      error instanceof NotesClientError && error.code==='NOTES_WRITE_LOCKED');
+    assert.equal(snapshot.notes,'Existing notes');
+  });
+  assert.equal(writes,1);
+});
+
 test('legacy snapshot fails closed if feature changes before PUT',async()=>{
   let writes=0;
   await withMockFetch(async(url,init)=>{

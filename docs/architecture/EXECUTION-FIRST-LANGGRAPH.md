@@ -127,3 +127,16 @@ with the task-id-derived filename and reads the approval for PR 123 only
 from `/var/lib/capital-ai-agent/approvals/123.json`. Both directories must
 be configured owner-private by the existing trusted operator. No arbitrary
 checkpoint or approval filesystem path is accepted from CLI input.
+
+## Post-merge authorization and runtime hardening
+
+The merge node rechecks the **current** `Authority` after any SQLite resume;
+a revoked grant cannot execute a previously scheduled merge. The trusted worker
+binds its private 15-minute assessment's exact PR head/base SHA to the adapter;
+head or base drift invalidates the authorization even after initial CLI review.
+Render readback uses the most recent active deployment, not an older historical
+successful deployment, and runtime verification repeats deployment identity
+comparison immediately before checking public `/healthz`.
+
+The existing provider adapter and SQLite saver remain the sole implementation;
+no second provider/CLI/checkpoint stack is introduced.
