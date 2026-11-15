@@ -92,6 +92,9 @@ test('approved proposal preserves verifiable provenance alongside its own infogr
   assert.equal(proposed.stories[2].provenance.approvalSha256, homeStoryDigest(candidate));
   assert.equal(proposed.stories[2].provenance.sourceRights, 'LINK_ONLY');
   assert.equal(selectHomeEdition(proposed, [], asOf), proposed);
+  const tampered = {...proposed, stories: proposed.stories.map((item, i) =>
+    i === 2 ? {...item, title: 'Veränderter veröffentlichter Titel'} : item)};
+  assert.throws(() => selectHomeEdition(tampered, [], asOf), /provenance digest mismatch/);
 });
 
 test('invalid candidates fail closed even when a forged approval manifest is supplied', () => {
