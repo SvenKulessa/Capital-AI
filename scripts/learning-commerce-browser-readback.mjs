@@ -129,14 +129,14 @@ try {
     // rolling deployment both public home layouts are acceptable, but both
     // MUST offer real learning and commerce navigation; documentation MUST
     // still expose all four evidence-neutral demos (checked below).
-    await navigate('/', `!!document.querySelector('section[aria-label="Produkt entdecken"] button')
+    await navigate('/', `!!document.querySelector('section[aria-label="CAPITAL-AI entdecken"] button,section[aria-label="Produkt entdecken"] button')
       || document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
     const homepage = await evaluate(`(() => {
       const legacy=document.querySelectorAll('#market-blueprint-catalog article').length===4;
       if(legacy) return {mode:'blueprint-cards',links:['/learning','/pricing','/marketscreener/dokumentation'].every(
         path=>!!document.querySelector('#market-blueprint-catalog a[href="'+path+'"]'))};
-      const cta=document.querySelector('section[aria-label="Produkt entdecken"] button');
-      return {mode:'product-discovery',links:!!cta && cta.textContent.includes('Produkt entdecken')
+      const cta=document.querySelector('section[aria-label="CAPITAL-AI entdecken"] button,section[aria-label="Produkt entdecken"] button');
+      return {mode:'product-discovery',links:!!cta && /CAPITAL-AI entdecken|Produkt entdecken/.test(cta.textContent)
         && ['/learning','/pricing'].every(path=>!!document.querySelector('a[href="'+path+'"]'))};
     })()`);
     assert.equal(homepage.links, true, 'Homepage learning/commerce entrypoints missing');

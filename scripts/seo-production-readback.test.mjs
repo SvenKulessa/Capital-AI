@@ -239,3 +239,31 @@ test('raw Blueprint server contract fails closed on absent preview, CTA, noindex
   assert.ok(redirect.checks.some(item => item.path === path
     && item.check === 'HTTP_200_NO_REDIRECT' && item.status === 'FAIL'));
 });
+
+test('PR production baseline tolerates a complete old locale preview deployment, while manual readback stays strict', async () => {
+  const locales = SEO_CONTENT_MANIFEST.filter(entry => entry.contentType === 'localized-landing');
+  const previewFixture = (paths) => (url, options) => {
+    const path = new URL(url).pathname;
+    const locale = locales.find(entry => entry.path === path && paths.includes(path));
+    if (locale) return new Response('<meta name="robots" content="noindex, nofollow">', {
+      headers: {
+        'content-type': 'text/html',
+        'content-language': locale.language,
+        'x-robots-tag': 'noindex, nofollow',
+      },
+    });
+    if (path === '/sitemap.xml') return new Response('<urlset>' + SEO_CONTENT_MANIFEST
+      .filter(entry => !paths.includes(entry.path))
+      .map(entry => `<url><loc>${entry.canonical}</loc></url>`).join('') + '</urlset>');
+    return fixture(url, options);
+  };
+  const oldDeployment = previewFixture(locales.map(entry => entry.path));
+  const previewReport = await productionReadback({ fetchImpl: oldDeployment, allowLocalePreview: true });
+  assert.equal(previewReport.seoStatus, 'PASS');
+  assert.equal(previewReport.localeDeployment, 'NOT_DEPLOYED');
+  assert.equal((await productionReadback({ fetchImpl: oldDeployment })).seoStatus, 'FAIL');
+  const partialReport = await productionReadback({
+    fetchImpl: previewFixture([locales[0].path]), allowLocalePreview: true,
+  });
+  assert.equal(partialReport.seoStatus, 'FAIL');
+});
