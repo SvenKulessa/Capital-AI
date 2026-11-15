@@ -7,8 +7,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux; \
+    apt-get -o APT::Update::Error-Mode=any update -qq; \
+    apt-get install -y --no-install-recommends ca-certificates; \
+    test -s /etc/ssl/certs/ca-certificates.crt; \
     printf '%s\n' 'deb [signed-by=/usr/local/share/keyrings/postgres.gpg.asc] https://apt-archive.postgresql.org/pub/repos/apt bookworm-pgdg-archive main' > /etc/apt/sources.list.d/pgdg-archive.list; \
-    apt-get update -qq; \
+    apt-get -o APT::Update::Error-Mode=any update -qq; \
     apt-mark hold postgresql-17 postgresql-client-17; \
     apt-get install -y --no-install-recommends \
       ca-certificates git build-essential postgresql-server-dev-17=17.11-1.pgdg12+2 \
@@ -16,8 +19,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     test "$(/usr/lib/postgresql/17/bin/postgres --version)" = 'postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)'; \
     test "$(dpkg-query -W -f='${Version}' postgresql-server-dev-17)" = '17.11-1.pgdg12+2'
 
-RUN --mount=type=cache,target=/tmp/build-cache,sharing=locked \
-    set -eux; \
+RUN set -eux; \
     git clone https://github.com/supabase/pg_net.git /tmp/pg_net; \
     git -C /tmp/pg_net checkout 698fb055f666366a78c112b0578b0a5652ddbcfa; \
     make -C /tmp/pg_net PG_CONFIG=/usr/lib/postgresql/17/bin/pg_config; \
