@@ -105,6 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [authStatus, setAuthStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [sessionRetry, setSessionRetry] = useState(0);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isDrawerAccountExpanded, setIsDrawerAccountExpanded] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -238,7 +239,10 @@ export const Header: React.FC<HeaderProps> = ({
           aria-expanded={isMenuOpen}
           aria-controls="capital-ai-mobile-navigation"
           aria-haspopup="dialog"
-          onClick={() => setIsMenuOpen(true)}
+          onClick={() => {
+            setIsDrawerAccountExpanded(false);
+            setIsMenuOpen(true);
+          }}
           className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 active:bg-white/15 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition-all shadow-[0_0_12px_rgba(249,191,33,0.12)] cursor-pointer shrink-0"
         >
           <Menu className="w-5 h-5 stroke-[2]" />
@@ -409,13 +413,24 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   ) : authSession?.authenticated ? (
                     <div className={`space-y-1 rounded-2xl border p-2 ${isOwner ? "border-red-400/35 bg-red-500/5" : "border-emerald-400/25 bg-emerald-500/5"}`}>
-                      <div className="px-2 py-2">
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className={`h-4 w-4 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
-                          <span className={`truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
-                        </div>
-                        {accountTier && <p className={`mt-1 pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
-                      </div>
+                      <button
+                        id="drawer-account-toggle"
+                        type="button"
+                        aria-expanded={isDrawerAccountExpanded}
+                        aria-controls="drawer-account-links"
+                        onClick={() => setIsDrawerAccountExpanded(expanded => !expanded)}
+                        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-2 py-2 text-left hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <ShieldCheck className={`h-4 w-4 shrink-0 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
+                            <span className={`min-w-0 truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
+                          </span>
+                          {accountTier && <span className={`mt-1 block truncate pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</span>}
+                        </span>
+                        <ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 text-slate-300 transition-transform ${isDrawerAccountExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                      <div id="drawer-account-links" role="group" aria-label={nav.profile} hidden={!isDrawerAccountExpanded} className="space-y-1">
                       {[
                         { path: '/profile' as const, label: nav.profile, icon: User },
                         { path: '/profile/security' as const, label: nav.security, icon: ShieldCheck },
@@ -429,7 +444,7 @@ export const Header: React.FC<HeaderProps> = ({
                             key={item.path}
                             type="button"
                             onClick={() => navigateAccount(item.path)}
-                            className="flex min-h-10 w-full items-center justify-between rounded-xl px-3 text-xs font-bold text-slate-200 hover:bg-white/10"
+                            className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-xs font-bold text-slate-200 hover:bg-white/10"
                           >
                             <span className="flex items-center gap-2"><Icon className="h-4 w-4" /> {item.label}</span>
                             <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
@@ -439,10 +454,11 @@ export const Header: React.FC<HeaderProps> = ({
                       <button
                         type="button"
                         onClick={() => void logout()}
-                        className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-xs font-bold text-rose-200 hover:bg-rose-500/10"
+                        className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                       >
                         <LogOut className="h-4 w-4" /> {nav.logout}
                       </button>
+                      </div>
                     </div>
                   ) : (
                     <a

@@ -581,3 +581,26 @@ test('roadmap OSS tooling navigator connects existing skills, live catalog paths
   assert.match(markup, /\/studio\?tab=content/);
   assert.doesNotMatch(markup, /type="submit"/);
 });
+
+
+test('mobile account drawer collapses by default and preserves authorized actions', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /const \[isDrawerAccountExpanded, setIsDrawerAccountExpanded\] = useState\(false\)/);
+  assert.match(header, /id="drawer-account-toggle"/);
+  assert.match(header, /aria-expanded=\{isDrawerAccountExpanded\}/);
+  assert.match(header, /aria-controls="drawer-account-links"/);
+  assert.match(header, /setIsDrawerAccountExpanded\(expanded => !expanded\)/);
+  assert.match(header, /id="drawer-account-links"[^>]*hidden=\{!isDrawerAccountExpanded\}/);
+  assert.match(header, /setIsDrawerAccountExpanded\(false\);\s*setIsMenuOpen\(true\)/);
+  for (const path of [
+    '/profile', '/profile/security', '/profile/rights',
+    '/profile/subscription', '/profile/dashboard',
+  ]) {
+    assert.ok(header.includes(`path: '${path}' as const`), `Missing account route: ${path}`);
+  }
+  assert.match(header, /onClick=\{\(\) => void logout\(\)\}/);
+  assert.match(header, /authSession\?\.authenticated \? \(/);
+  assert.match(header, /min-h-11 w-full items-center justify-between gap-2 rounded-xl px-2 py-2/);
+  assert.match(header, /aria-label=\{nav\.hubs\}|\{nav\.hubs\}/);
+  assert.match(header, /hub-sidebar-card min-h-11/);
+});
