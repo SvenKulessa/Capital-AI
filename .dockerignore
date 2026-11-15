@@ -123,6 +123,7 @@
 !shared/
 !shared/hub-routes.mjs
 !shared/news-lifecycle.mjs
+!shared/news-archive-rights.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -178,6 +179,7 @@
 !scripts/growth/home-editorial-edition.test.mjs
 !scripts/growth/news-lifecycle-cli.mjs
 !scripts/growth/news-lifecycle.test.mjs
+!scripts/growth/news-lifecycle-materialize.mjs
 !scripts/generate-chart-learning.tsx
 
 !public/learning/
