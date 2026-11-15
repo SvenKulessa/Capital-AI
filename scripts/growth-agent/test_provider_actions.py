@@ -103,7 +103,7 @@ class ProviderTests(unittest.TestCase):
         actions = adapter(fake, prepared_head_verified=True, scope_complete=True,
                           trust_boundaries_clear=True)
         s = loop.execute(actions, loop.Authority(allow_changes=True, allow_merge=True), "test:permission")
-        self.assertEqual(s["status"], "MERGE_NOT_PROVEN")
+        self.assertEqual(s["status"], "BLOCKED")
         self.assertEqual(fake.merged_count, 0)
 
     def test_missing_risk_or_scope_attestation_blocks_merges(self):
