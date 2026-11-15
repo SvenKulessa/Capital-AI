@@ -119,6 +119,140 @@
   .editorial-card { grid-template-rows: subgrid; grid-row: span 4; }
 }
 
+
+/*
+ * CAPITAL_AI_UNIVERSE@1 — homepage editorial presentation only.
+ * Mirror the seven decorative families in shared/hub-branding.mjs.
+ * DO NOT apply these selectors to Hero/BrandGlobe, hub navigation or status.
+ * All artwork is CSS-only; source data and article admission are unchanged.
+ */
+.home-editorial {
+  --universe-cyan: #67E8F9;
+  --universe-violet: #B794F4;
+  --universe-gold: #F9BF21;
+  --universe-pink: #F9A8D4;
+  --universe-rose: #F87171;
+  --universe-blue: #60A5FA;
+  --universe-green: #4ADE80;
+  position: relative;
+  isolation: isolate;
+  padding-inline: clamp(.5rem, 2vw, 1.25rem);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse at 7% 12%, rgba(183,148,244,.12), transparent 40%),
+    radial-gradient(ellipse at 93% 82%, rgba(103,232,249,.10), transparent 45%),
+    linear-gradient(150deg, #081225 2%, #070d1c 55%, #101125);
+}
+.home-editorial::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: .5;
+  background:
+    radial-gradient(circle at 13% 30%, #e2e8f0 0 1px, transparent 2px),
+    radial-gradient(circle at 56% 9%, #b9b7ff 0 1px, transparent 2px),
+    radial-gradient(circle at 83% 61%, #a5f3fc 0 1px, transparent 2px),
+    radial-gradient(circle at 39% 78%, #f9a8d4 0 1px, transparent 2px);
+}
+.home-editorial .editorial-header {
+  position: relative;
+  padding-top: 1.5rem;
+  border-color: transparent;
+}
+.home-editorial .editorial-header::before,
+.home-editorial .editorial-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    var(--universe-rose) 0%,
+    var(--universe-pink) 17%,
+    var(--universe-gold) 33%,
+    var(--universe-green) 50%,
+    var(--universe-cyan) 67%,
+    var(--universe-blue) 83%,
+    var(--universe-violet) 100%);
+}
+.home-editorial .editorial-header h2 {
+  text-shadow: 0 0 24px rgba(183,148,244,.24);
+}
+.home-editorial .editorial-card {
+  --universe-accent: var(--universe-cyan);
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--universe-accent) 43%, #263044);
+  background:
+    radial-gradient(ellipse at 92% 0%, color-mix(in srgb, var(--universe-accent) 13%, transparent), transparent 53%),
+    linear-gradient(145deg, #13213b, #080f20 80%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.065), 0 18px 35px rgba(0,0,0,.2);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.home-editorial .editorial-card:nth-child(3n + 1) { --universe-accent: var(--universe-rose); }
+.home-editorial .editorial-card:nth-child(3n + 2) { --universe-accent: var(--universe-blue); }
+.home-editorial .editorial-card:nth-child(3n) { --universe-accent: var(--universe-violet); }
+.home-editorial .editorial-card::before { left: 1rem; right: 1rem; height: 2px; }
+.home-editorial .editorial-card:hover,
+.home-editorial .editorial-card:focus-within {
+  border-color: var(--universe-accent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.065), 0 14px 36px color-mix(in srgb, var(--universe-accent) 12%, transparent);
+}
+.home-editorial .editorial-topic {
+  color: var(--universe-accent);
+  font-size: .75rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.home-editorial .editorial-graphic {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--universe-accent) 36%, #344860);
+  background:
+    radial-gradient(ellipse 68% 65% at 82% 24%, transparent 53%, color-mix(in srgb, var(--universe-accent) 17%, transparent) 54%, transparent 56%),
+    radial-gradient(circle at 94% 0%, color-mix(in srgb, var(--universe-accent) 20%, transparent), transparent 54%),
+    linear-gradient(155deg, #121d37, #080e1d);
+}
+.home-editorial .editorial-graphic figcaption,
+.home-editorial .editorial-graphic dd { position: relative; }
+.home-editorial .editorial-node {
+  position: relative;
+  border-color: var(--universe-gold);
+  color: #fff3b5;
+  background: #30251b;
+}
+.home-editorial .editorial-graphic ul li {
+  background: #1b293e;
+  border: 1px solid var(--universe-cyan);
+  color: #f5f8ff;
+}
+.home-editorial .editorial-graphic ul li:nth-child(7n + 1) { border-color: var(--universe-green); }
+.home-editorial .editorial-graphic ul li:nth-child(7n + 2) { border-color: var(--universe-pink); }
+.home-editorial .editorial-graphic ul li:nth-child(7n + 3) { border-color: var(--universe-violet); }
+.home-editorial .editorial-graphic dl div:nth-child(7n + 1) { border-color: var(--universe-rose); }
+.home-editorial .editorial-graphic dl div:nth-child(7n + 2) { border-color: var(--universe-gold); }
+.home-editorial .editorial-graphic dl div:nth-child(7n + 3) { border-color: var(--universe-green); }
+.home-editorial .editorial-graphic ol li:nth-child(7n + 1)::marker { color: var(--universe-cyan); }
+.home-editorial .editorial-graphic ol li:nth-child(7n + 2)::marker { color: var(--universe-pink); }
+.home-editorial .editorial-graphic ol li:nth-child(7n + 3)::marker { color: var(--universe-gold); }
+.home-editorial .editorial-card footer a { color: #a5effc; }
+.home-editorial .editorial-card footer a:focus-visible {
+  outline-color: var(--universe-gold);
+}
+@media (max-width: 39.99rem) {
+  .home-editorial { width: calc(100% - 1rem); padding-inline: .5rem; }
+  .home-editorial .editorial-card { padding: 1rem; }
+  .home-editorial .editorial-graphic { overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-editorial .editorial-card { transition: none; }
+}
+
 .editorial-fallback {
   padding: 1.25rem;
   border: 1px solid var(--editorial-line);
