@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import {
-  advanceNewsEdition, retireNews, newsArchivePath, proposeMarketImpact, newsBiCsv, publishedNews,
+  advanceNewsEdition, retireNews, newsArchivePath, proposeMarketImpact, appendMarketImpactAssessment, newsBiImpactRows, newsBiCsv, publishedNews,
 } from '../../shared/news-lifecycle.mjs';
 import { selectHomeEdition } from './home-editorial-edition.mjs';
 import { archiveContentSnapshot, archiveRightsAdmitted, marketImpactAdmitted, NEWS_ARCHIVE_REVIEW_VERSION, NEWS_ARCHIVE_USE_CASES } from '../../shared/news-archive-rights.mjs';
@@ -118,4 +118,21 @@ test('impact observation is fixed to the requested publication-plus-horizon date
   assert.ok(proposeMarketImpact(story,input).proposedScore >= 0);
   assert.throws(() => proposeMarketImpact(story,{...input,observedAt:'2026-11-27'}), /window/);
   assert.throws(() => proposeMarketImpact(story,{...input,observedAt:'2026-11-29'}), /window/);
+});
+
+test('retrospective observations are append-only and BI impact facts are independently admitted', () => {
+  const story = retireNews(original,nextWith(original,1),empty).overview[0];
+  const input={asset:'POL',benchmark:'MARKET',provider:'licensed',licenseEvidenceRef:'rights',
+    dataEvidenceRef:'evidence',reviewer:'owner',assessedAt:'2026-12-15',observedAt:'2026-11-28',
+    assetBefore:100,assetAfter:110,benchmarkBefore:100,benchmarkAfter:105,
+    persistence:2,breadth:3,windowDays:30};
+  const first=appendMarketImpactAssessment(story,input);
+  assert.equal(story.marketImpact.assessments.length,0);
+  assert.equal(first.marketImpact.assessments.length,1);
+  assert.equal(first.marketImpact.status,'NOT_PROVEN');
+  assert.equal(first.marketImpact.assessments[0].status,'REVIEW_REQUIRED');
+  assert.throws(()=>appendMarketImpactAssessment(first,input),/Duplicate/);
+  assert.deepEqual(newsBiImpactRows([first]),[],'no BI leak of unapproved impact facts');
+  const admitted={...first,marketImpact:{...first.marketImpact,status:'VERIFIED',verifiedScore:40}};
+  assert.deepEqual(newsBiImpactRows([admitted]),[],'record flag alone never grants market data redistribution');
 });
