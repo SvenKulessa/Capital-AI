@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
-import {editorialScore, selectHomeEdition} from './home-editorial-edition.mjs';
+import {editorialScore, scoreHomeCandidates, selectHomeEdition} from './home-editorial-edition.mjs';
+import {homeStoryDigest} from './home-editorial-review.mjs';
 
 const published = JSON.parse(await readFile(new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url)));
 const example = published.stories[0];
@@ -19,8 +20,18 @@ const candidate = {
   editorial: {relevance: 5, impact: 5},
 };
 
+const approved = {
+  schema: 'CAPITAL_AI_HOME_EDITORIAL_APPROVALS@1',
+  entries: [{
+    id: candidate.id, digest: homeStoryDigest(candidate), sourceUrl: candidate.source.url,
+    sourceDate: candidate.source.date, status: 'APPROVED', reviewer: 'OWNER',
+    scope: 'HOMEPAGE', facts: 'VERIFIED', sourceRights: 'LINK_ONLY',
+    graphicRights: 'ORIGINAL', reviewedAt: '2026-11-15T05:00:00Z',
+  }],
+};
+
 test('replaces the weakest eligible entry and keeps its graphic and source together', () => {
-  const next = selectHomeEdition(edition, [candidate, candidate], asOf);
+  const next = selectHomeEdition(edition, [candidate, candidate], asOf, approved);
   assert.equal(next.stories.length, 3);
   assert.equal(next.stories[2].id, candidate.id);
   assert.deepEqual(next.stories[2].graphic, candidate.graphic);
@@ -41,4 +52,52 @@ test('rejects malformed sources, future dates and absent visuals', () => {
   assert.throws(() => selectHomeEdition(edition, [{...candidate, graphic: null}], asOf), /Invalid editorial/);
   assert.throws(() => selectHomeEdition(edition, [{...candidate, source: {...candidate.source, url: 'https://solana.com.evil.test/news'}}], asOf), /allowlist/);
   assert.throws(() => selectHomeEdition(edition, [{...candidate, source: {...candidate.source, date: '2026-11-16'}}], asOf), /Future/);
+});
+
+
+test('scores every four-hour candidate batch read-only and never claims publication authority', () => {
+  const ranked = scoreHomeCandidates(edition, [candidate, candidate], asOf);
+  assert.equal(ranked.length, 2);
+  assert.equal(ranked[0].eligibleForReview, true);
+  assert.equal(ranked[0].score, 98);
+  assert.equal(ranked[0].publicationAllowed, false);
+  assert.equal(ranked[0].digest, homeStoryDigest(candidate));
+  assert.equal(ranked[1].reason, 'DUPLICATE');
+  assert.equal(edition.stories.length, 3);
+});
+
+test('review is an independent fail-closed prerequisite, not an input flag', () => {
+  assert.equal(selectHomeEdition(edition, [{...candidate, approved: true}], asOf), edition);
+  assert.equal(selectHomeEdition(edition, [candidate], asOf, {entries: approved.entries}), edition);
+  const tampered = [{...candidate, summary: 'Veränderter, aber nicht freigegebener Text'}];
+  assert.equal(selectHomeEdition(edition, tampered, asOf, approved), edition);
+  const variants = [
+    {digest: '0'.repeat(64)}, {sourceDate: '2026-11-13'},
+    {sourceUrl: 'https://xrpl.org/blog/2026/other'},
+    {facts: 'NOT_PROVEN'}, {sourceRights: 'UNKNOWN'}, {graphicRights: 'THIRD_PARTY'},
+    {reviewer: 'MODEL'}, {scope: 'SOCIAL'}, {status: 'DRAFT'},
+    {reviewedAt: '2026-11-07T05:00:00Z'}, {reviewedAt: '2026-11-16T00:00:00Z'},
+  ];
+  for (const variation of variants) {
+    const manifests = {...approved, entries: [{...approved.entries[0], ...variation}]};
+    assert.equal(selectHomeEdition(edition, [candidate], asOf, manifests), edition,
+      'must reject ' + JSON.stringify(variation));
+  }
+  const duplicateApproval = {...approved, entries: [...approved.entries, ...approved.entries]};
+  assert.equal(selectHomeEdition(edition, [candidate], asOf, duplicateApproval), edition);
+});
+
+test('approved proposal preserves verifiable provenance alongside its own infographic', () => {
+  const proposed = selectHomeEdition(edition, [candidate], asOf, approved);
+  assert.equal(proposed.stories[2].provenance.approvalSha256, homeStoryDigest(candidate));
+  assert.equal(proposed.stories[2].provenance.sourceRights, 'LINK_ONLY');
+  assert.equal(selectHomeEdition(proposed, [], asOf), proposed);
+});
+
+test('invalid candidates fail closed even when a forged approval manifest is supplied', () => {
+  const malformed = {...candidate, source: {...candidate.source, url: 'https://solana.com@evil.test/news'}};
+  assert.throws(() => selectHomeEdition(edition, [malformed], asOf, approved), /allowlist/);
+  assert.throws(() => scoreHomeCandidates(edition, [{...candidate, graphic: null}], asOf), /Invalid editorial/);
+  assert.throws(() => scoreHomeCandidates(edition, [{...candidate, source: {...candidate.source, date: '2026-11-16'}}], asOf), /Future/);
+  assert.throws(() => scoreHomeCandidates(edition, Array(21).fill(candidate), asOf), /Invalid editorial edition/);
 });
