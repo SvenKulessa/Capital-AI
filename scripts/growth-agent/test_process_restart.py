@@ -47,7 +47,7 @@ class SyntheticActions:
                 "current_main":True,"no_active_hold":True,"run_ids":[1,2]}
     def merge(self, state):
         with open(audit, "a", encoding="ascii") as handle:
-            handle.write("synthetic_merge_once\\n")
+            handle.write("synthetic_merge_once\n")
         return {"merged":True,"sha":M,"expected_head_sha":H}
     def observe_deployment(self, state):
         return {"deployed":True,"deployed_sha":M}
