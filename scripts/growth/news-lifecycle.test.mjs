@@ -10,6 +10,7 @@ import {
 import { selectHomeEdition } from './home-editorial-edition.mjs';
 import { archiveContentSnapshot, archiveRightsAdmitted, marketImpactAdmitted, NEWS_ARCHIVE_REVIEW_VERSION, NEWS_ARCHIVE_USE_CASES } from '../../shared/news-archive-rights.mjs';
 import { plannedNewsFiles, writeNewsLifecycle } from './news-lifecycle-materialize.mjs';
+import { approvedHomeCandidates, assertHomeEditionAdmission } from './news-lifecycle-home-admission.mjs';
 
 const original = JSON.parse(readFileSync(new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url), 'utf8'));
 const empty = {version: 1, overview: [], archive: []};
@@ -135,4 +136,35 @@ test('retrospective observations are append-only and BI impact facts are indepen
   assert.deepEqual(newsBiImpactRows([first]),[],'no BI leak of unapproved impact facts');
   const admitted={...first,marketImpact:{...first.marketImpact,status:'VERIFIED',verifiedScore:40}};
   assert.deepEqual(newsBiImpactRows([admitted]),[],'record flag alone never grants market data redistribution');
+});
+
+test('unmerged or empty independent homepage rights ledger cannot approve new candidate editions', async () => {
+  const forged = nextWith(original, 1).stories[0];
+  const allowed = await approvedHomeCandidates([forged], '2026-11-15');
+  assert.deepEqual(allowed, [], 'a candidate score or JSON claim is not a rights-holder receipt');
+  await assert.rejects(
+    () => assertHomeEditionAdmission(original, nextWith(original, 1)),
+    /HOME_EDITORIAL_RIGHTS_NOT_ADMITTED/,
+  );
+  await assert.rejects(
+    () => assertHomeEditionAdmission(original, {
+      ...original,
+      stories: original.stories.map((item, i) => i === 0 ? {...item, summary:'tampered'} : item),
+    }),
+    /HOME_EDITION_SNAPSHOT_MUTATION/,
+  );
+  assert.equal(await assertHomeEditionAdmission(original, original), true);
+});
+
+test('direct materializer cannot replace reviewed homepage without independent approval even if index is empty', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'news-admission-'));
+  try {
+    await writeNewsLifecycle({edition:original, index:empty}, dir);
+    await assert.rejects(
+      () => writeNewsLifecycle({edition:nextWith(original, 1), index:empty}, dir),
+      /HOME_EDITORIAL_RIGHTS_NOT_ADMITTED/,
+    );
+    const current = JSON.parse(await readFile(join(dir,'src/features/home/homeEditorialEdition.json'),'utf8'));
+    assert.deepEqual(current, original, 'denied materialization must not mutate stored edition');
+  } finally { rmSync(dir,{recursive:true,force:true}); }
 });
