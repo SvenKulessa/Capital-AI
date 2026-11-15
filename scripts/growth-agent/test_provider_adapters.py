@@ -11,7 +11,7 @@ for name in ("auto_loop", "provider_adapters"):
     sys.modules[name] = module
     spec.loader.exec_module(module)
 
-from provider_adapters import GitHubRenderActions, TrustedAssessment, SafeHTTP
+from provider_adapters import GitHubRenderActions, TrustedAssessment, SafeHTTP, MERGE_URL_RE
 
 MAIN = "a" * 40
 HEAD = "b" * 40
@@ -170,6 +170,13 @@ class ProviderAdapterTests(unittest.TestCase):
         for path in ("/deploys/../secrets", "/deploys?limit=100"):
             with self.assertRaises(ValueError):
                 t.render(path)
+
+    def test_merge_url_regex_does_not_match_spoofed_host(self):
+        self.assertIsNotNone(MERGE_URL_RE.fullmatch(
+            "https://api.github.com/repos/SvenKulessa/Capital-AI/pulls/42/merge"))
+        for spoof in ("https://apiXgithubYcom/repos/SvenKulessa/Capital-AI/pulls/42/merge",
+                      "https://api.githubXcom/repos/SvenKulessa/Capital-AI/pulls/42/merge"):
+            self.assertIsNone(MERGE_URL_RE.fullmatch(spoof))
 
     def test_no_redirect_or_other_domain_or_manual_deploy(self):
         t = SafeHTTP(github_token="sample", render_token="sample")

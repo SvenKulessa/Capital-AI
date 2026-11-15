@@ -18,6 +18,8 @@ REQUIRED = ("Docker Security Gate", "Domain Governance")
 OPTIONAL_SKIP = frozenset(("Supabase Preview", "Production Handoff Gate", "publish_candidate"))
 BRANCH_RE = re.compile(r"^capital-ai-(product|market|platform|trust|growth)/[a-z0-9][a-z0-9._-]*-[0-9]{8}$")
 HEX40 = re.compile(r"^[a-f0-9]{40}$")
+# Escape dots: DNS labels must match exactly, never wildcard hosts.
+MERGE_URL_RE = re.compile(r"https://api\.github\.com/repos/SvenKulessa/Capital-AI/pulls/[0-9]+/merge")
 
 
 def sha(value):
@@ -57,7 +59,7 @@ class SafeHTTP:
                 or url == "https://capital-ai.online/healthz"):
             raise ValueError("origin outside fixed provider allowlist")
         if method not in ("GET", "PUT") or (method == "PUT" and
-                not re.fullmatch(r"https://api.github.com/repos/SvenKulessa/Capital-AI/pulls/[0-9]+/merge", url)):
+                MERGE_URL_RE.fullmatch(url) is None):
             raise ValueError("unsupported mutation")
         if method == "PUT" and not token:
             raise ValueError("GitHub authorization missing")
