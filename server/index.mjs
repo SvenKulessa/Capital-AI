@@ -52,7 +52,9 @@ import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
 import { PUBLIC_SEARCH_FOCUS } from '../shared/public-search-focus.mjs';
 import { seoContentForPath } from '../shared/seo-content-manifest.mjs';
 import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
-import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
+import { resolveLocale, localeFromLandingPath, localizedLandingPath, landingAlternatesForPath } from '../shared/locale-policy.mjs';
+import { LANGUAGES, messages } from '../src/i18n/messages.ts';
+import { sectionMessages } from '../src/i18n/landingSectionCopy.ts';
 import {
   isSeoIndexable,
   isSeoPublicImage,
@@ -173,26 +175,35 @@ function injectSeoMetadata(html, pathname) {
   return body;
 }
 
-// Non-indexable until complete locale-specific body content, legal review and crawl acceptance.
-const LOCALE_LANDING_PREVIEWS = Object.freeze({
-  de: ['CAPITAL-AI | Marktanalyse und BYOK', 'Marktanalyse, transparente Modelle und persönliche Datenprovider-Einstellungen.'],
-  en: ['CAPITAL-AI | Market Intelligence and BYOK', 'Explore market analysis, transparent scoring tools and personal data-provider settings.'],
-  it: ['CAPITAL-AI | Analisi dei mercati e BYOK', 'Esplora analisi dei mercati, strumenti di scoring trasparenti e impostazioni dei tuoi dati.'],
-  fr: ['CAPITAL-AI | Analyse de marché et BYOK', 'Découvrez les analyses de marché, des outils de notation transparents et vos fournisseurs de données.'],
-  pt: ['CAPITAL-AI | Análise de mercados e BYOK', 'Explore análises de mercado, ferramentas transparentes de scoring e preferências de fontes de dados.'],
-  es: ['CAPITAL-AI | Análisis de mercados y BYOK', 'Explora análisis de mercados, herramientas de puntuación transparentes y ajustes de proveedores de datos.'],
-});
-function localizeNonIndexableLandingHtml(html, locale) {
-  const [title, description] = LOCALE_LANDING_PREVIEWS[locale];
-  const ogLocale = ({de:'de_DE',en:'en_US',it:'it_IT',fr:'fr_FR',pt:'pt_PT',es:'es_ES'})[locale];
+function localizedLandingHtml(html, locale) {
+  const copy = messages[locale];
+  const sections = sectionMessages[locale];
+  const languages = LANGUAGES.map(({ code, name }) =>
+    `<li><a href="${localizedLandingPath(code)}" lang="${code}" hreflang="${code}"${code === locale ? ' aria-current="page"' : ''}>${escapeHtml(name)}</a></li>`).join('');
+  const snapshot = `<main class="localized-landing"><header>
+    <p>CAPITAL-AI</p>
+    <h1>${escapeHtml(copy.hero1)} ${escapeHtml(copy.hero2)}</h1>
+    <p>${escapeHtml(copy.heroDescription)}</p>
+    <a href="/learning">${escapeHtml(copy.heroOpenLearning)}</a>
+  </header><section>
+    <h2>${escapeHtml(copy.pillarAi)}</h2>
+    <p>${escapeHtml(sections.hubMarketDescription)}</p>
+    <a href="/marketscreener">${escapeHtml(copy.heroAnalysisDemo)}</a>
+  </section><nav aria-label="${escapeHtml(copy.language)}"><ul>${languages}</ul></nav>
+  <footer><a href="/impressum" hreflang="de">${escapeHtml(copy.imprint)}</a>
+    <a href="/datenschutz" hreflang="de">${escapeHtml(copy.privacy)}</a>
+    <a href="/agb" hreflang="de">${escapeHtml(copy.terms)}</a>
+  </footer></main>`;
   return html
-    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
-    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
-    .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
-    .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
-    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, `$1${ogLocale}$2`)
-    .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
-    .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`);
+    .replace(/\s*<link rel="alternate" type="text\/markdown" href="\/index\.md"\s*\/?>/, '')
+    .replace(/\s*<noscript>[\s\S]*?<\/noscript>/, '')
+    .replace('<div id="root"></div>', () => `<div id="root">${snapshot}</div>`);
+}
+
+function injectLandingAlternates(html, pathname) {
+  const links = landingAlternatesForPath(pathname).map(([language, url]) =>
+    `<link rel="alternate" hreflang="${language}" href="${url}">`).join('');
+  return links ? html.replace('</head>', () => links + '</head>') : html;
 }
 
 function applySeoIndexingPolicy(html, pathname) {
@@ -654,6 +665,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
+  const pathLocale = localeFromLandingPath(publicPath);
+  const seoCanonicalPath = pathLocale ? localizedLandingPath(pathLocale) : publicPath;
   const documentRedirect = Object.entries(DOCUMENT_ROUTES).find(([, legacy]) => legacy === publicPath);
   if (documentRedirect) { res.writeHead(301, { Location: documentRedirect[0] + url.search }); res.end(); return; }
   const hubTarget = canonicalHubTarget(url.pathname + url.search);
@@ -679,8 +692,8 @@ export function createApp(root = defaultRoot, options = {}) {
       return;
     }
   }
-  if (isSeoIndexable(publicPath) && url.pathname !== publicPath) {
-    res.writeHead(301, { ...headers, Location: publicPath + url.search, 'Cache-Control': 'no-store' });
+  if (isSeoIndexable(publicPath) && url.pathname !== seoCanonicalPath) {
+    res.writeHead(301, { ...headers, Location: seoCanonicalPath + url.search, 'Cache-Control': 'no-store' });
     return res.end();
   }
   const markdownPath = publicPath === '/' && (req.headers.accept || '').split(',').some(type => type.trim().split(';')[0] === 'text/markdown') ? '/index.md' : publicPath;
@@ -710,10 +723,12 @@ export function createApp(root = defaultRoot, options = {}) {
   if (publicPath === '/sitemap.xml' || publicPath === '/sitemap-main.xml') {
     const paths = [...new Set([...seoIndexableStaticPaths(), ...publicVocabularyEntries.filter(entry => isSeoIndexable(entry.path)).map(entry => entry.path)])];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' +
       paths.map(route => {
         const lastmod = seoContentForPath(route)?.sitemapLastmod;
-        return `<url><loc>https://capital-ai.online${escapeXml(route)}</loc>${lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : ''}</url>`;
+        const alternates = landingAlternatesForPath(route).map(([language, url]) =>
+          `<xhtml:link rel="alternate" hreflang="${language}" href="${url}" />`).join('');
+        return `<url><loc>https://capital-ai.online${escapeXml(route)}</loc>${lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : ''}${alternates}</url>`;
       }).join('') +
       '</urlset>';
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
@@ -745,7 +760,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (path.relative(root, asset).split(path.sep).some(part => part.startsWith('.'))) return json(res, 404, { error: 'not_found' });
   try {
     // Missing legal documents must return 404 rather than silently expose the SPA bootstrap.
-    const file = staticLegalRoute.has(publicPath) ? asset : await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
+    const file = pathLocale ? path.join(root, 'index.html') : staticLegalRoute.has(publicPath) ? asset : await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
       path.extname(asset) || url.pathname.startsWith('/api/') ? asset : path.join(root, 'index.html'));
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
@@ -778,15 +793,19 @@ export function createApp(root = defaultRoot, options = {}) {
         const footer = '<footer style="padding:2rem;text-align:center"><a href="/impressum/">Impressum</a> · <a href="/agb/">AGB</a> · <a href="/datenschutz/">Datenschutz</a> · <a href="/pricing">Preiskatalog</a><p><a href="/?cookie-preferences=1">Cookie-Einstellungen ändern oder Einwilligung widerrufen</a></p></footer>';
         body = Buffer.from(body.toString('utf8').replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, '').replace(/(<body[^>]*>)/i, '$1' + navigation).replace('</body>', footer + '</body>'));
       }
-      body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
+      body = Buffer.from(injectSeoMetadata(body.toString('utf8'), seoCanonicalPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPricingFallback(body.toString('utf8'), publicPath));
       body = Buffer.from(injectBlueprintPreview(body.toString('utf8'), publicPath));
-      const pathLocale = localeFromLandingPath(publicPath);
-      if (pathLocale && publicPath !== '/') {
-        body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
+      if (pathLocale) {
+        if (!body.includes('<div id="root"></div>')) {
+          res.writeHead(404, { 'X-Robots-Tag': 'noindex, nofollow' });
+          return res.end();
+        }
+        body = Buffer.from(localizedLandingHtml(body.toString('utf8'), pathLocale));
       }
+      body = Buffer.from(injectLandingAlternates(body.toString('utf8'), publicPath));
       const { locale, source } = (staticLegalRoute.has(publicPath) || publicPath === '/blog' || Boolean(blogArticleForPath(publicPath)))
         ? {locale:'de',source:'document'} // These legal documents currently contain German text only.
         : pathLocale
@@ -802,7 +821,7 @@ export function createApp(root = defaultRoot, options = {}) {
     const documentHeaders = path.extname(file) === '.html'
       ? { ...headers, 'Content-Security-Policy': contentSecurityPolicyForHtml(body.toString('utf8')), 'Content-Security-Policy-Report-Only': strictContentSecurityPolicyForHtml(body.toString('utf8')) }
       : headers;
-    res.writeHead(200, { ...documentHeaders, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    res.writeHead(200, { ...documentHeaders, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;

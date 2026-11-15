@@ -7,6 +7,9 @@ on:
       - 'scripts/platform/backup-synthetic-restore-test.sh'
       - 'scripts/platform/backup-stream-encrypt.sh'
       - 'scripts/platform/backup-stream-encrypt-test.sh'
+      - 'scripts/platform/private-notes-occ-recovery-test.sh'
+      - 'scripts/tests/private_notes_occ_postgres_test.py'
+      - 'supabase/migrations/20261031030000_private_notes_occ_v2.sql'
       - 'scripts/platform/backup-reader-auth.test.mjs'
       - 'scripts/platform/backup-retention.mjs'
       - 'scripts/platform/backup-retention.test.mjs'
@@ -27,7 +30,7 @@ jobs:
       - name: Install distribution-provided age (no third-party install scripts)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends age postgresql postgresql-client
+          sudo apt-get install -y --no-install-recommends age postgresql postgresql-client python3-psycopg
           age --version
           sudo systemctl start postgresql
           sudo -u postgres pg_isready
@@ -37,6 +40,33 @@ jobs:
         run: bash scripts/platform/backup-synthetic-restore-test.sh
       - name: Stream encrypted PostgreSQL stdout and restore locally (synthetic only)
         run: bash scripts/platform/backup-stream-encrypt-test.sh
+      - name: OCC v2 parallel SQL and encrypted pre/post-cutover recovery
+        if: hashFiles('supabase/migrations/20261031030000_private_notes_occ_v2.sql') != ''
+        run: bash scripts/platform/private-notes-occ-recovery-test.sh
+      - name: Repeat isolated OCC recovery on production PostgreSQL 17.11
+        if: hashFiles('supabase/migrations/20261031030000_private_notes_occ_v2.sql') != ''
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          fixture="capital-ai-occ-pg17-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          trap 'docker rm -f "$fixture" >/dev/null 2>&1 || true' EXIT
+          # Official amd64 image, resolved from Docker Hub; no host port, production env or credentials.
+          docker run -d --name "$fixture" --tmpfs /var/lib/postgresql/data \
+            -e POSTGRES_HOST_AUTH_METHOD=trust -v "$PWD:/work:ro" -w /work \
+            postgres:17.11-bookworm@sha256:73bedc9eaa0121b92b9b26bb52e5141b3f6f37479c7ef913c0160455763ca80a >/dev/null
+          docker exec "$fixture" bash -euc 'apt-get update -qq; apt-get install -y --no-install-recommends age sudo python3-psycopg'
+          # Package retrieval is finished; remove all external networking before the test.
+          docker network disconnect bridge "$fixture"
+          ready=false
+          for attempt in $(seq 1 100); do
+            if docker exec -u postgres "$fixture" pg_isready -q; then ready=true; break; fi
+            sleep 0.2
+          done
+          "$ready"
+          docker exec -u postgres "$fixture" psql -X -At -c 'SHOW server_version'
+          docker exec -u postgres "$fixture" psql -X -At -c 'SHOW server_version_num' | grep -Fx '170011'
+          docker exec -e GITHUB_ACTIONS=true -e PYTHONDONTWRITEBYTECODE=1 "$fixture" \
+            bash scripts/platform/private-notes-occ-recovery-test.sh
       - name: Backup reader route and credential/TLS negative tests (offline mocks only)
         run: node --test scripts/platform/backup-reader-auth.test.mjs
       - name: Encrypted archive retention dry-run (synthetic metadata only)
