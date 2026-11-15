@@ -55,6 +55,17 @@ test('video, podcast cover and tour templates remain draft-only and CADS review-
   assert.notEqual(projects[2].metadata.audioStatus, 'GENERATED_AND_APPROVED');
 });
 
+test('homepage editorial article graphics retain all seven decorative families', () => {
+  const css = readFileSync('src/features/home/homeEditorialNews.css', 'utf8');
+  for (const family of families) {
+    const token = tokens.color.universe[family].$value;
+    assert.ok(css.includes('--universe-' + family + ': ' + token + ';'),
+      'Homepage editorial palette drift: ' + family);
+  }
+  assert.ok(css.includes('CAPITAL_AI_UNIVERSE@1'));
+  assert.ok(css.includes('.editorial-graphic'));
+});
+
 test('badge SVG assets show the spectrum but never grant approval or remote loading', () => {
   for (const variant of ['data', 'scoring', 'bundle']) {
     const svg = readFileSync(`public/branding/badges/screener-${variant}-blueprint.svg`, 'utf8');
