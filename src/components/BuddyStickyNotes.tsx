@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { BuddyCapturePanel, type BuddyPrivateImage } from './BuddyCapturePanel';
+import { buildFrontendDesignPrompt, FRONTEND_FEATURES } from './buddyFrontendPrompt.mjs';
 
 import { readNotes, saveNotes, NotesClientError, type NotesConflict, type NotesSnapshot } from '../features/account/privateNotesOcc';
 import { NotesConflictPanel } from '../features/account/NotesConflictPanel';
-type SessionResponse = { authenticated?: boolean; mfaRequired?: boolean; user?: { id?: string } };
+type SessionResponse = { authenticated?: boolean; mfaRequired?: boolean; user?: { id?: string }; account?: { available?: boolean; iamRole?: string | null } };
 type BuddyNote = { line: number; raw: string; color: string; checked: boolean; text: string };
 const COLORS = [
   { color: '🟨', label: 'Gelb', background: '#fef3c7' },
@@ -27,7 +29,7 @@ export function formatBuddyNote(color: string, checked: boolean, text: string): 
   return 'JaJa Buddy · ' + color + ' ' + (checked ? '☑' : '☐') + ' ' + clean;
 }
 
-async function verifiedNotesUser(signal?: AbortSignal): Promise<string> {
+async function verifiedNotesUser(signal?: AbortSignal): Promise<{ userId: string; isOwner: boolean }> {
   try {
     const response = await fetch('/api/auth/session', {
       credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' }, signal,
@@ -38,7 +40,7 @@ async function verifiedNotesUser(signal?: AbortSignal): Promise<string> {
     const session: SessionResponse = await response.json();
     const userId = session.authenticated === true && session.mfaRequired !== true ? session.user?.id : undefined;
     if (typeof userId !== 'string' || !userId) throw new NotesClientError('SESSION_CHANGED');
-    return userId;
+    return { userId, isOwner: session.account?.available === true && session.account?.iamRole === 'owner' };
   } catch (reason) {
     if (reason instanceof NotesClientError) throw reason;
     throw new NotesClientError('NOTES_UNAVAILABLE');
@@ -55,8 +57,30 @@ function localSummary(text: string): string {
  * Human-readable Buddy lines coexist with existing freeform dashboard notes.
  * Never use global browser storage to persist private note contents.
  */
-export function BuddyStickyNotes({ initialText = '' }: { initialText?: string }) {
+export function BuddyStickyNotes({ initialText = '', captureRequest = 0 }: { initialText?: string; captureRequest?: number }) {
   const [userId, setUserId] = useState<string | null>(null);
+  const [ownerPromptAllowed, setOwnerPromptAllowed] = useState(false);
+  const [selectedLines, setSelectedLines] = useState<number[]>([]);
+  const [featureIds, setFeatureIds] = useState<string[]>(['responsive','universe','accessibility']);
+  const [prompt, setPrompt] = useState('');
+  const [captureOpen, setCaptureOpen] = useState(false);
+  const [images, setImages] = useState<BuddyPrivateImage[]>([]);
+  const imageRef = useRef<BuddyPrivateImage[]>([]);
+  useEffect(() => { if (captureRequest > 0) setCaptureOpen(true); }, [captureRequest]);
+  useEffect(() => () => { imageRef.current.forEach(image => URL.revokeObjectURL(image.previewUrl)); }, []);
+  const clearPrivateImages = () => {
+    imageRef.current.forEach(image => URL.revokeObjectURL(image.previewUrl));
+    imageRef.current=[];setImages([]);setCaptureOpen(false);setSelectedLines([]);setPrompt('');
+  };
+  const attachImage = (image: BuddyPrivateImage) => {
+    if (imageRef.current.length >= 3) {
+      URL.revokeObjectURL(image.previewUrl);
+      setError('Maximal drei lokale Bildreferenzen pro Entwurf.');
+      return;
+    }
+    imageRef.current=[...imageRef.current,image];setImages(imageRef.current);
+  };
+
   const [snapshot, setSnapshot] = useState<NotesSnapshot | null>(null);
   const [conflict, setConflict] = useState<NotesConflict | null>(null);
   const busyRef = useRef(false);
@@ -78,6 +102,8 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
     const revoke = () => {
       currentUserRef.current = null;
       setUserId(null);
+      setOwnerPromptAllowed(false);
+      clearPrivateImages();
       setSnapshot(null);
       setNotes([]);
       setDraft('');
@@ -91,7 +117,8 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
     const refresh = async () => {
       try {
         // Always verify identity, even while a conflict is open.
-        const verifiedUserId = await verifiedNotesUser(controller.signal);
+        const verifiedAccount = await verifiedNotesUser(controller.signal);
+        const verifiedUserId = verifiedAccount.userId;
         if (controller.signal.aborted) return;
         if (currentUserRef.current && currentUserRef.current !== verifiedUserId) {
           revoke();
@@ -106,6 +133,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
           return;
         }
         currentUserRef.current = data.userId;
+        setOwnerPromptAllowed(verifiedAccount.isOwner);
         setUserId(data.userId);
         setSnapshot(data);
         setNotes(parseBuddyNotes(data.notes));
@@ -258,6 +286,50 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
     }, action === 'remove' ? 'Notiz gelöscht.' : 'Notiz aktualisiert.');
   };
 
+  const selectedNotes=notes.filter(note=>selectedLines.includes(note.line));
+  const toggleSelected=(line:number)=>{setSelectedLines(current=>current.includes(line)?current.filter(n=>n!==line):[...current,line]);setPrompt('');};
+  const toggleFeature=(id:string)=>{setFeatureIds(current=>current.includes(id)?current.filter(n=>n!==id):[...current,id]);setPrompt('');};
+  const makePrompt=()=>{
+    if(!ownerPromptAllowed||!userId||!snapshot||conflict||busy)return;
+    try {setPrompt(buildFrontendDesignPrompt({notes:selectedNotes.map(note=>note.text),featureIds,images:images.map(image=>image.name)}));setError('');}
+    catch {setError('Wähle mindestens eine gespeicherte Notiz und ein Design-Feature aus.');}
+  };
+  const copyToNotion=async()=>{
+    if(!userId||!snapshot||conflict||busy||!selectedNotes.length)return;
+    // This is an intentional manual fallback. The separate user-scoped Notion OAuth
+    // backend has NOT been admitted. Never impersonate an export success.
+    try{
+      await navigator.clipboard.writeText(selectedNotes.map(n=>n.text).join('\n\n'));
+      setStatus('Notizen kopiert. Öffne dein Notion-Konto und füge sie selbst ein. Kein automatischer Export.');
+    }catch{setError('Zwischenablage nicht verfügbar. Bitte Notiztext manuell kopieren.');}
+  };
+  const exportLocalPromptPackage=async()=>{
+    if(!ownerPromptAllowed||!prompt||!userId||busy||conflict)return;
+    const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]||char));
+    try{
+      const figures=await Promise.all(images.map(async image=>{
+        const encoded=await new Promise<string>((resolve,reject)=>{
+          const reader=new FileReader();
+          reader.onload=()=>resolve(String(reader.result||''));
+          reader.onerror=()=>reject(new Error('IMAGE_READ_FAILED'));
+          reader.readAsDataURL(image.blob);
+        });
+        return `<figure><img src="${escapeHtml(encoded)}" alt="Annotierter Screenshot" style="max-width:100%"><figcaption>${escapeHtml(image.name)}</figcaption></figure>`;
+      }));
+      const documentHtml='<!doctype html><html lang="de"><meta charset="utf-8"><title>Privater CAPITAL-AI Frontend-Prompt</title><body><main><pre style="white-space:pre-wrap">'+escapeHtml(prompt)+'</pre>'+figures.join('')+'</main></body></html>';
+      const fileUrl=URL.createObjectURL(new Blob([documentHtml],{type:'text/html;charset=utf-8'}));
+      const a=document.createElement('a');a.href=fileUrl;a.download='capital-ai-frontend-prompt-privat.html';a.click();
+      setTimeout(()=>URL.revokeObjectURL(fileUrl),1000);
+      setStatus('HTML-Entwurf einschließlich lokaler Bildreferenzen gespeichert. Keine Notion-Übertragung.');
+    }catch{setError('Bild-Paket konnte nicht exportiert werden. Die lokalen Bilder bleiben erhalten.');}
+  };
+  const removeImage=(id:string)=>{
+    const image=imageRef.current.find(item=>item.id===id);
+    if(image)URL.revokeObjectURL(image.previewUrl);
+    imageRef.current=imageRef.current.filter(item=>item.id!==id);
+    setImages(imageRef.current);setPrompt('');
+  };
+
   return (
     <div className="space-y-3 text-xs" aria-label="JaJa Buddy Notizen">
       <p className="text-slate-300">Nur für dein angemeldetes Konto. Speicherung über das private Dashboard, keine Drittanbieter-KI.</p>
@@ -288,6 +360,9 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
           return (
             <li key={note.line} className="rounded border border-slate-300/30 p-2" style={{ backgroundColor: selection.background, color: '#111827' }}>
               <div className="flex items-start gap-2">
+                <input type="checkbox" checked={selectedLines.includes(note.line)}
+                  onChange={()=>toggleSelected(note.line)} aria-label="Notiz für Export oder Frontend-Prompt auswählen"
+                  className="mt-1 h-4 w-4" />
                 <input type="checkbox" checked={note.checked} onChange={() => updateOne(note, 'check')}
                   disabled={busy || !!conflict || writeLocked} aria-label="Notiz erledigt" className="mt-1 h-4 w-4" />
                 <p className={'min-w-0 flex-1 whitespace-pre-wrap break-words text-sm ' + (note.checked ? 'line-through' : '')}>{note.text}</p>
@@ -303,6 +378,44 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
           );
         })}
       </ul>
+      <section aria-label="Private Bildreferenzen" className="space-y-2 rounded-xl border border-cyan-300/20 p-2">
+        <button type="button" onClick={()=>setCaptureOpen(open=>!open)}
+          className="min-h-11 rounded-lg border border-cyan-300/40 px-3 font-medium text-cyan-100">JaJa CAM · Screenshot / Markieren</button>
+        {captureOpen && <BuddyCapturePanel onAttach={attachImage} onClose={()=>setCaptureOpen(false)} />}
+        {images.length>0&&<ul className="grid gap-2">
+          {images.map(image=><li key={image.id} className="rounded border border-slate-700 p-2">
+            <img src={image.previewUrl} alt="Lokaler markierter Screenshot" className="max-h-40 w-full object-contain"/>
+            <p className="truncate text-[11px] text-slate-300">{image.name}</p>
+            <button type="button" onClick={()=>removeImage(image.id)} className="min-h-11 underline">Bild entfernen</button>
+          </li>)}
+        </ul>}
+        <p className="text-[11px] text-slate-400">Bilder verbleiben in dieser Sitzung und werden nicht serverseitig gespeichert. Bei Kontowechsel/Schließen gehen sie verloren.</p>
+      </section>
+      {ownerPromptAllowed&&<section aria-label="Owner Frontend-Prompt" className="space-y-2 rounded-xl border border-violet-400/40 bg-violet-950/20 p-2">
+        <h3 className="text-sm font-bold text-violet-100">Frontend-Prompt · Nur Owner</h3>
+        <p className="text-slate-300">Wähle oben einzelne bestätigte JaJa-Notizen aus. Der Text wird lokal mit passenden Fachbegriffen erzeugt und nicht an externe KI-Dienste übertragen.</p>
+        <fieldset className="space-y-2"><legend className="font-medium">Design-Features auswählen</legend>
+          {FRONTEND_FEATURES.map(feature=><label key={feature.id} className="flex min-h-9 items-center gap-2">
+            <input type="checkbox" checked={featureIds.includes(feature.id)} onChange={()=>toggleFeature(feature.id)}/>
+            <span>{feature.label}</span>
+          </label>)}
+        </fieldset>
+        <button type="button" disabled={selectedNotes.length===0||featureIds.length===0||busy||!!conflict}
+          onClick={makePrompt} className="min-h-11 rounded-lg bg-violet-500 px-3 font-bold text-white disabled:opacity-50">Frontend-Prompt erzeugen</button>
+        {prompt&&<><label htmlFor="buddy-owner-design-prompt" className="block">Finaler Prompt-Entwurf</label>
+          <textarea id="buddy-owner-design-prompt" readOnly rows={10} value={prompt}
+            className="w-full rounded border border-violet-300/50 bg-slate-950 p-2 text-xs text-white"/>
+          <button type="button" onClick={()=>void navigator.clipboard.writeText(prompt)}
+            className="min-h-11 rounded border border-violet-400 px-3">Prompt kopieren</button>
+          <button type="button" onClick={()=>void exportLocalPromptPackage()}
+            className="min-h-11 rounded border border-violet-400 px-3">Finales Prompt-Paket mit Bildern speichern</button></>}
+      </section>}
+      <section aria-label="Notion Export" className="space-y-1 rounded-xl border border-slate-700 p-2">
+        <p className="font-bold text-slate-200">Notion · Privatnotizen</p>
+        <button type="button" onClick={()=>void copyToNotion()} disabled={!selectedNotes.length||!!conflict||busy}
+          className="min-h-11 rounded border border-slate-500 px-3 text-slate-100 disabled:opacity-50">Ausgewählte Notizen für Notion kopieren</button>
+        <p className="text-[11px] text-slate-400">Der automatische Notion-Export ist bis zum nachgewiesenen personenbezogenen OAuth-/Vault- und Seitenfreigabe-Vertrag gesperrt. Diese Taste kopiert nur die Auswahl und schreibt nichts nach Notion.</p>
+      </section>
       <a href="/profile/dashboard" className="inline-block min-h-9 pt-2 font-semibold text-amber-200 underline">
         Gespeicherte Notizen im privaten Dashboard ansehen
       </a>
