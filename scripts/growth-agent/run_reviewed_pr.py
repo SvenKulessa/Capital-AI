@@ -63,6 +63,7 @@ def main():
         parser.error("GITHUB_TOKEN not configured in trusted worker")
     assessment = TrustedAssessment()
     http = SafeHTTP(github_token=token, render_token=os.environ.get("RENDER_API_KEY", ""))
+    record = None
     if args.merge:
         approval_path = private_root / "approvals" / (str(args.pr) + ".json")
         record, assessment = assessment_from_private_file(str(approval_path), pr_number=args.pr)
@@ -71,8 +72,11 @@ def main():
         pr = http.github(f"/pulls/{args.pr}")
         if pr.get("head", {}).get("sha") != record["head_sha"] or pr.get("base", {}).get("sha") != record["base_sha"]:
             parser.error("approval stale: PR head or base changed")
-    adapter = GitHubRenderActions(http, pr_number=args.pr, assessment=assessment,
-                                  enable_merge=args.merge)
+    adapter = GitHubRenderActions(
+        http, pr_number=args.pr, assessment=assessment, enable_merge=args.merge,
+        approved_head_sha=record["head_sha"] if record else None,
+        approved_base_sha=record["base_sha"] if record else None,
+    )
     authority = Authority(
         read_only=not args.merge,
         allow_changes=args.merge,

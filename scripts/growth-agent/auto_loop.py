@@ -127,6 +127,10 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
         return event(state, "merge_authorized", status="MERGE_READY")
 
     def merge(state):
+        # A resumed checkpoint must not inherit a revoked merge authorization.
+        if (authority.read_only or not authority.allow_merge
+                or not merge_evidence_verified(state.get("evidence"))):
+            return event(state, "merge_denied", status="BLOCKED")
         result = call("merge", state)
         # Adapter must use evidence.head_sha as GitHub's expected_head_sha.
         ok = (result.get("merged") is True and _sha(result.get("sha"))

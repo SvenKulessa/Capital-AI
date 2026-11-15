@@ -73,7 +73,9 @@ class FakeHTTP:
 class ProviderAdapterTests(unittest.TestCase):
     def adapter(self, client=None, assessment=GOOD, merge=True):
         return GitHubRenderActions(client or FakeHTTP(), pr_number=42,
-                                   assessment=assessment, enable_merge=merge)
+                                   assessment=assessment, enable_merge=merge,
+                                   approved_head_sha=HEAD if merge else None,
+                                   approved_base_sha=MAIN if merge else None)
 
     def test_real_graph_integration_with_trusted_fake_transport(self):
         client = FakeHTTP()
@@ -159,7 +161,28 @@ class ProviderAdapterTests(unittest.TestCase):
         self.assertEqual(adapter.observe_deployment({"merge_sha": MERGE}), {})
         c.deploy_sha = MERGE
         c.health_sha = "d" * 40
-        self.assertEqual(adapter.verify_runtime({"merge_sha": MERGE}), {})
+        self.assertEqual(adapter.verify_runtime({
+            "merge_sha": MERGE, "observed_sha": MERGE}), {})
+
+    def test_exact_head_base_binding_is_required_for_mutation(self):
+        with self.assertRaises(ValueError):
+            GitHubRenderActions(FakeHTTP(), pr_number=42, assessment=GOOD, enable_merge=True)
+        fake = FakeHTTP()
+        adapter = self.adapter(fake)
+        evidence = adapter.evidence({})
+        fake.head = "d" * 40
+        self.assertEqual(adapter.merge({"evidence": evidence}), {})
+        self.assertEqual(fake.mutation_count, 0)
+
+    def test_only_latest_active_render_deploy_can_be_verified(self):
+        class Historical(FakeHTTP):
+            def render(self, path):
+                return [{"deploy": {"status": "live", "commit": {"id": "d" * 40}}},
+                        {"deploy": {"status": "live", "commit": {"id": MERGE}}}]
+        a = self.adapter(Historical())
+        self.assertEqual(a.observe_deployment({"merge_sha": MERGE}), {})
+        self.assertEqual(a.verify_runtime({
+            "merge_sha": MERGE, "observed_sha": MERGE}), {})
 
     def test_traversal_and_unlisted_provider_paths_fail_closed(self):
         t = SafeHTTP(github_token="sample", render_token="sample")
