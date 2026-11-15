@@ -10,7 +10,7 @@
  * - Draft Articles (POST /2/articles/draft)
  * - Simple image upload
  * - Full chunked video/GIF upload (initialize → append → finalize → status poll)
- * - Posts with media after review gate
+ * - Public posting intentionally blocked until a separately authorized publish integration
  *
  * Docs: https://docs.x.com/x-api/media/quickstart/media-upload-chunked
  */
@@ -52,7 +52,14 @@ export class XArticlesClient {
     this.accessToken = token;
   }
 
+  private requireDraftApiEnabled(): void {
+    if (process.env.X_DRAFT_API_ENABLED !== 'true') {
+      throw new Error('X_DRAFT_API_DISABLED: external X draft and media writes require separate authorization.');
+    }
+  }
+
   async createDraftArticle(request: XDraftArticleRequest): Promise<XDraftArticleResponse> {
+    this.requireDraftApiEnabled();
     const response = await fetch(`${this.baseUrl}/articles/draft`, {
       method: 'POST',
       headers: {
@@ -62,15 +69,16 @@ export class XArticlesClient {
       body: JSON.stringify(request),
     });
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`X draft article failed (${response.status}): ${errorText}`);
+
+      throw new Error(`X draft article failed (${response.status})`);
     }
     return response.json() as Promise<XDraftArticleResponse>;
   }
 
   async uploadImageSimple(imageBuffer: Buffer, mediaType = 'image/jpeg'): Promise<MediaUploadResult> {
+    this.requireDraftApiEnabled();
     const form = new FormData();
-    form.append('media', new Blob([imageBuffer], { type: mediaType }), 'image.jpg');
+    form.append('media', new Blob([Uint8Array.from(imageBuffer)], { type: mediaType }), 'image.jpg');
     form.append('media_category', 'tweet_image');
     form.append('media_type', mediaType);
 
@@ -80,8 +88,8 @@ export class XArticlesClient {
       body: form,
     });
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Image upload failed (${response.status}): ${errorText}`);
+
+      throw new Error(`Image upload failed (${response.status})`);
     }
     const data = await response.json();
     return {
@@ -101,6 +109,10 @@ export class XArticlesClient {
     mediaCategory: 'tweet_video' | 'tweet_gif' | 'amplify_video' = 'tweet_video',
     chunkSize = 4 * 1024 * 1024,
   ): Promise<MediaUploadResult> {
+    this.requireDraftApiEnabled();
+    if (!Number.isInteger(chunkSize) || chunkSize < 1 || chunkSize > 5 * 1024 * 1024 || fileBuffer.length < 1) {
+      throw new Error('MEDIA_INPUT_INVALID: media bytes and chunk size must be valid.');
+    }
     const totalBytes = fileBuffer.length;
 
     // 1. INITIALIZE
@@ -117,8 +129,8 @@ export class XArticlesClient {
       }),
     });
     if (!initRes.ok) {
-      const err = await initRes.text();
-      throw new Error(`INIT failed (${initRes.status}): ${err}`);
+
+      throw new Error(`INIT failed (${initRes.status})`);
     }
     const initData = await initRes.json();
     const mediaId = initData.data?.id as string;
@@ -130,7 +142,7 @@ export class XArticlesClient {
       const chunk = fileBuffer.subarray(offset, offset + chunkSize);
       const form = new FormData();
       form.append('segment_index', String(segmentIndex));
-      form.append('media', new Blob([chunk], { type: 'application/octet-stream' }), `chunk-${segmentIndex}`);
+      form.append('media', new Blob([Uint8Array.from(chunk)], { type: 'application/octet-stream' }), `chunk-${segmentIndex}`);
 
       const appendRes = await fetch(`${this.baseUrl}/media/upload/${mediaId}/append`, {
         method: 'POST',
@@ -138,8 +150,8 @@ export class XArticlesClient {
         body: form,
       });
       if (!appendRes.ok) {
-        const err = await appendRes.text();
-        throw new Error(`APPEND segment ${segmentIndex} failed (${appendRes.status}): ${err}`);
+
+        throw new Error(`APPEND segment ${segmentIndex} failed (${appendRes.status})`);
       }
       segmentIndex++;
     }
@@ -150,8 +162,8 @@ export class XArticlesClient {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
     if (!finRes.ok) {
-      const err = await finRes.text();
-      throw new Error(`FINALIZE failed (${finRes.status}): ${err}`);
+
+      throw new Error(`FINALIZE failed (${finRes.status})`);
     }
     const finData = await finRes.json();
 
@@ -159,6 +171,7 @@ export class XArticlesClient {
     let processingState = finData.data?.processing_info?.state as string | undefined;
     if (processingState && processingState !== 'succeeded') {
       processingState = await this.pollMediaStatus(mediaId);
+      if (processingState !== 'succeeded') throw new Error(`MEDIA_PROCESSING_${processingState.toUpperCase()}`);
     }
 
     return {
@@ -176,8 +189,8 @@ export class XArticlesClient {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
       if (!res.ok) {
-        const err = await res.text();
-        console.error(`STATUS poll failed (${res.status}): ${err}`);
+
+        console.error(`STATUS poll failed (${res.status})`);
         break;
       }
       const data = await res.json();
@@ -192,22 +205,8 @@ export class XArticlesClient {
     return 'timeout';
   }
 
-  async createPostWithMedia(text: string, mediaIds: string[] = []): Promise<{ id: string; text: string }> {
-    const body: any = { text };
-    if (mediaIds.length > 0) body.media = { media_ids: mediaIds };
-    const response = await fetch(`${this.baseUrl}/tweets`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      throw new Error(`Post creation failed (${response.status}): ${await response.text()}`);
-    }
-    const data = await response.json();
-    return { id: data.data.id, text: data.data.text };
+  async createPostWithMedia(_text: string, _mediaIds: string[] = []): Promise<{ id: string; text: string }> {
+    throw new Error('PUBLISH_BLOCKED: public X posts are not enabled in this draft-only integration.');
   }
 
   publishArticle(articleId: string): never {

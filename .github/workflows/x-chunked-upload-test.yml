@@ -1,53 +1,26 @@
-name: X Chunked Upload Test
+name: X Draft Safety Checks
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/x-chunked-upload-test.yml'
+      - 'scripts/growth/x-articles-consolidation.test.mjs'
+      - 'scripts/growth/review-gate-x-publish.mjs'
+      - 'scripts/growth/create-first-x-article-draft.mjs'
+      - 'src/services/x/**'
+      - 'src/data/xDraftTemplates.ts'
   workflow_dispatch:
-    inputs:
-      template:
-        description: 'Template ID (evidence-first-scoring, supabase-rls, codeowners, ...)'
-        required: true
-        default: 'evidence-first-scoring'
-      confirm:
-        description: 'Set to true to actually call the X API (DRAFT_ONLY still applies)'
-        required: true
-        default: 'false'
-        type: boolean
+
+permissions:
+  contents: read
 
 jobs:
-  test-chunked:
+  draft-safety:
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.confirm == 'true' }}
-    env:
-      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-      X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
-      X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
-      X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      - name: Attempt token refresh (optional)
-        if: env.X_REFRESH_TOKEN != '' && env.X_CLIENT_ID != ''
-        continue-on-error: true
-        run: |
-          echo "Attempting optional X token refresh..."
-          node --experimental-strip-types -e '
-          import { refreshXAccessToken } from "./src/services/x/xTokenRefresh.ts";
-          const r = await refreshXAccessToken();
-          console.log("Refreshed. expires_in=", r.expiresIn);
-          console.log("NEW_REFRESH_TOKEN (persist this!):", r.refreshToken);
-          ' || echo "Refresh skipped or failed – continuing with existing X_ACCESS_TOKEN"
-
-      - name: Run review-gate (chunked upload path)
-        run: |
-          # Minimal test file (replace with real video later)
-          echo "test-video-placeholder" > /tmp/test.mp4
-          node scripts/growth/review-gate-x-publish.mjs \
-            --template ${{ github.event.inputs.template }} \
-            --media /tmp/test.mp4 \
-            --confirm || true
-          echo "Done. Check logs for draft ID or error. Publishing remains blocked."
+          node-version: '22'
+      - name: Run offline X draft/secret/publishing negative tests
+        run: node --experimental-strip-types --test scripts/growth/x-articles-consolidation.test.mjs

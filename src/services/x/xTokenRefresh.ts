@@ -17,6 +17,9 @@ export interface TokenRefreshResult {
 }
 
 export async function refreshXAccessToken(): Promise<TokenRefreshResult> {
+  if (process.env.X_DRAFT_API_ENABLED !== 'true') {
+    throw new Error('X_DRAFT_API_DISABLED: token refresh is disabled by default.');
+  }
   const clientId = process.env.X_CLIENT_ID;
   const clientSecret = process.env.X_CLIENT_SECRET;
   const refreshToken = process.env.X_REFRESH_TOKEN;
@@ -47,8 +50,7 @@ export async function refreshXAccessToken(): Promise<TokenRefreshResult> {
   });
 
   if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Token refresh failed (${response.status}): ${err}`);
+    throw new Error(`Token refresh failed (${response.status})`);
   }
 
   const data = await response.json();

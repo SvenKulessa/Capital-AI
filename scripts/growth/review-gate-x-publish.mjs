@@ -46,9 +46,14 @@ console.log('');
 
 if (!confirmed) {
   console.log('NO ACTION TAKEN.');
-  console.log('Add --confirm to create draft or post with media.');
+  console.log('Only an authorized, explicitly enabled draft is supported; public posting is blocked.');
   console.log('This is the review gate. Publishing remains blocked by policy.');
   process.exit(0);
+}
+
+if (process.env.X_DRAFT_API_ENABLED !== 'true') {
+  console.error('X_DRAFT_API_DISABLED: external drafts require explicitly enabled and authorized API access.');
+  process.exit(1);
 }
 
 if (!process.env.X_ACCESS_TOKEN) {
@@ -63,11 +68,13 @@ async function run() {
   if (mediaPath) {
     console.log(`Uploading media from ${mediaPath}...`);
     const buf = readFileSync(mediaPath);
-    const isVideo = mediaPath.endsWith('.mp4') || mediaPath.endsWith('.mov') || mediaPath.endsWith('.webm');
+    const ext = mediaPath.toLowerCase();
+    const isVideo = ext.endsWith('.mp4') || ext.endsWith('.mov') || ext.endsWith('.webm');
+    const mime = ext.endsWith('.mov') ? 'video/quicktime' : ext.endsWith('.webm') ? 'video/webm' : 'video/mp4';
     if (isVideo) {
-      const result = await client.uploadMediaChunked(buf, 'video/mp4', 'tweet_video');
+      const result = await client.uploadMediaChunked(buf, mime, 'tweet_video');
       mediaId = result.mediaId;
-      console.log('Video uploaded. mediaId:', mediaId, 'state:', result.processingState);
+      console.log('Video upload completed for draft; processing state:', result.processingState);
     } else {
       const result = await client.uploadImageSimple(buf);
       mediaId = result.mediaId;
