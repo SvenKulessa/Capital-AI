@@ -118,3 +118,12 @@
   .editorial-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .editorial-card { grid-template-rows: subgrid; grid-row: span 4; }
 }
+
+.editorial-fallback {
+  padding: 1.25rem;
+  border: 1px solid var(--editorial-line);
+  border-radius: .85rem;
+  background: #142137;
+  color: var(--editorial-muted);
+  line-height: 1.6;
+}
