@@ -101,6 +101,7 @@ const EXPECTED_INDEX_PATHS = [
   '/impressum',
   '/datenschutz',
   '/agb',
+  '/de/', '/en/', '/it/', '/fr/', '/pt/', '/es/',
 ];
 
 test('SEO-00 classifies every inventory entry and keeps the static INDEX allowlist explicit', () => {
@@ -124,8 +125,9 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/whale-radar').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/login').classification, 'NOINDEX');
   for (const locale of ['de','en','it','fr','pt','es']) {
-    assert.equal(resolveSeoIndexingPolicy(`/${locale}/`).classification, 'NOINDEX');
-    assert.equal(isSeoIndexable(`/${locale}/`), false);
+    assert.equal(resolveSeoIndexingPolicy(`/${locale}/`).classification, 'INDEX');
+    assert.equal(isSeoIndexable(`/${locale}/`), true);
+    assert.equal(isSeoIndexable(`/${locale}/profile`), false);
   }
   assert.equal(resolveSeoIndexingPolicy('/dokumentation').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/documentation/byok.html').classification, 'NOINDEX');
@@ -332,7 +334,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
         assert.match(html, /href="\/login">Anmelden<\/a>/);
       }
     }
-    for (const route of ['/pricing', '/login', '/profile', '/control-center', '/en', '/not-inventory']) {
+    for (const route of ['/pricing', '/login', '/profile', '/control-center', '/not-inventory']) {
       const response = await fetch(origin + route);
       const html = await response.text();
       assert.doesNotMatch(html, /capital-ai-public-snapshot/, route);

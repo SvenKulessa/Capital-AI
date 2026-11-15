@@ -95,3 +95,11 @@ export const messageArrays = localized;
 export function isLocale(value: string): value is Locale {
   return LANGUAGES.some(lang => lang.code === value);
 }
+
+export function localizedLandingMetadata(locale: Locale) {
+  const copy = messages[locale];
+  return {
+    title: `${copy.heroEyebrow} | CAPITAL-AI`,
+    description: copy.heroDescription,
+  };
+}

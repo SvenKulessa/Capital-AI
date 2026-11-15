@@ -47,7 +47,7 @@ test('SEO-02 projects canonical metadata for every manifest entry', () => {
     assert.equal(metadata.description, entry.description);
     assert.equal(metadata.canonical, entry.canonical);
     assert.equal(metadata.robots, entry.robots);
-    assert.equal(metadata.language, 'de');
+    assert.equal(metadata.language, entry.language);
     assert.equal(metadata.ogSiteName, 'Capital-AI');
     assert.equal(metadata.ogImage, SEO_SOCIAL_IMAGE);
     assert.equal(metadata.twitterCard, 'summary_large_image');

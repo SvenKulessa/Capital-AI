@@ -1,3 +1,5 @@
+import { SUPPORTED_LOCALES, localeFromLandingPath, localizedLandingPath } from './locale-policy.mjs';
+import { localizedLandingMetadata } from '../src/i18n/messages.ts';
 import {
   VOCABULARY_PUBLIC_COUNT,
   vocabularyDescription,
@@ -37,6 +39,7 @@ function contentEntry({
   contentType,
   domain,
   structuredDataType,
+  language = DEFAULT_LANGUAGE,
   socialEligible,
   aiSearchEligible,
   sourceRefs,
@@ -56,7 +59,7 @@ function contentEntry({
     generatedAtMainSha: provenance.generatedAtMainSha,
     contentType,
     domain,
-    language: DEFAULT_LANGUAGE,
+    language,
     author: DEFAULT_AUTHOR,
     updatedAt: ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : path === '/' ? '2026-11-13' : SEO_CONTENT_MANIFEST_VERSION,
     // Explicit reviewed content change, never deployment/crawl time.
@@ -74,6 +77,18 @@ function contentEntry({
 }
 
 const staticEntries = [
+  ...SUPPORTED_LOCALES.map(language => contentEntry({
+    path: localizedLandingPath(language),
+    slug: `home-${language}`,
+    ...localizedLandingMetadata(language),
+    contentType: 'localized-landing',
+    domain: 'GROWTH',
+    language,
+    structuredDataType: 'WebPage',
+    socialEligible: false,
+    aiSearchEligible: false,
+    sourceRefs: ['src/i18n/messages.ts', 'src/i18n/landingSectionCopy.ts'],
+  })),
   contentEntry({"path":"/blog/x-api-expansions-kosten","slug":"x-api-expansions-kosten","title":"X-API-Expansions: Datenkosten verstehen | CAPITAL-AI","description":"Warum X-API-Expansions ab 22.11.2026 kostenrelevant sind und wie Quellen sicher und datensparsam geprüft werden.","contentType":"article","domain":"GROWTH","structuredDataType":"BlogPosting","socialEligible":false,"aiSearchEligible":true,"sourceRefs":["shared/blog-articles.mjs"]}),
   contentEntry({"path": "/blog/datenkonzept-blueprint", "slug": "datenkonzept-blueprint", "title": "Datenkonzept-Blueprint: Von der Quelle zum nachvollziehbaren Score | Capital-AI", "description": "Datenquellen, Zeitbezug, Qualitätsregeln und Scoring als verständliches Datenkonzept planen. Mit synthetischem Beispiel und Blueprint-Dokumentation.", "contentType": "article", "domain": "GROWTH", "structuredDataType": "BlogPosting", "socialEligible": false, "aiSearchEligible": true, "sourceRefs": ["shared/blog-articles.mjs"]}),
   contentEntry({"path": "/blog/screener-scoring-lernen", "slug": "screener-scoring-lernen", "title": "Screener-Scoring lernen: Faktoren, Gewichtung und Datenabdeckung | Capital-AI", "description": "Wie ein gewichteter Screener-Score entsteht und welche Grenzen er hat. Synthetisches Rechenbeispiel, Datenabdeckung und kostenlose Lernschritte.", "contentType": "article", "domain": "GROWTH", "structuredDataType": "BlogPosting", "socialEligible": false, "aiSearchEligible": true, "sourceRefs": ["shared/blog-articles.mjs"]}),
@@ -252,7 +267,7 @@ export function validateSeoContentManifest() {
     if (!entry.title || seenTitles.has(entry.title)) errors.push(`${entry.path}: duplicate or missing title`);
     if (!entry.description) errors.push(`${entry.path}: missing description`);
     if (!allowedDomains.has(entry.domain)) errors.push(`${entry.path}: invalid domain`);
-    if (entry.language !== 'de') errors.push(`${entry.path}: unexpected language`);
+    if (entry.language !== (localeFromLandingPath(entry.path) ?? DEFAULT_LANGUAGE)) errors.push(`${entry.path}: unexpected language`);
     if (!/^[0-9a-f]{40}$/.test(entry.sourceSha)) errors.push(`${entry.path}: invalid sourceSha`);
     if (!/^[0-9a-f]{40}$/.test(entry.sourceBlobSha)) errors.push(`${entry.path}: invalid sourceBlobSha`);
     if (!/^sha256:[0-9a-f]{64}$/.test(entry.contentDigest)) errors.push(`${entry.path}: invalid contentDigest`);
