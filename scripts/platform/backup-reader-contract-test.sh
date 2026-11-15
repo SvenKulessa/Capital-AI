@@ -162,10 +162,10 @@ SQL
 # exact PUBLIC schema grants from the disposable pg_net/pg_cron fixture.
 # This uses the existing pinned PG17.11 cluster, never a provider connection.
 source_admin -Atq -f scripts/platform/backup-reader-inventory.sql > "$scratch/backup-reader-inventory.txt"
-rg -qx 'net\\|t' "$scratch/backup-reader-inventory.txt" || fail 'inventory did not report PUBLIC USAGE on net'
-rg -qx 'cron\\|f' "$scratch/backup-reader-inventory.txt" || fail 'inventory did not report no PUBLIC USAGE on cron'
-rg -qx 'public\\|t' "$scratch/backup-reader-inventory.txt" || fail 'inventory did not report PUBLIC USAGE on public'
-printf 'PASS inventory SQL executed on isolated PG17 and PUBLIC ACL results verified\\n'
+rg -Fqx 'net|t' "$scratch/backup-reader-inventory.txt" || fail 'inventory did not report PUBLIC USAGE on net'
+rg -Fqx 'cron|f' "$scratch/backup-reader-inventory.txt" || fail 'inventory did not report no PUBLIC USAGE on cron'
+rg -Fqx 'public|t' "$scratch/backup-reader-inventory.txt" || fail 'inventory did not report PUBLIC USAGE on public'
+printf 'PASS inventory SQL executed on isolated PG17 and PUBLIC ACL results verified\n'
 
 printf 'Server %s; ' "$(source_admin -Atqc 'SHOW server_version')"
 source_admin -Atqc "SELECT string_agg(extname || '=' || extversion, ', ' ORDER BY extname)
