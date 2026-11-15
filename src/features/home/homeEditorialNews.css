@@ -252,3 +252,12 @@
 @media (prefers-reduced-motion: reduce) {
   .home-editorial .editorial-card { transition: none; }
 }
+
+.editorial-fallback {
+  padding: 1.25rem;
+  border: 1px solid var(--editorial-line);
+  border-radius: .85rem;
+  background: #142137;
+  color: var(--editorial-muted);
+  line-height: 1.6;
+}
