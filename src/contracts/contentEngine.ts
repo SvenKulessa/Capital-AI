@@ -216,5 +216,13 @@ export function channelsForCampaign(plan: ContentEnginePlan): readonly GrowthMar
 
 /** Read-only website projection of approved editorial source; grants no publish authority. */
 export function presentBlogArticle<T extends { title: string; intro: string; sections: readonly { title: string; body: string }[] }>(source: T) {
-  return { ...source, presentation: { layout: 'SCI_FI_LETTER' as const, greeting: '✉️ CAPITAL AI · Wissen & Lernen', sectionMark: '✦', illustrationFormat: 'SVG' as const } };
+  return { ...source, presentation: {
+    layout: 'SCI_FI_LETTER' as const,
+    universeIdentity: CONTENT_ENGINE_UNIVERSE.id,
+    sevenColorFamilies: CONTENT_ENGINE_UNIVERSE.palette,
+    illustrationRequired: true as const,
+    greeting: '✉️ CAPITAL AI · Wissen & Lernen',
+    sectionMark: '✦',
+    illustrationFormat: 'SVG' as const,
+  } };
 }

@@ -10,13 +10,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from capital_ai_media import (
     DEFAULT_TOKEN_PATH, MediaRenderError, RenderScene,
     load_brand_palette, render_brand_card, render_scene_frame,
 )
+
+from render_chart_learning import draw_universe_markers
 
 REPO = Path(__file__).resolve().parents[2]
 FAMILIES = ("cyan", "violet", "gold", "pink", "rose", "blue", "green")
@@ -51,6 +53,16 @@ class UniverseBrandTests(unittest.TestCase):
                 with self.assertRaisesRegex(MediaRenderError, r"UNIVERSE_PALETTE_"):
                     load_brand_palette(token_file)
 
+    def test_chart_learning_illustration_has_seven_hues(self):
+        palette = load_brand_palette()
+        image = Image.new("RGB", (1200, 675), palette.background)
+        draw_universe_markers(ImageDraw.Draw(image), palette)
+        for index, hue in enumerate(palette.universe_colors):
+            self.assertEqual(
+                image.getpixel((894 + index * 42, 657)),
+                tuple(bytes.fromhex(hue[1:])),
+            )
+
     def assert_spectrum_rail(self, image_path: Path, colors: tuple[str, ...]):
         with Image.open(image_path) as image:
             image = image.convert("RGB")
@@ -82,6 +94,15 @@ class UniverseBrandTests(unittest.TestCase):
             )
             self.assert_spectrum_rail(card, palette.universe_colors)
             self.assert_spectrum_rail(frame, palette.universe_colors)
+            for width, height in [(1080, 1080), (1080, 1920)]:
+                path = folder / f"brand-{width}x{height}.png"
+                render_brand_card(
+                    output_path=path, width=width, height=height,
+                    title="Universe", subtitle="Sieben spektrale Markenfarben",
+                    disclaimer="Nur ein deterministischer Entwurf",
+                    palette=palette,
+                )
+                self.assert_spectrum_rail(path, palette.universe_colors)
 
 
 if __name__ == "__main__":
