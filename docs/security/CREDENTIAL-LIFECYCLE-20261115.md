@@ -36,7 +36,7 @@ The **existing** `Google Maintenance and Local Growth Graph` workflow already ru
 
 ## Verification and outstanding evidence
 
-Local stdlib regression: 12 tests discovered, 11 passed, 1 LangGraph integration test skipped because LangGraph is not installed in the isolated local runner. Pinned CI must execute the graph integration test and its other existing checks; **until actual CI run/exit code and head SHA are read back, CI is `NOT_PROVEN`**.
+Local stdlib regression: 13 tests discovered, 12 passed, 1 LangGraph integration test skipped because LangGraph is not installed in the isolated local runner. Pinned CI must execute the graph integration test and its other existing checks; **until actual CI run/exit code and head SHA are read back, CI is `NOT_PROVEN`**.
 
 `NOT_PROVEN`: actual provider key issuance/expiry dates, Google/Stripe/GitHub/Render credential metadata, OAuth refresh outcomes, runtime live status, and any downstream messaging integration. None of these are claimed by repository tests. The existing owner-only X refresh requires separate authorization and paid-API policy, and the YouTube resolver retains its own grant-specific refresh mechanism; neither is invoked by this manager.
 

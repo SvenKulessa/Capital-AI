@@ -102,6 +102,14 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(set(report["credentials"][0]), {"id", "provider", "verdict", "action", "days_remaining", "evidence_status"})
         self.assertNotIn("token", json.dumps(report).lower())
 
+    def test_curated_repository_inventory_validates(self):
+        project = Path(__file__).resolve().parents[2]
+        file = project / "config" / "credential-lifecycle.inventory.json"
+        inventory = json.loads(file.read_text(encoding="utf-8"))
+        report = subject.evaluate_offline(inventory, at=NOW)
+        self.assertEqual(len(report["credentials"]), 17)
+        self.assertEqual(report["status"], "NOT_PROVEN")
+
     def test_graph_nodes_and_bounded_terminal_evidence(self):
         try:
             import langgraph  # noqa: F401

@@ -69,7 +69,7 @@ def validate_inventory(raw: object) -> list[dict]:
         seen.add(ident)
         if (item["kind"] not in KINDS or item["rotation_mode"] not in MODES
                 or not isinstance(item["provider"], str)
-                or not re.fullmatch(r"[A-Za-z][A-Za-z0-9 -]{1,40}", item["provider"])
+                or not re.fullmatch(r"[A-Za-z][A-Za-z0-9 -]{0,40}", item["provider"])
                 or not isinstance(item["consumer"], str)
                 or not ID.fullmatch(item["consumer"])
                 or not isinstance(item["source_ref"], str)
