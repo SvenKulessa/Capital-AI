@@ -3,6 +3,8 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import {editorialScore,selectHomeEdition} from './home-editorial-edition.mjs';
+import {HOME_EDITORIAL_REVIEW_VERSION, HOME_RIGHTS_USE_CASES, homeReviewContentSnapshot} from
+  '../../src/features/home/homeEditorialRightsLedger.mjs';
 
 const published = JSON.parse(await readFile(new URL('../../src/features/home/homeEditorialEdition.json',import.meta.url)));
 const asOf = '2026-11-15';
@@ -28,8 +30,21 @@ const candidate = {
     rights:{story:{...allow},source:{...allow},graphic:{...allow}},
   },
 };
+const fixtureReviews = ['story','source','graphic'].map(kind=>({
+  reviewVersion:HOME_EDITORIAL_REVIEW_VERSION,
+  decision:'APPROVED',
+  storyId:candidate.id,
+  kind,
+  allowedUse:HOME_RIGHTS_USE_CASES[kind],
+  evidenceRef:candidate.evidence.rights[kind].evidenceRef,
+  reviewedAt:candidate.evidence.rights[kind].reviewedAt,
+  contentSnapshot:homeReviewContentSnapshot(candidate),
+}));
+test('unregistered fake candidate approvals never select content',()=>{
+  assert.equal(selectHomeEdition(edition,[candidate],asOf),edition);
+});
 test('replaces only with better eligible rights-provenance candidate, preserving news and graphic',()=>{
-  const next = selectHomeEdition(edition,[candidate,candidate],asOf);
+  const next = selectHomeEdition(edition,[candidate,candidate],asOf,fixtureReviews);
   assert.equal(next.stories.length,3);
   assert.equal(next.stories[2].id,candidate.id);
   assert.deepEqual(next.stories[2].graphic,candidate.graphic);
@@ -44,15 +59,15 @@ test('replaces only with better eligible rights-provenance candidate, preserving
 test('retains the same edition if candidates are not better, fresh and rights-admitted',()=>{
   assert.equal(selectHomeEdition(edition,[],asOf),edition);
   assert.equal(selectHomeEdition(edition,[example],asOf),edition);
-  assert.equal(selectHomeEdition(edition,[{...candidate,title:example.title}],asOf),edition);
-  assert.equal(selectHomeEdition(edition,[{...candidate,editorial:{relevance:1,impact:0}}],asOf),edition);
+  assert.equal(selectHomeEdition(edition,[{...candidate,title:example.title}],asOf,fixtureReviews),edition);
+  assert.equal(selectHomeEdition(edition,[{...candidate,editorial:{relevance:1,impact:0}}],asOf,fixtureReviews),edition);
   const stale={...candidate,source:{...candidate.source,date:'2026-10-28',label:label('2026-10-28')}};
-  assert.equal(selectHomeEdition(edition,[stale],asOf),edition);
-  assert.equal(selectHomeEdition(edition,[{...candidate,editorial:{relevance:3,impact:2}}],asOf),edition);
+  assert.equal(selectHomeEdition(edition,[stale],asOf,fixtureReviews),edition);
+  assert.equal(selectHomeEdition(edition,[{...candidate,editorial:{relevance:3,impact:2}}],asOf,fixtureReviews),edition);
   const pending={...candidate,evidence:{...candidate.evidence,
     rights:{...candidate.evidence.rights,story:{decision:'REVIEW_REQUIRED',
       websiteAllowed:false,evidenceRef:null,reviewedAt:null}}}};
-  assert.equal(selectHomeEdition(edition,[pending],asOf),edition);
+  assert.equal(selectHomeEdition(edition,[pending],asOf,fixtureReviews),edition);
 });
 test('rejects missing media, hostile sources, futures, fabricated market data and invalid rights',()=>{
   assert.throws(()=>selectHomeEdition(edition,[{...candidate,graphic:null}],asOf),/HOME_GRAPHIC/);
