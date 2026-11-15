@@ -26,7 +26,7 @@ export function SentimentIntelligencePanel({
     <section
       id="market-sentiment-section"
       className="space-y-4 px-3 py-6 sm:px-5"
-      aria-label="Market Sentiment Index"
+      aria-label="Marktstimmungsindex"
     >
       <div
         className={
@@ -37,24 +37,23 @@ export function SentimentIntelligencePanel({
           <div>
             <p className="flex items-center gap-2 text-xs font-mono tracking-widest text-cyan-300">
               <Activity size={16} aria-hidden="true" />
-              MARKET SENTIMENT INDEX
+              MARKTSTIMMUNGSINDEX
             </p>
             <h2 className="mt-2 text-2xl font-bold text-white">
-              Stimmung verstehen. Quellen prüfen.
+              Was steckt hinter der Marktstimmung?
             </h2>
           </div>
           <DataStatusBadge mode="unavailable" />
         </div>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300">
-          Nachrichten, Social-Signale und Preisreaktionen werden getrennt
-          untersucht. Ein Stimmungsindex ist keine Kauf- oder Verkaufsanweisung.
+          Nachrichten, Social-Media-Beiträge und Kursreaktionen liefern unterschiedliche Hinweise. Der Index dient zur Einordnung der Stimmung. Keine Anlageberatung.
         </p>
         <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_2fr]">
           <div className="rounded-xl border border-slate-700 bg-slate-950/70 p-5">
-            <p className="text-sm text-slate-300">Gesamtmarkt-Sentiment</p>
+            <p className="text-sm text-slate-300">Stimmung am Gesamtmarkt</p>
             <p className="my-4 text-5xl font-mono text-slate-500">—</p>
             <p role="status" className="text-sm text-amber-200">
-              Keine validierte Indexberechnung
+              Indexberechnung nicht validiert
             </p>
             <dl className="mt-4 space-y-2 text-xs text-slate-400">
               <div className="flex justify-between gap-2">
@@ -71,14 +70,14 @@ export function SentimentIntelligencePanel({
               </div>
             </dl>
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 [overflow-wrap:anywhere] min-[360px]:grid-cols-2 sm:grid-cols-3">
             {[
-              ['News-Sentiment', 'Relevanz + Quellenautorität'],
-              ['Social-Sentiment', 'Engagement + Bot-Prüfung'],
-              ['Preisreaktion', 'Zeitlich zugeordnete Kursdaten'],
-              ['Volatilitätsanpassung', 'Historie + Regime'],
-              ['Sentiment-Geschwindigkeit', 'Vergleichbare Zeitfenster'],
-              ['Streuung / Widerspruch', 'Mehrere unabhängige Quellen'],
+              ['Stimmung in Nachrichten', 'Relevanz und Verlässlichkeit der Quellen'],
+              ['Stimmung auf Social Media', 'Interaktionsdaten und Bot-Prüfung'],
+              ['Kursreaktion', 'Zeitlich zugeordnete Kursdaten'],
+              ['Volatilitätsanpassung', 'Historie und Marktphasen'],
+              ['Tempo der Stimmungsänderung', 'Vergleichbare Zeitfenster'],
+              ['Uneinigkeit der Quellen', 'Mehrere unabhängige Quellen'],
             ].map(([label, required]) => (
               <EmptyMetric
                 key={label}
@@ -90,7 +89,7 @@ export function SentimentIntelligencePanel({
         </div>
         <div className="mt-5 flex flex-wrap items-end gap-3">
           <label className="min-w-48 text-xs text-slate-300">
-            Asset-Class-Sentiment
+            Stimmung nach Anlageklasse
             <select
               className={inputClass + ' mt-1'}
               value={assetClass}
@@ -109,7 +108,7 @@ export function SentimentIntelligencePanel({
             className={buttonClass}
             onClick={() => setMethodology(true)}
           >
-            Methodik & Datenbedarf
+            Methode und Datenbedarf
           </button>
           {onStartAnalysis ? (
             <button
@@ -131,9 +130,7 @@ export function SentimentIntelligencePanel({
         <p className="mt-3 text-xs text-slate-400">
           {ASSET_LABELS[assetClass as keyof typeof ASSET_LABELS] ??
             'Gesamtmarkt'}
-          : Kein Index ohne Quelle, beobachteten Zeitstempel, Konfidenz und
-          Abdeckungsnachweis. LIVE / DELAYED wird erst mit passender Provenienz
-          angezeigt.
+          : Ein Indexwert setzt belegte Quellen, Beobachtungszeit, Konfidenz und Datenabdeckung voraus. Ob Daten live oder verzögert sind, zeigen wir bei belegter Herkunft an.
         </p>
       </div>
       <AnalysisDialog

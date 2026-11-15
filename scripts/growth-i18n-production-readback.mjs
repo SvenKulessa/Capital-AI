@@ -7,7 +7,7 @@ import {tmpdir} from 'node:os';
 const origin = new URL(process.env.CAPITAL_I18N_ORIGIN || 'https://capital-ai-uvsl.onrender.com').origin;
 // A pull request can run against the production version before the CTA deploys.
 const languages = {
-  de: ['Marktdaten', 'Learning Hub öffnen'],
+  de: ['Marktnews', 'Learning Hub öffnen'],
   en: ['Understand', 'Open Learning Hub'],
   it: ['Comprendere', 'Apri il Learning Hub'],
   fr: ['Comprendre', 'Ouvrir le Learning Hub'],

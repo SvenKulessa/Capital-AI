@@ -3,10 +3,11 @@ import { HomeSearchFocus } from './HomeSearchFocus';
 import { Hero } from '../../components/Hero';
 
 
+const HomeEditorialNews = lazy(() => import('./HomeEditorialNews').then(module => ({ default: module.HomeEditorialNews })));
 const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
-import { KeyPillars } from '../../components/KeyPillars';
+const KeyPillars = lazy(() => import('../../components/KeyPillars').then(module => ({ default: module.KeyPillars })));
 // Secondary, below-the-fold market widgets should not inflate the initial landing bundle.
 const MarketSentiment = lazy(() => import('../market/MarketSentiment').then(module => ({ default: module.MarketSentiment })));
 const SectorAnalysis = lazy(() => import('../market/SectorAnalysis').then(module => ({ default: module.SectorAnalysis })));
@@ -77,12 +78,15 @@ export function HomePage({
 
       <Hero onExploreProduct={onStartProductTour} />
 
-      <section aria-label="Produkt entdecken" className="mx-auto max-w-7xl px-5 py-6">
+      <section aria-label="CAPITAL-AI entdecken" className="mx-auto max-w-7xl px-5 py-6">
         <button type="button" onClick={onStartProductTour} className="rounded-[3rem] border border-cyan-300/40 bg-cyan-950/60 px-8 py-5 text-left text-cyan-100 shadow-lg motion-safe:animate-[capital-cloud-float_8s_ease-in-out_infinite]">
-          <strong className="block text-lg">Produkt entdecken</strong>
-          <span className="text-sm">Finanzwissen lernen. Analysemethoden verstehen.</span>
+          <strong className="block text-lg">CAPITAL-AI entdecken</strong>
+          <span className="text-sm">Finde den Einstieg, der zu deiner Frage passt.</span>
         </button>
       </section>
+      <Suspense fallback={null}>
+        <HomeEditorialNews />
+      </Suspense>
       <HomeSearchFocus />
       <CommerceEntrySection onNavigate={onNavigate} />
       <HomeLatestLearning onNavigate={onNavigate} />
@@ -95,7 +99,9 @@ export function HomePage({
           onOpenPriceAlerts={onOpenPriceAlerts}
         />
       </Suspense>
-      <KeyPillars />
+      <Suspense fallback={null}>
+        <KeyPillars />
+      </Suspense>
       <Suspense fallback={null}>
         <ContentEngineConcept onNavigate={onNavigate} />
       </Suspense>

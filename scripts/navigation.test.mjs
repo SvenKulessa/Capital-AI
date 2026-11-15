@@ -498,7 +498,7 @@ test('brand catalog exposes agreed hub names and leaves native responsive keyboa
   const nav = readFileSync(new URL('../src/components/HubNavigationPanel.tsx',import.meta.url),'utf8');
   assert.match(catalog,/name: 'Analytics Hub'/);
   assert.match(catalog,/name: 'Learning Hub'/);
-  assert.match(catalog,/name: 'Dokumentation Hub'/);
+  assert.match(catalog,/name: 'Dokumentation'/);
   assert.match(nav,/ResizeObserver/);
   assert.match(nav,/hub-tab-strip/);
   assert.match(nav,/prefers-reduced-motion/);

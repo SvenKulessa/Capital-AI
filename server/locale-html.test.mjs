@@ -30,7 +30,7 @@ test('country and manual locale bootstrap is privacy-safe and consistent', async
     }
     const site = 'https://capital-ai.online';
     const headings = {
-      de: 'Finanzbegriffe verstehen.',
+      de: 'Marktnews verstehen.',
       en: 'Understand financial terms.',
       it: 'Comprendi i termini finanziari.',
       fr: 'Comprenez les termes financiers.',

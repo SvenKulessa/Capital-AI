@@ -11,7 +11,7 @@ export const SectorAnalysis: React.FC<{
   onExploreMarkets?: (category?: MainCategory | 'ALLE') => void;
 }> = () => (
   <DataUnavailable
-    title="Sector Rotation"
+    title="Sektorrotation"
     required="vergleichbare Sektor- und Benchmark-Zeitreihen"
     id="sector-analysis-section"
   />

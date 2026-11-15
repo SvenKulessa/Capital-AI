@@ -8,27 +8,32 @@ export function LanguageSwitcher() {
     <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-600/60 bg-slate-900/80 px-1.5 py-1 text-slate-200 focus-within:ring-2 focus-within:ring-amber-400/60">
       <Globe2 className="h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden="true" />
       <label className="sr-only" htmlFor="header-language-switcher">{t('language')}</label>
-      <select
-        id="header-language-switcher"
-        lang={locale}
-        value={locale}
-        title={t('language')}
-        aria-label={t('language')}
-        onChange={event => {
-          const next = event.target.value as Locale;
-          setLocale(next);
-          // Keep language-specific homepage URLs truthful when users share them.
-          if (window.location.pathname === '/' || /^\/(?:de|en|it|fr|pt|es)\/?$/.test(window.location.pathname)) {
-            const path = next === 'de' ? '/' : `/${next}/`;
-            window.history.replaceState(window.history.state, '', path + window.location.search + window.location.hash);
-          }
-        }}
-        className="w-[46px] sm:w-[100px] cursor-pointer appearance-none bg-transparent py-1 text-[11px] font-semibold text-slate-100 outline-none"
-      >
-        {LANGUAGES.map(({code,name}) => (
-          <option key={code} value={code} className="bg-slate-900 text-slate-100">{code.toUpperCase()} · {name}</option>
-        ))}
-      </select>
+      <div className="relative">
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 grid place-items-center text-[11px] font-semibold sm:hidden">
+          {locale.toUpperCase()}
+        </span>
+        <select
+          id="header-language-switcher"
+          lang={locale}
+          value={locale}
+          title={t('language')}
+          aria-label={t('language')}
+          onChange={event => {
+            const next = event.target.value as Locale;
+            setLocale(next);
+            // Keep language-specific homepage URLs truthful when users share them.
+            if (window.location.pathname === '/' || /^\/(?:de|en|it|fr|pt|es)\/?$/.test(window.location.pathname)) {
+              const path = next === 'de' ? '/' : `/${next}/`;
+              window.history.replaceState(window.history.state, '', path + window.location.search + window.location.hash);
+            }
+          }}
+          className="w-8 cursor-pointer appearance-none bg-transparent py-1 text-[11px] font-semibold text-transparent outline-none sm:w-[100px] sm:text-slate-100"
+        >
+          {LANGUAGES.map(({code,name}) => (
+            <option key={code} value={code} className="bg-slate-900 text-slate-100">{code.toUpperCase()} · {name}</option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }
