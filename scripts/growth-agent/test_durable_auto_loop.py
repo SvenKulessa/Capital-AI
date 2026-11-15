@@ -5,7 +5,6 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 
 here = Path(__file__).with_name("auto_loop.py")
 spec = importlib.util.spec_from_file_location("capital_durable_execution", here)
@@ -100,3 +99,65 @@ class DurableTests(unittest.TestCase):
         # Compile behavior is verified in the normal test suite; this source
         # regression guards the side-effect node even after a checkpoint.
         self.assertIn("authority.read_only or not authority.allow_merge", here.read_text())
+
+
+class InterruptedRecoveryTests(unittest.TestCase):
+    def test_pending_checkpoint_resumes_at_next_node_without_reimplementing(self):
+        from langgraph.checkpoint.sqlite import SqliteSaver
+        with tempfile.TemporaryDirectory() as directory:
+            db = str(Path(directory, "pending.sqlite"))
+            config = {"configurable": {"thread_id": "pending:one"}, "recursion_limit": 24}
+            original = Actions()
+            authority = loop.Authority(allow_changes=True)
+            with SqliteSaver.from_conn_string(db) as saver:
+                graph = loop.build_graph(original, authority, checkpointer=saver,
+                                         interrupt_after=["implement"])
+                paused = graph.invoke({"task_id": "pending:one", "attempts": 0,
+                                       "history": []}, config)
+                self.assertEqual(paused["status"], "IMPLEMENTED")
+                self.assertEqual(graph.get_state(config).next, ("test",))
+            recovered = Actions()
+            result = loop.execute_durable(recovered, authority, "pending:one", db)
+            self.assertEqual(result["status"], "MERGE_NOT_PROVEN")
+            self.assertEqual(original.calls, ["analyze", "implement"])
+            self.assertEqual(recovered.calls, ["test", "evidence"])
+
+    def test_revoked_authority_blocks_resume_at_merge_node(self):
+        from langgraph.checkpoint.sqlite import SqliteSaver
+
+        class Ready(Actions):
+            def evidence(self, state):
+                self.calls.append("evidence")
+                return {
+                    "base_sha": "a" * 40, "head_sha": "b" * 40,
+                    "checks": {"Docker Security Gate": "success",
+                               "Domain Governance": "success"},
+                    "applicable_checks_green": True, "mergeable": True,
+                    "trust_boundaries_clear": True, "scope_complete": True,
+                    "current_main": True, "no_active_hold": True, "run_ids": [12],
+                }
+
+            def merge(self, state):
+                self.calls.append("merge")
+                return {"merged": True, "sha": "c" * 40,
+                        "expected_head_sha": "b" * 40}
+
+        with tempfile.TemporaryDirectory() as directory:
+            db = str(Path(directory, "revoke.sqlite"))
+            task = "revoke:one"
+            config = {"configurable": {"thread_id": task}, "recursion_limit": 24}
+            prior = Ready()
+            with SqliteSaver.from_conn_string(db) as saver:
+                graph = loop.build_graph(prior, loop.Authority(
+                    allow_changes=True, allow_merge=True), checkpointer=saver,
+                    interrupt_after=["authorize"])
+                paused = graph.invoke({"task_id": task, "attempts": 0,
+                                       "history": []}, config)
+                self.assertEqual(paused["status"], "MERGE_READY")
+                self.assertEqual(graph.get_state(config).next, ("merge",))
+            revoked = Ready()
+            result = loop.execute_durable(revoked, loop.Authority(
+                read_only=True, allow_merge=False, allow_changes=False), task, db)
+            self.assertEqual(result["status"], "BLOCKED")
+            self.assertEqual(revoked.calls, [])
+            self.assertIn("merge_denied", result["history"])

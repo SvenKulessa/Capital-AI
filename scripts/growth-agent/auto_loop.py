@@ -67,7 +67,7 @@ def merge_evidence_verified(evidence: object) -> bool:
                 "scope_complete", "current_main", "no_active_hold"))
 
 
-def build_graph(actions, authority: Authority, *, checkpointer=None):
+def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_after=None):
     """Compile LangGraph without granting authority to runtime inputs.
 
     Trusted actions: analyze, implement, test, repair, evidence, merge,
@@ -187,7 +187,8 @@ def build_graph(actions, authority: Authority, *, checkpointer=None):
                                   lambda s: "verify" if s["status"] == "DEPLOYED" else "end",
                                   {"verify": "verify", "end": END})
     builder.add_edge("verify", END)
-    return builder.compile(checkpointer=checkpointer if checkpointer is not None else InMemorySaver())
+    return builder.compile(checkpointer=checkpointer if checkpointer is not None else InMemorySaver(),
+                           interrupt_after=interrupt_after)
 
 
 def execute(actions, authority: Authority, task_id: str) -> LoopState:
