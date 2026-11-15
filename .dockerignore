@@ -372,6 +372,9 @@
 !supabase/migrations/20261012194709_capital_ai_private_blueprint_rpc_full_v1.sql
 !supabase/migrations/20261013002248_blueprint_contract_confirmation_receipt_20261013.sql
 !server/social-media/
+!server/social-media/crypto-signal-sources.mjs
+!server/social-media/crypto-signal-workflow.mjs
+!server/social-media/crypto-signal-workflow.test.mjs
 !server/social-media/provider-adapter.mjs
 !server/social-media/provider-adapter.test.mjs
 !server/social-media/provider-store.mjs

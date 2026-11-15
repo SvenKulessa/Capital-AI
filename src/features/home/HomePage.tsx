@@ -3,6 +3,7 @@ import { HomeSearchFocus } from './HomeSearchFocus';
 import { Hero } from '../../components/Hero';
 
 
+const CryptoMarketSignals = lazy(() => import('./CryptoMarketSignals').then(module => ({ default: module.CryptoMarketSignals })));
 const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
@@ -86,6 +87,7 @@ export function HomePage({
       <HomeSearchFocus />
       <CommerceEntrySection onNavigate={onNavigate} />
       <HomeLatestLearning onNavigate={onNavigate} />
+      <Suspense fallback={null}><CryptoMarketSignals /></Suspense>
 
       <Suspense fallback={null}>
         <HomeHubDirectory

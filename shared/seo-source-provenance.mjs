@@ -17,8 +17,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: 'c385d667c66cc02ca92dbaf3becb2ee6f535fed884984a76d725b5c4b5b54d59',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: '8bfbf4b1159b1e23955c4a025a0c825e10f5d2ae',
-    contentSha256: '7f61488276336657a0530f002aa0c8b6baadcd09e4c80804cc6f2f7b9a9ca5c5',
+    sourceBlobSha: 'c530033e4882182d3619ba5040db71a6ee7c8c95',
+    contentSha256: '4bc8f47b23362e7e282494065cc3bd5dcdb6f8e6e31607dde6389aa72f46e00e',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
     sourceBlobSha: '05604f09429f309467fa9251ca28fa2dfe01c193', contentSha256: 'bc97a21178ec31c2e247c0591161a395a402bcbd0693af59c9cfa0eaff757864',
@@ -66,7 +66,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '0fdbaf01298830facf680c3c6c37bdeca30d5bf26994cd2c0da2e26c49dea801',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
-  'index.html|src/features/home/HomePage.tsx': '462f90d4463ea291674957f32a8493ec4ad1c3c81446e523a4ab61be49208802',
+  'index.html|src/features/home/HomePage.tsx': '3f05d016cf415360a4df66eefd5ee8dfd10ec2220a11ff30618eeb72efe6b77d',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'c65373efc03ac581d3e3127f8479f29b0f9fb46e6eba17e631ca3863da5d7f0d',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',
