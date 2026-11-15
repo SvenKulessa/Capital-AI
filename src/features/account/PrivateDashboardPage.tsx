@@ -146,7 +146,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
   }
 
   async function mergeConflict(merged: string) {
-    if (!conflict || savingRef.current || revoked.current) return;
+    if (!conflict || savingRef.current || revoked.current || writeLocked) return;
     savingRef.current = true;
     setBusy(true);
     setError('');
@@ -231,7 +231,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
             {!loaded && !error && <p role="status" className="text-slate-300">Notizen werden geladen …</p>}
             {status && <p role="status" className="text-emerald-200">{status}</p>}
             {error && <p role="alert" className="text-rose-200">{error}</p>}
-            {conflict && <NotesConflictPanel conflict={conflict} busy={busy}
+            {conflict && <NotesConflictPanel conflict={conflict} busy={busy || writeLocked}
               onUseServer={acceptServer} onMerge={text => void mergeConflict(text)} />}
           </form>
         </section>

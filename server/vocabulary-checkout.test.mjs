@@ -343,6 +343,37 @@ test('legacy errors cannot be mislabeled as migrated read-only lock', async()=> 
   }
 });
 
+
+test('legacy lock decoding rejects oversized, malformed and wrong-status provider errors', async()=> {
+  const userId='11111111-1111-4111-8111-111111111111';
+  for (const [status, body] of [
+    [400, 'x'.repeat(5000)],
+    [400, '{"code":"P0001","message":"notes_revision_required"'],
+    [500, JSON.stringify({code:'P0001',message:'notes_revision_required'})],
+    [409, JSON.stringify({code:'P0001',message:'notes_revision_required'})],
+  ]) {
+    let calls=0;
+    const checkout=createVocabularyCheckout({
+      env,auth:auth(userId),
+      fetchImpl:async()=>{ calls++;return new Response(body,{status}); },
+    });
+    const result=response();
+    await checkout.handle(request({method:'PUT',body:JSON.stringify({
+      expectedUserId:userId,notes:'unsent draft',
+    })}),result,new URL('https://capital-ai.online/api/profile/notes'),json);
+    assert.equal(result.status,503);
+    assert.deepEqual(result.payload,{error:'notes_unavailable'});
+    assert.equal(calls,1);
+  }
+  const checkout=createVocabularyCheckout({
+    env,auth:auth(userId),
+    fetchImpl:async()=>Response.json({code:'P0001',message:'notes_revision_required'},{status:400}),
+  });
+  const get=response();
+  await checkout.handle(request(),get,new URL('https://capital-ai.online/api/profile/notes'),json);
+  assert.equal(get.status,503,'read-only lock must only classify legacy PUT');
+});
+
 test('private notes legacy PUT rejects unconfirmed RPC echoes, without retry',async()=>{
   const userId='11111111-1111-4111-8111-111111111111';
   let calls=0;

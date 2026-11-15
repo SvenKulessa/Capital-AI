@@ -182,7 +182,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   };
 
   const resolveMerge = async (text: string) => {
-    if (!conflict || !userId || busyRef.current) return;
+    if (!conflict || !userId || busyRef.current || writeLocked) return;
     busyRef.current = true;
     setBusy(true);
     setError('');
@@ -280,7 +280,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
       </form>
       {error && <p role="alert" className="text-rose-200">{error} {!userId && <a href="/login" className="underline">Anmelden</a>}</p>}
       {status && <p role="status" className="text-emerald-200">{status}</p>}
-      {conflict && <NotesConflictPanel conflict={conflict} busy={busy} onUseServer={acceptServer} onMerge={text => void resolveMerge(text)} />}
+      {conflict && <NotesConflictPanel conflict={conflict} busy={busy || writeLocked} onUseServer={acceptServer} onMerge={text => void resolveMerge(text)} />}
       {userId && notes.length === 0 && <p role="status" className="text-slate-300">Noch keine JaJa-Notizen.</p>}
       <ul className="grid gap-2">
         {notes.map(note => {
