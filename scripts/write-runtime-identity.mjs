@@ -26,7 +26,33 @@ export function bindRuntimeIdentity(source, sourceSha) {
   return bound;
 }
 
+// Verify the source actually shipped in the built runtime image, not the checkout copy.
+// In particular, an environment-supplied SHA or a second/ambiguous declaration is insufficient.
+export function verifyBakedRuntimeIdentity(source, sourceSha) {
+  const identity = runtimeIdentityDocument(sourceSha);
+  const lines = String(source).split(/\r?\n/);
+  for (const [name, value] of [
+    ['embeddedSourceSha', identity.sourceSha],
+    ['embeddedBuilder', identity.builder],
+  ]) {
+    const declarations = lines.filter(line => line.startsWith('const ' + name + ' = '));
+    if (declarations.length !== 1 || declarations[0] !== `const ${name} = '${value}';`) {
+      throw new Error('Baked runtime identity missing, ambiguous or mismatched: ' + name);
+    }
+  }
+  if (source.includes(SOURCE_PLACEHOLDER) || source.includes(BUILDER_PLACEHOLDER)) {
+    throw new Error('Unbound placeholder remains in runtime image');
+  }
+  return identity;
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const target = resolve('server/index.mjs');
-  writeFileSync(target, bindRuntimeIdentity(readFileSync(target, 'utf8'), process.argv[2]));
+  if (process.argv[2] === 'verify') {
+    if (!process.argv[3]) throw new Error('Expected baked runtime source path');
+    verifyBakedRuntimeIdentity(readFileSync(resolve(process.argv[3]), 'utf8'), process.argv[4]);
+    console.log('BUILD_IDENTITY_IMAGE_MATCH');
+  } else {
+    const target = resolve('server/index.mjs');
+    writeFileSync(target, bindRuntimeIdentity(readFileSync(target, 'utf8'), process.argv[2]));
+  }
 }
