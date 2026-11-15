@@ -116,6 +116,8 @@ jobs:
           fi
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/scorer-methodology-browser.mjs
       - name: Analytics news overview and archive viewport QA
+        env:
+          CAPITAL_AI_PR_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
