@@ -1,40 +1,14 @@
-# Hreflang-Aktivierung nach CADS-Prüfung
-**Status:** PROPOSED  
-**Arbeitspaket:** CA-GROWTH-SEO-ARCHITECTURE  
-**Governance:** AGENTS.md / SOLO_MAINTAINER_FLOW@2  
-**Datum:** 15.11.2026
+# Hreflang für die Sprachseiten
 
-## Voraussetzung: CADS-Prüfung
+**Status:** BLOCKED  
+**Geprüfte Main-Basis:** `91fe8f2e797fd61e098f4f5e187afeb225f9e721`
 
-Vor der Aktivierung von hreflang muss eine CADS-Qualitätsprüfung der Sprachinhalte erfolgen.
+Die sechs Sprachpfade `/de/`, `/en/`, `/it/`, `/fr/`, `/pt/` und `/es/` sind als Vorschau klassifiziert. Der Server liefert `noindex, nofollow`. Der bestehende HTTP-Test `server/locale-html.test.mjs` prüft für alle sechs Pfade außerdem das Fehlen von hreflang und Canonical.
 
-### CADS-Kriterien (Mindestanforderungen)
-- Inhaltliche Vollständigkeit der Übersetzungen
-- Terminologische Konsistenz
-- Keine irreführenden oder unvollständigen Aussagen
-- Abgleich mit den deutschen Quelltexten
-- Branding- und Lizenzkonformität
+Die [bestehende Spezifikation](../20261114/HREFLANG_DETAILED_SPEC.md) dokumentiert unvollständige serverseitige Sprachinhalte. Eine überprüfbare inhaltliche Freigabe für alle sechs Versionen liegt in diesem PR nicht vor.
 
-## Code-basierte Vorbereitung (bereits umgesetzt)
+## Abnahme der Aktivierung
 
-1. `injectHreflang` in `server/index.mjs` implementiert (fail-closed)
-2. Policy-Umstellung auf `INDEX` vorbereitet
-3. Sitemap-`xhtml:link`-Erweiterung spezifiziert
-4. Validierungsprozess freigegeben
-
-## Aktivierungsschritte nach bestandener CADS-Prüfung
-
-1. CADS-Evidence dokumentieren
-2. Policy-Commit (`NOINDEX` → `INDEX` für Sprachpfade)
-3. `injectHreflang` in die HTML-Pipeline einbinden
-4. Sitemap um `xhtml:link` erweitern
-5. Deployment
-6. Validierung mit Merkle/TechnicalSEO + Screaming Frog + GSC
-7. Evidence im Arbeitspaket hinterlegen
-
-## Aktueller Stand
-- Code vorbereitet
-- CADS-Prüfung: **OFFEN**
-- Aktivierung: **nicht durchgeführt**
-
-**Empfehlung:** Aktivierung erst nach dokumentierter CADS-Freigabe der Sprachinhalte.
+1. Den vollständigen öffentlichen Hauptinhalt pro Sprachpfad ohne JavaScript prüfen. Übersetzung, Terminologie und Produktangaben anhand der deutschen Quelle abgleichen.
+2. Für freigegebene Seiten selbstreferenzierende Canonicals und wechselseitige hreflang-Verweise im ausgelieferten HTML implementieren. Nur indexierbare Varianten in die Sitemap aufnehmen.
+3. Über die bestehenden Locale- und SEO-Tests HTTP-Status, Sprache, Canonical, hreflang, Sitemap und die Ausschlussregeln prüfen.

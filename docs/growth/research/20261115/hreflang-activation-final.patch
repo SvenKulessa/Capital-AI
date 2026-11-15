@@ -1,3 +1,0 @@
-See local artifacts/hreflang-activation-final.patch for full content.
-Pipeline: injectHreflang(applySeoIndexingPolicy(...))
-Sitemap: xhtml:link annotations added for locale paths.
