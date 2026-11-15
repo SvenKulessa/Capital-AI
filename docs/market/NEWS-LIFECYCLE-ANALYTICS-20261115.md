@@ -1,5 +1,7 @@
 # CAPITAL-AI · News Lifecycle, Analytics-Hub und BI (2026-11-15)
 
+**Reconciliation:** Aktueller Referenz-Main für #739-Schutz `136bfec79d0beedeee71ab25e01c304a2bc7b453`; der MARKET-Artefaktpfad bleibt bis PR-/CI-Abnahme DRAFT, echte Content-Receipts und Live-Nachweis sind weiterhin NOT_PROVEN.
+
 ## Zielbild
 
 ```mermaid
@@ -18,7 +20,7 @@ flowchart LR
 
 ## Rechte und Sichtbarkeit
 
-Jede automatisch verschobene News erhält `rights.status=REVIEW_REQUIRED` und `marketImpact.status=NOT_PROVEN`. Die öffentliche UI prüft ein unabhängiges, am vollständigen Nachrichtensnapshot gebundenes `NEWS_ARCHIVE_PUBLIC_REVIEWS`-Ledger zusätzlich zu Rechte-Metadaten. Das echte Ledger ist leer; ein selbst gesetztes `APPROVED` wird verworfen. Dasselbe gilt für Marktimpact mit eigenem `NEWS_IMPACT_PUBLIC_REVIEWS`-Ledger. Keine selbst autorisierende Einreichung, kein Providerabruf, kein neuer Scheduler, keine Produktiv-SQL- oder Storage-Änderungen. Der Rechte-/Provenance-Gate in offenem PR #739 wird vor einer Veröffentlichung gegen exakte Artikel-/Grafik-Snapshots integriert und geprüft. **Nicht allein aufgrund eines JSON-Flags veröffentlichen.** Der Index startet leer, weil bislang keine Verdrängung aus der Homepage nachgewiesen wurde. Das ist kein künstlicher Datenbestand.
+Jede automatisch verschobene News erhält `rights.status=REVIEW_REQUIRED` und `marketImpact.status=NOT_PROVEN`. Die öffentliche UI prüft ein unabhängiges, am vollständigen Nachrichtensnapshot gebundenes `NEWS_ARCHIVE_PUBLIC_REVIEWS`-Ledger zusätzlich zu Rechte-Metadaten. Das echte Ledger ist leer; ein selbst gesetztes `APPROVED` wird verworfen. Dasselbe gilt für Marktimpact mit eigenem `NEWS_IMPACT_PUBLIC_REVIEWS`-Ledger. Keine selbst autorisierende Einreichung, kein Providerabruf, kein neuer Scheduler, keine Produktiv-SQL- oder Storage-Änderungen. Der Rechte-/Provenance-Gate wurde mit [PR #739](https://github.com/SvenKulessa/Capital-AI/pull/739) als fail-closed Homepage-Projektion in main (Merge `136bfec79d0beedeee71ab25e01c304a2bc7b453`) integriert. Die Lifecycle-CLI lässt neue Kandidaten ausschließlich durch den **separaten** `homeRightsAdmitted`-Vertrag und das weiterhin leere `HOME_PUBLIC_DISPLAY_REVIEWS`-Ledger zu; fehlt dieser Vertrag oder ein gültiger Content-Snapshot, bleibt die vorherige Edition unverändert. Der lokale Materializer prüft dieselbe Grenze unabhängig erneut, sodass direkter Aufruf mit leerem Archiv den Schutz nicht umgeht. Beide Prüfungen sind technisch fail-closed, stellen **keine Rechtsfreigabe** dar. **Nicht allein aufgrund eines JSON-Flags veröffentlichen.** Der Index startet leer, weil bislang keine Verdrängung aus der Homepage nachgewiesen wurde. Das ist kein künstlicher Datenbestand.
 
 ## Marktimpact · nachträglicher Bewertungsprozess
 
