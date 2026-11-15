@@ -18,7 +18,7 @@ chrome.on('error',()=>{});
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let socket,sequence=0;
 const pending=new Map(),errors=[];
-const report={version:'CAPITAL_AI_NEWS_ARCHIVE_BROWSER@1',sha:process.env.GITHUB_SHA??null,
+const report={version:'CAPITAL_AI_NEWS_ARCHIVE_BROWSER@1',testedCheckoutSha:process.env.GITHUB_SHA??null,prHeadSha:process.env.CAPITAL_AI_PR_HEAD??null,
   scope:'Isolated loopback Chromium, not live deployment',checks:[],status:'NOT_PROVEN'};
 function send(method,params={}){
   return new Promise((resolve,reject)=>{
