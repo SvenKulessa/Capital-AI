@@ -1,3 +1,8 @@
+import {
+  HOME_EDITORIAL_REVIEW_VERSION, HOME_PUBLIC_DISPLAY_REVIEWS,
+  HOME_RIGHTS_USE_CASES, homeReviewContentSnapshot,
+} from './homeEditorialRightsLedger.mjs';
+
 // Shared, side-effect-free admission for Homepage news and the editorial CLI.
 // A CADS/Content Engine plan proves structure, not reuse rights or publication authority.
 export const HOME_SCORE_VERSION = 'CAPITAL_AI_HOME_EDITORIAL_SCORE@1';
@@ -43,12 +48,26 @@ function validateRights(rights, asOf) {
   }
   return rights;
 }
-export function homeRightsAdmitted(story) {
+export function homeRightsAdmitted(story, reviews = HOME_PUBLIC_DISPLAY_REVIEWS) {
+  if (!Array.isArray(reviews)) return false;
+  const snapshot = homeReviewContentSnapshot(story);
   return ['story','source','graphic'].every(key => {
     const rights = story.evidence.rights[key];
-    return rights.decision === 'APPROVED' && rights.websiteAllowed === true &&
-      typeof rights.evidenceRef === 'string' && rights.evidenceRef.length > 0 &&
-      typeof rights.reviewedAt === 'string';
+    if (rights.decision !== 'APPROVED' || rights.websiteAllowed !== true ||
+        typeof rights.evidenceRef !== 'string' || !rights.evidenceRef ||
+        typeof rights.reviewedAt !== 'string') return false;
+    // Candidate metadata must never grant itself permission. The independent
+    // reviewed snapshot must match exactly, including source and rendered graphic.
+    return reviews.some(review =>
+      review?.reviewVersion === HOME_EDITORIAL_REVIEW_VERSION &&
+      review?.decision === 'APPROVED' &&
+      review.storyId === story.id &&
+      review.kind === key &&
+      review.allowedUse === HOME_RIGHTS_USE_CASES[key] &&
+      review.evidenceRef === rights.evidenceRef &&
+      review.reviewedAt === rights.reviewedAt &&
+      review.contentSnapshot === snapshot
+    );
   });
 }
 export function normalizeHomeStory(story, asOf) {
@@ -97,7 +116,7 @@ export function homeEditorialScore(story, asOf) {
   return Math.max(0,30-2*age)+8*story.editorial.relevance+6*story.editorial.impact;
 }
 const fallback = status => ({status,stories:[],date:null,label:null,contractVersion:HOME_CONTENT_ENGINE_VERSION});
-export function projectHomeEditorial(rawEdition, asOf, planCampaign) {
+export function projectHomeEditorial(rawEdition, asOf, planCampaign, reviews = HOME_PUBLIC_DISPLAY_REVIEWS) {
   try {
     homeIsoDay(asOf);
     if (!exact(rawEdition,['date','label','contentEngine','stories']) ||
@@ -124,7 +143,7 @@ export function projectHomeEditorial(rawEdition, asOf, planCampaign) {
         JSON.stringify([...campaign.sourceUrls].sort()) !== JSON.stringify(stories.map(s=>s.source.url).sort())) {
       throw Error('HOME_ENGINE_CONTRACT_INVALID');
     }
-    const admitted = stories.filter(homeRightsAdmitted);
+    const admitted = stories.filter(story => homeRightsAdmitted(story, reviews));
     const fresh = admitted.filter(story =>
       (homeIsoDay(asOf)-homeIsoDay(story.source.date))/day <= story.evidence.freshness.maxAgeDays);
     if (fresh.length === 0) return fallback(admitted.length ? 'STALE_FALLBACK' : 'RIGHTS_BLOCKED');
