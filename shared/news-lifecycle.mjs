@@ -1,3 +1,4 @@
+import { archiveRightsAdmitted, marketImpactAdmitted } from './news-archive-rights.mjs';
 // Deterministic editorial lifecycle. No provider queries, publishing, or database writes.
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 function day(value) {
@@ -74,7 +75,8 @@ export function proposeMarketImpact(item, input) {
   day(item.publishedAt);
   day(input.assessedAt);
   day(input.observedAt);
-  if (input.observedAt < item.publishedAt || input.assessedAt < input.observedAt) throw new Error('Invalid impact observation window');
+  const expectedObservation = new Date(Date.parse(item.publishedAt + 'T00:00:00Z') + input.windowDays * 86_400_000).toISOString().slice(0, 10);
+  if (input.observedAt !== expectedObservation || input.assessedAt < input.observedAt) throw new Error('Invalid impact observation window');
   for (const key of ['assetBefore', 'assetAfter', 'benchmarkBefore', 'benchmarkAfter']) {
     if (!Number.isFinite(input[key]) || input[key] <= 0) throw new Error('Invalid market data');
   }
@@ -98,9 +100,8 @@ export function proposeMarketImpact(item, input) {
     methodology: 'Relative price movement, not proven news causality; magnitude 55%, persistence 25%, breadth 20%.',
   };
 }
-export function publishedNews(items) {
-  return items.filter(item => item?.rights?.status === 'APPROVED' &&
-    typeof item.rights.evidenceRef === 'string' && item.rights.evidenceRef.trim() !== '');
+export function publishedNews(items, reviews) {
+  return items.filter(item => archiveRightsAdmitted(item, reviews));
 }
 export function newsBiRows(items) {
   return items.map(item => ({
@@ -112,8 +113,8 @@ export function newsBiRows(items) {
     source_url: item.source.url,
     editorial_relevance: item.editorial?.relevance ?? null,
     editorial_impact: item.editorial?.impact ?? null,
-    measured_impact_score: item.marketImpact?.status === 'VERIFIED' ? item.marketImpact?.verifiedScore ?? null : null,
-    impact_status: item.marketImpact?.status ?? 'NOT_PROVEN',
+    measured_impact_score: marketImpactAdmitted(item) ? item.marketImpact.verifiedScore : null,
+    impact_status: marketImpactAdmitted(item) ? 'VERIFIED' : 'NOT_PROVEN',
   }));
 }
 export function newsBiCsv(items) {
