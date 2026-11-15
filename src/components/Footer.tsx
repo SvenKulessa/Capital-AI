@@ -40,7 +40,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
       {/* Professional FinTech Slogan */}
       <p className="text-[10px] sm:text-[11px] font-semibold tracking-[0.22em] text-slate-400 uppercase select-none">
-        MARKET INTELLIGENCE • NEXT-GEN QUANT TERMINAL
+        {locale === 'de' ? 'Finanzwissen und Werkzeuge zur Marktanalyse' : 'MARKET INTELLIGENCE • NEXT-GEN QUANT TERMINAL'}
       </p>
 
       <nav aria-label="Capital-AI Community" className="mt-5 flex flex-wrap justify-center gap-3">
@@ -91,7 +91,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </a>
         <span className="text-slate-600">•</span>
         <a id="footer-nav-legal" href="/legal" onClick={(e) => handleNavClick(e, '/legal', 'legal')}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4">Legal</a>
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4">{locale === 'de' ? 'Rechtliches' : 'Legal'}</a>
         <span className="text-slate-600">•</span>
         <a id="footer-nav-kontakt" href="/kontakt" onClick={(e) => handleNavClick(e, '/kontakt', 'kontakt')}
           className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4">Kontakt</a>

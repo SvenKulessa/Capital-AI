@@ -326,10 +326,12 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
         assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
       }
       assert.match(html, /<h1>[^<]+<\/h1>/, route);
-      if (metadataTitle) assert.match(html, /<h1>Capital-AI/, route);
+      if (metadataTitle && route !== '/') assert.match(html, /<h1>Capital-AI/, route);
       assert.doesNotMatch(html, /\/profile\/key-vault|\/control-center|\/api\/billing/, route);
       assert.doesNotMatch(html, /"@type":"Offer"|<script[^>]*src="https:\/\//, route);
       if (route === '/') {
+        assert.match(html, /<h1>Marktnews verstehen\. Charts besser einordnen\.<\/h1>/);
+        assert.match(html, /href="\/learning">Learning Hub öffnen<\/a>/);
         assert.match(html, /href="\/pricing">Tarife und Leistungen ansehen<\/a>/);
         assert.match(html, /href="\/login">Anmelden<\/a>/);
       }

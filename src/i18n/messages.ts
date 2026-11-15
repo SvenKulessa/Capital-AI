@@ -15,16 +15,16 @@ const keys = [
 export type MessageKey = typeof keys[number];
 const localized: Record<Locale, readonly string[]> = {
   de: [
-    'Sprache auswählen','Navigation öffnen','Preisalarme öffnen','Kontomenü öffnen','Login',
-    'Finanzwissen für deinen Einstieg','Finanzbegriffe verstehen.','Marktdaten einordnen.',
-    'Was bedeuten Spread, Volatilität und Scores? Im Learning Hub findest du kostenlose Lernschritte mit Rechenbeispielen.',
-    'Learning Hub öffnen','Analyse-Demo öffnen','Plattform-Tour ansehen',
-    'Analyse starten','Hero Buddy fragen','Produkt entdecken',
-    'Quellen und Datenstatus','Nachvollziehbare Modelle','Für Privatanleger und Professionals','Weltweite Märkte auf einer Plattform',
+    'Sprache auswählen','Navigation öffnen','Preisalarme öffnen','Kontomenü öffnen','Anmelden',
+    'Finanzwissen und Marktanalyse','Marktnews verstehen.','Charts besser einordnen.',
+    'Was bedeutet die Schlagzeile für den Markt? Was zeigt der Chart tatsächlich? Im CAPITAL-AI Learning Hub lernst du Finanzbegriffe und Analysemethoden Schritt für Schritt kennen.',
+    'Learning Hub öffnen','Analyse-Demo öffnen','CAPITAL-AI-Tour starten',
+    'Analyse starten','Hero Buddy öffnen','CAPITAL-AI entdecken',
+    'Quellen und Datenstatus','Modelle erklärt','Für Privatanleger','Globale Märkte',
     'Impressum','AGB','Datenschutz','Preiskatalog','Dokumentation & Lizenzen','öffnet in einem neuen Tab',
-    'Aus belegten Produktfakten wird',' modularer Content.',
-    'Die Content Engine verbindet die bestehenden Growth-Tools zu einer nachvollziehbaren Pipeline für Text, Bild, Audio, Video und Attribution. Publishing bleibt bewusst ein separater Adapter zur späteren Social Media Engine.',
-    'Quellenebene','Kampagne 01','Public Publish: aus',
+    'Von der belegten Quelle',' zum Entwurf',
+    'Die Content Engine führt belegte Informationen in Entwürfe für Text, Bild, Audio und Video über. Quelle, Format und Prüfstatus bleiben nachvollziehbar.',
+    'Quellen','Beispielkampagne','Veröffentlichung deaktiviert',
   ],
   en: [
     'Select language','Open navigation','Open price alerts','Open account menu','Log in',
