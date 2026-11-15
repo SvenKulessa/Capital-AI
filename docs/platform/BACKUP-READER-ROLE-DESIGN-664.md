@@ -17,6 +17,16 @@ The fixture tests `LOGIN`, `NOSUPERUSER`, `NOCREATEDB`, `NOCREATEROLE`, `NOREPLI
 
 The earlier experimental role SQL (with plain role creation and ineffective role-specific revokes), standalone negative SQL and runner were removed from this PR to avoid a misleading success signal and accidental execution. The authoritative implemented fixture and its version-pinned CI remain unchanged.
 
+## Explicit production risk decision (Issue #664)
+
+**RISK_REJECTED / NO_GO / AVOID** applies to provisioning a new permanently login-enabled production `capital_ai_backup_reader` as a purportedly read-only security boundary. This is a technical risk rejection, **not** an owner's acceptance of residual risk or permission to change production roles. The existing role-and-restore fixture is valid only for disposable PostgreSQL 17.11 instances. Reference: [Issue #664](https://github.com/SvenKulessa/Capital-AI/issues/664) (2026-11-15 recovery preflight and risk decision).
+
+- A read-only production catalog check on 2026-11-15 confirmed PostgreSQL **17.11**, **zero** `capital_ai_backup_reader` roles, one `PUBLIC` `USAGE` ACL entry for the `net` schema, and seven `PUBLIC` `INSERT`/`UPDATE`/`DELETE` ACL entries on `net` relations. Counts are catalog entries, **not** executed network requests. No production functions or data were accessed.
+- The isolated two-cluster fixture demonstrates `PUBLIC`-inherited `pg_net` enqueue even after per-role `REVOKE` and demonstrates `pg_read_all_data` opening the `pg_cron` scheduling path, with fixture operations rolled back. The existing negative tests deny writes, DDL, role escalation, and network/cron calls after **fixture-only** shared-ACL hardening. Their success does not establish equivalent restrictions on the managed service.
+- **Do not propose or execute** blanket `pg_read_all_data`, unrestricted `BYPASSRLS`, per-role `REVOKE` as a substitute for `PUBLIC` isolation, or a permanent password-based production reader. `default_transaction_read_only=on` and `NOINHERIT` are insufficient security guarantees.
+- The separate recovery project contains existing identities/jobs and has no independently verified network-egress isolation. Real Auth/MFA, Storage object bytes, Vault root-key portability, ACL/owner mapping, disabled cron/webhooks, independent encrypted offsite retrieval and measured RPO/RTO remain **NOT_PROVEN**. A PostgreSQL dump alone does not include Storage object bytes.
+- **Reconsider only after** an independently verified, narrowly time-boxed, owner-authorized alternative with credential, runner, outbound-network and restore-target isolation, complete encrypted backup coverage, negative tests and an explicit residual-risk decision. This paragraph does not grant that authorization. No production SQL, role, provider, backup, or deployment change is in scope.
+
 ## Safe decision sequence
 
 1. Treat the isolated PG17.11 tests as **synthetic evidence only** and inspect exact-head CI.

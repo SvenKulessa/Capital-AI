@@ -107,7 +107,8 @@ class GitHubRenderActions:
     can implement/repair, but neither PR prose nor the model is executable.
     """
     def __init__(self, http, *, pr_number, assessment: TrustedAssessment,
-                 executor=None, enable_merge=False):
+                 executor=None, enable_merge=False, approved_head_sha=None,
+                 approved_base_sha=None):
         if type(pr_number) is not int or not 1 <= pr_number <= 999999:
             raise ValueError("invalid PR number")
         if not isinstance(assessment, TrustedAssessment):
@@ -117,6 +118,10 @@ class GitHubRenderActions:
         self.assessment = assessment
         self.executor = executor
         self.enable_merge = enable_merge is True
+        if self.enable_merge and not (sha(approved_head_sha) and sha(approved_base_sha)):
+            raise ValueError("mutating adapter requires exact trusted head/base SHAs")
+        self.approved_head_sha = approved_head_sha
+        self.approved_base_sha = approved_base_sha
         self._head = None
 
     def _pr(self):
@@ -136,7 +141,11 @@ class GitHubRenderActions:
                 and base.get("ref") == "main" and sha(base.get("sha"))
                 and sha(head_sha) and sha(main_sha)
                 and BRANCH_RE.fullmatch(head.get("ref", "")) is not None
-                and head.get("repo", {}).get("full_name", REPO) == REPO)
+                and head.get("repo", {}).get("full_name") == REPO
+                and (not self.enable_merge or (
+                    head_sha == self.approved_head_sha
+                    and base.get("sha") == self.approved_base_sha
+                    and main_sha == self.approved_base_sha)))
         if not good:
             raise ValueError("PR scope not verified")
         return pr, main_sha
@@ -202,7 +211,9 @@ class GitHubRenderActions:
 
     def merge(self, state):
         evidence = state.get("evidence") or {}
-        if not self.enable_merge or not self.assessment.approved() or not sha(evidence.get("head_sha")):
+        if (not self.enable_merge or not self.assessment.approved()
+                or evidence.get("head_sha") != self.approved_head_sha
+                or evidence.get("base_sha") != self.approved_base_sha):
             return {}
         pr = self._pr()
         if pr.get("merged") is True:  # Crash/retry after remote merge: never PUT again.
@@ -210,7 +221,11 @@ class GitHubRenderActions:
             return ({"merged": True, "sha": merge_sha, "expected_head_sha": evidence["head_sha"]}
                     if sha(merge_sha) and pr.get("head", {}).get("sha") == evidence["head_sha"] else {})
         # Recompute evidence immediately before the mutation.
-        current = self.evidence(state)
+        try:
+            current = self.evidence(state)
+        except (ValueError, TypeError):
+            # Stale head/base or incomplete provider evidence: deny the merge.
+            return {}
         from auto_loop import merge_evidence_verified
         if current != evidence or not merge_evidence_verified(current):
             return {}
@@ -227,15 +242,25 @@ class GitHubRenderActions:
         items = self.http.render("/deploys?limit=20")
         if not isinstance(items, list):
             return {}
-        for item in items:
-            deploy = item.get("deploy", item) if isinstance(item, dict) else {}
-            if deploy.get("commit", {}).get("id") == target and deploy.get("status") == "live":
-                return {"deployed": True, "deployed_sha": target}
+        # Render lists newest-first; an older live snapshot is not the
+        # currently deployed revision and must never satisfy runtime evidence.
+        if not items or not isinstance(items[0], dict):
+            return {}
+        deploy = items[0].get("deploy", items[0])
+        if not isinstance(deploy, dict):
+            return {}
+        commit = deploy.get("commit", {})
+        if (deploy.get("status") == "live" and isinstance(commit, dict)
+                and commit.get("id") == target):
+            return {"deployed": True, "deployed_sha": target}
         return {}
 
     def verify_runtime(self, state):
         target = state.get("merge_sha")
-        if not sha(target):
+        if not sha(target) or state.get("observed_sha") != target:
+            return {}
+        # Deployment may have changed between observation and health readback.
+        if self.observe_deployment(state).get("deployed_sha") != target:
             return {}
         response = self.http.health()
         if not isinstance(response, dict):
