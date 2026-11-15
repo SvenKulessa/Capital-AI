@@ -6,7 +6,7 @@ import {
   homeRightsAdmitted, homeEditorialScore,
 } from '../../src/features/home/homeEditorialAdmission.mjs';
 
-import {HOME_PUBLIC_DISPLAY_REVIEWS} from '../../src/features/home/homeEditorialRightsLedger.mjs';
+import {HOME_PUBLIC_DISPLAY_REVIEWS, homeReviewContentSnapshot} from '../../src/features/home/homeEditorialRightsLedger.mjs';
 
 const editionPath = new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url);
 const day = 86_400_000;
@@ -64,10 +64,69 @@ export function selectHomeEdition(current, candidates, asOf, reviews = HOME_PUBL
     stories,
   };
 }
+
+/**
+ * Four-hour candidate assessment is deliberately read-only. Scoring is a review
+ * hint, never an approval, publication or commercial-license authority.
+ * Only the separate first-party HOME_PUBLIC_DISPLAY_REVIEWS ledger can admit.
+ */
+export function scoreHomeCandidates(current, candidates, asOf) {
+  const today = homeIsoDay(asOf);
+  if (!Array.isArray(candidates) || candidates.length > 20 ||
+      !Array.isArray(current?.stories) || current.stories.length !== 3 ||
+      current.contentEngine?.contractVersion !== HOME_CONTENT_ENGINE_VERSION ||
+      current.contentEngine?.publicPublishAllowed !== false ||
+      today < homeIsoDay(current.date)) throw Error('HOME_SCORING_INPUT_INVALID');
+  const existing = current.stories.map(story => normalizeHomeStory(story, asOf));
+  const key = value => value.normalize('NFKC').trim().toLowerCase();
+  const ids = new Set(existing.map(s => s.id));
+  const urls = new Set(existing.map(s => s.source.url));
+  const titles = new Set(existing.map(s => key(s.title)));
+  if (ids.size !== 3 || urls.size !== 3 || titles.size !== 3) throw Error('HOME_SCORING_DUPLICATE_EDITION');
+  const examined = new Set();
+  return candidates.map(raw => {
+    const story = normalizeHomeStory(raw, asOf);
+    const score = homeEditorialScore(story, asOf);
+    const ageDays = (today - homeIsoDay(story.source.date)) / day;
+    const title = key(story.title);
+    const duplicate = ids.has(story.id) || urls.has(story.source.url) || titles.has(title) ||
+      examined.has('id:' + story.id) || examined.has('url:' + story.source.url) ||
+      examined.has('title:' + title);
+    examined.add('id:' + story.id);
+    examined.add('url:' + story.source.url);
+    examined.add('title:' + title);
+    const better = existing.some(item =>
+      story.source.date > item.source.date && score > homeEditorialScore(item, asOf));
+    const reason = duplicate ? 'DUPLICATE' :
+      ageDays > story.evidence.freshness.maxAgeDays ? 'STALE' :
+      score < 65 ? 'SCORE_BELOW_65' :
+      !better ? 'NOT_NEWER_AND_BETTER' : 'REVIEW_REQUIRED';
+    const digest = createHash('sha256').update(JSON.stringify({
+      storySnapshot: homeReviewContentSnapshot(story),
+      scoreInput: story.editorial,
+      rightsClaims: story.evidence.rights,
+    })).digest('hex');
+    return {id: story.id, score, ageDays, sourceUrl: story.source.url,
+      sourceDate: story.source.date, digest, reason,
+      eligibleForReview: reason === 'REVIEW_REQUIRED',
+      publicationAllowed: false, rightsVerified: false};
+  }).sort((a, b) => b.score - a.score ||
+    b.sourceDate.localeCompare(a.sourceDate) || a.id.localeCompare(b.id));
+}
+
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
-  const [,,asOf,candidatesPath] = process.argv;
-  if (!asOf || !candidatesPath) throw Error('Usage: node scripts/growth/home-editorial-edition.mjs YYYY-MM-DD candidates.json');
-  const current = JSON.parse(await readFile(editionPath,'utf8'));
-  const candidates = JSON.parse(await readFile(candidatesPath,'utf8'));
-  process.stdout.write(JSON.stringify(selectHomeEdition(current,candidates,asOf),null,2)+'\n');
+  const [,,modeOrDay,dayOrPath,maybePath] = process.argv;
+  const scoreOnly = modeOrDay === '--score';
+  const asOf = scoreOnly ? dayOrPath : modeOrDay;
+  const candidatesPath = scoreOnly ? maybePath : dayOrPath;
+  if (!asOf || !candidatesPath || (!scoreOnly && maybePath)) {
+    throw Error('Usage: node scripts/growth/home-editorial-edition.mjs [--score] YYYY-MM-DD candidates.json');
+  }
+  const current = JSON.parse(await readFile(editionPath, 'utf8'));
+  const candidates = JSON.parse(await readFile(candidatesPath, 'utf8'));
+  const output = scoreOnly ? {
+    schema: 'CAPITAL_AI_HOME_CANDIDATE_SCORING@1', asOf,
+    publicationAllowed: false, candidates: scoreHomeCandidates(current, candidates, asOf),
+  } : selectHomeEdition(current, candidates, asOf);
+  process.stdout.write(JSON.stringify(output, null, 2) + '\n');
 }
