@@ -80,9 +80,9 @@ export function updatePageSEO({
   document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
   for (const [language, href] of landingAlternatesForPath(pathname)) {
     const link = document.createElement('link');
-    link.rel = 'alternate';
-    link.hreflang = language;
-    link.href = href;
+    link.setAttribute('rel', 'alternate');
+    link.setAttribute('hreflang', language);
+    link.setAttribute('href', href);
     document.head.appendChild(link);
   }
 
