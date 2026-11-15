@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import './instagram-carousel.test.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -195,4 +196,89 @@ test('social execution rejects a plan with missing platform before token resolut
   await assert.rejects(() => execution.submit({ plan }), /SOCIAL_PROVIDER_EXECUTION_PLAN_REQUIRED/);
   assert.equal(tokenResolutions, 0);
   assert.equal(dispatches, 0);
+});
+
+
+test('x image upload is hash-bound and attaches exactly one provider media ID', async () => {
+  const image = Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]), Buffer.from('synthetic-png')]);
+  const sha = createHash('sha256').update(image).digest('hex');
+  const seen = [];
+  const transport = createSocialProviderPublishTransport({
+    env: { ...baseEnv, SOCIAL_X_PUBLISH_ENABLED:'true',
+      SOCIAL_X_PAID_WRITE_APPROVED:'true',
+      SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true', SOCIAL_X_PAID_MEDIA_APPROVED:'true' },
+    fetchImpl: async (url, init) => {
+      seen.push({url:String(url),body:JSON.parse(init.body)});
+      if (seen.length === 1) return response(200,{data:{id:'123456789012345678'}});
+      return response(201,{data:{id:'234567890123456789'}});
+    },
+  });
+  const receipt = await transport.submit({channel:'X',accessToken:'fake-token-only',
+    mediaBytes:image,mediaSha256:sha,metadata:{caption:'CAPITAL-AI'}});
+  assert.equal(seen.length,2);
+  assert.equal(seen[0].url,'https://api.x.com/2/media/upload');
+  assert.deepEqual(Buffer.from(seen[0].body.media,'base64'),image);
+  assert.equal(seen[1].url,'https://api.x.com/2/tweets');
+  assert.deepEqual(seen[1].body,{text:'CAPITAL-AI',
+    media:{media_ids:['123456789012345678']}});
+  assert.equal(receipt.providerDeliveryId,'234567890123456789');
+});
+
+test('x image path fails closed before provider calls for every missing media approval or mismatched bytes', async () => {
+  const image=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.from('png')]);
+  const sha=createHash('sha256').update(image).digest('hex');
+  for(const override of [
+    {SOCIAL_X_MEDIA_UPLOAD_ENABLED:'false'},
+    {SOCIAL_X_PAID_MEDIA_APPROVED:'false'},
+  ]) {
+    let count=0;
+    const transport=createSocialProviderPublishTransport({
+      env:{...baseEnv,SOCIAL_X_PUBLISH_ENABLED:'true',
+        SOCIAL_X_PAID_WRITE_APPROVED:'true',
+        SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',
+        SOCIAL_X_PAID_MEDIA_APPROVED:'true',...override},
+      fetchImpl:async()=>{count++;throw Error('MUST_NOT_EXECUTE');},
+    });
+    await assert.rejects(transport.submit({channel:'X',accessToken:'fake-token-only',
+      mediaBytes:image,mediaSha256:sha,metadata:{caption:'test'}}),
+    /SOCIAL_X_MEDIA_UPLOAD_DISABLED|SOCIAL_X_PAID_MEDIA_NOT_APPROVED/);
+    assert.equal(count,0);
+  }
+  for(const data of [
+    {mediaBytes:image,mediaSha256:'0'.repeat(64)},
+    {mediaBytes:Buffer.from('not-a-png'),mediaSha256:sha},
+    {mediaBytes:'untrusted string',mediaSha256:sha},
+  ]) {
+    let count=0;
+    const transport=createSocialProviderPublishTransport({
+      env:{...baseEnv,SOCIAL_X_PUBLISH_ENABLED:'true',SOCIAL_X_PAID_WRITE_APPROVED:'true',
+        SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'true'},
+      fetchImpl:async()=>{count++;throw Error('MUST_NOT_EXECUTE');},
+    });
+    await assert.rejects(transport.submit({channel:'X',accessToken:'fake-token-only',
+      metadata:{caption:'test'},...data}),/SOCIAL_X_MEDIA_HASH_MISMATCH|SOCIAL_X_MEDIA_INVALID|SOCIAL_X_MEDIA_BYTES_REQUIRED/);
+    assert.equal(count,0);
+  }
+});
+
+test('x media upload failure, ambiguous timeout and malformed media ID never create a post', async () => {
+  const image=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.from('png')]);
+  const sha=createHash('sha256').update(image).digest('hex');
+  for(const failKind of ['rejected','timeout','malformed']) {
+    let count=0;
+    const transport=createSocialProviderPublishTransport({
+      env:{...baseEnv,SOCIAL_X_PUBLISH_ENABLED:'true',SOCIAL_X_PAID_WRITE_APPROVED:'true',
+        SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'true'},
+      fetchImpl:async()=>{
+        count++;
+        if(failKind==='timeout')throw Error('timeout synthetic');
+        if(failKind==='rejected')return response(403,{error:'synthetic'});
+        return response(200,{data:{id:'untrusted-id'}});
+      },
+    });
+    await assert.rejects(transport.submit({channel:'X',accessToken:'fake-token-only',
+      mediaBytes:image,mediaSha256:sha,metadata:{caption:'test'}}),
+      /SOCIAL_PROVIDER_NETWORK_AMBIGUOUS|SOCIAL_X_MEDIA_UPLOAD_REJECTED/);
+    assert.equal(count,1);
+  }
 });
