@@ -56,6 +56,7 @@ class BrandPalette:
     gold_muted: str
     cyan: str
     purple: str
+    universe_colors: tuple[str, ...]
     text_primary: str
     text_secondary: str
     surface_light: str
@@ -121,6 +122,18 @@ def load_brand_palette(token_path: Path = DEFAULT_TOKEN_PATH) -> BrandPalette:
     brand = color["brand"]
     print_tokens = color["print"]
     primary = str(_token_value(brand["primary"]))
+    # The single render-token file carries the exact seven hues used by the website.
+    # Reject incomplete, malformed or unexpectedly extended palettes rather than
+    # silently generating off-brand publication candidates.
+    keys = ("cyan", "violet", "gold", "pink", "rose", "blue", "green")
+    universe = color.get("universe")
+    if not isinstance(universe, dict) or set(universe) != set(keys):
+        raise MediaRenderError("UNIVERSE_PALETTE_SEVEN_REQUIRED")
+    hues = tuple(_token_value(universe[key]) for key in keys)
+    if any(not isinstance(hue, str) or not re.fullmatch(r"#[0-9A-Fa-f]{6}", hue) for hue in hues):
+        raise MediaRenderError("UNIVERSE_PALETTE_INVALID_HEX")
+    if len({hue.lower() for hue in hues}) != 7:
+        raise MediaRenderError("UNIVERSE_PALETTE_NOT_DISTINCT")
     return BrandPalette(
         background=str(_token_value(color["background"])),
         foreground=str(_token_value(color["foreground"])),
@@ -130,6 +143,7 @@ def load_brand_palette(token_path: Path = DEFAULT_TOKEN_PATH) -> BrandPalette:
         gold_muted=primary,
         cyan=str(_token_value(brand["cyan"])),
         purple=str(_token_value(brand["accent"])),
+        universe_colors=hues,
         text_primary=str(_token_value(print_tokens["textPrimary"])),
         text_secondary=str(_token_value(print_tokens["textSecondary"])),
         surface_light=str(_token_value(print_tokens["surfaceLight"])),
@@ -366,13 +380,14 @@ def _draw_network_emblem(draw: ImageDraw.ImageDraw, x: int, y: int, size: int, p
         (0.16, 0.14, 0.84, 0.80, palette.purple), (0.84, 0.13, 0.16, 0.82, palette.purple),
     ]
     h = int(size * 0.9)
-    for x1, y1, x2, y2, color in edges:
+    for index, (x1, y1, x2, y2, _legacy_color) in enumerate(edges):
+        color = palette.universe_colors[index % 7]
         draw.line((x + x1 * size, y + y1 * h, x + x2 * size, y + y2 * h), fill=color, width=max(2, size // 90))
-    for nx, ny, radius in nodes:
+    for index, (nx, ny, radius) in enumerate(nodes):
         r = max(2, int(radius * size))
         cx = int(x + nx * size)
         cy = int(y + ny * h)
-        draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=palette.gold, outline=palette.gold_dark, width=max(1, size // 180))
+        draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=palette.universe_colors[index % 7], outline=palette.gold_dark, width=max(1, size // 180))
 
 
 def _background(width: int, height: int, palette: BrandPalette) -> Image.Image:
@@ -384,7 +399,36 @@ def _background(width: int, height: int, palette: BrandPalette) -> Image.Image:
     gd.ellipse((width - radius, height - radius, width + radius // 3, height + radius // 3), fill=palette.cyan + "33")
     gd.ellipse((width // 2 - radius // 3, -radius // 2, width // 2 + radius, radius), fill=palette.gold + "24")
     glow = glow.filter(ImageFilter.GaussianBlur(max(18, min(width, height) // 18)))
-    return Image.alpha_composite(image.convert("RGBA"), glow).convert("RGB")
+    # An original orbital HUD: no third-party characters, vehicles, insignia
+    # or franchise typography. Low-alpha geometry never encodes financial state.
+    orbit = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    od = ImageDraw.Draw(orbit)
+    r = int(min(width, height) * 0.31)
+    cx, cy = int(width * 0.80), int(height * 0.24)
+    for index, hue in enumerate(palette.universe_colors):
+        inset = index * max(4, r // 22)
+        od.arc(
+            (cx - r + inset, cy - r + inset, cx + r - inset, cy + r - inset),
+            start=175 + index * 12,
+            end=305 + index * 9,
+            fill=hue + "64",
+            width=max(2, min(width, height) // 340),
+        )
+    for index in range(24):
+        sx = (index * 197 + 71) % width
+        sy = (index * 131 + 47) % height
+        od.ellipse((sx, sy, sx + 2, sy + 2), fill="#DBEAFE70")
+    image = Image.alpha_composite(Image.alpha_composite(image.convert("RGBA"), glow), orbit).convert("RGB")
+    # All seven hues remain visible on every thumbnail, carousel, portrait frame
+    # and derived video, irrespective of topic, text length or platform crop.
+    rail = ImageDraw.Draw(image)
+    marker_w = max(12, width // 36)
+    step = max(marker_w + 10, (width - 64) // 7)
+    y = max(12, height // 30)
+    for index, hue in enumerate(palette.universe_colors):
+        x = 32 + index * step
+        rail.rounded_rectangle((x, y, x + marker_w, y + max(5, height // 240)), radius=2, fill=hue)
+    return image
 
 
 def _fit_source_image(source: Path, box: tuple[int, int, int, int], palette: BrandPalette) -> Image.Image:
