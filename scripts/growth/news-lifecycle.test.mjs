@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { readFile } from 'node:fs/promises';
 import {
   advanceNewsEdition, retireNews, newsArchivePath, proposeMarketImpact, newsBiCsv, publishedNews,
 } from '../../shared/news-lifecycle.mjs';
 import { selectHomeEdition } from './home-editorial-edition.mjs';
+import { archiveContentSnapshot, archiveRightsAdmitted, marketImpactAdmitted, NEWS_ARCHIVE_REVIEW_VERSION, NEWS_ARCHIVE_USE_CASE } from '../../shared/news-archive-rights.mjs';
+import { plannedNewsFiles, writeNewsLifecycle } from './news-lifecycle-materialize.mjs';
 
 const original = JSON.parse(readFileSync(new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url), 'utf8'));
 const empty = {version: 1, overview: [], archive: []};
@@ -47,7 +52,7 @@ test('existing content selection is reused without duplicating lifecycle, no fab
 test('retrospective impact remains pending despite numerical calculation; provenance and dates required', () => {
   const story = retireNews(original, nextWith(original, 1), empty).overview[0];
   const input = {asset:'POL', benchmark:'MARKET', provider:'Licensed Provider', licenseEvidenceRef:'license:123',
-    dataEvidenceRef:'data:456', reviewer:'Reviewer', assessedAt:'2026-12-15', observedAt:'2026-12-15',
+    dataEvidenceRef:'data:456', reviewer:'Reviewer', assessedAt:'2026-12-15', observedAt:'2026-11-28',
     assetBefore:100, assetAfter:112, benchmarkBefore:100, benchmarkAfter:106,
     persistence:3, breadth:2, windowDays:30};
   const result = proposeMarketImpact(story, input);
@@ -62,9 +67,49 @@ test('retrospective impact remains pending despite numerical calculation; proven
 test('public projection and CSV fail closed, avoid formula injection', () => {
   const story = retireNews(original, nextWith(original, 1), empty).overview[0];
   assert.equal(publishedNews([story]).length, 0);
-  assert.equal(publishedNews([{...story, rights:{status:'APPROVED',evidenceRef:'review:123'}}]).length, 1);
+  const presented = {...story, rights:{status:'APPROVED',evidenceRef:'review:123'}};
+  assert.equal(publishedNews([presented]).length, 0); // Candidate metadata cannot grant public display.
+  const record = {version:NEWS_ARCHIVE_REVIEW_VERSION, decision:'APPROVED', allowedUse:NEWS_ARCHIVE_USE_CASE,
+    storyId:story.id, evidenceRef:'review:123', reviewedAt:'2026-11-15', contentSnapshot:archiveContentSnapshot(presented)};
+  assert.equal(publishedNews([presented], [record]).length, 1);
+  assert.equal(publishedNews([{...presented, summary:'Tampered'}], [record]).length, 0);
+  assert.equal(publishedNews([presented], [{...record, evidenceRef:'fake'}]).length, 0);
   const csv = newsBiCsv([{...story, id:'=HYPERLINK("evil")'}]);
   assert.match(csv, /'=/);
   assert.match(csv, /NOT_PROVEN/);
   assert.doesNotMatch(csv, /,100,/);
+});
+
+test('market impact cannot self-certify a verified publication score', () => {
+  const story = retireNews(original, nextWith(original, 1), empty).overview[0];
+  const fake = {...story,marketImpact:{status:'VERIFIED',verifiedScore:95,assessments:[]}};
+  assert.equal(marketImpactAdmitted(fake), false);
+  assert.equal(marketImpactAdmitted(fake, [{version:'CAPITAL_AI_NEWS_MARKET_IMPACT_REVIEW@1',
+    decision:'APPROVED',storyId:story.id,evidenceRef:'review:123',
+    assessmentSnapshot:JSON.stringify(fake.marketImpact)}]), true);
+  assert.equal(marketImpactAdmitted({...fake,marketImpact:{...fake.marketImpact,verifiedScore:96}},
+    [{version:'CAPITAL_AI_NEWS_MARKET_IMPACT_REVIEW@1',decision:'APPROVED',
+      storyId:story.id,evidenceRef:'review:123',assessmentSnapshot:JSON.stringify(fake.marketImpact)}]),false);
+});
+test('materializer rejects unapproved news and writes only an empty reviewed manifest offline', async () => {
+  const displaced = retireNews(original, nextWith(original, 1), empty);
+  assert.throws(() => plannedNewsFiles({edition:nextWith(original, 1),index:displaced}), /RIGHTS_NOT_ADMITTED/);
+  const planned = plannedNewsFiles({edition:original,index:empty});
+  assert.equal(planned.length,2);
+  const tmp = mkdtempSync(join(tmpdir(), 'news-lifecycle-'));
+  try {
+    const files = await writeNewsLifecycle({edition:original,index:empty},tmp);
+    assert.equal(files.length,2);
+    const stored = JSON.parse(await readFile(join(tmp,'src/features/analysis/newsLifecycleIndex.json'),'utf8'));
+    assert.deepEqual(stored,empty);
+  } finally { rmSync(tmp,{recursive:true,force:true}); }
+});
+test('impact observation is fixed to the requested publication-plus-horizon date', () => {
+  const story = retireNews(original, nextWith(original, 1), empty).overview[0];
+  const input = {asset:'POL',benchmark:'MARKET',provider:'licensed',licenseEvidenceRef:'l',dataEvidenceRef:'d',
+    reviewer:'r',assessedAt:'2026-12-15',observedAt:'2026-11-28',assetBefore:1,assetAfter:1.1,
+    benchmarkBefore:1,benchmarkAfter:1.02,persistence:2,breadth:1,windowDays:30};
+  assert.ok(proposeMarketImpact(story,input).proposedScore >= 0);
+  assert.throws(() => proposeMarketImpact(story,{...input,observedAt:'2026-11-27'}), /window/);
+  assert.throws(() => proposeMarketImpact(story,{...input,observedAt:'2026-11-29'}), /window/);
 });
