@@ -4,6 +4,7 @@ import { dirname, join, resolve, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { publishedNews, newsArchivePath } from '../../shared/news-lifecycle.mjs';
+import { assertHomeEditionAdmission } from './news-lifecycle-home-admission.mjs';
 
 export const DEFAULT_NEWS_REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const editionFile = 'src/features/home/homeEditorialEdition.json';
@@ -38,6 +39,12 @@ export function plannedNewsFiles(result) {
 export async function writeNewsLifecycle(result, root = DEFAULT_NEWS_REPO_ROOT) {
   const files = plannedNewsFiles(result);
   const dir = resolve(root);
+  // Cross-check against the version currently on disk. A forged CLI output or
+  // direct materializer call with an empty index is not publication authority.
+  const currentEdition = await existing(resolve(dir, editionFile));
+  if (currentEdition !== null) {
+    await assertHomeEditionAdmission(JSON.parse(currentEdition), result.edition);
+  }
   const writes = [];
   const rollback = [];
   // Never follow an existing symlink to a target outside the project tree.
