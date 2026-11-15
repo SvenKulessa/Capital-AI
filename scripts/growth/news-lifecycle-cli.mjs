@@ -20,8 +20,8 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
   const result = await prepareNewsLifecycle(asOf, candidatesFile);
   if (mode === '--write') {
     const written = await writeNewsLifecycle(result);
-    process.stdout.write(JSON.stringify({mode:'WRITTEN_LOCAL_REPO_ONLY',files:written},null,2)+'\\n');
+    process.stdout.write(JSON.stringify({mode:'WRITTEN_LOCAL_REPO_ONLY',files:written},null,2)+'\n');
   } else {
-    process.stdout.write(JSON.stringify(result,null,2)+'\\n');
+    process.stdout.write(JSON.stringify(result,null,2)+'\n');
   }
 }
