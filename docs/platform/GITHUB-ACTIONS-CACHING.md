@@ -27,9 +27,9 @@ Workflows that build custom images (e.g. `backup-reader-pg17.yml`) use Docker Bu
 Node.js workflows should use the built-in cache of `actions/setup-node`:
 
 ```yaml
-- uses: actions/setup-node@v4
+- uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
   with:
-    node-version: '20'
+    node-version: '26.10.0'
     cache: 'npm'
 ```
 
