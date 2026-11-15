@@ -42,9 +42,16 @@ WHERE n.nspname IN ('cron', 'net')
 ORDER BY n.nspname, p.proname;
 
 \echo '=== 5. PUBLIC Privileges on Extensions ==='
-SELECT 
+-- PUBLIC is an ACL grantee (OID 0), not a login role named 'public'.
+-- Resolve the object's effective ACL defaults without conflating PUBLIC with the current user.
+SELECT
   n.nspname,
-  has_schema_privilege('public', n.oid, 'USAGE') AS public_usage
+  EXISTS (
+    SELECT 1
+    FROM aclexplode(COALESCE(n.nspacl, acldefault('n', n.nspowner))) AS acl
+    WHERE acl.grantee = 0::oid
+      AND acl.privilege_type = 'USAGE'
+  ) AS public_usage
 FROM pg_namespace n
 WHERE n.nspname IN ('cron', 'net', 'public');
 
