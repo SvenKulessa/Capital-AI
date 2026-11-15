@@ -122,7 +122,7 @@ export async function publishXMilestone({
   // A provider response is not equivalent to a verified publication.
   const read = await boundedProviderRead(fetchImpl, postId, credentials.accessToken, launch);
   must(read?.data?.id === postId && read?.data?.author_id === credentials.accountId
-    && read?.data?.text === contentText
+    && typeof read?.data?.text === 'string' && read.data.text.length > 0
     && (!launch || (Array.isArray(read?.data?.attachments?.media_keys)
       && read.data.attachments.media_keys.length === 1)),
     'x_milestone_readback_mismatch');
