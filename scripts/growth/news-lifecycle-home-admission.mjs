@@ -21,9 +21,17 @@ export async function approvedHomeCandidates(candidates, asOf) {
       !Array.isArray(ledger?.HOME_PUBLIC_DISPLAY_REVIEWS)) return [];
   // The independent ledger, not JSON candidate flags or a scoring result, grants
   // each of story, source and graphic use on the exact reviewed snapshot.
-  return candidates
-    .map(candidate => admission.normalizeHomeStory(candidate, asOf))
-    .filter(candidate => admission.homeRightsAdmitted(candidate, ledger.HOME_PUBLIC_DISPLAY_REVIEWS));
+  return candidates.flatMap(candidate => {
+    try {
+      const normalized = admission.normalizeHomeStory(candidate, asOf);
+      return admission.homeRightsAdmitted(normalized, ledger.HOME_PUBLIC_DISPLAY_REVIEWS)
+        ? [normalized] : [];
+    } catch {
+      // Invalid metadata is not a rights grant. Deny only this candidate and
+      // retain the existing edition; a separate diagnostics pass may report it.
+      return [];
+    }
+  });
 }
 
 /**
