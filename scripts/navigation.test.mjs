@@ -604,3 +604,19 @@ test('mobile account drawer collapses by default and preserves authorized action
   assert.match(header, /aria-label=\{nav\.hubs\}|\{nav\.hubs\}/);
   assert.match(header, /hub-sidebar-card min-h-11/);
 });
+
+test('homepage MARKET readiness stays below editorial news, uses real routes and avoids price claims', () => {
+  const homepage = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  const hero = homepage.indexOf('<Hero onExploreProduct={onStartProductTour} />');
+  const editorial = homepage.indexOf('<HomeEditorialNews />');
+  const readiness = homepage.indexOf('id="market-transparency-title"');
+  const search = homepage.indexOf('<HomeSearchFocus />');
+  assert.ok(hero >= 0 && editorial > hero && readiness > editorial && search > readiness);
+  const section = homepage.slice(readiness, search);
+  assert.match(section, /Finanzmärkte verstehen/);
+  assert.match(section, /keine verifizierten Live-Kurse oder Handlungssignale/);
+  assert.match(section, /href="\/learning"/);
+  assert.match(section, /href="\/screener"/);
+  assert.doesNotMatch(section, /href="\/marketscreener\/news-archiv"/);
+  assert.match(section, /grid gap-3 md:grid-cols-3/);
+});
