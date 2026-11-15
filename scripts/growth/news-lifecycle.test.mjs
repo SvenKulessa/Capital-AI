@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   advanceNewsEdition, retireNews, newsArchivePath, proposeMarketImpact, newsBiCsv, publishedNews,
 } from '../../shared/news-lifecycle.mjs';
+import { selectHomeEdition } from './home-editorial-edition.mjs';
 
 const original = JSON.parse(readFileSync(new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url), 'utf8'));
 const empty = {version: 1, overview: [], archive: []};
@@ -39,7 +40,7 @@ test('no replacement keeps previous history and prevents replay, duplicates or m
   assert.throws(() => newsArchivePath({...original.stories[0], id:'../escape'}), /Invalid news ID/);
 });
 test('existing content selection is reused without duplicating lifecycle, no fabricated replacement', () => {
-  const output = advanceNewsEdition(original, empty, [], '2026-11-15');
+  const output = advanceNewsEdition(original, empty, selectHomeEdition(original, [], '2026-11-15'));
   assert.equal(output.edition, original);
   assert.equal(output.index, empty);
 });
