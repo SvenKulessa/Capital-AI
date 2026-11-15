@@ -115,3 +115,14 @@ test('negative regression: loss of any source-boundary rule is detected', () => 
     assert.deepEqual(missingBoundary(corrupted), [guard], guard);
   }
 });
+
+
+test('execution-first is auditable without weakening root security boundaries', () => {
+  const flow = section(policy, '## Ausführungskontrakt: AUTONOMOUS_EXECUTION_FIRST');
+  for (const value of ['ACTIVE_CONSERVATIVE', 'read-only', 'No-Merge-/No-Deploy',
+    'LangGraph', 'REPAIRED', 'Docker Security Gate', 'Domain Governance',
+    'keine eigenständige Tool-Berechtigung', 'Keine Selbstautorisierung', 'NOT_PROVEN']) {
+    assert.ok(flow.includes(value), `missing execution-first protection: ${value}`);
+  }
+  assert.match(read('.github/copilot-instructions.md'), /AUTONOMOUS_EXECUTION_FIRST/);
+});

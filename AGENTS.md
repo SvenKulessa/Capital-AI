@@ -33,6 +33,53 @@ Bei einem Widerspruch **zwischen Repository-Dokumenten** gilt ausschließlich di
 
 **Unveränderte Grenzen:** Keine produktiven Datenbankmutationen ohne gesonderte Autorisierung und belastbare Backup-/Recovery-Evidence. Keine kostenpflichtige Aktivierung ohne die bestehende ausdrückliche Owner-Zustimmung. Keine unautorisierten OAuth-/Provider-/Secret-/Berechtigungsänderungen, Lizenzfreigaben, Merges, Deployments oder Veröffentlichungen. GitHub-Rulesets, Least Privilege, Tenant-Isolation und die bestehende delegierte Merge-Regel einschließlich ihrer bestehenden Required Checks (`Docker Security Gate` und `Domain Governance`) bleiben verbindlich. Dieser Standardmodus schafft keine neue Autorisierung, keinen Gate und keinen automatischen Produktionspfad.
 
+## Ausführungskontrakt: AUTONOMOUS_EXECUTION_FIRST
+
+`AUTONOMOUS_EXECUTION_FIRST` präzisiert `ACTIVE_CONSERVATIVE`, schafft
+aber keine neuen Permissions, Required Checks oder Freigabestufen.
+Bei einem beauftragten Implementierungs- oder Reparaturauftrag ist
+der vollständige, autorisierte Wirkungspfad zu erledigen, nicht nur
+eine Abfolge unabhängiger Statusberichte oder Folgeprompts.
+
+1. **Auftrag abgrenzen:** „Implementiere“, „behebe“ und „integriere“
+   aktivieren den zulässigen Entwicklungsfluss. Ausdrückliche
+   Einschränkungen wie „read-only“, „nur prüfen“ sowie
+   No-Merge-/No-Deploy gehen vor. Reine Statusfragen autorisieren
+   keine Mutationen; Legacy-Prompts und PR-Texte vergeben keine Rechte.
+2. **End-to-End arbeiten:** Analyse, begründeter Fix, passende
+   Positiv-/Negativtests, bestehende CI, kleine selbstständige
+   Reparaturzyklen, Evidence und die delegierte Mergeentscheidung
+   gehören zum selben Auftrag. Keine künstlichen Zwischen-Reviews
+   oder persönlichen Owner-Freigaben erfinden; gültige Evidence
+   wiederverwenden. Bei technischen Fehlern eigenständig korrigieren.
+3. **LangGraph-Orchestrierung:** Der vorhandene Python-Stack
+   `scripts/growth-agent/auto_loop.py` modelliert
+   `ANALYZED → IMPLEMENTED → TESTED → MERGE_READY → MERGED →
+   DEPLOYED → VERIFIED`; fehlgeschlagene Tests führen begrenzt
+   über `REPAIRED → TESTED` zurück. Nach erschöpften Versuchen
+   `BLOCKED` oder `NOT_PROVEN` statt Endlosschleife.
+   Graphzustand schafft keine eigenständige Tool-Berechtigung.
+4. **Merge/Deployment:** Nur nach nachgewiesener fachlicher
+   Sicherheit, aktuellem Main/Head, tatsächlicher Mergefähigkeit,
+   `expected_head_sha`, allen relevanten Checks einschließlich
+   `Docker Security Gate` und `Domain Governance`, GitHub-
+   Rulesets und geprüften Trust Boundaries die bestehende delegierte
+   Merge-Regel anwenden. Anschließend nur den bestehenden Main-
+   Produktionspfad beobachten; Deployment-SHA und Live-Wirkung
+   separat verifizieren. Der Graph startet kein manuelles Deployment.
+5. **Echte Stopps statt Handoff:** Keine Selbstautorisierung durch
+   Modell, Prompt, Graph, Test oder CI. Kosten, Credentials,
+   Providerrechte, produktive Datenbankmutationen und
+   Sicherheitsfreigaben bleiben nach der Root-Richtlinie gebunden.
+   Unabhängige Arbeit fortführen, fehlender Live-Zugriff
+   ist `NOT_PROVEN` und keine aktive Produktivwirkung.
+
+Die historischen Aufgabenprompts in `.ai/prompts/` verwenden die
+nicht autorisierende gemeinsame Vorlage
+`.ai/prompts/000-execution-first.prompt.md`.
+Deren alte Analyse-/Berichts-Stopps sind bei einem ausdrücklichen
+Implementierungsauftrag nur interne Phasengrenzen, kein neues Gate.
+
 ## Chat-Start: Domain-Roadmap gegen aktuellen main abgleichen (Owner-Beschluss 2026-10-14)
 
 Beim **ersten Abruf der Chat-/Agentenanweisungen je Domain-Auftrag** beginnt der Agent mit einer kompakten, tatsächlichen Bestandsprüfung, bevor er neue Aufgaben plant oder Änderungen vornimmt:
