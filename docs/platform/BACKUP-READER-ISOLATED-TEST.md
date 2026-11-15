@@ -4,13 +4,13 @@
 
 ## Use the existing, pinned test implementation
 
-- Workflow: `.github/workflows/backup-reader-pg17.yml` (`PG17 Backup Reader Contract (isolated)`)
-- Role, RLS, PUBLIC/pg_net/pg_cron, permission-denial and two-cluster pg_dump/restore tests: `scripts/platform/backup-reader-contract-test.sh`
+- Workflow: `.github/workflows/backup-reader-pg17.yml` (`PG17 Backup Reader Contract (isolated)`), using `.github/docker/pg17-reader.Dockerfile` and its scoped Docker Buildx cache
+- Role, RLS, PUBLIC/pg_net/pg_cron, permission-denial and two-cluster pg_dump/restore tests: `scripts/platform/backup-reader-contract-test.sh`, including the read-only inventory from `scripts/platform/backup-reader-inventory.sql`
 - Synthetic Auth/Storage/Vault/ACL recovery tests: `scripts/platform/backup-recovery-slices-test.sh`
 
 The existing workflow builds a pinned PostgreSQL 17.11 image with version-matched extension build headers and runs these scripts inside an unprivileged, offline container with an isolated temporary PostgreSQL environment. Run the **existing** workflow on the intended exact commit; previous successful runs do not validate a changed PR head.
 
-The removed experimental runner referred to `.github/docker/pg17-reader.Dockerfile` and `scripts/platform/backup-reader-inventory.sql`, neither of which was present in this PR's checkout. It also ignored inventory/negative-test exit status with `|| true`, used no SQLSTATE assertions, omitted an independent restore, and could report completion after untested failure. Its manual instructions could cause accidental role creation against an unintended database. Do not use copies of that runner.
+At the time of the original PR #724, its experimental runner referenced `.github/docker/pg17-reader.Dockerfile` and `scripts/platform/backup-reader-inventory.sql` before they existed in that branch. Both files are now present in `main` through subsequent Issue #664 work, including merged PR #729. This does **not** validate the deleted runner: it ignored inventory/negative-test failures with `|| true`, had no SQLSTATE assertions or independent restore, and offered a manual role-provisioning path that could target an unintended database. Only use the existing pinned workflow and its actual CI evidence.
 
 ## Evidence criteria
 
