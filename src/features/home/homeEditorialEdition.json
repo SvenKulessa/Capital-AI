@@ -27,6 +27,41 @@
       "editorial": {
         "relevance": 5,
         "impact": 4
+      },
+      "evidence": {
+        "news": {
+          "sourceKind": "OFFICIAL_LINK_METADATA",
+          "observedAt": "2026-11-15",
+          "eventAt": null
+        },
+        "graphic": {
+          "assetId": "home-polygon-vector-v1",
+          "mediaType": "STRUCTURED_VECTOR"
+        },
+        "rights": {
+          "story": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "source": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "graphic": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          }
+        },
+        "freshness": {
+          "maxAgeDays": 14
+        },
+        "priceData": null
       }
     },
     {
@@ -62,6 +97,41 @@
       "editorial": {
         "relevance": 5,
         "impact": 4
+      },
+      "evidence": {
+        "news": {
+          "sourceKind": "OFFICIAL_LINK_METADATA",
+          "observedAt": "2026-11-15",
+          "eventAt": null
+        },
+        "graphic": {
+          "assetId": "home-xrpl-vector-v1",
+          "mediaType": "STRUCTURED_VECTOR"
+        },
+        "rights": {
+          "story": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "source": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "graphic": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          }
+        },
+        "freshness": {
+          "maxAgeDays": 14
+        },
+        "priceData": null
       }
     },
     {
@@ -88,7 +158,71 @@
       "editorial": {
         "relevance": 4,
         "impact": 3
+      },
+      "evidence": {
+        "news": {
+          "sourceKind": "OFFICIAL_LINK_METADATA",
+          "observedAt": "2026-11-15",
+          "eventAt": null
+        },
+        "graphic": {
+          "assetId": "home-solana-vector-v1",
+          "mediaType": "STRUCTURED_VECTOR"
+        },
+        "rights": {
+          "story": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "source": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "graphic": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          }
+        },
+        "freshness": {
+          "maxAgeDays": 14
+        },
+        "priceData": null
       }
     }
-  ]
+  ],
+  "contentEngine": {
+    "contractVersion": "CAPITAL_AI_CONTENT_ENGINE@1",
+    "publicationAuthority": "SOCIAL_MEDIA_ENGINE_ONLY",
+    "publicPublishAllowed": false,
+    "campaign": {
+      "campaignId": "home-editorial-20261115",
+      "productId": "capital-ai-learning-hub",
+      "sourceSha": "2b6077c49cba0862286cfd99078481a57e637b099f28ac3c83840b427a0def5e",
+      "canonicalUrl": "https://capital-ai.online/",
+      "locale": "de-DE",
+      "objective": "Offizielle Meldungen zu Finanzinfrastruktur und Zahlungsnetzwerken quellengebunden einordnen.",
+      "audience": [
+        "Finanzinteressierte",
+        "FinTech-Lernende"
+      ],
+      "channels": [
+        "WEBSITE"
+      ],
+      "outputs": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "sourceUrls": [
+        "https://polygon.technology/blog/sofiusd-lands-on-polygon",
+        "https://xrpl.org/blog/2026/testnet-devnet-reset",
+        "https://polygon.technology/blog/polygon-oms-supports-solana"
+      ]
+    }
+  }
 }
