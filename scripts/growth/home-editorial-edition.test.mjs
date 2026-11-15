@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
-import {editorialScore,selectHomeEdition} from './home-editorial-edition.mjs';
+import {editorialScore,selectHomeEdition,scoreHomeCandidates} from './home-editorial-edition.mjs';
 import {HOME_EDITORIAL_REVIEW_VERSION, HOME_RIGHTS_USE_CASES, homeReviewContentSnapshot} from
   '../../src/features/home/homeEditorialRightsLedger.mjs';
 
@@ -83,4 +83,39 @@ test('rejects missing media, hostile sources, futures, fabricated market data an
   assert.throws(()=>selectHomeEdition(edition,[{...candidate,evidence:{...candidate.evidence,
     graphic:{...candidate.evidence.graphic,assetId:'home-other-vector-v1'}}}],asOf),
     /HOME_EVIDENCE/);
+});
+
+test('four-hour score reports higher-ranked drafts without treating claims as publication authority', () => {
+  const results = scoreHomeCandidates(edition, [candidate, candidate], asOf);
+  assert.equal(results.length, 2);
+  assert.equal(results[0].score, 98);
+  assert.equal(results[0].reason, 'REVIEW_REQUIRED');
+  assert.equal(results[0].eligibleForReview, true);
+  assert.equal(results[1].reason, 'DUPLICATE');
+  assert.equal(results[1].eligibleForReview, false);
+  for (const item of results) {
+    assert.equal(item.publicationAllowed, false);
+    assert.equal(item.rightsVerified, false);
+    assert.match(item.digest, /^[0-9a-f]{64}$/);
+    assert.equal(item.sourceDate, '2026-11-14');
+  }
+  assert.deepEqual(scoreHomeCandidates(edition, [], asOf), []);
+});
+
+test('four-hour score rejects spoofed hosts, fabricated prices and future dates', () => {
+  assert.throws(() => scoreHomeCandidates(edition, [{
+    ...candidate, source: {...candidate.source, url: 'https://solana.com.evil.test/news'}
+  }], asOf), /HOME_SOURCE_ALLOWLIST/);
+  assert.throws(() => scoreHomeCandidates(edition, [{
+    ...candidate, source: {...candidate.source, date: '2026-11-16', label: label('2026-11-16')}
+  }], asOf), /HOME_SOURCE_FUTURE/);
+  assert.throws(() => scoreHomeCandidates(edition, [{
+    ...candidate, evidence: {...candidate.evidence, priceData: {symbol:'SOL', price:999}}
+  }], asOf), /HOME_EVIDENCE/);
+  const stale = {...candidate, source: {
+    ...candidate.source, date: '2026-10-28', label: label('2026-10-28')
+  }};
+  const result = scoreHomeCandidates(edition, [stale], asOf);
+  assert.equal(result[0].reason, 'STALE');
+  assert.equal(result[0].publicationAllowed, false);
 });
