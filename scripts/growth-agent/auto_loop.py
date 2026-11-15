@@ -208,7 +208,6 @@ def execute_durable(actions, authority: Authority, task_id: str, checkpoint_path
     trusted adapter (especially GitHub merge), because external APIs and SQLite
     do not share an atomic transaction.
     """
-    from contextlib import closing
     import fcntl
     from pathlib import Path
     import stat

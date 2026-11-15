@@ -16,7 +16,9 @@ RENDER = "https://api.render.com/v1/"
 
 
 def scope(**kwargs):
-    return provider.ProviderScope(pr_number=913, head_sha=HEAD, main_sha=MAIN, **kwargs)
+    values = {"pr_number": 913, "head_sha": HEAD, "main_sha": MAIN}
+    values.update(kwargs)
+    return provider.ProviderScope(**values)
 
 
 class FakeTransport:
