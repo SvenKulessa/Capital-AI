@@ -1,14 +1,11 @@
 # Hreflang für die Sprachseiten
 
-**Status:** BLOCKED  
-**Geprüfte Main-Basis:** `91fe8f2e797fd61e098f4f5e187afeb225f9e721`
+Der Server liefert für `/de/`, `/en/`, `/it/`, `/fr/`, `/pt/` und `/es/` einen lokalisierten Einstieg mit Finanzwissen, Screener-Demo und Sprachwechsel. Der Inhalt stammt aus den bestehenden Übersetzungen der Anwendung. Die Sprachseiten funktionieren auch ohne JavaScript.
 
-Die sechs Sprachpfade `/de/`, `/en/`, `/it/`, `/fr/`, `/pt/` und `/es/` sind als Vorschau klassifiziert. Der Server liefert `noindex, nofollow`. Der bestehende HTTP-Test `server/locale-html.test.mjs` prüft für alle sechs Pfade außerdem das Fehlen von hreflang und Canonical.
+Jede Sprachseite verweist kanonisch auf ihre eigene URL mit abschließendem Schrägstrich. Alle sechs Varianten und die Startseite als `x-default` referenzieren dieselbe Gruppe. `/sitemap.xml` und `/sitemap-main.xml` bilden diese Gruppe mit `xhtml:link` ab. Die HTTP-Regression prüft auch Alias-Weiterleitungen und Pfade wie `/en/profile`, die von der Gruppe ausgeschlossen bleiben.
 
-Die [bestehende Spezifikation](../20261114/HREFLANG_DETAILED_SPEC.md) dokumentiert unvollständige serverseitige Sprachinhalte. Eine überprüfbare inhaltliche Freigabe für alle sechs Versionen liegt in diesem PR nicht vor.
+## Abnahme
 
-## Abnahme der Aktivierung
-
-1. Den vollständigen öffentlichen Hauptinhalt pro Sprachpfad ohne JavaScript prüfen. Übersetzung, Terminologie und Produktangaben anhand der deutschen Quelle abgleichen.
-2. Für freigegebene Seiten selbstreferenzierende Canonicals und wechselseitige hreflang-Verweise im ausgelieferten HTML implementieren. Nur indexierbare Varianten in die Sitemap aufnehmen.
-3. Über die bestehenden Locale- und SEO-Tests HTTP-Status, Sprache, Canonical, hreflang, Sitemap und die Ausschlussregeln prüfen.
+- HTTP: `node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs`
+- SEO-Verträge und Quellfingerabdrücke: `npm run test:seo`
+- Nach Bereitstellung: `CAPITAL_I18N_REQUIRE_INDEXABLE=1 node scripts/growth-i18n-production-readback.mjs --http`

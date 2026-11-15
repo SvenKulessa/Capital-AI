@@ -1,3 +1,4 @@
+import { localeFromLandingPath, localizedLandingPath } from '../../shared/locale-policy.mjs';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { isLocale, messages, type Locale, type MessageKey } from './messages';
@@ -8,8 +9,8 @@ const Context = createContext<LocaleValue | null>(null);
 function initialLocale(): Locale {
   if (typeof window === 'undefined') return 'de';
   // URL wins over a previously stored preference for a shareable language link.
-  const route = /^\/(de|en|it|fr|pt|es)\/?$/.exec(window.location.pathname.toLowerCase());
-  if (route && isLocale(route[1])) return route[1];
+  const routeLocale = localeFromLandingPath(window.location.pathname);
+  if (routeLocale && isLocale(routeLocale)) return routeLocale;
   try {
     const persisted = localStorage.getItem('capital_ai_locale');
     if (persisted && isLocale(persisted)) return persisted;
@@ -24,6 +25,10 @@ export function LocaleProvider({children}: PropsWithChildren) {
     selectLocale(next);
     try { localStorage.setItem('capital_ai_locale', next); } catch { /* Optional preference storage. */ }
     document.cookie = `capital_ai_locale=${next}; Path=/; SameSite=Lax; Max-Age=31536000${location.protocol === 'https:' ? '; Secure' : ''}`;
+    const routeLocale = localeFromLandingPath(location.pathname);
+    if (routeLocale && routeLocale !== next) {
+      location.assign(localizedLandingPath(next) + location.search + location.hash);
+    }
   }, []);
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   const t = useCallback((key: MessageKey) => messages[locale][key], [locale]);
