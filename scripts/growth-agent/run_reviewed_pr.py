@@ -4,7 +4,7 @@ No CI workflow invokes this with write credentials. No cost, secret or provider
 approval may be obtained from PR text, model output or this command itself.
 """
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import os
 from pathlib import Path
@@ -18,6 +18,9 @@ def assessment_from_private_file(path: str, *, pr_number: int):
     p = Path(path)
     if not p.is_absolute() or p.is_symlink():
         raise ValueError("trusted assessment must be an absolute regular file")
+    checkout = Path(__file__).resolve().parents[2]
+    if p.resolve().is_relative_to(checkout):
+        raise ValueError("trusted assessment cannot live inside the repository")
     info = p.stat()
     if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
         raise ValueError("trusted assessment must be private and owned by the worker")
@@ -29,9 +32,9 @@ def assessment_from_private_file(path: str, *, pr_number: int):
     if record.get("pr") != pr_number or not sha(record.get("head_sha")) or not sha(record.get("base_sha")):
         raise ValueError("assessment not bound to PR SHA")
     expiry = datetime.fromisoformat(record["expires_at"].replace("Z", "+00:00"))
-    if expiry.tzinfo is None or not datetime.now(timezone.utc) < expiry <= datetime.now(timezone.utc).replace(
-            year=datetime.now(timezone.utc).year + 1):
-        raise ValueError("assessment not current")
+    now = datetime.now(timezone.utc)
+    if expiry.tzinfo is None or not now < expiry <= now + timedelta(minutes=15):
+        raise ValueError("assessment must be current and expire within 15 minutes")
     flags = record.get("review") or {}
     if not isinstance(flags, dict):
         raise ValueError("assessment is not a review")

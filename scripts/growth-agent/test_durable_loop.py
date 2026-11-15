@@ -88,6 +88,7 @@ class DurableTests(unittest.TestCase):
             snapshot = graph.get_state(config)
             self.assertTrue(snapshot.next)
             conn.close()
+            os.chmod(db, 0o600)
             result = execute_durable(self.actions(http), auth, "interrupted42", db)
             self.assertEqual(result["status"], "MERGED")
             self.assertEqual(http.mutations, 1)
