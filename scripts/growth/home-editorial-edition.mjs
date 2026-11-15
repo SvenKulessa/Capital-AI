@@ -52,10 +52,14 @@ function normalizeStory(story, asOf) {
       !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(provenance?.reviewedAt ?? ''))) {
     throw new Error('Invalid published provenance');
   }
-  return {id, topic, title, summary, context, graphic: visual,
+  const normalized = {id, topic, title, summary, context, graphic: visual,
     source: {name: source.name, url: sourceUrl.href, date: source.date, label: dateLabel(source.date)},
     editorial: {relevance: editorial.relevance, impact: editorial.impact},
     ...(provenance ? {provenance} : {})};
+  if (provenance && homeStoryDigest(normalized) !== provenance.approvalSha256) {
+    throw new Error('Published provenance digest mismatch');
+  }
+  return normalized;
 }
 
 export function editorialScore(story, asOf) {
