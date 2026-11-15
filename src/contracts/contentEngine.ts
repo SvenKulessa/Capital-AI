@@ -102,6 +102,7 @@ export const ContentEnginePlanSchema = z.object({
   publication: z.object({
     adapter: z.literal('SOCIAL_MEDIA_ENGINE'),
     state: z.literal('INTEGRATION_PENDING'),
+    xArticlesDraftsEnabled: z.literal(true),
     publicPublishAllowed: z.literal(false),
   }).strict(),
 }).strict();
@@ -114,7 +115,7 @@ function moduleState(module: ContentEngineModuleId): ContentEngineModulePlan {
       capability: null,
       state: 'INTEGRATION_PENDING',
       productionEligible: false,
-      reason: 'Social Media Engine publisher adapter is intentionally separate until the migration/cutover is complete.',
+      reason: 'X Articles draft client available. Public publish remains blocked until editorial + rights approval. Media (image/video) attachable after review gate.',
     };
   }
 
@@ -176,6 +177,7 @@ export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
     publication: {
       adapter: 'SOCIAL_MEDIA_ENGINE',
       state: 'INTEGRATION_PENDING',
+      xArticlesDraftsEnabled: true,
       publicPublishAllowed: false,
     },
   });
