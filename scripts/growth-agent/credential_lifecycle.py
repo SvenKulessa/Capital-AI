@@ -137,16 +137,15 @@ def evaluate(inventory: list[dict], observations: dict[str, dict], at: datetime)
         # No unbounded provider data, raw errors, token bytes, or evidence payload.
         findings.append({"id": item["id"], "provider": item["provider"],
                          "verdict": verdict, "action": action, "days_remaining": days,
-                         "evidence_status": "PROVIDER_OBSERVED" if obs else "REPOSITORY_ONLY"})
+                         "evidence_status": "OBSERVATION_UNVERIFIED" if obs else "REPOSITORY_ONLY"})
     return findings
 
 
 def build_report(findings: list[dict], at: datetime) -> dict:
     counts = Counter(item["verdict"] for item in findings)
     status = ("BLOCKED" if counts["EXPIRED"] else
-              "NOT_PROVEN" if counts["NOT_PROVEN"] else
               "REVIEW_REQUIRED" if any(k.startswith("DUE_") or k == "REVIEW_DUE" for k in counts) else
-              "VERIFIED")
+              "NOT_PROVEN")
     return {"schema": SCHEMA, "generated_at": iso_utc(at),
             "status": status, "counts": dict(sorted(counts.items())),
             "credentials": findings, "scope": "metadata_only_no_provider_actions"}

@@ -12,7 +12,7 @@ Optional input observations use the same schema and include only `id`, `expires_
 
 ## State graph and policy
 
-`START -> INVENTORIED -> EVALUATED -> EVIDENCED -> END`. The evidence history includes one of `BLOCKED`, `NOT_PROVEN`, `REVIEW_REQUIRED`, `VERIFIED`. This graph has no adapter, side effect, repair loop, merge, publish, or deployment transition; a `VERIFIED` status means expiry-policy evaluation only, **not** provider connectivity or live token validity.
+`START -> INVENTORIED -> EVALUATED -> EVIDENCED -> END`. The evidence history includes one of `BLOCKED`, `NOT_PROVEN`, `REVIEW_REQUIRED`. This graph has no adapter, side effect, repair loop, merge, publish, or deployment transition; a metadata observation is never sufficient to assert `VERIFIED` live provider connectivity or key validity.
 
 - `EXPIRED` (`BLOCKED` overall): read-only refresh eligibility or reauthorization investigation, never automatic reauthorization.
 - `DUE_30D`, `DUE_14D`, `DUE_7D`, `DUE_3D`, `DUE_1D`: prepare approved rotation; do not auto-rotate.
@@ -20,7 +20,7 @@ Optional input observations use the same schema and include only `id`, `expires_
 - `NOT_PROVEN`: no expiry or review evidence; request metadata (no green status inferred).
 - `KEYLESS`: federation identity, no static credential to rotate, but federation validity remains separately unproven.
 
-Expiration is evaluated at UTC seconds precision. No guessed vendor TTL is introduced. `metadata_only_no_provider_actions` is fixed in every report. Results contain IDs, provider names, status, action names, age band and evidence class only; they contain no token values, confidential URLs, raw provider payloads, or diagnostic exceptions.
+Expiration is evaluated at UTC seconds precision. No guessed vendor TTL is introduced. `metadata_only_no_provider_actions` is fixed in every report. Even an apparently current observation remains `NOT_PROVEN` at the overall level: it has not been authenticated to a provider. Results contain IDs, provider names, status, action names, age band and evidence class only; they contain no token values, confidential URLs, raw provider payloads, or diagnostic exceptions.
 
 ## Local commands / CI
 
@@ -36,7 +36,7 @@ The **existing** `Google Maintenance and Local Growth Graph` workflow already ru
 
 ## Verification and outstanding evidence
 
-Local stdlib regression: 13 tests discovered, 12 passed, 1 LangGraph integration test skipped because LangGraph is not installed in the isolated local runner. Pinned CI must execute the graph integration test and its other existing checks; **until actual CI run/exit code and head SHA are read back, CI is `NOT_PROVEN`**.
+Local stdlib regression: 14 tests discovered, 13 passed, 1 LangGraph integration test skipped because LangGraph is not installed in the isolated local runner. Pinned CI must execute the graph integration test and its other existing checks; **until actual CI run/exit code and head SHA are read back, CI is `NOT_PROVEN`**.
 
 `NOT_PROVEN`: actual provider key issuance/expiry dates, Google/Stripe/GitHub/Render credential metadata, OAuth refresh outcomes, runtime live status, and any downstream messaging integration. None of these are claimed by repository tests. The existing owner-only X refresh requires separate authorization and paid-API policy, and the YouTube resolver retains its own grant-specific refresh mechanism; neither is invoked by this manager.
 

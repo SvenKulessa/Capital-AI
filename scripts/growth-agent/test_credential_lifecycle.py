@@ -55,6 +55,12 @@ class LifecycleTests(unittest.TestCase):
                 self.assertEqual(self.verdict(item(), observation(expiry)), name)
         self.assertEqual(self.verdict(item(), observation("2027-02-01T00:00:00Z")), "CURRENT")
 
+    def test_current_observation_never_proves_live_credential(self):
+        result = subject.evaluate_offline(doc(item()), observation("2027-02-01T00:00:00Z"), NOW)
+        self.assertEqual(result["credentials"][0]["verdict"], "CURRENT")
+        self.assertEqual(result["credentials"][0]["evidence_status"], "OBSERVATION_UNVERIFIED")
+        self.assertEqual(result["status"], "NOT_PROVEN")
+
     def test_keyless_does_not_require_stored_secret(self):
         record = item(kind="workload_identity", rotation_mode="keyless")
         self.assertEqual(self.verdict(record), "KEYLESS")
