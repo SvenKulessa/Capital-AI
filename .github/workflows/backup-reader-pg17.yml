@@ -7,6 +7,7 @@ on:
       - 'scripts/platform/backup-recovery-slices-test.sh'
       - 'docs/platform/SUPABASE-BACKUP-READER-CONTRACT.md'
       - '.github/workflows/backup-reader-pg17.yml'
+      - '.github/docker/pg17-reader.Dockerfile'
   workflow_dispatch:
 
 permissions:
@@ -31,17 +32,17 @@ jobs:
           bash -n scripts/platform/backup-recovery-slices-test.sh
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Build PostgreSQL 17 fixture with scoped layer caching
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: .github/docker/pg17-reader.Dockerfile
           tags: capital-ai-pg17-reader-fixture
           load: true
-          cache-from: type=gha,scope=pg17-reader
-          cache-to: type=gha,mode=max,scope=pg17-reader
+          cache-from: type=gha,scope=pg17-reader-pr-${{ github.event.pull_request.number || 'manual' }}
+          cache-to: type=gha,mode=max,scope=pg17-reader-pr-${{ github.event.pull_request.number || 'manual' }}
 
       - name: Verify PostgreSQL 17.11 and run isolated two-cluster recovery
         shell: bash
