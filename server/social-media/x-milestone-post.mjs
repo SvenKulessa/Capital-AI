@@ -19,7 +19,7 @@ const LAUNCH = BASE + '/launch';
 const LAUNCH_POST = LAUNCH + '/publish';
 const LAUNCH_STATUS = LAUNCH + '/status';
 const LAUNCH_SCRIPT = '/x-milestone-launch.js';
-const LAUNCH_MEDIA_PATH = 'public/media/CAPITAL-AI-Universe-X-Launch-Final-20261115.png';
+const LAUNCH_MEDIA_PATH = 'public/branding/social/CAPITAL-AI-Universe-X-Launch-Final-20261115.png';
 export const LAUNCH_MEDIA_SHA256 = '08886b933be8a162de0fe678c13fd2e610348ba827aaec25179b623e969809f1';
 export const LAUNCH_TEXT = [
   '🚀 Finanzdaten überall. Aber was bedeuten sie? 🌌', '',
