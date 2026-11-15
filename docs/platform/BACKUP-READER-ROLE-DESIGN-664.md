@@ -1,79 +1,26 @@
-# Backup Reader Role Design – Issue #664
+# Backup Reader: least-privilege design and risk decision (Issue #664)
 
-## Goal
-Define a least-privilege PostgreSQL role `capital_ai_backup_reader` that can perform a full `pg_dump` while being unable to write data or invoke `pg_cron` / `pg_net`.
+**Status: DESIGN / BLOCKED / NOT_ACTIVE.** This document does not authorize provisioning `capital_ai_backup_reader` or operating a production backup.
 
-## Role Attributes
+## What is actually verified
 
-```sql
-CREATE ROLE capital_ai_backup_reader
-  LOGIN
-  NOSUPERUSER
-  NOCREATEDB
-  NOCREATEROLE
-  NOINHERIT
-  CONNECTION LIMIT 1;
+The repository already contains the isolated PostgreSQL 17.11 role-and-restore contract in `scripts/platform/backup-reader-contract-test.sh` and the supplementary recovery slices in `scripts/platform/backup-recovery-slices-test.sh`. The existing `.github/workflows/backup-reader-pg17.yml` executes them in a disposable environment. The current PR adds **no new runnable role-definition SQL**. Test evidence applies only to the exact commit and synthetic fixture where it ran.
 
-ALTER ROLE capital_ai_backup_reader
-  SET default_transaction_read_only = on;
-```
+The fixture tests `LOGIN`, `NOSUPERUSER`, `NOCREATEDB`, `NOCREATEROLE`, `NOREPLICATION`, `NOINHERIT`, `CONNECTION LIMIT 1`, absence of group memberships, and named-object `CONNECT`/`USAGE`/`SELECT` grants. `BYPASSRLS` is a separate, high-risk decision: the isolated tests establish its relevance to a complete `pg_dump` while also demonstrating its broader effect. No production `BYPASSRLS` or blanket `pg_read_all_data` grant is approved.
 
-## Required Grants (minimal)
+## The effective-rights blocker
 
-- `CONNECT` on the target database
-- `USAGE` on schemas that contain dump-relevant objects
-- `SELECT` on tables, views, and sequences required for a complete dump
-- `BYPASSRLS` only if proven necessary for a full dump (to be decided after inventory)
+- `default_transaction_read_only=on` is **only a default**, not a security boundary. The role can explicitly start a read-write transaction; tests therefore check actual object/function privilege denial with SQLSTATE `42501`, not only read-only errors.
+- A role-specific `REVOKE` cannot cancel access inherited through `PUBLIC`. Observed Supabase `PUBLIC` privileges include `USAGE` on `net`, queue DML and executable functions such as `net.http_delete`; other reachable functions and `cron` need comparable evaluation. No global revocation or provider configuration change is within scope.
+- An isolated test can revoke shared `PUBLIC` privileges **only inside its disposable database**. It cannot justify a production guarantee from the same role definition.
+- The existing unrestricted exporter and a full Supabase recovery have a broader scope than the fixture dump. Auth, Storage object bytes, Vault/key portability, extensions, cron jobs, pgmq queues, owners/ACLs and GCS require separate verification.
 
-## Explicit Revokes
+The earlier experimental role SQL (with plain role creation and ineffective role-specific revokes), standalone negative SQL and runner were removed from this PR to avoid a misleading success signal and accidental execution. The authoritative implemented fixture and its version-pinned CI remain unchanged.
 
-```sql
-REVOKE ALL ON SCHEMA cron FROM capital_ai_backup_reader;
-REVOKE ALL ON SCHEMA net FROM capital_ai_backup_reader;
-REVOKE ALL ON ALL FUNCTIONS IN SCHEMA cron FROM capital_ai_backup_reader;
-REVOKE ALL ON ALL FUNCTIONS IN SCHEMA net FROM capital_ai_backup_reader;
-```
+## Safe decision sequence
 
-## Negative Tests
+1. Treat the isolated PG17.11 tests as **synthetic evidence only** and inspect exact-head CI.
+2. Use the previously recorded catalog and recovery-scope inventory to design a real object-level allowlist; do not infer effectiveness from grant statements alone.
+3. Leave production provisioning, SQL changes, backup and restore **BLOCKED** until independently evidenced, separately authorized owner-operated procedure and residual-risk decision.
 
-Implemented in `scripts/platform/backup-reader-negative-tests.sql`.
-
-All of the following must fail when executed as `capital_ai_backup_reader`:
-
-- `INSERT` / `UPDATE` / `DELETE`
-- `CREATE` / `DROP` (DDL)
-- `cron.schedule(...)`
-- `net.http_get(...)`
-- Any write while `default_transaction_read_only = on`
-
-## Isolated Test Runner
-
-`scripts/platform/backup-reader-isolated-test.sh` automates:
-
-1. Building the pinned PostgreSQL 17 fixture
-2. Starting an isolated container
-3. Creating sample data
-4. Running the inventory script
-5. Creating the backup reader role
-6. Executing the negative tests
-7. Cleaning up
-
-Run locally with Docker:
-
-```bash
-chmod +x scripts/platform/backup-reader-isolated-test.sh
-./scripts/platform/backup-reader-isolated-test.sh
-```
-
-## Residual Risk
-
-`pg_net` `PUBLIC` privileges cannot be selectively revoked in Supabase managed environments. This residual risk must be documented as **BLOCKED** or mitigated by a time-bounded, isolated backup procedure with explicit owner approval.
-
-## Execution Plan
-
-1. Run the isolated test runner and review output.
-2. Finalize the exact GRANT list based on the inventory.
-3. Confirm all negative tests fail.
-4. Obtain explicit owner approval before any productive role creation.
-
-**No productive changes until step 4 is completed.**
+Rollback for this documentation-only PR is a Git revert. Production systems and permissions must remain unchanged.
