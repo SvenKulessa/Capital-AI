@@ -2,6 +2,8 @@
 // This reuses the existing Social Media Engine X transport and rotating OAuth2
 // resolver; it is NOT a second publisher, scheduler or autonomous outreach bot.
 import { createHash } from 'node:crypto';
+import { lstat, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { createSocialXEdgeClient } from './x-edge-client.mjs';
 import { resolveOwnerXCredentials } from './x-article-test.mjs';
 import { createSocialProviderPublishTransport } from './provider-publish.mjs';
@@ -12,6 +14,47 @@ const STATUS = BASE + '/status';
 const SCRIPT = '/x-milestone-post.js';
 const EXPECTED_HANDLE = 'CapitalAIOnline';
 const XID = /^[0-9]{1,25}$/;
+
+const LAUNCH = BASE + '/launch';
+const LAUNCH_POST = LAUNCH + '/publish';
+const LAUNCH_STATUS = LAUNCH + '/status';
+const LAUNCH_SCRIPT = '/x-milestone-launch.js';
+const LAUNCH_MEDIA_PATH = 'public/media/CAPITAL-AI-Universe-X-Launch-Final-20261115.png';
+export const LAUNCH_MEDIA_SHA256 = '08886b933be8a162de0fe678c13fd2e610348ba827aaec25179b623e969809f1';
+export const LAUNCH_TEXT = [
+  '🚀 Finanzdaten überall. Aber was bedeuten sie? 🌌', '',
+  'Willkommen bei CAPITAL-AI:',
+  '📚 Learning Hub · Wissen',
+  '📊 Analytics Hub · Methoden',
+  '🔎 Studio Hub · Daten verstehen',
+  '🎬 Content Engine · Inhalte', '',
+  'Das ist erst der Anfang … 👀',
+  '👉 https://capital-ai.online/learning', '', '#FinTech',
+].join('\n');
+export const LAUNCH_CONTENT_KEY = createHash('sha256')
+  .update('capital-ai-x-launch-v1\n' + LAUNCH_TEXT + '\n' + LAUNCH_MEDIA_SHA256)
+  .digest('hex');
+if (LAUNCH_TEXT.length > 280) throw Error('X_LAUNCH_POST_TOO_LONG');
+
+export function assertPinnedLaunchMedia(bytes) {
+  const pngHeader = Buffer.from([137,80,78,71,13,10,26,10]);
+  if (!Buffer.isBuffer(bytes) || bytes.length < 24 || bytes.length > 5*1024*1024
+    || !bytes.subarray(0,8).equals(pngHeader)) throw Error('x_launch_image_invalid');
+  if (createHash('sha256').update(bytes).digest('hex') !== LAUNCH_MEDIA_SHA256)
+    throw Error('x_launch_image_sha_mismatch');
+  return bytes;
+}
+async function loadPinnedLaunchMedia() {
+  // No user URL, remote fetch, supplied path, symlink or filesystem traversal.
+  const file = resolve(process.cwd(), LAUNCH_MEDIA_PATH);
+  let info;
+  try { info = await lstat(file); }
+  catch { throw Error('x_launch_image_not_provisioned'); }
+  if (!info.isFile() || info.isSymbolicLink() || info.size > 5*1024*1024)
+    throw Error('x_launch_image_invalid');
+  return assertPinnedLaunchMedia(await readFile(file));
+}
+
 
 export const MILESTONE_TEXT = "🚀 Weniger Content-Rauschen, mehr Kontext: CAPITAL-AI verbindet Content Adapter + Social Media Engine. Quellen & Rechte prüfen → Posts/Shorts entwerfen → Freigabe → Nachweis. Start: Daten- und Screener-Blueprints. 🧪 Pilot; keine Anlageberatung. https://capital-ai.online/";
 export const MILESTONE_CONTENT_KEY = createHash('sha256').update(MILESTONE_TEXT, 'utf8').digest('hex');
