@@ -148,7 +148,12 @@ class TrustedGitHubRenderActions:
             name = item["name"]
             # Duplicate check runs (e.g. reruns): latest check must be successful.
             if name in checks:
-                if item.get("started_at", "") <= checks[name].get("started_at", ""):
+                newer = item.get("started_at")
+                older = checks[name].get("started_at")
+                # Never accept an old green run if rerun order is ambiguous.
+                if not isinstance(newer, str) or not isinstance(older, str) or newer == older:
+                    return None
+                if newer < older:
                     continue
             checks[name] = item
         if not all(name in checks for name in REQUIRED):

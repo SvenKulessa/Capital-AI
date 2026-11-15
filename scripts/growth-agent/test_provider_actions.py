@@ -154,6 +154,15 @@ class ProviderTests(unittest.TestCase):
                 self.assertFalse(a.test({})["passed"])
                 self.assertFalse(loop.merge_evidence_verified(a.evidence({})))
 
+    def test_ambiguous_duplicate_check_run_never_reuses_old_green_result(self):
+        f = FakeTransport()
+        f.checks.append({"name": "Docker Security Gate", "status": "in_progress",
+                         "conclusion": None, "id": 99})
+        a = adapter(f, prepared_head_verified=True, scope_complete=True,
+                    trust_boundaries_clear=True, allow_merge=True)
+        self.assertFalse(a.test({})["passed"])
+        self.assertFalse(loop.merge_evidence_verified(a.evidence({})))
+
     def test_missing_check_pages_fail_closed(self):
         f = FakeTransport()
         class Truncated(FakeTransport):
