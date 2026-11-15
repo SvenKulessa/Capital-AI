@@ -121,7 +121,7 @@ test('separate verified snapshot vetoes edited or swapped content after approval
   assert.deepEqual(modified.stories.map((s: {id:string})=>s.id),['xrpl']);
   const changed=admitFixture();
   const oldReviews=fixtureReviews(changed);
-  changed.stories[0].graphic.labels.push('Zusätzliche Grafik');
+  (changed.stories[0].graphic as {labels: string[]}).labels.push('Zusätzliche Grafik');
   const graphic=projectHomeEditorial(changed,day,planContentCampaign,oldReviews);
   assert.equal(graphic.status,'READY'); // change is structurally valid, but approval is now stale
   assert.deepEqual(graphic.stories.map((s: {id:string})=>s.id),['xrpl']);
