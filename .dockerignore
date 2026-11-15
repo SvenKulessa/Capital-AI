@@ -122,6 +122,7 @@
 !server/scorer-proxy.mjs
 !shared/
 !shared/hub-routes.mjs
+!shared/news-lifecycle.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -175,6 +176,8 @@
 !scripts/growth/news-to-learning.integration.test.mjs
 !scripts/growth/home-editorial-edition.mjs
 !scripts/growth/home-editorial-edition.test.mjs
+!scripts/growth/news-lifecycle-cli.mjs
+!scripts/growth/news-lifecycle.test.mjs
 !scripts/generate-chart-learning.tsx
 
 !public/learning/
