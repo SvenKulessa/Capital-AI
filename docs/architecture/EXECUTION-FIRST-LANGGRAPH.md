@@ -44,12 +44,26 @@ compare the observed deployed SHA with the actual merge SHA before checking
 runtime health. `VERIFIED` requires trusted runtime evidence; successful
 repository tests alone never imply a live release.
 
+**Durable single-worker checkpointing (optional).**
+\`execute_durable(actions, authority, task_id, absolute_private_sqlite_path)\`
+uses the pinned official \`SqliteSaver\`, private local SQLite files, a
+nonblocking OS file lock and stable LangGraph \`thread_id\`. Re-running the
+same finished task returns its persisted state without replaying merge/deploy.
+An interrupted graph with pending nodes continues from its checkpoint.
+The merge node re-evaluates the *current* authority, and the provider adapter
+independently revalidates current GitHub evidence and reconciles a merge
+completed immediately before a crash. A checkpoint alone is **not** merge
+authorization. No database should contain API tokens or private provider
+payloads. The local SQLite file must live on persistent trusted storage, never
+inside ephemeral Render containers. This is a single-writer solution, not a
+distributed worker, scheduler or exactly-once transaction across providers.
+
 **Bounded retries/checkpointing.** At most 0–3 repairs (default two) and a
 fixed recursion limit; failed checks stop rather than looping forever.
-LangGraph's in-memory checkpointer is per invocation and **not durable across
-process restarts**. Durable storage, a trusted GitHub/Render adapter and
-persistent scheduling require separate authorized engineering and validation;
-none are claimed active by merging this module.
+The default legacy `execute()` keeps its per-invocation in-memory saver for
+backward compatibility. `execute_durable()` is the opt-in persistent path.
+A scheduled, always-running agent still requires a separately provisioned
+and explicitly authorized trusted worker; no new production service is activated.
 
 **Tests:** `python3 -m unittest discover -s scripts/growth-agent -p 'test_*.py'`
 using the existing pinned requirements. The existing Google Maintenance and
