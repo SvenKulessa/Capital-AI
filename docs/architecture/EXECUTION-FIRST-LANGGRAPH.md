@@ -44,88 +44,99 @@ compare the observed deployed SHA with the actual merge SHA before checking
 runtime health. `VERIFIED` requires trusted runtime evidence; successful
 repository tests alone never imply a live release.
 
-**Durable single-worker checkpointing (optional).**
-`execute_durable(actions, authority, task_id, absolute_private_sqlite_path)`
-uses the pinned official `SqliteSaver`, private local SQLite files, a
-nonblocking OS file lock and stable LangGraph `thread_id`. Re-running the
-same finished task returns its persisted state without replaying merge/deploy.
-An interrupted graph with pending nodes continues from its checkpoint. Regression tests explicitly pause after implementation and before merge, close the SQLite connection, then resume with a fresh graph and revoked permissions.
-The merge node re-evaluates the *current* authority, and the provider adapter
-independently revalidates current GitHub evidence and reconciles a merge
-completed immediately before a crash. A checkpoint alone is **not** merge
-authorization. No database should contain API tokens or private provider
-payloads. The local SQLite file must live on persistent trusted storage, never
-inside ephemeral Render containers. This is a single-writer solution, not a
-distributed worker, scheduler or exactly-once transaction across providers.
-
 **Bounded retries/checkpointing.** At most 0–3 repairs (default two) and a
 fixed recursion limit; failed checks stop rather than looping forever.
-The default legacy `execute()` keeps its per-invocation in-memory saver for
-backward compatibility. `execute_durable()` is the opt-in persistent path.
-A scheduled, always-running agent still requires a separately provisioned
-and explicitly authorized trusted worker; no new production service is activated.
+LangGraph's in-memory checkpointer is per invocation and **not durable across
+process restarts**. Durable storage, a trusted GitHub/Render adapter and
+persistent scheduling require separate authorized engineering and validation;
+none are claimed active by merging this module.
 
 **Tests:** `python3 -m unittest discover -s scripts/growth-agent -p 'test_*.py'`
 using the existing pinned requirements. The existing Google Maintenance and
 Local Growth Graph workflow runs those tests on relevant PRs. Its check is
 not made Required; Docker Security Gate and Domain Governance stay unchanged.
 
+## Trusted P0 GitHub/Render adapter (2026-11-15)
 
-## Trusted GitHub / Render connector (P0)
+The Python module `scripts/growth-agent/provider_adapters.py` binds the existing
+LangGraph action interface to the real GitHub REST API and Render deployment
+readback through a fixed-origin HTTPS client. The **only supported mutation** is
+`PUT /repos/SvenKulessa/Capital-AI/pulls/{pr}/merge`, using the expected
+PR head SHA. Render reads are strictly GET-only; no manual deployment is issued.
 
-`trusted_provider_actions.py` and `run_auto_loop.py` are executable against
-the official GitHub and Render REST APIs. They reuse only a trusted runner's
-`GITHUB_TOKEN` (scoped GitHub read/merge and optional workflow rerun) and
-`RENDER_API_KEY` (read-only service/deploy information) environment variables.
-No credentials are checked into the repository or serialized into graph state.
+The adapter checks branch naming, current Main and head, actual GitHub check
+runs (including required Docker Security Gate and Domain Governance), applicable
+checks, unresolved/unknown results and a separately trusted semantic assessment.
+An unknown check skip, an incomplete check-run page or an unproven assessment
+fails closed. HTTP redirects, alternate provider domains, oversized responses
+and invalid JSON fail closed. The adapter only invokes a trusted implement/repair
+callback; no PR body, issue text, tool output, model answer or arbitrary command
+is executable code.
 
-- Scope is pinned to `SvenKulessa/Capital-AI`, a specific PR, exact approved
-  head/main SHAs, the existing Render service `srv-dau1rp893c1s73cdhm1g`
-  and `https://capital-ai.online/healthz`. Provider data cannot redirect
-  HTTP calls or extend this scope.
-- `analyze` and `evidence` query current GitHub PR/main/checks and reject
-  stale main/heads, draft PRs, HOLDs, missing/pending checks or unapproved
-  risk/scope. The two existing Required Checks remain authoritative; other
-  applicable failed tests and CodeQL block the merge. Optional, documented
-  non-applicable skipped checks are ignored.
-- `implement` certifies an already implemented and independently reviewed
-  PR head. **It does not generate code**; autonomous source implementation
-  still comes from the trusted repository-editing agent before this CLI is
-  invoked. `repair` can request a retry only for a specifically pinned,
-  failed CI run if explicitly authorized; it cannot change code or approve
-  the retried run before the checks actually finish.
-- `merge` re-reads GitHub evidence immediately before a guarded squash merge,
-  passing the exact expected head SHA. If the tool fails after a successful
-  server-side merge, it reconciles the exact merged PR without a duplicate
-  request. It never bypasses rulesets or review threads; GitHub protection
-  still enforces their completion.
-- Render is **read-only**: check that the active main service deployment's
-  commit matches the merge SHA, then read the fixed HTTPS health endpoint.
-  Only `status=ok` plus matching `runtimeIdentity.sourceSha` and Render
-  deployment can produce `VERIFIED`; no manual deploy is triggered.
+The existing graph has a single bounded repair loop. The adapter reconciles an
+already-merged PR through GET before any repeat PUT, with exact head-SHA matching.
+Render deployment evidence must match the actual merged SHA, and runtime verification
+requires public `/healthz` to report the matching `runtimeIdentity.sourceSha`.
 
-Example (trusted isolated runner, **read-only by default**):
+## Durable P1 checkpoint/resume
+
+`auto_loop.py::execute_durable` uses the official pinned LangGraph
+`SqliteSaver`, strict msgpack, and a private 0600 SQLite file in a 0700
+directory. An exclusive nonblocking file lock prevents two processes from
+running the same store concurrently. Symlinked, shared, or relative checkpoint
+paths are rejected. A finished thread is returned without re-invoking any
+adapter callback. A pending thread resumes with `invoke(None)` instead of
+restarting at START. The remote-merge reconciliation protects the crash window
+between a successful PUT and local checkpoint persistence.
+
+The SQLite implementation is intended for one trusted worker on an owner-private
+persistent volume. It is not suitable for distributed multi-worker production
+deployment and is not activated as an always-on Render process.
+
+## Invoking on an explicitly trusted worker
+
+The entrypoint `scripts/growth-agent/run_reviewed_pr.py` defaults to read-only.
+A merge additionally requires `--merge`, credentials from the trusted worker
+environment, and a **privately owned, mode 0600**, 15-minute-expiring JSON
+assessment file outside the repository. The assessment must bind the exact
+PR `head_sha`, `base_sha` and PR number, with schema
+`CAPITAL_AI_TRUSTED_PR_ASSESSMENT@1` and four true review flags
+`scope_complete`, `trust_boundaries_clear`, `no_active_hold` and
+`applicable_checks_green`. The file must originate from a separately performed
+real technical review, not copied PR prose or LLM output.
+
+Example (requires authorized separate credentials and a reviewed PR):
 
 ```bash
-python3 scripts/growth-agent/run_auto_loop.py \
-  --pr 913 --head <40-hex-reviewed-head> --main <40-hex-current-main> \
-  --task platform-913-review --checkpoint /private/agent-state/flow.sqlite
+python3 scripts/growth-agent/run_reviewed_pr.py \
+  --pr 123 --task-id platform-pr-123 \
+  --merge --observe-existing-deploy
 ```
 
-For a prepared PR, add `--prepared-head-reviewed`, `--scope-reviewed`,
-`--trust-reviewed`, and `--allow-merge` **only after evidence and permission
-exist**. Add `--observe-deploy` to read back Render's normal auto-deployment.
-Use a new task ID when new CI evidence arrives; a finished checkpoint cannot
-be reactivated with higher privileges. The agent must have a writable,
-private (mode 0700) durable local directory; database and lock are mode 0600.
-Single writer only. Checkpoint recovery does not imply distributed exactly-once
-execution; external GitHub idempotency is independently reconciled.
+`GITHUB_TOKEN` is required; `RENDER_API_KEY` is used solely for readback.
+No tokens, approvals or database contents belong in Git, CI logs or chat.
+No additional GitHub Required Checks, cloud workers, external schedulers,
+manual deploys or automatic publication were introduced.
 
-The optional synchronous SQLite saver is the official
-`langgraph-checkpoint-sqlite==3.1.3` (MIT) pinned alongside its Python
-dependencies in `scripts/growth-agent/requirements.lock`. This changes
-the **existing isolated Python test-worker dependency set**, not the Node
-production image; GitHub CI installs pinned packages in its existing job.
-No new Render service, paid database, GitHub token, credential provisioning,
-cron schedule or required check is added. Python package installation and
-operational rate limits remain subject to existing rights/cost checks.
+**Tests:** Existing `Google Maintenance and Local Growth Graph` CI executes
+the offline `test_*.py` suites on relevant PRs using the pinned Python lock.
+Existing Docker Security Gate and Domain Governance are unchanged.
+
+The trusted CLI keeps state under `/var/lib/capital-ai-agent/checkpoints/`
+with the task-id-derived filename and reads the approval for PR 123 only
+from `/var/lib/capital-ai-agent/approvals/123.json`. Both directories must
+be configured owner-private by the existing trusted operator. No arbitrary
+checkpoint or approval filesystem path is accepted from CLI input.
+
+## Post-merge authorization and runtime hardening
+
+The merge node rechecks the **current** `Authority` after any SQLite resume;
+a revoked grant cannot execute a previously scheduled merge. The trusted worker
+binds its private 15-minute assessment's exact PR head/base SHA to the adapter;
+head or base drift invalidates the authorization even after initial CLI review.
+Render readback uses the most recent active deployment, not an older historical
+successful deployment, and runtime verification repeats deployment identity
+comparison immediately before checking public `/healthz`.
+
+The existing provider adapter and SQLite saver remain the sole implementation;
+no second provider/CLI/checkpoint stack is introduced.

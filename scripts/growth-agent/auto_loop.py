@@ -10,9 +10,9 @@ import os
 import re
 from typing import TypedDict
 
+os.environ["LANGGRAPH_STRICT_MSGPACK"] = "true"
 os.environ["LANGSMITH_TRACING"] = "false"
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
-os.environ["LANGGRAPH_STRICT_MSGPACK"] = "true"
 
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import InMemorySaver
@@ -127,7 +127,7 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
         return event(state, "merge_authorized", status="MERGE_READY")
 
     def merge(state):
-        # Check authority again: a resumed checkpoint may predate a revoked grant.
+        # A resumed checkpoint must not inherit a revoked merge authorization.
         if (authority.read_only or not authority.allow_merge
                 or not merge_evidence_verified(state.get("evidence"))):
             return event(state, "merge_denied", status="BLOCKED")
@@ -200,61 +200,59 @@ def execute(actions, authority: Authority, task_id: str) -> LoopState:
     )
 
 
-def execute_durable(actions, authority: Authority, task_id: str, checkpoint_path: str):
-    """Execute/resume a single trusted task with a private local SQLite checkpointer.
 
-    The per-process lock prevents two solo-maintainer runners from acting on the
-    same database concurrently. Reinvocation of a finished task never replays
-    provider mutations. Interrupted tool calls must still be reconciled by the
-    trusted adapter (especially GitHub merge), because external APIs and SQLite
-    do not share an atomic transaction.
+def execute_durable(actions, authority: Authority, task_id: str, db_path: str) -> LoopState:
+    """Single-writer SQLite-backed LangGraph checkpoint and crash-safe continuation.
+
+    A completed thread is returned without repeating actions; a pending checkpoint
+    resumes with None. External merge adapter must reconcile a remote merge made
+    immediately before an interrupted checkpoint write (idempotent GET-first).
     """
     import fcntl
-    from pathlib import Path
+    import sqlite3
     import stat
+    from pathlib import Path
     from langgraph.checkpoint.sqlite import SqliteSaver
 
     if not isinstance(task_id, str) or not re.fullmatch(r"[a-zA-Z0-9._:-]{1,96}", task_id):
-        raise ValueError("invalid non-secret task_id")
-    if not isinstance(checkpoint_path, str) or not checkpoint_path:
-        raise ValueError("an explicit checkpoint path is required")
-    path = Path(checkpoint_path)
-    if not path.is_absolute() or path.suffix != ".sqlite" or path.is_symlink():
-        raise ValueError("checkpoint must be an absolute, non-symlink .sqlite file")
-    directory = path.parent
-    if directory.is_symlink():
-        raise ValueError("checkpoint parent must not be a symlink")
-    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-    directory_mode = stat.S_IMODE(directory.stat().st_mode)
-    if directory_mode & 0o077 or directory.stat().st_uid != os.getuid():
-        raise PermissionError("checkpoint directory must be private to the current user")
-    for item in (path, directory / (path.name + ".lock")):
-        if item.is_symlink():
-            raise ValueError("checkpoint lock/database symlink is forbidden")
-
-    def private_file(candidate):
-        flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
-        descriptor = os.open(candidate, flags, 0o600)
-        os.fchmod(descriptor, 0o600)
-        return descriptor
-
-    lock_fd = private_file(str(path) + ".lock")
+        raise ValueError("invalid task id")
+    path = Path(db_path)
+    if not path.is_absolute() or path.suffix != ".sqlite3":
+        raise ValueError("checkpoint path must be an absolute .sqlite3 file")
+    parent = path.parent.resolve(strict=True)
+    mode = parent.stat().st_mode
+    if not stat.S_ISDIR(mode) or mode & 0o077:
+        raise ValueError("checkpoint directory must be private")
+    if path.is_symlink() or path.with_name(path.name + ".lock").is_symlink():
+        raise ValueError("checkpoint symlinks forbidden")
+    os_flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
+    lockfd = os.open(str(path) + ".lock", os_flags, 0o600)
     try:
-        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        database_fd = private_file(path)
-        os.close(database_fd)
-        with SqliteSaver.from_conn_string(str(path)) as saver:
+        # Nonblocking lock: never concurrently execute a thread from two workers.
+        fcntl.flock(lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if os.stat(lockfd).st_mode & 0o077:
+            raise ValueError("checkpoint lock permissions are not private")
+        fd = os.open(path, os_flags, 0o600)
+        try:
+            if os.fstat(fd).st_mode & 0o077:
+                raise ValueError("checkpoint file permissions are not private")
+        finally:
+            os.close(fd)
+        conn = sqlite3.connect(path, check_same_thread=False, timeout=5.0)
+        try:
+            saver = SqliteSaver(conn)
             graph = build_graph(actions, authority, checkpointer=saver)
             config = {"configurable": {"thread_id": task_id}, "recursion_limit": 24}
-            previous = graph.get_state(config)
-            if previous.values:
-                if not previous.next:
-                    # A completed graph (including BLOCKED) is immutable by default.
-                    # New CI/evidence requires a new task_id, not a replayed merge.
-                    return previous.values
+            snapshot = graph.get_state(config)
+            if snapshot and snapshot.values:
+                # No automatic restart after a completed/blocked task.
+                if not snapshot.next:
+                    return snapshot.values
+                # Resume pending checkpoint. Do not restart from START.
                 return graph.invoke(None, config)
-            return graph.invoke(
-                {"task_id": task_id, "attempts": 0, "history": []}, config
-            )
+            return graph.invoke({"task_id": task_id, "attempts": 0, "history": []}, config)
+        finally:
+            conn.close()
     finally:
-        os.close(lock_fd)
+        fcntl.flock(lockfd, fcntl.LOCK_UN)
+        os.close(lockfd)
