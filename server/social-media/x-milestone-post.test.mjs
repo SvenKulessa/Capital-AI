@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCipheriv, randomBytes, createHash } from 'node:crypto';
-import { createXMilestonePost, MILESTONE_CONTENT_KEY, MILESTONE_TEXT } from './x-milestone-post.mjs';
+import { createXMilestonePost, MILESTONE_CONTENT_KEY, MILESTONE_TEXT,
+  LAUNCH_TEXT, LAUNCH_CONTENT_KEY, LAUNCH_MEDIA_SHA256, assertPinnedLaunchMedia } from './x-milestone-post.mjs';
 
 const USER='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
 const KEY='ab'.repeat(32), ACCOUNT='123456789012345678';
@@ -203,4 +204,68 @@ test('expiring X access token rotates through existing OAuth lease before claim'
   assert.ok(f.calls.includes('refresh_claim'));
   assert.ok(f.calls.includes('refresh_finish'));
   assert.deepEqual(f.stats(),{writeCount:1,readCount:1});
+});
+
+
+test('X launch copy is source-and-image-bound, short, and avoids financial performance claims', () => {
+  assert.ok(LAUNCH_TEXT.length > 50 && LAUNCH_TEXT.length <= 280);
+  assert.equal(LAUNCH_CONTENT_KEY, createHash('sha256').update(
+    'capital-ai-x-launch-v1\n' + LAUNCH_TEXT + '\n' + LAUNCH_MEDIA_SHA256).digest('hex'));
+  assert.match(LAUNCH_TEXT,/Learning Hub/);
+  assert.match(LAUNCH_TEXT,/Analytics Hub/);
+  assert.match(LAUNCH_TEXT,/Studio Hub/);
+  assert.match(LAUNCH_TEXT,/Content Engine/);
+  assert.doesNotMatch(LAUNCH_TEXT,/profitabel|garantiert|live-ki|auto.?publishing/i);
+  assert.throws(()=>assertPinnedLaunchMedia(Buffer.from('fake-image')),
+    /x_launch_image_invalid/);
+  const mismatched=Buffer.concat([
+    Buffer.from([137,80,78,71,13,10,26,10]),
+    Buffer.alloc(24,1),
+  ]);
+  assert.throws(()=>assertPinnedLaunchMedia(mismatched),/x_launch_image_sha_mismatch/);
+});
+
+test('X launch page and status are isolated from original milestone receipt',async()=>{
+  const f=fixture({owner:false}),resp=response();
+  const root='https://capital-ai.online/api/social-media/x/milestone/launch';
+  await f.handler.handle(request('GET'),resp,new URL(root),json);
+  assert.equal(resp.code,200);
+  assert.match(resp.data,/X-Launch mit Infografik/);
+  assert.match(resp.data,/Studio Hub/);
+  const js=response();
+  await f.handler.handle(request('GET'),js,
+    new URL('https://capital-ai.online/x-milestone-launch.js'),json);
+  assert.equal(js.code,200);
+  assert.match(js.data,/\\/milestone\\/launch\\/status/);
+  assert.match(js.data,/\\/milestone\\/launch\\/publish/);
+  const denied=response();
+  await f.handler.handle(request('GET'),denied,new URL(root+'/status'),json);
+  assert.equal(denied.code,403);
+  assert.deepEqual(f.stats(),{writeCount:0,readCount:0});
+});
+
+test('X launch refuses media writes without scope, approval or exact pinned image and never claims',async()=>{
+  const root='https://capital-ai.online/api/social-media/x/milestone/launch';
+  for(const config of [
+    {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'false'},
+    {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',SOCIAL_X_MEDIA_UPLOAD_ENABLED:'false'},
+    {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'false'},
+  ]) {
+    const f=fixture({flags:config}),r=response();
+    await f.handler.handle(request(),r,new URL(root+'/publish'),json);
+    assert.equal(r.code,403);
+    assert.deepEqual(f.calls,[]);
+    assert.equal(f.receipt.size,0);
+  }
+  const goodFlags={SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',
+    SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'true'};
+  const f=fixture({flags:goodFlags}),r=response();
+  await f.handler.handle(request(),r,new URL(root+'/publish'),json);
+  assert.equal(r.code,503); // pinned asset missing from repo; no X usage
+  assert.equal(f.receipt.size,0);
+  assert.deepEqual(f.stats(),{writeCount:0,readCount:0});
+  const cross=fixture({flags:goodFlags}),wrong=response();
+  await cross.handler.handle(request('POST',false),wrong,new URL(root+'/publish'),json);
+  assert.equal(wrong.code,403);
+  assert.deepEqual(cross.calls,[]);
 });
