@@ -24,30 +24,28 @@ jobs:
       X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: feature/x-review-gate-chunked-media
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Attempt token refresh (in-memory)
+      - name: Attempt token refresh (optional)
         if: env.X_REFRESH_TOKEN != '' && env.X_CLIENT_ID != ''
+        continue-on-error: true
         run: |
-          echo "Attempting X token refresh..."
+          echo "Attempting optional X token refresh..."
           node --experimental-strip-types -e '
           import { refreshXAccessToken } from "./src/services/x/xTokenRefresh.ts";
           const r = await refreshXAccessToken();
           console.log("Refreshed. expires_in=", r.expiresIn);
           console.log("NEW_REFRESH_TOKEN (persist this!):", r.refreshToken);
-          process.env.X_ACCESS_TOKEN = r.accessToken;
           ' || echo "Refresh skipped or failed – continuing with existing X_ACCESS_TOKEN"
 
       - name: Run review-gate (chunked upload path)
         run: |
-          # Create a minimal test file if no real video is present
-          echo "test" > /tmp/test.mp4
+          # Minimal test file (replace with real video later)
+          echo "test-video-placeholder" > /tmp/test.mp4
           node scripts/growth/review-gate-x-publish.mjs \
             --template ${{ github.event.inputs.template }} \
             --media /tmp/test.mp4 \
