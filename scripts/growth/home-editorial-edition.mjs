@@ -6,6 +6,8 @@ import {
   homeRightsAdmitted, homeEditorialScore,
 } from '../../src/features/home/homeEditorialAdmission.mjs';
 
+import {HOME_PUBLIC_DISPLAY_REVIEWS} from '../../src/features/home/homeEditorialRightsLedger.mjs';
+
 const editionPath = new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url);
 const day = 86_400_000;
 const dateLabel = value => new Intl.DateTimeFormat('de-DE', {dateStyle:'long',timeZone:'UTC'}).format(homeIsoDay(value));
@@ -16,7 +18,7 @@ const sourceSetSha = stories => createHash('sha256')
   .digest('hex');
 
 /** Select drafts; stdout is NOT a publication, approval or rights grant. */
-export function selectHomeEdition(current, candidates, asOf) {
+export function selectHomeEdition(current, candidates, asOf, reviews = HOME_PUBLIC_DISPLAY_REVIEWS) {
   if (homeIsoDay(asOf) < homeIsoDay(current?.date) ||
       !Array.isArray(candidates) || candidates.length > 20 ||
       !Array.isArray(current?.stories) || current.stories.length !== 3 ||
@@ -36,7 +38,7 @@ export function selectHomeEdition(current, candidates, asOf) {
   let changed = false;
   for (const candidate of ranked) {
     const age = (homeIsoDay(asOf)-homeIsoDay(candidate.source.date))/day;
-    if (!homeRightsAdmitted(candidate) || age > candidate.evidence.freshness.maxAgeDays ||
+    if (!homeRightsAdmitted(candidate, reviews) || age > candidate.evidence.freshness.maxAgeDays ||
         editorialScore(candidate,asOf) < 65 || seenIds.has(candidate.id) ||
         seenUrls.has(candidate.source.url) || seenTitles.has(titleKey(candidate))) continue;
     const slot = stories.reduce((best,story,i)=>
