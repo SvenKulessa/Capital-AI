@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { advanceNewsEdition } from '../../shared/news-lifecycle.mjs';
 import { selectHomeEdition } from './home-editorial-edition.mjs';
 import { writeNewsLifecycle } from './news-lifecycle-materialize.mjs';
+import { approvedHomeCandidates } from './news-lifecycle-home-admission.mjs';
 
 export async function prepareNewsLifecycle(asOf, candidatesFile) {
   const [edition, index, candidates] = await Promise.all([
@@ -11,7 +12,8 @@ export async function prepareNewsLifecycle(asOf, candidatesFile) {
     readFile(new URL('../../src/features/analysis/newsLifecycleIndex.json', import.meta.url), 'utf8').then(JSON.parse),
     readFile(candidatesFile, 'utf8').then(JSON.parse),
   ]);
-  return advanceNewsEdition(edition, index, selectHomeEdition(edition, candidates, asOf), asOf);
+  const reviewedCandidates = await approvedHomeCandidates(candidates, asOf);
+  return advanceNewsEdition(edition, index, selectHomeEdition(edition, reviewedCandidates, asOf), asOf);
 }
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   const [, , asOf, candidatesFile, mode] = process.argv;
