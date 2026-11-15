@@ -33,3 +33,20 @@ export function archiveRightsAdmitted(item, reviews = NEWS_ARCHIVE_PUBLIC_REVIEW
     review.contentSnapshot === snapshot
   );
 }
+
+/** Market-impact publication requires a separate reviewed observation snapshot. */
+export const NEWS_IMPACT_PUBLIC_REVIEWS = Object.freeze([]);
+export function marketImpactAdmitted(item, reviews = NEWS_IMPACT_PUBLIC_REVIEWS) {
+  const assessment = item?.marketImpact;
+  if (!Array.isArray(reviews) || assessment?.status !== 'VERIFIED' ||
+      !Number.isInteger(assessment.verifiedScore) ||
+      assessment.verifiedScore < 0 || assessment.verifiedScore > 100) return false;
+  return reviews.some(review =>
+    review?.version === 'CAPITAL_AI_NEWS_MARKET_IMPACT_REVIEW@1' &&
+    review?.decision === 'APPROVED' &&
+    review?.storyId === item.id &&
+    typeof review.evidenceRef === 'string' &&
+    review.evidenceRef.trim() !== '' &&
+    review.assessmentSnapshot === JSON.stringify(assessment)
+  );
+}
