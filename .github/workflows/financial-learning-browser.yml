@@ -52,7 +52,7 @@ jobs:
           npm run build
       - name: Universe Media CADS and asset identity regression
         run: |
-          node --test \
+          node --import tsx --test \
             scripts/growth/universe-media-contract.test.mjs \
             scripts/media/screener-blueprint-badges.test.mjs \
             scripts/cads-growth-quality.test.mjs
