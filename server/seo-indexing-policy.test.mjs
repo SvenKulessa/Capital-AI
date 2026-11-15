@@ -265,7 +265,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.equal(robotsResponse.status, 200);
     assert.match(robotsResponse.headers.get('content-type') || '', /^text\/plain/i);
     const robots = await robotsResponse.text();
-    assert.equal(robots, 'User-agent: *\\nAllow: /\\nSitemap: https://capital-ai.online/sitemap.xml\\n'.replaceAll('\\n', '\n'));
+    assert.equal(robots, 'User-agent: *\\nAllow: /\\nDisallow: /docs/growth/research/\\nDisallow: /generated/\\nDisallow: /evidence/\\nSitemap: https://capital-ai.online/sitemap.xml\\n'.replaceAll('\\n', '\n'));
     assert.doesNotMatch(robots, /(?:\/profile|\/control-center|\/api\/)/);
 
     const sitemapResponse = await fetch(origin + '/sitemap.xml');

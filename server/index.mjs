@@ -698,9 +698,16 @@ export function createApp(root = defaultRoot, options = {}) {
   }
   if (publicPath === '/robots.txt') {
     res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
-    return res.end('User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
+    return res.end('User-agent: *\nAllow: /\nDisallow: /docs/growth/research/\nDisallow: /generated/\nDisallow: /evidence/\nSitemap: https://capital-ai.online/sitemap.xml\n');
   }
-  if (publicPath === '/sitemap.xml') {
+  if (publicPath === '/sitemap-index.xml') {
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
+      '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+      '<sitemap><loc>https://capital-ai.online/sitemap-main.xml</loc></sitemap></sitemapindex>';
+    res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+    return res.end(xml);
+  }
+  if (publicPath === '/sitemap.xml' || publicPath === '/sitemap-main.xml') {
     const paths = [...new Set([...seoIndexableStaticPaths(), ...publicVocabularyEntries.filter(entry => isSeoIndexable(entry.path)).map(entry => entry.path)])];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
