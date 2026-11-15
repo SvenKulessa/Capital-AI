@@ -10,6 +10,7 @@ import os
 import re
 from typing import TypedDict
 
+os.environ["LANGGRAPH_STRICT_MSGPACK"] = "true"
 os.environ["LANGSMITH_TRACING"] = "false"
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 
@@ -66,7 +67,7 @@ def merge_evidence_verified(evidence: object) -> bool:
                 "scope_complete", "current_main", "no_active_hold"))
 
 
-def build_graph(actions, authority: Authority, *, checkpointer=None):
+def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_after=None):
     """Compile LangGraph without granting authority to runtime inputs.
 
     Trusted actions: analyze, implement, test, repair, evidence, merge,
@@ -126,6 +127,10 @@ def build_graph(actions, authority: Authority, *, checkpointer=None):
         return event(state, "merge_authorized", status="MERGE_READY")
 
     def merge(state):
+        # A resumed checkpoint must not inherit a revoked merge authorization.
+        if (authority.read_only or not authority.allow_merge
+                or not merge_evidence_verified(state.get("evidence"))):
+            return event(state, "merge_denied", status="BLOCKED")
         result = call("merge", state)
         # Adapter must use evidence.head_sha as GitHub's expected_head_sha.
         ok = (result.get("merged") is True and _sha(result.get("sha"))
@@ -182,7 +187,8 @@ def build_graph(actions, authority: Authority, *, checkpointer=None):
                                   lambda s: "verify" if s["status"] == "DEPLOYED" else "end",
                                   {"verify": "verify", "end": END})
     builder.add_edge("verify", END)
-    return builder.compile(checkpointer=checkpointer if checkpointer is not None else InMemorySaver())
+    return builder.compile(checkpointer=checkpointer if checkpointer is not None else InMemorySaver(),
+                           interrupt_after=interrupt_after)
 
 
 def execute(actions, authority: Authority, task_id: str) -> LoopState:
@@ -192,3 +198,61 @@ def execute(actions, authority: Authority, task_id: str) -> LoopState:
         {"task_id": task_id, "attempts": 0, "history": []},
         {"configurable": {"thread_id": task_id}, "recursion_limit": 24},
     )
+
+
+
+def execute_durable(actions, authority: Authority, task_id: str, db_path: str) -> LoopState:
+    """Single-writer SQLite-backed LangGraph checkpoint and crash-safe continuation.
+
+    A completed thread is returned without repeating actions; a pending checkpoint
+    resumes with None. External merge adapter must reconcile a remote merge made
+    immediately before an interrupted checkpoint write (idempotent GET-first).
+    """
+    import fcntl
+    import sqlite3
+    import stat
+    from pathlib import Path
+    from langgraph.checkpoint.sqlite import SqliteSaver
+
+    if not isinstance(task_id, str) or not re.fullmatch(r"[a-zA-Z0-9._:-]{1,96}", task_id):
+        raise ValueError("invalid task id")
+    path = Path(db_path)
+    if not path.is_absolute() or path.suffix != ".sqlite3":
+        raise ValueError("checkpoint path must be an absolute .sqlite3 file")
+    parent = path.parent.resolve(strict=True)
+    mode = parent.stat().st_mode
+    if not stat.S_ISDIR(mode) or mode & 0o077:
+        raise ValueError("checkpoint directory must be private")
+    if path.is_symlink() or path.with_name(path.name + ".lock").is_symlink():
+        raise ValueError("checkpoint symlinks forbidden")
+    os_flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
+    lockfd = os.open(str(path) + ".lock", os_flags, 0o600)
+    try:
+        # Nonblocking lock: never concurrently execute a thread from two workers.
+        fcntl.flock(lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if os.stat(lockfd).st_mode & 0o077:
+            raise ValueError("checkpoint lock permissions are not private")
+        fd = os.open(path, os_flags, 0o600)
+        try:
+            if os.fstat(fd).st_mode & 0o077:
+                raise ValueError("checkpoint file permissions are not private")
+        finally:
+            os.close(fd)
+        conn = sqlite3.connect(path, check_same_thread=False, timeout=5.0)
+        try:
+            saver = SqliteSaver(conn)
+            graph = build_graph(actions, authority, checkpointer=saver)
+            config = {"configurable": {"thread_id": task_id}, "recursion_limit": 24}
+            snapshot = graph.get_state(config)
+            if snapshot and snapshot.values:
+                # No automatic restart after a completed/blocked task.
+                if not snapshot.next:
+                    return snapshot.values
+                # Resume pending checkpoint. Do not restart from START.
+                return graph.invoke(None, config)
+            return graph.invoke({"task_id": task_id, "attempts": 0, "history": []}, config)
+        finally:
+            conn.close()
+    finally:
+        fcntl.flock(lockfd, fcntl.LOCK_UN)
+        os.close(lockfd)
