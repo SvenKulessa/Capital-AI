@@ -17,8 +17,10 @@ const empty = {version: 1, overview: [], archive: []};
 const nextWith = (previous, n) => ({
   ...previous, date: '2026-11-15',
   stories: [ { ...previous.stories[0], id: 'new-' + n,
-    source: {...previous.stories[0].source, url: 'https://polygon.technology/blog/synthetic-' + n} },
-    ...previous.stories.slice(0, 2)],
+    source: {...previous.stories[0].source, url: 'https://polygon.technology/blog/synthetic-' + n},
+    evidence: {...previous.stories[0].evidence,
+      graphic: {...previous.stories[0].evidence.graphic, assetId: 'home-new-' + n + '-vector-v1'}},
+  }, ...previous.stories.slice(0, 2)],
 });
 test('displaced stories go to overview (max 3), then dated category folders in archive', () => {
   let before = original;
