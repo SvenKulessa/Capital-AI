@@ -7,7 +7,7 @@ import {tmpdir} from 'node:os';
 const origin = new URL(process.env.CAPITAL_I18N_ORIGIN || 'https://capital-ai-uvsl.onrender.com').origin;
 // A pull request can run against the production version before the CTA deploys.
 const languages = {
-  de: ['Marktdaten', 'Learning Hub öffnen'],
+  de: ['Marktnews', 'Learning Hub öffnen'],
   en: ['Understand', 'Open Learning Hub'],
   it: ['Comprendere', 'Apri il Learning Hub'],
   fr: ['Comprendre', 'Ouvrir le Learning Hub'],
@@ -24,16 +24,33 @@ async function httpTests(){
   const health=await get('/healthz');
   assert.ok(JSON.parse(health.html).buildIdentity,'missing build identity in health response');
   console.log('HEALTH_RESPONSE_OK');
+  const productionOrigin = 'https://capital-ai.online';
+  const alternates = [
+    ...Object.keys(languages).map(code => [code, `${productionOrigin}/${code}/`]),
+    ['x-default', productionOrigin + '/'],
+  ];
+  let deploymentMode;
   for(const code of Object.keys(languages)){
     // A conflicting persisted locale may never override an explicit shareable URL.
     const {headers,html}=await get('/'+code+'/',{Cookie:'capital_ai_locale=es'});
     assert.equal(headers.get('content-language'),code);
-    assert.equal(headers.get('x-robots-tag'),'noindex, nofollow');
     assert.ok(html.includes(`<html lang="${code}" data-locale-source="path"`));
-    assert.match(html,/<meta name="robots" content="noindex, nofollow"/);
-    assert.doesNotMatch(html,/<link rel="canonical"/);
-    assert.doesNotMatch(html,/rel="alternate"[^>]+hreflang=/);
-    console.log('LANGUAGE_HTTP_PASS',code);
+    const mode = headers.get('x-robots-tag') === 'noindex, nofollow' ? 'preview' : 'indexable';
+    deploymentMode ??= mode;
+    assert.equal(mode, deploymentMode, 'mixed language deployment modes');
+    if (mode === 'indexable') {
+      assert.equal(headers.get('x-robots-tag'), null);
+      assert.match(html, /<meta name="robots" content="index, follow,/);
+      assert.ok(html.includes(`<link rel="canonical" href="${productionOrigin}/${code}/"`));
+      assert.ok(html.includes('<main class="localized-landing">'));
+      assert.deepEqual([...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"/g)]
+        .map(([, language, url]) => [language, url]), alternates);
+    } else {
+      assert.notEqual(process.env.CAPITAL_I18N_REQUIRE_INDEXABLE, '1', 'preview deployment is still live');
+      assert.match(html, /<meta name="robots" content="noindex, nofollow"/);
+      assert.doesNotMatch(html, /<link rel="canonical"|rel="alternate"[^>]+hreflang=/);
+    }
+    console.log('LANGUAGE_HTTP_PASS',code,mode);
   }
   const {headers,html}=await get('/',{Cookie:'capital_ai_locale=fr','Accept-Language':'de-DE'});
   assert.equal(headers.get('content-language'),'fr');

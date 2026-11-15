@@ -37,8 +37,8 @@ const CATEGORIES: { id: CategoryFilter; label: string; color: string }[] = [
   { id: 'ALLE', label: 'Alle Märkte', color: '#F9BF21' },
   { id: 'KRYPTO', label: 'Krypto', color: '#F9BF21' },
   { id: 'AKTIEN', label: 'Aktien', color: '#44DE88' },
-  { id: 'INDIZIES', label: 'Indizies', color: '#8D26FF' },
-  { id: 'FOREX', label: 'Forex', color: '#E879F9' },
+  { id: 'INDIZIES', label: 'Indizes', color: '#8D26FF' },
+  { id: 'FOREX', label: 'Devisen', color: '#E879F9' },
   { id: 'ROHSTOFFE', label: 'Rohstoffe', color: '#F9BF21' },
 ];
 
@@ -140,15 +140,15 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
 
   return (
     <section className="px-5 py-4">
-      {!MARKET_ASSETS.length && <p role="status" className="text-slate-400 px-3 py-4">Keine bestätigten Provider-Daten verfügbar. Kurse erscheinen nach erfolgreicher Datenaufnahme.</p>}
+      {!MARKET_ASSETS.length && <p role="status" className="text-slate-400 px-3 py-4">Aktuell liegen keine bestätigten Kurse vor. Sobald geprüfte Daten verfügbar sind, erscheinen sie hier.</p>}
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
         <div>
           <h2 className="text-[17.5px] font-bold text-white tracking-tight">
             Globale Märkte im Überblick
           </h2>
           <p className="text-[11px] text-slate-400">
-            Verifizierte Kurse aus zugelassenen Datenquellen · weitere Klassen nach Anbindung
+            Kurse aus freigegebenen Quellen. Weitere Anlageklassen folgen nach Anbindung.
           </p>
         </div>
         <button
@@ -156,13 +156,13 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
           onClick={onViewAllMarkets}
           className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#F9BF21] hover:text-amber-300 transition-colors shrink-0 cursor-pointer"
         >
-          <span>Alle ({MARKET_ASSETS.length})</span>
+          <span>Alle Märkte ({MARKET_ASSETS.length})</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Category Pills (KRYPTO, AKTIEN, INDIZIES, FOREX, ROHSTOFFE) */}
-      <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-2 -mx-5 px-5 snap-x">
+      <div className="flex flex-wrap gap-1.5 py-2">
         {CATEGORIES.map((cat) => {
           const isActive = selectedCategory === cat.id;
           const count = cat.id === 'ALLE'
@@ -174,7 +174,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`snap-start shrink-0 px-3 py-1.5 rounded-xl text-[11.5px] font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+              className={`min-h-11 px-3 py-1.5 rounded-xl text-[11.5px] font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
                 isActive
                   ? 'bg-slate-800/90 text-white shadow-md'
                   : 'bg-[#060c1d]/80 text-slate-400 hover:text-white hover:bg-slate-800/50 border-slate-800/80'

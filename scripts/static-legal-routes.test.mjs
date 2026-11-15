@@ -65,6 +65,27 @@ test('Notion social login disclosure is distinct from user-authorized content ex
   assert.ok(notion.technicalControls.some(control => control.includes('kein direkter Zugriff')));
 });
 
+test('Google data sharing recipients are prominent and mirror both canonical OAuth activities', async () => {
+  const html = await readFile(new URL('../public/datenschutz/index.html', import.meta.url), 'utf8');
+  const sections = html.match(/<section id="google-data-sharing"[^>]*>[\s\S]*?<\/section>/g) ?? [];
+  assert.equal(sections.length, 1, 'exactly one prominent disclosure section');
+  const summary = sections[0];
+  assert.match(summary, /Weitergabe von Google-Nutzerdaten/);
+  assert.match(summary, /Google-Anmeldung und YouTube-Kanalverbindung sind getrennte/);
+  assert.match(summary, /weder für Werbung noch zum Training allgemeiner KI-Modelle/);
+  assert.ok(html.indexOf('id="google-data-sharing"') < html.indexOf('data-processing-id="google-oauth"'),
+    'disclosure should be near the beginning rather than buried in detail sections');
+  const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  for (const id of ['google-oauth', 'youtube-owner-oauth']) {
+    const activity = PROCESSING_ACTIVITIES.find(entry => entry.id === id);
+    assert.ok(activity, id + ' must remain in the privacy registry');
+    for (const value of [activity.title, ...activity.recipients, activity.transfer]) {
+      assert.ok(summary.includes(escape(value)), 'Google data sharing overview drift for ' + id + ': ' + value);
+    }
+  }
+  assert.doesNotMatch(summary, /<script\b|client_secret|access_token/i);
+});
+
 test('YouTube mandatory links and current commerce disclosures stay identical in both public documents', async () => {
   const { YOUTUBE_POLICY, youtubePolicyHtml, commerceNoticeHtml } = await import('../shared/youtube-privacy.mjs');
   for (const route of ['datenschutz','agb']) {
@@ -76,4 +97,21 @@ test('YouTube mandatory links and current commerce disclosures stay identical in
   }
   const app = await readFile(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
   assert.ok(app.includes('YOUTUBE_POLICY.terms') && app.includes('COMMERCE_NOTICE.paragraphs'));
+});
+
+test('Art. 77 DSGVO complaint notice retains the verified supervisory authority contact', async () => {
+  const html = await readFile(new URL('../public/datenschutz/index.html', import.meta.url), 'utf8');
+  const rightsSection = html.match(/<section><h2>8\. Betroffenenrechte<\/h2>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(rightsSection, 'data subject rights section missing');
+  for (const required of [
+    'Art. 77 DSGVO',
+    'gewöhnlichen Aufenthaltsorts',
+    'Arbeitsplatzes',
+    'Orts des mutmaßlichen Verstoßes',
+    'Der Landesbeauftragte für den Datenschutz Niedersachsen',
+    'Prinzenstraße 5, 30159 Hannover',
+    '0511 120-4500',
+    'mailto:poststelle@lfd.niedersachsen.de',
+    'https://www.lfd.niedersachsen.de',
+  ]) assert.ok(rightsSection.includes(required), 'missing complaint notice detail: ' + required);
 });

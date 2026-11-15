@@ -7,6 +7,8 @@ import {
   vocabularyMetadataByPath,
 } from './vocabulary-metadata.mjs';
 
+const OG_LOCALES = Object.freeze({ de: 'de_DE', en: 'en_US', it: 'it_IT', fr: 'fr_FR', pt: 'pt_PT', es: 'es_ES' });
+
 export const SEO_SITE_ORIGIN = 'https://capital-ai.online';
 export const SEO_SOCIAL_IMAGE = `${SEO_SITE_ORIGIN}/branding/asset-pack/social/open-graph-1200x630.jpg`;
 
@@ -129,9 +131,9 @@ export function seoMetadataForPath(pathname) {
     language: entry.language,
     ogType: ['research', 'article'].includes(entry.contentType) ? 'article' : 'website',
     ogSiteName: 'Capital-AI',
-    ogLocale: 'de_DE',
+    ogLocale: OG_LOCALES[entry.language],
     ogImage: SEO_SOCIAL_IMAGE,
-    ogImageAlt: 'Capital-AI.online — Globus in Blau und Gold',
+    ogImageAlt: entry.language === 'de' ? 'Capital-AI.online — Globus in Blau und Gold' : 'Capital-AI',
     twitterCard: 'summary_large_image',
     twitterSite: '@CapitalAIOnline',
     jsonLd: seoJsonLdForPath(pathname),

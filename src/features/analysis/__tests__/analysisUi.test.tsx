@@ -291,8 +291,8 @@ test('sentiment and whale UI show provenance requirements without fake indices o
   for (const copy of [
     'UNAVAILABLE',
     'Datenabdeckung',
-    'Preisreaktion',
-    'Sentiment-Geschwindigkeit',
+    'Kursreaktion',
+    'Tempo der Stimmungsänderung',
     'Volatilitätsanpassung',
   ])
     assert.ok(sentiment.includes(copy), copy);
