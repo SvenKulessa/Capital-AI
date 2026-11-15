@@ -61,10 +61,10 @@ export const MILESTONE_CONTENT_KEY = createHash('sha256').update(MILESTONE_TEXT,
 if (MILESTONE_TEXT.length > 280) throw Error('X_MILESTONE_POST_TOO_LONG');
 function must(ok, code) { if (!ok) throw Error(code); }
 
-async function boundedProviderRead(fetchImpl, postId, bearer) {
+async function boundedProviderRead(fetchImpl, postId, bearer, launch = false) {
   let response;
   try {
-    response = await fetchImpl('https://api.x.com/2/tweets/' + postId + '?tweet.fields=author_id', {
+    response = await fetchImpl('https://api.x.com/2/tweets/' + postId + (launch ? '?tweet.fields=author_id,attachments' : '?tweet.fields=author_id'), {
       method: 'GET', headers: { Authorization: 'Bearer ' + bearer, Accept: 'application/json' },
       redirect: 'error', signal: AbortSignal.timeout(13000),
     });
@@ -77,14 +77,28 @@ async function boundedProviderRead(fetchImpl, postId, bearer) {
   return result;
 }
 
-export async function publishXMilestone({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
-  // Refresh/account binding comes BEFORE the unique claim, to avoid consuming
-  // the only attempt on an expired-but-recoverable grant.
+export async function publishXMilestone({
+  edge, identity, jwt, env, fetchImpl, edgeFactory,
+  launch = false, launchMediaLoader = loadPinnedLaunchMedia,
+}) {
+  let mediaBytes = null;
+  if (launch) {
+    must(env.SOCIAL_X_MILESTONE_MEDIA_ENABLED === 'true', 'x_launch_media_disabled');
+    must(env.SOCIAL_X_MEDIA_UPLOAD_ENABLED === 'true'
+      && env.SOCIAL_X_PAID_MEDIA_APPROVED === 'true',
+      'x_launch_media_cost_approval_missing');
+    // Validate exact bytes and scope BEFORE claim and before provider API requests.
+    mediaBytes = assertPinnedLaunchMedia(await launchMediaLoader());
+    const scope = await edge.invoke('x_credentials', { userId: identity.userId });
+    must(scope?.mediaWriteApproved === true, 'x_media_write_scope_missing');
+  }
+  // Existing rotating owner OAuth and account identity are resolved before claim.
   const credentials = await resolveOwnerXCredentials({
     edge, identity, jwt, env, fetchImpl, edgeFactory,
   });
+  const contentText = launch ? LAUNCH_TEXT : MILESTONE_TEXT;
   const context = { userId: identity.userId, accountId: credentials.accountId,
-    contentKey: MILESTONE_CONTENT_KEY };
+    contentKey: launch ? LAUNCH_CONTENT_KEY : MILESTONE_CONTENT_KEY };
   const previous = await edge.invoke('milestone_status', context);
   if (previous.found) return { ...previous, retryPublish: false,
     note: 'existing_receipt_no_automatic_replay',
@@ -100,14 +114,17 @@ export async function publishXMilestone({ edge, identity, jwt, env, fetchImpl, e
       SOCIAL_X_PUBLISH_ENABLED: 'true' }, fetchImpl,
   });
   const receipt = await transport.submit({ channel: 'X',
-    accessToken: credentials.accessToken, metadata: { caption: MILESTONE_TEXT } });
+    accessToken: credentials.accessToken, metadata: { caption: contentText },
+    ...(launch ? { mediaBytes, mediaSha256: LAUNCH_MEDIA_SHA256 } : {}) });
   const postId = receipt?.providerDeliveryId;
   must(receipt?.channel === 'X' && XID.test(postId || ''), 'x_milestone_receipt_invalid');
   await edge.invoke('milestone_record', { ...context, stage: 'post', postId });
   // A provider response is not equivalent to a verified publication.
-  const read = await boundedProviderRead(fetchImpl, postId, credentials.accessToken);
+  const read = await boundedProviderRead(fetchImpl, postId, credentials.accessToken, launch);
   must(read?.data?.id === postId && read?.data?.author_id === credentials.accountId
-    && typeof read?.data?.text === 'string' && read.data.text.length > 0,
+    && read?.data?.text === contentText
+    && (!launch || (Array.isArray(read?.data?.attachments?.media_keys)
+      && read.data.attachments.media_keys.length === 1)),
     'x_milestone_readback_mismatch');
   await edge.invoke('milestone_record', { ...context, stage: 'verify', postId });
   return { found: true, status: 'VERIFIED_PUBLISHED', postId,
