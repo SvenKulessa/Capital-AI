@@ -8,6 +8,19 @@ type ArticleGraphic =
   | { kind: 'status'; caption: string; rows: { label: string; outcome: string }[] }
   | { kind: 'flow'; caption: string; labels: string[] };
 
+type PresentedEditorialStory = {
+  id: string; topic: string; title: string; summary: string; context: string;
+  graphic: ArticleGraphic;
+  source: {name: string; url: string; date: string; label: string};
+  score: {version: string; value: number; ageDays: number};
+};
+type PresentedEditorialEdition = {
+  status: 'READY' | 'RIGHTS_BLOCKED' | 'STALE_FALLBACK' | 'MISSING_DATA';
+  date: string | null;
+  label: string | null;
+  stories: PresentedEditorialStory[];
+};
+
 function NewsGraphic({ graphic }: { graphic: ArticleGraphic }) {
   return (
     <figure className={`editorial-graphic editorial-graphic--${graphic.kind}`}>
@@ -37,7 +50,7 @@ export function HomeEditorialNews() {
     homeEditorialEdition,
     new Date().toISOString().slice(0, 10),
     planContentCampaign,
-  );
+  ) as PresentedEditorialEdition;
   const fallback = edition.status === 'RIGHTS_BLOCKED'
     ? 'Für diese Ausgabe fehlen freigegebene Nutzungsrechte für Meldungen, Quellen oder Grafiken. Ungeprüfte Inhalte werden nicht angezeigt.'
     : edition.status === 'STALE_FALLBACK'
