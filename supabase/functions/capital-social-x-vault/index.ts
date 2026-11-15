@@ -199,7 +199,9 @@ async function execute(fetchImpl, keys, userId, input) {
     return { accountId: row.external_account_id, handle: row.handle,
       accessCipher: row.access_token_encrypted, expiresAt: row.token_expires_at,
       leaseActive: row.refresh_lease_id !== null,
-      retryAfter: row.refresh_retry_after };
+      retryAfter: row.refresh_retry_after,
+      // Only a boolean crosses the owner workload boundary; no extra token material.
+      mediaWriteApproved: Array.isArray(row.scopes) && row.scopes.includes('media.write') };
   }
   // One-shot owner-authenticated X milestone receipts; never exposed to browsers.
   if (['milestone_status', 'milestone_claim', 'milestone_record'].includes(operation)) {
