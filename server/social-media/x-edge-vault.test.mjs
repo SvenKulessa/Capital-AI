@@ -444,6 +444,7 @@ test('signed owner X article credentials are ciphertext-only and receipts are ow
   const secret=await creds.json();
   assert.equal(secret.accessCipher,accessCipher);
   assert.equal(secret.accountId,accountId);
+  assert.equal(secret.mediaWriteApproved,false);
   assert.equal(secret.refreshCipher,undefined);
   const claimed=await handler(signedRequest({operation:'article_claim',channel:'X',userId,
     contentKey,accountId}));
