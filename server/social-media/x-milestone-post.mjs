@@ -239,6 +239,9 @@ padding:16px;border-radius:10px}a:focus-visible,button:focus-visible{outline:3px
 </style></head><body><main><h1>CAPITAL-AI · Erster X-Launch</h1>
 <p>Ein Owner-only-Einmalauftrag mit SHA-256-gebundener Infografik.</p>
 <blockquote>${LAUNCH_TEXT}</blockquote>
+<img src="/branding/social/CAPITAL-AI-Universe-X-Launch-Final-20261115.png"
+alt="CAPITAL-AI Universe: Learning Hub, Analytics Hub, Studio Hub und Content Engine um einen digitalen Globus."
+width="760" height="428" style="display:block;max-width:100%;height:auto">
 <p>Kein Upload ohne <code>media.write</code>, identische PNG-Bytes, Owner-Session,
 ausdrückliche X-Kostenfreigabe und gültige bestehende One-shot-Receipt-Prüfung.</p>
 <p>Finanzbildung, keine individuelle Anlageberatung, keine Erfolgsgarantie.</p>
