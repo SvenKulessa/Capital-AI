@@ -161,6 +161,16 @@ class ProviderAdapterTests(unittest.TestCase):
         c.health_sha = "d" * 40
         self.assertEqual(adapter.verify_runtime({"merge_sha": MERGE}), {})
 
+    def test_traversal_and_unlisted_provider_paths_fail_closed(self):
+        t = SafeHTTP(github_token="sample", render_token="sample")
+        for path in ("/pulls/42/../../admin", "/actions/runs/1",
+                     "/pulls/42?allow=1", "/commits/not-a-sha/check-runs?per_page=100"):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                t.github(path)
+        for path in ("/deploys/../secrets", "/deploys?limit=100"):
+            with self.assertRaises(ValueError):
+                t.render(path)
+
     def test_no_redirect_or_other_domain_or_manual_deploy(self):
         t = SafeHTTP(github_token="sample", render_token="sample")
         for url, kwargs in [

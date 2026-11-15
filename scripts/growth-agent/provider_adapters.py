@@ -83,13 +83,13 @@ class SafeHTTP:
             raise RuntimeError("TRUSTED_PROVIDER_REQUEST_NOT_PROVEN") from None
 
     def github(self, path, *, method="GET", body=None):
-        if not isinstance(path, str) or not path.startswith("/"):
-            raise ValueError("invalid GitHub path")
+        if not isinstance(path, str) or re.fullmatch(r"/(?:pulls/[0-9]+(?:/merge)?|branches/main|commits/[a-f0-9]{40}/check-runs\?per_page=100)", path) is None:
+            raise ValueError("invalid or unapproved GitHub path")
         return self._request("https://api.github.com/repos/" + REPO + path,
                              token=self._github_token, method=method, body=body)
 
     def render(self, path):
-        if not isinstance(path, str) or not path.startswith("/deploys"):
+        if path != "/deploys?limit=20":
             raise ValueError("render path not allowed")
         return self._request("https://api.render.com/v1/services/" + SERVICE_ID + path,
                              token=self._render_token)

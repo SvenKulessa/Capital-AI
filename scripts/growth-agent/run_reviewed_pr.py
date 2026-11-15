@@ -51,8 +51,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pr", type=int, required=True)
     parser.add_argument("--task-id", required=True)
-    parser.add_argument("--checkpoint-db", required=True)
-    parser.add_argument("--assessment-file", help="private trusted-worker review file, outside git checkout")
+    # Fixed, administrator-owned worker state directory; no CLI path injection.
+    private_root = Path("/var/lib/capital-ai-agent")
     parser.add_argument("--merge", action="store_true")
     parser.add_argument("--observe-existing-deploy", action="store_true")
     args = parser.parse_args()
@@ -64,9 +64,8 @@ def main():
     assessment = TrustedAssessment()
     http = SafeHTTP(github_token=token, render_token=os.environ.get("RENDER_API_KEY", ""))
     if args.merge:
-        if not args.assessment_file:
-            parser.error("--merge requires a private trusted assessment")
-        record, assessment = assessment_from_private_file(args.assessment_file, pr_number=args.pr)
+        approval_path = private_root / "approvals" / (str(args.pr) + ".json")
+        record, assessment = assessment_from_private_file(str(approval_path), pr_number=args.pr)
         if not assessment.approved():
             parser.error("trusted assessment is not complete")
         pr = http.github(f"/pulls/{args.pr}")
@@ -80,7 +79,8 @@ def main():
         allow_merge=args.merge,
         observe_existing_deploy=args.observe_existing_deploy,
     )
-    result = execute_durable(adapter, authority, args.task_id, args.checkpoint_db)
+    checkpoint_path = private_root / "checkpoints" / (args.task_id + ".sqlite3")
+    result = execute_durable(adapter, authority, args.task_id, str(checkpoint_path))
     # Never log raw responses or credentials.
     print(json.dumps({"task_id": result["task_id"], "status": result["status"],
                       "merge_sha": result.get("merge_sha"), "history": result.get("history")}))

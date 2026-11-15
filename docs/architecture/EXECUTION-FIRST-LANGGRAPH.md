@@ -110,8 +110,6 @@ Example (requires authorized separate credentials and a reviewed PR):
 ```bash
 python3 scripts/growth-agent/run_reviewed_pr.py \
   --pr 123 --task-id platform-pr-123 \
-  --checkpoint-db /private/state/pr123.sqlite3 \
-  --assessment-file /private/approvals/pr123.json \
   --merge --observe-existing-deploy
 ```
 
@@ -123,3 +121,9 @@ manual deploys or automatic publication were introduced.
 **Tests:** Existing `Google Maintenance and Local Growth Graph` CI executes
 the offline `test_*.py` suites on relevant PRs using the pinned Python lock.
 Existing Docker Security Gate and Domain Governance are unchanged.
+
+The trusted CLI keeps state under `/var/lib/capital-ai-agent/checkpoints/`
+with the task-id-derived filename and reads the approval for PR 123 only
+from `/var/lib/capital-ai-agent/approvals/123.json`. Both directories must
+be configured owner-private by the existing trusted operator. No arbitrary
+checkpoint or approval filesystem path is accepted from CLI input.
