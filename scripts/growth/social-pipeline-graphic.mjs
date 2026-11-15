@@ -25,7 +25,6 @@ function escapeXml(value) {
 function drawGraphic(colors) {
   const background = colors.background.$value;
   const foreground = colors.foreground.$value;
-  const cyan = colors.brand.cyan.$value;
   const gold = colors.brand.primary.$value;
   const family = ['cyan', 'violet', 'gold', 'pink', 'rose', 'blue', 'green'];
   const hues = family.map(name => colors.universe?.[name]?.$value);
