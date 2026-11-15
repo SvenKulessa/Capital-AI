@@ -198,6 +198,7 @@ COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY --from=build /app/supabase/email-templates/capital-ai-auth-email-shell.html ./supabase/email-templates/capital-ai-auth-email-shell.html
+COPY src/i18n/messages.ts src/i18n/landingSectionCopy.ts ./src/i18n/
 COPY shared ./shared
 COPY docs/licenses/node-v26.13.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapter-MIT.txt
