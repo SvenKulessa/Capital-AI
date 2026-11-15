@@ -224,23 +224,60 @@ publish.addEventListener('click',async()=>{
 status.addEventListener('click',probe);
 probe();
 `;
+
+const LAUNCH_PAGE_HTML = `<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAPITAL-AI · X-Launch mit Infografik</title>
+<style>
+body{margin:0;padding:24px;background:#081025;color:#f5f6ff;font:16px/1.6 system-ui}
+main{max-width:760px;margin:auto}h1{color:#f9bf21}a{color:#f9bf21}
+button{font:inherit;padding:12px 16px;min-height:48px;border:0;border-radius:8px;
+background:#f9bf21;color:#091027;margin:8px 8px 8px 0;cursor:pointer}
+button:disabled{opacity:.48;cursor:not-allowed}
+pre,blockquote{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #52617b;
+padding:16px;border-radius:10px}a:focus-visible,button:focus-visible{outline:3px solid #63e4db}
+</style></head><body><main><h1>CAPITAL-AI · Erster X-Launch</h1>
+<p>Ein Owner-only-Einmalauftrag mit SHA-256-gebundener Infografik.</p>
+<blockquote>${LAUNCH_TEXT}</blockquote>
+<p>Kein Upload ohne <code>media.write</code>, identische PNG-Bytes, Owner-Session,
+ausdrückliche X-Kostenfreigabe und gültige bestehende One-shot-Receipt-Prüfung.</p>
+<p>Finanzbildung, keine individuelle Anlageberatung, keine Erfolgsgarantie.</p>
+<p><a href="/login">Als Owner anmelden</a></p>
+<button id="publish" type="button" disabled>Einmalig mit Bild auf X veröffentlichen</button>
+<button id="status" type="button">Owner-Receipt prüfen (kein X-API-Aufruf)</button>
+<pre id="result" role="status" aria-live="polite">Owner-Status wird geprüft.</pre>
+</main><script src="/x-milestone-launch.js" defer></script></body></html>`;
+const LAUNCH_SCRIPT_SOURCE = SCRIPT_SOURCE
+  .replaceAll('/api/social-media/x/milestone/status', '/api/social-media/x/milestone/launch/status')
+  .replaceAll('/api/social-media/x/milestone/publish', '/api/social-media/x/milestone/launch/publish');
 export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetch,
-  edgeFactory = createSocialXEdgeClient } = {}) {
+  edgeFactory = createSocialXEdgeClient, launchMediaLoader = loadPinnedLaunchMedia } = {}) {
   async function handle(req, res, url, json) {
-    if (![BASE, POST, STATUS, SCRIPT].includes(url.pathname)) return false;
+    if (![BASE, POST, STATUS, SCRIPT, LAUNCH, LAUNCH_POST, LAUNCH_STATUS,
+      LAUNCH_SCRIPT].includes(url.pathname)) return false;
+    const isLaunch = [LAUNCH, LAUNCH_POST, LAUNCH_STATUS, LAUNCH_SCRIPT].includes(url.pathname);
+    const isPost = [POST, LAUNCH_POST].includes(url.pathname);
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    if ((url.pathname === POST && req.method !== 'POST')
-      || (url.pathname !== POST && req.method !== 'GET')) {
+    if ((isPost && req.method !== 'POST')
+      || (!isPost && req.method !== 'GET')) {
       json(res, 405, { error: 'method_not_allowed' }); return true;
     }
-    if (url.pathname === POST && (!auth?.sameOrigin?.(req)
+    if (isPost && (!auth?.sameOrigin?.(req)
       || req.headers?.['sec-fetch-site'] !== 'same-origin')) {
       json(res, 403, { error: 'same_origin_required' }); return true;
     }
     // Public read-only preview fixes direct links without an Owner session.
     // The paid POST and the DB receipt/status remain owner-authenticated.
+    if (url.pathname === LAUNCH_SCRIPT) {
+      res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+      res.end(LAUNCH_SCRIPT_SOURCE); return true;
+    }
+    if (url.pathname === LAUNCH) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(LAUNCH_PAGE_HTML); return true;
+    }
     if (url.pathname === SCRIPT) {
       res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
       res.end(SCRIPT_SOURCE); return true;
@@ -258,20 +295,23 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
       || env.SOCIAL_X_MILESTONE_POST_ENABLED !== 'true') {
       json(res, 503, { error: 'x_milestone_not_enabled' }); return true;
     }
-    if (url.pathname === POST && (env.SOCIAL_X_PAID_WRITE_APPROVED !== 'true'
-      || env.SOCIAL_X_PAID_READ_APPROVED !== 'true')) {
+    if (isPost && (env.SOCIAL_X_PAID_WRITE_APPROVED !== 'true'
+      || env.SOCIAL_X_PAID_READ_APPROVED !== 'true'
+      || (isLaunch && (env.SOCIAL_X_MILESTONE_MEDIA_ENABLED !== 'true'
+        || env.SOCIAL_X_MEDIA_UPLOAD_ENABLED !== 'true'
+        || env.SOCIAL_X_PAID_MEDIA_APPROVED !== 'true')))) {
       json(res, 403, { error: 'x_milestone_cost_approval_missing' }); return true;
     }
     try {
       const jwt = await auth?.internalAccessToken?.(req, res);
       const edge = edgeFactory({ env, fetchImpl, channel: 'X', userAccessToken: jwt });
-      if (url.pathname === STATUS) {
+      if ([STATUS, LAUNCH_STATUS].includes(url.pathname)) {
         const account = await edge.invoke('x_credentials', { userId: identity.userId });
         must(account?.handle === EXPECTED_HANDLE && XID.test(account?.accountId || ''),
           'x_wrong_connected_account');
         const receipt = await edge.invoke('milestone_status', {
           userId: identity.userId, accountId: account.accountId,
-          contentKey: MILESTONE_CONTENT_KEY,
+          contentKey: isLaunch ? LAUNCH_CONTENT_KEY : MILESTONE_CONTENT_KEY,
         });
         json(res, 200, { ...receipt, retryPublish: false,
           ...(XID.test(receipt.postId || '') ? {
@@ -281,6 +321,7 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
       }
       const receipt = await publishXMilestone({
         edge, identity, jwt, env, fetchImpl, edgeFactory,
+        launch: isLaunch, launchMediaLoader,
       });
       json(res, receipt.status === 'VERIFIED_PUBLISHED' ? 200 : 409, receipt);
     } catch (error) {
@@ -289,7 +330,7 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
         'x_refresh_not_available'];
       json(res, 503, { error: exposed.includes(error?.message)
         ? error.message : 'x_milestone_result_unconfirmed',
-        retryPublish: false, statusUrl: STATUS });
+        retryPublish: false, statusUrl: isLaunch ? LAUNCH_STATUS : STATUS });
     }
     return true;
   }
