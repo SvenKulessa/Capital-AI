@@ -31,8 +31,8 @@ export function archiveRightsAdmitted(item, reviews = NEWS_ARCHIVE_PUBLIC_REVIEW
     const url = new URL(item.source?.url);
     if (url.protocol !== 'https:' || url.username || url.password || url.port ||
         url.href !== item.source.url ||
-        !/^\\d{4}-\\d{2}-\\d{2}$/.test(item.publishedAt) ||
-        !/^\\d{4}-\\d{2}-\\d{2}$/.test(item.retiredAt) ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(item.publishedAt) ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(item.retiredAt) ||
         item.publishedAt > item.retiredAt) return false;
     const snapshot = archiveContentSnapshot(item);
     // The three use cases are distinct. A single self-asserted news JSON
@@ -47,7 +47,7 @@ export function archiveRightsAdmitted(item, reviews = NEWS_ARCHIVE_PUBLIC_REVIEW
         review?.evidenceRef === item.rights.evidenceRef &&
         typeof review.reviewer === 'string' && review.reviewer.trim() !== '' &&
         typeof review.reviewedAt === 'string' &&
-        /^\\d{4}-\\d{2}-\\d{2}$/.test(review.reviewedAt) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(review.reviewedAt) &&
         review.contentSnapshot === snapshot
       ));
   } catch {
