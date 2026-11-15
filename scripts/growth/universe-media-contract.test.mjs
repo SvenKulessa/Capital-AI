@@ -50,7 +50,8 @@ test('video, podcast cover and tour templates remain draft-only and CADS review-
   const landing = projects[1];
   const scenes = landing.tracks.flatMap(track => track.layers).filter(layer => layer.kind === 'scene');
   assert.ok(scenes.some(scene => scene.kicker.includes('SEVEN-COLOR UNIVERSE')));
-  assert.ok(scenes.some(scene => families.every(family => scene.body.toLowerCase().includes(family === 'rose' ? 'rosé' : family))));
+  const germanNames = { cyan:'cyan', violet:'violett', gold:'gold', pink:'pink', rose:'rosé', blue:'blau', green:'grün' };
+  assert.ok(scenes.some(scene => families.every(family => scene.body.toLocaleLowerCase('de-DE').includes(germanNames[family]))));
   assert.equal(projects[2].metadata.podcastCoverRenderer, 'scripts/media/capital_ai_media.py:render_brand_card');
   assert.notEqual(projects[2].metadata.audioStatus, 'GENERATED_AND_APPROVED');
 });
