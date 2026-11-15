@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdir, open, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readJson, secureUrl } from '../http-security.mjs';
-import { rightsAdmittedMarketSourcesFor } from '../open-source-market-policy.mjs';
+import { isAdmittedMarketSource, MARKET_SOURCE_POLICY, rightsAdmittedMarketSourcesFor } from '../open-source-market-policy.mjs';
 import { buildDraftContentSocialPackage, findContentSocialApproval, withContentSocialApproval } from '../../src/contracts/contentSocialPackage.ts';
 import { planContentCampaign } from '../../src/contracts/contentEngine.ts';
 import { ASSETS, collectCryptoSignals, MARKET_ATTRIBUTION, MARKET_PROVIDER_ID, WINDOW_MS } from './crypto-signal-sources.mjs';
@@ -65,7 +65,9 @@ function validDraft(draft, now, rightsHash) {
 export function createCryptoSignalWorkflow({
   auth, env = process.env, fetchImpl = fetch, root = ROOT, now = Date.now,
   collect = collectCryptoSignals,
-  marketSources = rightsAdmittedMarketSourcesFor('scoringPriceInput'),
+  marketSources = rightsAdmittedMarketSourcesFor('scoringPriceInput').filter(source =>
+    isAdmittedMarketSource(source.providerId, 'scoringPriceInput')
+    && !MARKET_SOURCE_POLICY.blockedLegacyProviderPaths.includes(source.providerId)),
 } = {}) {
   const config = configFrom(env, marketSources);
   const stateFile = window => join(root, 'cycle-' + window + '.json');
