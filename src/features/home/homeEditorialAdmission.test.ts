@@ -123,7 +123,8 @@ test('separate verified snapshot vetoes edited or swapped content after approval
   const oldReviews=fixtureReviews(changed);
   changed.stories[0].graphic.labels.push('Zusätzliche Grafik');
   const graphic=projectHomeEditorial(changed,day,planContentCampaign,oldReviews);
-  assert.equal(graphic.status,'MISSING_DATA'); // changed visual no longer matches allowed 2–4 labels
+  assert.equal(graphic.status,'READY'); // change is structurally valid, but approval is now stale
+  assert.deepEqual(graphic.stories.map((s: {id:string})=>s.id),['xrpl']);
 });
 test('link-only evidence must not substitute for an original-summary or graphic review',()=>{
   const item=admitFixture();
