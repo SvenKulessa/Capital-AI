@@ -57,7 +57,9 @@ class FakeTransport:
 
 class DurableTests(unittest.TestCase):
     def actions(self, http):
-        return GitHubRenderActions(http, pr_number=42, assessment=OK, enable_merge=True)
+        return GitHubRenderActions(http, pr_number=42, assessment=OK,
+                                   enable_merge=True, approved_head_sha=B,
+                                   approved_base_sha=A)
 
     def test_completed_thread_is_not_replayed_after_restart(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -94,6 +96,31 @@ class DurableTests(unittest.TestCase):
             self.assertEqual(http.mutations, 1)
             self.assertEqual(result["history"].count("analyze"), 1)
             self.assertEqual(result["history"].count("implement"), 1)
+
+    def test_revoked_merge_authority_after_checkpoint_never_calls_provider(self):
+        from langgraph.checkpoint.sqlite import SqliteSaver
+        with tempfile.TemporaryDirectory() as folder:
+            db = str(Path(folder) / "revoke.sqlite3")
+            config = {"configurable": {"thread_id": "revoked42"}, "recursion_limit": 24}
+            http = FakeTransport()
+            conn = sqlite3.connect(db, check_same_thread=False)
+            saver = SqliteSaver(conn)
+            graph = build_graph(self.actions(http),
+                                Authority(allow_changes=True, allow_merge=True),
+                                checkpointer=saver, interrupt_after=["authorize"])
+            prior = graph.invoke({"task_id": "revoked42", "attempts": 0,
+                                  "history": []}, config)
+            self.assertEqual(prior["status"], "MERGE_READY")
+            self.assertEqual(graph.get_state(config).next, ("merge",))
+            conn.close()
+            os.chmod(db, 0o600)
+            result = execute_durable(self.actions(http),
+                                     Authority(read_only=True, allow_changes=False,
+                                               allow_merge=False),
+                                     "revoked42", db)
+            self.assertEqual(result["status"], "BLOCKED")
+            self.assertEqual(http.mutations, 0)
+            self.assertIn("merge_denied", result["history"])
 
     def test_read_only_checkpoint_never_writes_to_github(self):
         with tempfile.TemporaryDirectory() as folder:
