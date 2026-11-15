@@ -72,6 +72,7 @@ jobs:
             scripts/npm-security-patch-policy.test.mjs \
             scripts/percentage-parser.test.mjs \
             scripts/growth-google-authority.test.mjs \
+            scripts/growth/home-editorial-edition.test.mjs \
             server/security-headers.test.mjs \
             server/api-rate-policy.test.mjs \
             scripts/mcp-isolation.test.mjs \
