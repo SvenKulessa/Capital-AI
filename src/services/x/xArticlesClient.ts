@@ -117,10 +117,12 @@ export class XArticlesClient {
       }),
     });
     if (!initRes.ok) {
-      throw new Error(`INIT failed (${initRes.status}): ${await initRes.text()}`);
+      const err = await initRes.text();
+      throw new Error(`INIT failed (${initRes.status}): ${err}`);
     }
     const initData = await initRes.json();
-    const mediaId = initData.data.id as string;
+    const mediaId = initData.data?.id as string;
+    if (!mediaId) throw new Error('INIT returned no media id');
 
     // 2. APPEND chunks
     let segmentIndex = 0;
@@ -136,7 +138,8 @@ export class XArticlesClient {
         body: form,
       });
       if (!appendRes.ok) {
-        throw new Error(`APPEND segment ${segmentIndex} failed (${appendRes.status}): ${await appendRes.text()}`);
+        const err = await appendRes.text();
+        throw new Error(`APPEND segment ${segmentIndex} failed (${appendRes.status}): ${err}`);
       }
       segmentIndex++;
     }
@@ -147,11 +150,12 @@ export class XArticlesClient {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
     if (!finRes.ok) {
-      throw new Error(`FINALIZE failed (${finRes.status}): ${await finRes.text()}`);
+      const err = await finRes.text();
+      throw new Error(`FINALIZE failed (${finRes.status}): ${err}`);
     }
     const finData = await finRes.json();
 
-    // 4. Optional status poll if processing_info present
+    // 4. Status poll if needed
     let processingState = finData.data?.processing_info?.state as string | undefined;
     if (processingState && processingState !== 'succeeded') {
       processingState = await this.pollMediaStatus(mediaId);
@@ -167,14 +171,23 @@ export class XArticlesClient {
 
   private async pollMediaStatus(mediaId: string, maxAttempts = 30): Promise<string> {
     for (let i = 0; i < maxAttempts; i++) {
-      const res = await fetch(`${this.baseUrl}/media/upload?media_id=${mediaId}`, {
+      const url = `${this.baseUrl}/media/upload?command=STATUS&media_id=${mediaId}`;
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
-      if (!res.ok) break;
+      if (!res.ok) {
+        const err = await res.text();
+        console.error(`STATUS poll failed (${res.status}): ${err}`);
+        break;
+      }
       const data = await res.json();
       const state = data.data?.processing_info?.state as string | undefined;
+      const checkAfter = data.data?.processing_info?.check_after_secs as number | undefined;
+
       if (state === 'succeeded' || state === 'failed') return state;
-      await new Promise((r) => setTimeout(r, 2000));
+
+      const waitMs = (checkAfter && checkAfter > 0 ? checkAfter : 2) * 1000;
+      await new Promise((r) => setTimeout(r, waitMs));
     }
     return 'timeout';
   }
