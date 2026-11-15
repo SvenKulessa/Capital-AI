@@ -9,6 +9,18 @@ import {
 
 export const CONTENT_ENGINE_CONTRACT_VERSION = 'CAPITAL_AI_CONTENT_ENGINE@1' as const;
 
+/** Art direction travels with every campaign plan, not with publisher authority. */
+export const CONTENT_ENGINE_UNIVERSE = Object.freeze({
+  id: 'CAPITAL_AI_UNIVERSE@1' as const,
+  palette: ['cyan', 'violet', 'gold', 'pink', 'rose', 'blue', 'green'] as const,
+  artDirection: 'ORIGINAL_COSMIC_FINTECH' as const,
+  motifs: ['orbital-rings', 'constellation-network', 'luminous-data-grid', 'spectral-hud'] as const,
+  visualRule: 'ALL_SEVEN_COLORS_PER_VISUAL' as const,
+  accessibility: 'COLOR_IS_DECORATIVE' as const,
+  franchiseAssets: 'NOT_PERMITTED' as const,
+  publication: 'DRAFT_ONLY' as const,
+});
+
 export const ContentEngineModuleIdSchema = z.enum([
   'COPY',
   'URL_CONTEXT',
@@ -80,6 +92,22 @@ export const ContentEnginePlanSchema = z.object({
   campaign: ContentCampaignBriefSchema,
   vocabularyContext: ContentVocabularyContextSchema.optional(),
   modules: z.array(ContentEngineModulePlanSchema),
+  visualIdentity: z.object({
+    id: z.literal('CAPITAL_AI_UNIVERSE@1'),
+    palette: z.tuple([
+      z.literal('cyan'), z.literal('violet'), z.literal('gold'),
+      z.literal('pink'), z.literal('rose'), z.literal('blue'), z.literal('green'),
+    ]),
+    artDirection: z.literal('ORIGINAL_COSMIC_FINTECH'),
+    motifs: z.tuple([
+      z.literal('orbital-rings'), z.literal('constellation-network'),
+      z.literal('luminous-data-grid'), z.literal('spectral-hud'),
+    ]),
+    visualRule: z.literal('ALL_SEVEN_COLORS_PER_VISUAL'),
+    accessibility: z.literal('COLOR_IS_DECORATIVE'),
+    franchiseAssets: z.literal('NOT_PERMITTED'),
+    publication: z.literal('DRAFT_ONLY'),
+  }).strict().optional(),
   cadsQuality: z.object({
     schemaVersion: z.literal('CAPITAL_AI_CADS_GROWTH_QUALITY@1'),
     benchmarkEvidenceSchema: z.literal('CAPITAL_AI_BENCHMARK_EVIDENCE@1'),
@@ -172,6 +200,7 @@ export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
     campaign,
     vocabularyContext:contentVocabularyContext([campaign.objective,...campaign.audience].join(" ")),
     modules: [...modules].map(moduleState),
+    visualIdentity: CONTENT_ENGINE_UNIVERSE,
     cadsQuality,
     publication: {
       adapter: 'SOCIAL_MEDIA_ENGINE',
