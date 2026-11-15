@@ -12,10 +12,18 @@ const output=process.env.QA_OUTPUT_DIR || await mkdtemp(join(tmpdir(),'capital-a
 await mkdir(output,{recursive:true});
 const server=spawn(process.execPath,[join(root,'node_modules/vite/bin/vite.js'),'preview','--host','127.0.0.1','--port','4173'],{cwd:root,stdio:'ignore'});
 for(let attempt=0;attempt<50;attempt++){try{if((await fetch('http://127.0.0.1:4173/')).ok)break;}catch{}await new Promise(resolve=>setTimeout(resolve,100));}
-const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE_PATH || await Chromium.executablePath(),headless:true,args:Chromium.args.filter(arg=>arg!=='--single-process')});
+// Native Chrome requires Playwright's own compatible headless switches.
+// Sparticuz-only flags such as --headless='shell' can crash system Chrome.
+const browser=await chromium.launch({
+ executablePath:process.env.CHROMIUM_EXECUTABLE_PATH || await Chromium.executablePath(),
+ headless:true,
+ args:process.env.CHROMIUM_EXECUTABLE_PATH
+  ? ['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']
+  : Chromium.args.filter(arg=>arg!=='--single-process'),
+});
 const result={browser:browser.version(),scope:'Local built frontend, synthetic API fixtures; server authorization covered separately',viewports:[],cases:[]};
 const stores=new Map([['alice',new Set()],['bob',new Set()]]);
-const noteStores=new Map([['alice','QA fixture'],['bob','Private note for Bob']]);
+const noteStores=new Map([['alice',{notes:'QA fixture',revision:'1'}],['bob',{notes:'Private note for Bob',revision:'1'}]]);
 async function fixture(page,user='alice',options={}) {
  page.setDefaultTimeout(8000);page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
  await page.route('**/api/**',async route=>{
@@ -29,14 +37,21 @@ async function fixture(page,user='alice',options={}) {
    return route.fulfill({json:{favorites:[...ids]}});
   }
   if(url.pathname==='/api/profile/notes') {
-   if(req.method()==='PUT') {
-    const submitted=req.postDataJSON();
-    if(submitted.expectedUserId!==user)return route.fulfill({status:409,json:{error:'session_changed'}});
-    noteStores.set(user,submitted.notes);
+    const current=noteStores.get(user)||{notes:'',revision:'0'};
+    if(req.method()==='PUT') {
+     const submitted=req.postDataJSON();
+     if(submitted.expectedUserId!==user)return route.fulfill({status:409,json:{error:'session_changed'}});
+     if(submitted.expectedRevision===undefined)return route.fulfill({status:428,json:{error:'revision_required'}});
+     if(submitted.expectedRevision!==current.revision)return route.fulfill({status:409,json:{
+      error:'notes_revision_conflict',userId:user,currentNotes:current.notes,currentRevision:current.revision,
+     }});
+     const next={notes:submitted.notes,revision:(BigInt(current.revision)+1n).toString()};
+     noteStores.set(user,next);
+     return route.fulfill({json:{...next,userId:user}});
+    }
+    return route.fulfill({json:{...current,userId:user}});
    }
-   return route.fulfill({json:{notes:noteStores.get(user)||'',userId:user}});
-  }
-  if(url.pathname.includes('/access'))return route.fulfill({json:{entitled:false,quantProEntitled:false,atlasEntitled:false,quizUsed:false}});
+   if(url.pathname.includes('/access'))return route.fulfill({json:{entitled:false,quantProEntitled:false,atlasEntitled:false,quizUsed:false}});
   if(url.pathname.endsWith('/preview')||url.pathname.endsWith('/quant-pro'))return route.fulfill({json:{terms:[]}});
   return route.fulfill({json:{configured:true,authenticated:!options.anonymous,user:options.anonymous?null:{id:user,name:'QA fixture',email:'qa@example.invalid'},account:{available:true,iamRole:'user',subscription:{tier:'Free',status:null},badges:[]}}});
  });
@@ -52,7 +67,7 @@ const mediaPage=await browser.newPage();await fixture(mediaPage);await mediaPage
 const playback=await mediaPage.evaluate(async()=>{const video=document.createElement('video');video.muted=true;video.src='/learning/videos/capital-ai-tour-short-1080x1920.mp4';document.body.append(video);await video.play();await new Promise(resolve=>setTimeout(resolve,400));return {duration:video.duration,time:video.currentTime,frames:video.getVideoPlaybackQuality().totalVideoFrames,error:video.error?.code??null};});
 assert.equal(playback.duration,20);assert.ok(playback.time>0);assert.ok(playback.frames>0);assert.equal(playback.error,null);result.cases.push({h264VideoPlayback:'PASS',decodedFrames:playback.frames,duration:playback.duration});await mediaPage.close();
 for(const width of [320,390,768,1440]){
- noteStores.set('alice','QA fixture');
+ noteStores.set('alice',{notes:'QA fixture',revision:'1'});
  const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});await fixture(page);
  await page.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
 
@@ -87,12 +102,66 @@ for(const width of [320,390,768,1440]){
  await page.getByRole('status').filter({hasText:'Notizen gespeichert.'}).waitFor();
  await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
  await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('Changed by Alice',{exact:true}).waitFor();
+ // OCC regression: an independent tab edits the server after this page loaded.
+ const remote=noteStores.get('alice');
+ noteStores.set('alice',{notes:'Remote concurrent update',revision:(BigInt(remote.revision)+1n).toString()});
+ await page.getByRole('tab',{name:'Notizen',exact:true}).click();
+ await page.locator('#private-notes').fill('Local unsaved draft');
+ await page.getByRole('button',{name:'Notizen speichern',exact:true}).click();
+ await page.getByRole('heading',{name:'Notizkonflikt erkannt'}).waitFor();
+ await page.locator('pre').filter({hasText:'Local unsaved draft'}).waitFor();
+ await page.locator('section[aria-labelledby$="-title"] > p[role="alert"]').waitFor();
+ await page.waitForFunction(() => document.activeElement?.textContent === 'Notizkonflikt erkannt');
+ if(width===390)await page.screenshot({path:join(output,'notes-conflict-390.png')});
+ if(width===320) {
+  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.evaluate(()=>{document.documentElement.style.fontSize='';});
+ }
+ await page.getByText('Remote concurrent update',{exact:true}).waitFor();
+ await page.getByRole('textbox',{name:/Manuell zusammengeführte Notizen/}).fill('Resolved merged notes');
+ await page.getByRole('button',{name:'Zusammenführung speichern'}).click();
+ await page.getByRole('status').filter({hasText:'Zusammenführung gespeichert.'}).waitFor();
+ assert.equal(noteStores.get('alice').notes,'Resolved merged notes');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ if(width===390)await page.screenshot({path:join(output,'notes-conflict-resolved-390.png')});
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('Resolved merged notes',{exact:true}).waitFor();
  await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).focus();
  await page.keyboard.press('Home');
  assert.equal(await page.getByRole('tab',{name:'Lernfeld',exact:true}).getAttribute('aria-selected'),'true');
  result.viewports.push({width,mouseLeft:'PASS',mouseRight:'PASS',dashboardReloadAndRemove:'PASS',horizontalTabs:'PASS',savedNotesReadback:'PASS',draftNotLeaked:'PASS',notesKeyboard:'PASS',overflow:'PASS',keyboard:'PASS'});
  await page.close();
 }
+// Verify the JaJa Buddy surface uses the same revision-based conflict flow.
+noteStores.set('alice',{notes:'Buddy baseline',revision:'1'});
+const buddyPage=await browser.newPage({viewport:{width:390,height:900},reducedMotion:'reduce'});
+await fixture(buddyPage);
+await buddyPage.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+if(await buddyPage.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible()) await buddyPage.getByRole('button',{name:'Nur notwendige',exact:true}).click();
+const buddyOpen=buddyPage.getByRole('button',{name:'JaJa Chat öffnen'});
+await buddyOpen.click();
+const buddyDialog=buddyPage.getByRole('dialog',{name:'JaJa Chat Buddy'});
+await buddyDialog.getByRole('button',{name:'Notizen',exact:true}).click();
+const buddyRegion=buddyDialog.getByRole('region',{name:'Private JaJa-Notizen'});
+await buddyRegion.locator('#buddy-note-draft').waitFor();
+await buddyPage.waitForFunction(()=>{
+ const editor=document.getElementById('buddy-note-draft');
+ return editor && !editor.hasAttribute('disabled');
+});
+await buddyRegion.getByRole('textbox',{name:'Notiz oder Chat-Vokabel'}).fill('Buddy draft');
+noteStores.set('alice',{notes:'Buddy remote update',revision:'2'});
+await buddyRegion.getByRole('button',{name:'Notiz speichern',exact:true}).click();
+await buddyRegion.getByRole('heading',{name:'Notizkonflikt erkannt'}).waitFor();
+await buddyRegion.locator('pre').filter({hasText:'Buddy draft'}).waitFor();
+await buddyRegion.getByRole('textbox',{name:/Manuell zusammengeführte Notizen/})
+ .fill('Buddy remote update\nJaJa Buddy · 🟨 ☐ Buddy draft');
+await buddyRegion.getByRole('button',{name:'Zusammenführung speichern'}).click();
+await buddyRegion.getByRole('status').filter({hasText:'Zusammengeführte Notizen gespeichert.'}).waitFor();
+assert.ok(noteStores.get('alice').notes.includes('Buddy draft'));
+await buddyRegion.getByText('Buddy draft',{exact:true}).waitFor();
+result.cases.push({buddyOCCConflictAndMerge:'PASS'});
+await buddyPage.close();
 const touchPage=await browser.newPage({viewport:{width:390,height:900},isMobile:true,hasTouch:true,reducedMotion:'reduce'});await fixture(touchPage);
 await touchPage.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
 if(await touchPage.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible())await touchPage.getByRole('button',{name:'Nur notwendige',exact:true}).click();
@@ -106,12 +175,12 @@ const glossaryPage=await browser.newPage({viewport:{width:390,height:900},reduce
 await glossaryPage.goto('http://127.0.0.1:4173/vocabulary/vwap',{waitUntil:'networkidle'});
 await glossaryPage.getByRole('heading',{name:'VWAP',exact:true}).waitFor();
 if(await glossaryPage.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible())await glossaryPage.getByRole('button',{name:'Nur notwendige',exact:true}).click();
-await glossaryPage.goto('http://127.0.0.1:4173/vocabulary/brier-score',{waitUntil:'networkidle'});await glossaryPage.getByRole('heading',{name:'Brier Score',exact:true}).waitFor();await glossaryPage.getByRole('link',{name:'scikit-learn: brier_score_loss',exact:true}).waitFor();assert.equal(await glossaryPage.locator('#quant-demo-title').count(),1);
+await glossaryPage.goto('http://127.0.0.1:4173/vocabulary/brier-score',{waitUntil:'networkidle'});await glossaryPage.getByRole('heading',{name:'Brier Score',exact:true}).waitFor();await glossaryPage.getByRole('link',{name:'scikit-learn: brier_score_loss',exact:true}).waitFor();assert.equal(await glossaryPage.locator('#quant-demo-title').count(),0);
 await glossaryPage.getByRole('heading',{name:'Brier Score',exact:true}).scrollIntoViewIfNeeded();await glossaryPage.evaluate(()=>window.scrollBy(0,-100));
 await glossaryPage.screenshot({path:join(output,'public-brier-score-390.png')});
 await glossaryPage.goto('http://127.0.0.1:4173/vocabulary',{waitUntil:'networkidle'});
 assert.ok((await glossaryPage.locator('meta[name=\"description\"]').getAttribute('content')).includes(String(VOCABULARY_PUBLIC_COUNT)));result.cases.push({currentCanonicalCountInBrowserMetadata:'PASS',count:VOCABULARY_PUBLIC_COUNT});
-await glossaryPage.getByPlaceholder(/Begriff, Abkürzung oder Thesaurus/).fill('Realzins');await glossaryPage.getByRole('heading',{name:'Realzins',exact:true}).waitFor();result.cases.push({anonymousFormerQuantDeepLink:'PASS',anonymousResearchedDeepLink:'PASS',primarySourceLink:'PASS',publicGlossarySearch:'PASS',singleQuantDemo:'PASS'});await glossaryPage.close();
+await glossaryPage.getByPlaceholder(/Begriff, Abkürzung oder Thesaurus/).fill('Realzins');await glossaryPage.getByRole('heading',{name:'Realzins',exact:true}).waitFor();result.cases.push({anonymousFormerQuantDeepLink:'PASS',anonymousResearchedDeepLink:'PASS',primarySourceLink:'PASS',publicGlossarySearch:'PASS',noUnadmittedQuantDemo:'PASS'});await glossaryPage.close();
 for(const [options,label] of [[{anonymous:true},'anonymous'],[{failed:true},'storage unavailable']]){
  const page=await browser.newPage({viewport:{width:390,height:900}});await fixture(page,'alice',options);await page.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
  if(await page.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible())await page.getByRole('button',{name:'Nur notwendige',exact:true}).click();
