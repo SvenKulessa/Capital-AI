@@ -40,6 +40,17 @@ async function navigate(path,id){
   await until("document.readyState==='complete'&&!!document.getElementById("+JSON.stringify(id)+")",path);
   assert.equal(await evaluate('location.origin'),origin);
 }
+async function closeCookiePanel(){
+  const action=await evaluate("(() => {"+
+    "const panel=document.querySelector('[aria-labelledby=\"cookie-consent-v3-title\"]');"+
+    "if(!panel)return 'ABSENT';"+
+    "const button=[...panel.querySelectorAll('button')].find(e=>/^(Necessary only|Nur notwendige)$/i.test(e.textContent.trim()));"+
+    "if(!button)return 'MISSING';button.click();return 'CLOSED';})()");
+  assert.notEqual(action,'MISSING','Essential-only cookie choice is inaccessible');
+  if(action==='CLOSED')await until("!document.querySelector('[aria-labelledby=\"cookie-consent-v3-title\"]')",'COOKIE_DIALOG_CLOSE');
+  assert.equal(await evaluate("!!document.querySelector('#capital-ai-ga4')"),false,
+    'Consent-free browser QA must not initialize GA4');
+}
 async function inspect(id,width,label){
   const metrics=await evaluate("(() => { const root=document.getElementById("+JSON.stringify(id)+").closest('section');"+
     "const visible=e=>e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden';"+
@@ -82,12 +93,14 @@ try{
       deviceScaleFactor:1,mobile:width<768});
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
     await navigate('/marketscreener/uebersicht','analytics-news-overview');
+    await closeCookiePanel();
     const overview=await inspect('analytics-news-overview',width,'overview');
     assert.equal(overview.heading,'Frühere Marktnews');
     assert.ok(overview.cards<=3,'Overview news capacity exceeded');
     assert.equal(await evaluate("document.querySelector('#analytics-news-overview').closest('section').querySelector('a[href*=news-archiv]')?.getAttribute('href')"),'/marketscreener/news-archiv');
     assert.equal(await evaluate("(() => {const a=document.querySelector('.hub-navigation a[data-page=newsArchive]');a?.focus();return !!a&&document.activeElement===a&&a.textContent.includes('News-Archiv');})()"),true,'Hub navigation not keyboard focusable');
     await navigate('/marketscreener/news-archiv','analytics-news-archive');
+    await closeCookiePanel();
     const archive=await inspect('analytics-news-archive',width,'archive');
     assert.equal(archive.heading,'News-Archiv');
     assert.ok(archive.text.includes('Keine freigegebenen Nachrichten'),'Unreviewed news publicly visible');
