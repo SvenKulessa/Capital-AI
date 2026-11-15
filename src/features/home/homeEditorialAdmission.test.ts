@@ -4,6 +4,10 @@ import {createHash} from 'node:crypto';
 import edition from './homeEditorialEdition.json';
 import {planContentCampaign} from '../../contracts/contentEngine.ts';
 import {projectHomeEditorial} from './homeEditorialAdmission.mjs';
+import {
+  HOME_EDITORIAL_REVIEW_VERSION, HOME_RIGHTS_USE_CASES,
+  homeReviewContentSnapshot,
+} from './homeEditorialRightsLedger.mjs';
 
 const day = '2026-11-15';
 const clone = () => structuredClone(edition);
@@ -17,6 +21,20 @@ function admitFixture() {
     Object.assign(story.evidence.rights.graphic,allowed);
   }
   return snapshot;
+}
+function fixtureReviews(editionFixture: ReturnType<typeof clone>) {
+  return editionFixture.stories.flatMap(story =>
+    (['story','source','graphic'] as const).map(kind => ({
+      reviewVersion:HOME_EDITORIAL_REVIEW_VERSION,
+      decision:'APPROVED',
+      storyId:story.id,
+      kind,
+      allowedUse:HOME_RIGHTS_USE_CASES[kind],
+      evidenceRef:story.evidence.rights[kind].evidenceRef,
+      reviewedAt:story.evidence.rights[kind].reviewedAt,
+      contentSnapshot:homeReviewContentSnapshot(story),
+    }))
+  );
 }
 test('homepage uses actual verified Content Engine plan and keeps publication disabled',()=>{
   const plan = planContentCampaign(edition.contentEngine.campaign);
@@ -33,8 +51,14 @@ test('unreviewed source and image rights fail closed without claiming freshness 
   assert.equal(result.status,'RIGHTS_BLOCKED');
   assert.equal(result.stories.length,0);
 });
-test('fixture-approved fresh news keeps source, graphic, score and freshness metadata together',()=>{
+test('forged APPROVED flags without independent rights review cannot grant display',()=>{
   const result=projectHomeEditorial(admitFixture(),day,planContentCampaign);
+  assert.equal(result.status,'RIGHTS_BLOCKED');
+  assert.deepEqual(result.stories,[]);
+});
+test('fixture-approved fresh news keeps source, graphic, score and freshness metadata together',()=>{
+  const item=admitFixture();
+  const result=projectHomeEditorial(item,day,planContentCampaign,fixtureReviews(item));
   assert.equal(result.status,'READY');
   assert.equal(result.stories.length,2);
   assert.equal(result.stories[0].source.url,edition.stories[0].source.url);
@@ -45,25 +69,28 @@ test('fixture-approved fresh news keeps source, graphic, score and freshness met
   assert.equal(result.stories.some((s: {id:string})=>s.id==='solana'),false);
 });
 test('stale fallback shows no dated claims, numbers or unapproved old articles',()=>{
-  const result=projectHomeEditorial(admitFixture(),'2026-12-30',planContentCampaign);
+  const item=admitFixture();
+  const result=projectHomeEditorial(item,'2026-12-30',planContentCampaign,fixtureReviews(item));
   assert.equal(result.status,'STALE_FALLBACK');
   assert.deepEqual(result.stories,[]);
 });
 test('rights denial for source, article or graphic cannot be offset by high score',()=>{
   for (const key of ['story','source','graphic'] as const) {
     const item=admitFixture();
+    const reviews=fixtureReviews(item);
     for (const story of item.stories) {
       Object.assign(story.evidence.rights[key],{decision:'BLOCK',websiteAllowed:false,evidenceRef:null,reviewedAt:null});
     }
-    const result=projectHomeEditorial(item,day,planContentCampaign);
+    const result=projectHomeEditorial(item,day,planContentCampaign,reviews);
     assert.equal(result.status,'RIGHTS_BLOCKED',key);
     assert.equal(result.stories.length,0,key);
   }
 });
 test('partial admission shows only actually approved and fresh content',()=>{
   const item=admitFixture();
+  const reviews=fixtureReviews(item);
   Object.assign(item.stories[0].evidence.rights.graphic,{decision:'REVIEW_REQUIRED',websiteAllowed:false,evidenceRef:null,reviewedAt:null});
-  const result=projectHomeEditorial(item,day,planContentCampaign);
+  const result=projectHomeEditorial(item,day,planContentCampaign,reviews);
   assert.equal(result.status,'READY');
   assert.deepEqual(result.stories.map((s: {id:string})=>s.id),['xrpl']);
 });
@@ -83,4 +110,23 @@ test('missing source, invalid graphic evidence, pricing payload and contract tam
   const pub=admitFixture();
   Object.assign(pub.contentEngine,{publicPublishAllowed:true});
   assert.equal(projectHomeEditorial(pub,day,planContentCampaign).status,'MISSING_DATA');
+});
+
+test('separate verified snapshot vetoes edited or swapped content after approval',()=>{
+  const item=admitFixture();
+  const reviews=fixtureReviews(item);
+  item.stories[0].summary+=' Nicht überprüfter neuer Satz.';
+  const modified=projectHomeEditorial(item,day,planContentCampaign,reviews);
+  assert.equal(modified.status,'READY');
+  assert.deepEqual(modified.stories.map((s: {id:string})=>s.id),['xrpl']);
+  const changed=admitFixture();
+  const oldReviews=fixtureReviews(changed);
+  changed.stories[0].graphic.labels.push('Zusätzliche Grafik');
+  const graphic=projectHomeEditorial(changed,day,planContentCampaign,oldReviews);
+  assert.equal(graphic.status,'MISSING_DATA'); // changed visual no longer matches allowed 2–4 labels
+});
+test('link-only evidence must not substitute for an original-summary or graphic review',()=>{
+  const item=admitFixture();
+  const reviews=fixtureReviews(item).filter(r=>r.kind==='source');
+  assert.equal(projectHomeEditorial(item,day,planContentCampaign,reviews).status,'RIGHTS_BLOCKED');
 });
