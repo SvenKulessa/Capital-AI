@@ -28,6 +28,7 @@ class FakeHTTP:
         self.status = "success"
         self.merged = False
         self.mergeable = True
+        self.merge_state = "clean"
         self.deploy_sha = MERGE
         self.health_sha = MERGE
         self.mutation_count = 0
@@ -49,7 +50,8 @@ class FakeHTTP:
         if path == "/pulls/42":
             return {"state": "open" if not self.merged else "closed",
                     "merged": self.merged, "merge_commit_sha": MERGE if self.merged else None,
-                    "draft": False, "mergeable": self.mergeable, "changed_files": 2,
+                    "draft": False, "mergeable": self.mergeable,
+                    "mergeable_state": self.merge_state, "changed_files": 2,
                     "head": {"sha": self.head, "ref": "capital-ai-platform/execution-first-20261115",
                              "repo": {"full_name": "SvenKulessa/Capital-AI"}},
                     "base": {"ref": "main", "sha": self.base}}
@@ -117,6 +119,20 @@ class ProviderAdapterTests(unittest.TestCase):
                                    allow_merge=True, max_repairs=0), f"test-{status}-{name.replace(' ', '-')}")
                 self.assertNotIn("merge", out["history"])
                 self.assertEqual(c.mutation_count, 0)
+
+    def test_mergeable_true_with_blocked_native_merge_state_never_mutates(self):
+        """GitHub's mergeable boolean may be true while protections still block."""
+        loop = sys.modules["auto_loop"]
+        for status in ("blocked", "behind", "dirty", "unknown", None):
+            with self.subTest(mergeable_state=status):
+                client = FakeHTTP()
+                client.merge_state = status
+                task = "blocked-native-" + str(status or "missing")
+                state = loop.execute(self.adapter(client), loop.Authority(
+                    allow_changes=True, allow_merge=True, max_repairs=0), task)
+                self.assertEqual(state["status"], "MERGE_NOT_PROVEN")
+                self.assertNotIn("merge", state["history"])
+                self.assertEqual(client.mutation_count, 0)
 
     def test_optional_skips_do_not_block_but_unknown_skip_does(self):
         c = FakeHTTP()

@@ -9,7 +9,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).parent))
-from run_reviewed_pr import assessment_from_private_file
+from run_reviewed_pr import assessment_from_private_file, checkpoint_task_id
 
 def approval(expiration):
     return {"schema": "CAPITAL_AI_TRUSTED_PR_ASSESSMENT@1",
@@ -46,6 +46,29 @@ class TrustedApprovalTests(unittest.TestCase):
             p.chmod(0o644)
             with self.assertRaises(ValueError):
                 assessment_from_private_file(str(p), pr_number=42)
+
+    def test_checkpoint_scope_prevents_cross_pr_and_cross_head_replay(self):
+        head = "a" * 40
+        current = checkpoint_task_id("same-job", 42, head, merge=True)
+        self.assertEqual(current, checkpoint_task_id("same-job", 42, head, merge=True))
+        self.assertNotEqual(current, checkpoint_task_id("same-job", 43, head, merge=True))
+        self.assertNotEqual(current, checkpoint_task_id("same-job", 42, "b" * 40, merge=True))
+        self.assertNotEqual(current, checkpoint_task_id("same-job", 42, head, merge=False))
+        self.assertNotEqual(current, checkpoint_task_id("another-job", 42, head, merge=True))
+        self.assertTrue(current.startswith("pr-42-"))
+        self.assertNotIn("same-job", current)
+
+    def test_checkpoint_scope_rejects_invalid_task_and_sha(self):
+        for task_id, number, head in (
+            ("../other", 42, "a" * 40),
+            ("hidden/name", 42, "a" * 40),
+            ("valid", True, "a" * 40),
+            ("valid", 0, "a" * 40),
+            ("valid", 42, "not-a-head"),
+        ):
+            with self.subTest(task=task_id, pr=number):
+                with self.assertRaises(ValueError):
+                    checkpoint_task_id(task_id, number, head, merge=True)
 
     def test_symlink_and_relative_paths_fail(self):
         with tempfile.TemporaryDirectory() as root:

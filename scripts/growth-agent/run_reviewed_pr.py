@@ -4,6 +4,8 @@ No CI workflow invokes this with write credentials. No cost, secret or provider
 approval may be obtained from PR text, model output or this command itself.
 """
 import argparse
+import hashlib
+import re
 from datetime import datetime, timezone, timedelta
 import json
 import os
@@ -47,6 +49,23 @@ def assessment_from_private_file(path: str, *, pr_number: int):
     return record, result
 
 
+def checkpoint_task_id(user_task_id: str, pr_number: int, head_sha: str, *, merge: bool) -> str:
+    """Deterministic namespace bound to one PR, immutable head and execution mode.
+
+    A caller-provided task label is never a database basename. Identical
+    labels cannot inherit another PR's VERIFIED or MERGED checkpoint.
+    """
+    if (not isinstance(user_task_id, str)
+            or re.fullmatch(r"[a-zA-Z0-9._:-]{1,96}", user_task_id) is None
+            or type(pr_number) is not int or not 1 <= pr_number <= 999999
+            or not sha(head_sha) or type(merge) is not bool):
+        raise ValueError("checkpoint scope invalid")
+    payload = json.dumps(["CAPITAL_AI_CHECKPOINT@2", user_task_id, pr_number,
+                          head_sha, merge], separators=(",", ":"))
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
+    return f"pr-{pr_number}-{digest}"
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pr", type=int, required=True)
@@ -63,13 +82,13 @@ def main():
         parser.error("GITHUB_TOKEN not configured in trusted worker")
     assessment = TrustedAssessment()
     http = SafeHTTP(github_token=token, render_token=os.environ.get("RENDER_API_KEY", ""))
+    pr = http.github(f"/pulls/{args.pr}")
     record = None
     if args.merge:
         approval_path = private_root / "approvals" / (str(args.pr) + ".json")
         record, assessment = assessment_from_private_file(str(approval_path), pr_number=args.pr)
         if not assessment.approved():
             parser.error("trusted assessment is not complete")
-        pr = http.github(f"/pulls/{args.pr}")
         if pr.get("head", {}).get("sha") != record["head_sha"] or pr.get("base", {}).get("sha") != record["base_sha"]:
             parser.error("approval stale: PR head or base changed")
     adapter = GitHubRenderActions(
@@ -83,10 +102,12 @@ def main():
         allow_merge=args.merge,
         observe_existing_deploy=args.observe_existing_deploy,
     )
-    checkpoint_path = private_root / "checkpoints" / (args.task_id + ".sqlite3")
-    result = execute_durable(adapter, authority, args.task_id, str(checkpoint_path))
+    checkpoint_id = checkpoint_task_id(args.task_id, args.pr,
+                                       pr.get("head", {}).get("sha"), merge=args.merge)
+    checkpoint_path = private_root / "checkpoints" / (checkpoint_id + ".sqlite3")
+    result = execute_durable(adapter, authority, checkpoint_id, str(checkpoint_path))
     # Never log raw responses or credentials.
-    print(json.dumps({"task_id": result["task_id"], "status": result["status"],
+    print(json.dumps({"task_id": args.task_id, "status": result["status"],
                       "merge_sha": result.get("merge_sha"), "history": result.get("history")}))
     if result["status"] not in ("VERIFIED", "MERGED", "READ_ONLY_COMPLETE"):
         raise SystemExit(2)
