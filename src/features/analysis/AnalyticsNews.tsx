@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import lifecycle from './newsLifecycleIndex.json';
 import { newsBiCsv, publishedNews } from '../../../shared/news-lifecycle.mjs';
+import { marketImpactAdmitted } from '../../../shared/news-archive-rights.mjs';
 
 type NewsItem = {
   id: string; title: string; topic: string; summary: string; publishedAt: string;
   retiredAt: string; category: string; archivePath: string;
   source: { url: string; name: string };
   rights: { status: string; evidenceRef: string | null };
+  graphic?: { kind: 'network' | 'status' | 'flow'; caption: string; center?: string; labels?: string[]; rows?: {label: string; outcome: string}[] };
+  context?: string;
   marketImpact: { status: string; verifiedScore?: number | null };
 };
 
@@ -15,7 +18,7 @@ const dateLabel = (date: string) => new Intl.DateTimeFormat('de-DE', {
   day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC',
 }).format(new Date(date + 'T12:00:00Z'));
 function NewsCard({ item }: { item: NewsItem }) {
-  const verified = item.marketImpact?.status === 'VERIFIED' && Number.isFinite(item.marketImpact.verifiedScore);
+  const verified = marketImpactAdmitted(item);
   return <article className="rounded-2xl border border-cyan-300/20 bg-slate-950/60 p-4 sm:p-5">
     <div className="flex flex-wrap items-center gap-2 text-xs text-cyan-200">
       <span className="rounded-full border border-cyan-300/30 px-2 py-1">{item.category}</span>
@@ -23,6 +26,24 @@ function NewsCard({ item }: { item: NewsItem }) {
     </div>
     <h3 className="mt-3 text-lg font-bold text-white">{item.title}</h3>
     <p className="mt-2 text-sm leading-6 text-slate-200">{item.summary}</p>
+    {item.graphic && <details className="mt-3 rounded-xl border border-cyan-300/20 p-3 text-sm text-slate-200">
+      <summary className="min-h-11 cursor-pointer font-semibold text-cyan-100">Infografik und Einordnung</summary>
+      <figure className="mt-3" aria-label={item.graphic.caption}>
+        <figcaption className="font-semibold">{item.graphic.caption}</figcaption>
+        {item.graphic.kind === 'network' && <div className="mt-2 flex flex-wrap gap-2">
+          <strong className="rounded-lg border border-cyan-300/40 p-2">{item.graphic.center}</strong>
+          {item.graphic.labels?.map(label => <span className="rounded-lg border border-slate-600 p-2" key={label}>{label}</span>)}
+        </div>}
+        {item.graphic.kind === 'flow' && <ol className="mt-2 list-inside list-decimal space-y-2">
+          {item.graphic.labels?.map(label => <li key={label}>{label}</li>)}
+        </ol>}
+        {item.graphic.kind === 'status' && <dl className="mt-2 space-y-2">
+          {item.graphic.rows?.map(row => <div key={row.label} className="flex flex-wrap justify-between gap-2">
+            <dt>{row.label}</dt><dd className="font-semibold">{row.outcome}</dd></div>)}
+        </dl>}
+      </figure>
+      {item.context && <p className="mt-2 text-xs text-slate-300">{item.context}</p>}
+    </details>}
     <p className="mt-3 text-xs text-slate-300">Nachträglicher Marktimpact: {verified
       ? `${item.marketImpact.verifiedScore}/100 (belegte Beobachtung, keine Kausalität)`
       : 'NOT_PROVEN – keine verifizierte Bewertung'}</p>
