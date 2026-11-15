@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'scripts/platform/backup-reader-contract-test.sh'
+      - 'scripts/platform/backup-reader-inventory.sql'
       - 'scripts/platform/backup-recovery-slices-test.sh'
       - 'docs/platform/SUPABASE-BACKUP-READER-CONTRACT.md'
       - '.github/workflows/backup-reader-pg17.yml'
