@@ -41,7 +41,7 @@ class ProviderMetadataTests(unittest.TestCase):
 
     def test_all_five_provider_adapters_accept_only_bounded_metadata(self):
         observations, checks = self.adapt(
-            readback("supabase", [{"platform": "youtube", "status": "connected", "account_count": 1,
+            readback("supabase", [{"platform": "youtube", "status": "connected", "account_count": 1, "owner_bound": True,
                                    "nearest_expiry": "2026-11-07T16:34:20Z"}]),
             readback("render", [{"service_id": "srv-dau1rp893c1s73cdhm1g",
                                  "registry_credential_present": True, "registry_updated_at": "2026-10-01T00:00:00Z"}]),
@@ -63,7 +63,7 @@ class ProviderMetadataTests(unittest.TestCase):
 
     def test_current_date_not_promoted_to_verified(self):
         observations, checks = self.adapt(readback("supabase", [
-            {"platform": "x", "status": "connected", "account_count": 1,
+            {"platform": "x", "status": "connected", "account_count": 1, "owner_bound": True,
              "nearest_expiry": "2027-02-01T00:00:00Z"}]))
         report = lifecycle.evaluate_offline(INVENTORY, observations, NOW)
         self.assertEqual(report["status"], "NOT_PROVEN")
@@ -72,13 +72,22 @@ class ProviderMetadataTests(unittest.TestCase):
 
     def test_supabase_multiple_users_cannot_bind_earliest_to_owner(self):
         obs, checks = self.adapt(readback("supabase", [
-            {"platform": "x", "status": "connected", "account_count": 2,
+            {"platform": "x", "status": "connected", "account_count": 2, "owner_bound": True,
              "nearest_expiry": "2026-11-01T00:00:00Z"}]))
         self.assertFalse(obs["observations"])
         self.assertEqual(checks[0]["metadata_status"], "EXPIRY_NOT_PROVEN")
 
+    def test_global_count_is_not_an_owner_binding(self):
+        row = {"platform": "x", "status": "connected", "account_count": 1,
+               "nearest_expiry": "2026-11-01T00:00:00Z", "owner_bound": False}
+        observations, checks = self.adapt(readback("supabase", [row]))
+        self.assertEqual(observations["observations"], [])
+        self.assertEqual(checks[0]["metadata_status"], "EXPIRY_NOT_PROVEN")
+        with self.assertRaises(ValueError):
+            self.adapt(readback("supabase", [{**row, "owner_bound": "true"}]))
+
     def test_supabase_unknown_account_and_duplicate_channel_rejected(self):
-        good = {"platform": "x", "status": "connected", "account_count": 1,
+        good = {"platform": "x", "status": "connected", "account_count": 1, "owner_bound": True,
                 "nearest_expiry": "2026-11-01T00:00:00Z"}
         for data in ([good, good], [{**good, "platform": "other"}],
                      [{**good, "account_count": 0}], [{**good, "account_count": True}]):
@@ -104,7 +113,7 @@ class ProviderMetadataTests(unittest.TestCase):
 
     def test_unknown_fields_are_rejected_before_content_or_error_echo(self):
         cases = [
-            readback("supabase", [{"platform": "x", "status": "connected", "account_count": 1,
+            readback("supabase", [{"platform": "x", "status": "connected", "account_count": 1, "owner_bound": True,
                                    "nearest_expiry": STAMP, "access_token_encrypted": "top-secret"}]),
             readback("render", [{"service_id": "srv-dau1rp893c1s73cdhm1g",
                                  "registry_credential_present": True, "registry_updated_at": STAMP,
@@ -166,7 +175,7 @@ class ProviderMetadataTests(unittest.TestCase):
             self.adapt(readback("google", []))
         with self.assertRaises(ValueError):
             provider.adapt_provider_readbacks(readbacks(readback("supabase", [
-                {"platform": "youtube", "status": "connected", "account_count": 1,
+                {"platform": "youtube", "status": "connected", "account_count": 1, "owner_bound": True,
                  "nearest_expiry": STAMP}])), {"schema": lifecycle.SCHEMA, "credentials": []}, NOW)
 
     def test_bounded_report_never_contains_provider_raw_data(self):

@@ -61,11 +61,13 @@ def _supabase(records, observed):
     seen = set()
     observations = []
     for record in records:
-        _fields(record, ("platform", "status", "account_count", "nearest_expiry"))
+        _fields(record, ("platform", "status", "account_count", "nearest_expiry", "owner_bound"))
         platform = record["platform"]
         if not isinstance(platform, str) or platform not in SOCIAL_IDS or platform in seen:
             raise ValueError("unexpected social metadata scope")
         seen.add(platform)
+        if type(record["owner_bound"]) is not bool:
+            raise ValueError("owner binding is not a boolean")
         count = _bounded_count(record["account_count"])
         expiry = record["nearest_expiry"]
         _bound_timestamp(expiry, observed)
@@ -73,9 +75,12 @@ def _supabase(records, observed):
             raise ValueError("invalid social metadata state")
         if count == 0 and expiry is not None:
             raise ValueError("expiry without matching account")
-        # Never assign an aggregate MIN to a particular user if more than one
-        # account exists. This would misattribute credentials across tenants.
-        if count == 1 and record["status"] == "connected" and expiry is not None:
+        # A project-wide single row is NOT an owner identity proof. The
+        # trusted collector must explicitly bind a restricted aggregate to
+        # the authenticated owner before marking owner_bound=true. This
+        # boolean is still NOT provider authentication or an attestation.
+        if (record["owner_bound"] is True and count == 1
+                and record["status"] == "connected" and expiry is not None):
             observations.append({
                 "id": SOCIAL_IDS[platform], "expires_at": expiry,
                 "observed_at": observed, "evidence_ref": "provider:supabase-social-expiry",

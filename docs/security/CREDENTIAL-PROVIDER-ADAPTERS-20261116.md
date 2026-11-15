@@ -12,7 +12,7 @@ The adapters do not change the original 17-entry curated inventory. The existing
 
 | Provider | Pinned resource | Source method and permitted metadata | Expiry inference |
 | --- | --- | --- | --- |
-| Supabase | Production project `ryzywoktpmyhwzxmstyu` | `social_expiry_aggregate`: for each `platform in (x,youtube)`, `status`, integer `account_count`, `nearest_expiry`; obtained **only** by an aggregate query over `public.social_media_accounts`, never access/refresh-token columns | `token_expires_at` is attributable only with exactly one connected record; metadata is still unauthenticated until external provider operation is evidenced |
+| Supabase | Production project `ryzywoktpmyhwzxmstyu` | `social_expiry_aggregate`: for each `platform in (x,youtube)`, `status`, integer `account_count`, `nearest_expiry`, boolean `owner_bound`; obtained **only** by an aggregate query over `public.social_media_accounts`, never access/refresh-token columns | `token_expires_at` is attributable only with exactly one connected **owner-scoped** record and `owner_bound=true`; metadata is still unauthenticated until external provider operation is evidenced |
 | Render | Workspace `tea-d90o4rj7uimc739i86ug`, webservice `srv-dau1rp893c1s73cdhm1g` | `service_registry_metadata`: `service_id`, boolean registry-credential presence and `updatedAt`; no environment variables or registry credentials | Registry update time is **not** expiration; `EXPIRY_NOT_EXPOSED` |
 | Stripe | Account `acct_1TbfHJPKr4joNbEc` | `webhook_endpoint_metadata`: webhook ID, live/test boolean, state, created timestamp, from read-only endpoint list | Endpoint creation/status is **not** signing-key expiry; secret keys also remain `NOT_PROVEN` |
 | Google | Project `aifinancial-500208`, **Google audit** service account only | `service_account_key_metadata`: disabled flag, `USER_MANAGED` public key metadata `validBeforeTime`, no `privateKeyData` | A key validity period **cannot** be assigned to Render's unbound legacy JSON or an OAuth refresh grant. WIF is keyless; no private JSON is fetched |
@@ -26,13 +26,15 @@ Only the following projection is permitted in the trusted Supabase read-only que
 
 ```sql
 SELECT platform, status, COUNT(*) AS account_count,
-       MIN(token_expires_at) AS nearest_expiry
+       MIN(token_expires_at) AS nearest_expiry,
+       true AS owner_bound
 FROM public.social_media_accounts
 WHERE platform IN ('x', 'youtube')
+  AND user_id = :authenticated_owner_uuid
 GROUP BY platform, status;
 ```
 
-Convert the SQL result to exact readback keys (`nearest_expiry` canonical UTC `...Z`). Do not query `access_token_encrypted`, `refresh_token_encrypted`, auth table secrets or credential values. Before assigning an expiry to the owner credential the aggregate must contain exactly **one** connected account for that platform; account- or tenant-specific inference beyond that is forbidden. The compiler rejects duplicate platforms, wrong scope, missing required fields and unsupported timestamps.
+Convert the SQL result to exact readback keys (`nearest_expiry` canonical UTC `...Z`). Do not query `access_token_encrypted`, `refresh_token_encrypted`, auth table secrets or credential values. The named parameter `:authenticated_owner_uuid` is illustrative and must be bound **outside** this module by a trusted caller with verified owner authorization; never substitute a user-supplied UUID or use this as a bare SQL string in production. If such an owner-bound query is not available, use `owner_bound=false` and do not assign an expiry. Before assigning an expiry to the owner credential the scoped aggregate must contain exactly **one** connected account for that platform; project-wide counts must not be treated as owner proof. The compiler rejects duplicate platforms, wrong scope, missing required fields and unsupported timestamps.
 
 ### Readback sample (synthetic only)
 
@@ -45,7 +47,7 @@ Convert the SQL result to exact readback keys (`nearest_expiry` canonical UTC `.
     "method": "social_expiry_aggregate",
     "observed_at": "2026-11-16T00:00:00Z",
     "records": [{
-      "platform": "youtube", "status": "connected", "account_count": 1,
+      "platform": "youtube", "status": "connected", "account_count": 1, "owner_bound": true,
       "nearest_expiry": "2026-11-07T16:34:20Z"
     }]
   }]
