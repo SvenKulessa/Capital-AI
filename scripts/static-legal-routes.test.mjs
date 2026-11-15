@@ -98,3 +98,20 @@ test('YouTube mandatory links and current commerce disclosures stay identical in
   const app = await readFile(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
   assert.ok(app.includes('YOUTUBE_POLICY.terms') && app.includes('COMMERCE_NOTICE.paragraphs'));
 });
+
+test('Art. 77 DSGVO complaint notice retains the verified supervisory authority contact', async () => {
+  const html = await readFile(new URL('../public/datenschutz/index.html', import.meta.url), 'utf8');
+  const rightsSection = html.match(/<section><h2>8\. Betroffenenrechte<\/h2>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(rightsSection, 'data subject rights section missing');
+  for (const required of [
+    'Art. 77 DSGVO',
+    'gewöhnlichen Aufenthaltsorts',
+    'Arbeitsplatzes',
+    'Orts des mutmaßlichen Verstoßes',
+    'Der Landesbeauftragte für den Datenschutz Niedersachsen',
+    'Prinzenstraße 5, 30159 Hannover',
+    '0511 120-4500',
+    'mailto:poststelle@lfd.niedersachsen.de',
+    'https://www.lfd.niedersachsen.de',
+  ]) assert.ok(rightsSection.includes(required), 'missing complaint notice detail: ' + required);
+});
