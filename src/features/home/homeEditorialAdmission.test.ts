@@ -12,9 +12,9 @@ const allowed = {decision:'APPROVED',websiteAllowed:true,
 function admitFixture() {
   const snapshot = clone();
   for (const story of snapshot.stories) {
-    story.evidence.rights.story={...allowed};
-    story.evidence.rights.source={...allowed};
-    story.evidence.rights.graphic={...allowed};
+    Object.assign(story.evidence.rights.story,allowed);
+    Object.assign(story.evidence.rights.source,allowed);
+    Object.assign(story.evidence.rights.graphic,allowed);
   }
   return snapshot;
 }
@@ -42,7 +42,7 @@ test('fixture-approved fresh news keeps source, graphic, score and freshness met
   assert.equal(result.stories[0].score.version,'CAPITAL_AI_HOME_EDITORIAL_SCORE@1');
   assert.equal(result.stories[0].score.value,88);
   assert.equal(result.stories[0].score.ageDays,3);
-  assert.equal(result.stories.some(s=>s.id==='solana'),false);
+  assert.equal(result.stories.some((s: {id:string})=>s.id==='solana'),false);
 });
 test('stale fallback shows no dated claims, numbers or unapproved old articles',()=>{
   const result=projectHomeEditorial(admitFixture(),'2026-12-30',planContentCampaign);
@@ -53,7 +53,7 @@ test('rights denial for source, article or graphic cannot be offset by high scor
   for (const key of ['story','source','graphic'] as const) {
     const item=admitFixture();
     for (const story of item.stories) {
-      story.evidence.rights[key]={decision:'BLOCK',websiteAllowed:false,evidenceRef:null,reviewedAt:null};
+      Object.assign(story.evidence.rights[key],{decision:'BLOCK',websiteAllowed:false,evidenceRef:null,reviewedAt:null});
     }
     const result=projectHomeEditorial(item,day,planContentCampaign);
     assert.equal(result.status,'RIGHTS_BLOCKED',key);
@@ -62,10 +62,10 @@ test('rights denial for source, article or graphic cannot be offset by high scor
 });
 test('partial admission shows only actually approved and fresh content',()=>{
   const item=admitFixture();
-  item.stories[0].evidence.rights.graphic={decision:'REVIEW_REQUIRED',websiteAllowed:false,evidenceRef:null,reviewedAt:null};
+  Object.assign(item.stories[0].evidence.rights.graphic,{decision:'REVIEW_REQUIRED',websiteAllowed:false,evidenceRef:null,reviewedAt:null});
   const result=projectHomeEditorial(item,day,planContentCampaign);
   assert.equal(result.status,'READY');
-  assert.deepEqual(result.stories.map(s=>s.id),['xrpl']);
+  assert.deepEqual(result.stories.map((s: {id:string})=>s.id),['xrpl']);
 });
 test('missing source, invalid graphic evidence, pricing payload and contract tampering fail closed',()=>{
   const missing=clone();
@@ -75,12 +75,12 @@ test('missing source, invalid graphic evidence, pricing payload and contract tam
   graphic.stories[1].evidence.graphic.assetId='home-other-vector-v1';
   assert.equal(projectHomeEditorial(graphic,day,planContentCampaign).status,'MISSING_DATA');
   const pricing=admitFixture();
-  (pricing.stories[0].evidence as any).priceData={symbol:'SOL',price:999};
+  Object.assign(pricing.stories[0].evidence,{priceData:{symbol:'SOL',price:999}});
   assert.equal(projectHomeEditorial(pricing,day,planContentCampaign).status,'MISSING_DATA');
   const injected=admitFixture();
   injected.contentEngine.campaign.sourceUrls=['https://evil.example/'];
   assert.equal(projectHomeEditorial(injected,day,planContentCampaign).status,'MISSING_DATA');
   const pub=admitFixture();
-  pub.contentEngine.publicPublishAllowed=true;
+  Object.assign(pub.contentEngine,{publicPublishAllowed:true});
   assert.equal(projectHomeEditorial(pub,day,planContentCampaign).status,'MISSING_DATA');
 });
