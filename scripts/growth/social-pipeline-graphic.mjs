@@ -25,8 +25,13 @@ function escapeXml(value) {
 function drawGraphic(colors) {
   const background = colors.background.$value;
   const foreground = colors.foreground.$value;
-  const cyan = colors.brand.cyan.$value;
   const gold = colors.brand.primary.$value;
+  const family = ['cyan', 'violet', 'gold', 'pink', 'rose', 'blue', 'green'];
+  const hues = family.map(name => colors.universe?.[name]?.$value);
+  if (hues.some(color => !/^#[0-9A-Fa-f]{6}$/.test(color ?? ''))
+    || new Set(hues.map(color => color.toLowerCase())).size !== 7) {
+    throw new Error('UNIVERSE_PALETTE_SEVEN_REQUIRED');
+  }
   const card = colors.print.surfaceLight.$value;
   const muted = colors.print.textSecondary.$value;
   const border = colors.print.borderLight.$value;
@@ -34,7 +39,7 @@ function drawGraphic(colors) {
     `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}">${escapeXml(content)}</text>`;
   const panels = stages.map(([title, subtitle, description, tool], index) => {
     const x = 55 + 268 * index;
-    const accent = index === stages.length - 1 ? gold : cyan;
+    const accent = hues[index];
     return `<rect x="${x}" y="334" width="254" height="258" rx="24" fill="${card}" stroke="${border}"/>
       <circle cx="${x + 32}" cy="372" r="7" fill="${accent}"/>
       ${text(x + 25, 437, 33, foreground, title)}
@@ -43,12 +48,20 @@ function drawGraphic(colors) {
       ${text(x + 25, 552, 17, foreground, tool)}`;
   }).join('');
 
+  const spectralBar = hues.map((hue, index) =>
+    `<rect x="${55 + 192 * index}" y="296" width="166" height="7" rx="3.5" fill="${hue}"/>`
+  ).join('');
+  const orbitArcs = hues.map((hue, index) =>
+    `<circle cx="1338" cy="88" r="${84 + index * 18}" fill="none" stroke="${hue}" stroke-width="2" opacity=".24"/>`
+  ).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${PIPELINE_GRAPHIC_WIDTH}" height="${PIPELINE_GRAPHIC_HEIGHT}" viewBox="0 0 1440 810" font-family="${fontName}" role="img" aria-labelledby="title description">
   <title id="title">CAPITAL-AI Social Media Content Engine</title>
   <desc id="description">${PIPELINE_GRAPHIC_ALT}</desc>
   <rect width="1440" height="810" fill="${background}"/>
+  ${orbitArcs}
+  ${spectralBar}
   <path d="M55 106H1385 M55 635H1385" stroke="${border}"/>
-  <path d="M87 372H1159" stroke="${cyan}" stroke-width="2" opacity=".65"/>
+  <path d="M87 372H1159" stroke="${hues[0]}" stroke-width="2" opacity=".65"/>
   ${text(55, 75, 24, gold, 'CAPITAL-AI / REDAKTION')}
   ${text(55, 204, 64, foreground, 'Social Media Content Engine')}
   ${text(55, 263, 30, muted, 'Von der öffentlichen Quelle zum freigabefähigen Entwurf')}
