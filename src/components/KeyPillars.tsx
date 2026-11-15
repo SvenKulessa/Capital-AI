@@ -68,11 +68,13 @@ export const KeyPillars: React.FC = () => {
 
   return (
     <section className="px-3 sm:px-5 py-3 select-none">
-      <div className="grid grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {KEY_PILLARS.map((pillar) => {
           const isSelected = activePillar === pillar.id;
           return (
-            <motion.div
+            <motion.button
+              type="button"
+              aria-expanded={isSelected}
               key={pillar.id}
               whileTap={{ scale: 0.96 }}
               onClick={() => setActivePillar(isSelected ? null : pillar.id)}
@@ -86,10 +88,10 @@ export const KeyPillars: React.FC = () => {
               </div>
 
               {/* Label */}
-              <span className="text-[11.5px] sm:text-xs text-slate-200 font-medium leading-[1.25] line-clamp-2 max-w-[85px]">
+              <span className="text-[11.5px] sm:text-xs text-slate-200 font-medium leading-[1.25] max-w-full">
                 {t(({realtime:'pillarRealtime','transparent-ai':'pillarAi',audience:'pillarAudience','global-markets':'pillarGlobal'} as const)[pillar.id as 'realtime'|'transparent-ai'|'audience'|'global-markets'])}
               </span>
-            </motion.div>
+            </motion.button>
           );
         })}
       </div>
@@ -105,10 +107,10 @@ export const KeyPillars: React.FC = () => {
           >
             <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-700/60 text-xs text-slate-300 flex items-center justify-between">
               <span>
-                {activePillar === 'realtime' && '⚡ Millisekundengenaue Tick-Daten aus über 50 Börsen weltweit.'}
-                {activePillar === 'transparent-ai' && '🔍 Keine Blackbox: Alle Parameter & Gewichtungen sind einsehbar.'}
-                {activePillar === 'audience' && '🤝 Intuitive Dashboards für Einsteiger, mächtige Kennzahlen für Profis.'}
-                {activePillar === 'global-markets' && '🌐 Aktien, Krypto, Rohstoffe und Devisen harmonisiert an einem Ort.'}
+                {activePillar === 'realtime' && 'Sieh, aus welcher Quelle die angezeigten Daten stammen und welchen Status sie haben.'}
+                {activePillar === 'transparent-ai' && 'Erfahre, wie Faktoren und Gewichtungen in die Analyse eingehen.'}
+                {activePillar === 'audience' && 'Starte mit Finanzbegriffen, Beispielrechnungen oder Analysemethoden.'}
+                {activePillar === 'global-markets' && 'Die Marktübersicht zeigt Kurse aus bestätigten Quellen, sobald sie verfügbar sind.'}
               </span>
               <button
                 type="button"

@@ -146,15 +146,15 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
           <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold mb-1">
-            Architektur &amp; Plattform-Säulen
+            CAPITAL-AI-Module
           </div>
           <h2
             id="core-modules-heading"
             className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2"
           >
-            <span>Unsere Kernmodule</span>
+            <span>Kernmodule im Überblick</span>
             <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-white/5 border border-slate-700/60 text-slate-300">
-              Top {primaryModules.length}
+              {primaryModules.length} im Fokus
             </span>
           </h2>
         </div>
@@ -179,7 +179,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
             onClick={onViewAllModules}
             className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-amber-300 transition-colors cursor-pointer pl-1"
           >
-            <span>Alle Module</span>
+            <span>Enterprise Scorer ansehen</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -226,12 +226,12 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
               </h3>
 
               {/* Tagline */}
-              <div className="text-[11px] font-mono text-slate-400 mb-2.5 font-medium line-clamp-1">
+              <div className="text-[11px] font-mono text-slate-400 mb-2.5 font-medium">
                 {module.tagline}
               </div>
 
               {/* Description */}
-              <p className="text-xs text-slate-300 leading-relaxed mb-4 line-clamp-3">
+              <p className="text-xs text-slate-300 leading-relaxed mb-4">
                 {module.description}
               </p>
             </div>
@@ -250,7 +250,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
                 title={`${module.title} Einträge & Aktionen in der Module öffnen`}
               >
                 <PanelRightOpen className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                <span>Einträge &amp; Module öffnen</span>
+                <span>Einträge und Module öffnen</span>
               </button>
 
               <button
