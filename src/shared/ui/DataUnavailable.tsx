@@ -8,7 +8,7 @@ export function DataUnavailable({ title, required, id, onClose }: { title: strin
         {onClose && <button onClick={onClose} aria-label="Schließen"><X /></button>}</div>
       <p role="status" className="mt-4 text-amber-300">Daten nicht verfügbar</p>
       <p className="mt-2 text-sm text-slate-400">Benötigte Daten: {required}.</p>
-      <p className="mt-2 text-sm text-slate-400">Auswertung und Alerts bleiben gesperrt, bis Quelle, Pflichtdaten und Evidence validiert sind.</p>
+      <p className="mt-2 text-sm text-slate-400">Auswertung und Alerts setzen geprüfte Quellen, Pflichtdaten und Nachweise voraus.</p>
     </div>
   </section>;
 }

@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-15",
+  "label": "15. November 2026",
+  "stories": [
+    {
+      "id": "polygon",
+      "topic": "Polygon · Stablecoins",
+      "title": "SoFiUSD startet auf Polygon",
+      "summary": "SoFi-Mitglieder können den Dollar-Stablecoin SoFiUSD in der App kaufen, verkaufen, halten und umtauschen. Polygon kommt als weiteres unterstütztes Netzwerk hinzu.",
+      "context": "Ein Stablecoin ist der Token. Das Netzwerk bestimmt, wo er übertragen wird.",
+      "graphic": {
+        "kind": "network",
+        "caption": "Ein Stablecoin, mehrere Netzwerke",
+        "center": "SoFiUSD",
+        "labels": [
+          "Polygon",
+          "Solana",
+          "Ethereum"
+        ]
+      },
+      "source": {
+        "name": "Polygon",
+        "url": "https://polygon.technology/blog/sofiusd-lands-on-polygon",
+        "date": "2026-11-12",
+        "label": "12. November 2026"
+      },
+      "editorial": {
+        "relevance": 5,
+        "impact": 4
+      }
+    },
+    {
+      "id": "xrpl",
+      "topic": "XRP Ledger · Testumgebungen",
+      "title": "XRP Ledger plant Reset seiner Testnetze",
+      "summary": "Für den 25. November ist ein Reset von Testnet und Devnet angekündigt. Konten, Guthaben und andere Ledger-Daten der beiden Testnetze werden gelöscht. Laut Ankündigung läuft das Mainnet weiter.",
+      "context": "Getrennte Umgebungen erlauben Wallet- und Zahlungstests ohne echtes Geld.",
+      "graphic": {
+        "kind": "status",
+        "caption": "Welche Netzwerke sind betroffen?",
+        "rows": [
+          {
+            "label": "Testnet",
+            "outcome": "Reset geplant"
+          },
+          {
+            "label": "Devnet",
+            "outcome": "Reset geplant"
+          },
+          {
+            "label": "Mainnet",
+            "outcome": "Läuft weiter"
+          }
+        ]
+      },
+      "source": {
+        "name": "XRP Ledger",
+        "url": "https://xrpl.org/blog/2026/testnet-devnet-reset",
+        "date": "2026-11-09",
+        "label": "9. November 2026"
+      },
+      "editorial": {
+        "relevance": 5,
+        "impact": 4
+      }
+    },
+    {
+      "id": "solana",
+      "topic": "Solana · Zahlungsabläufe",
+      "title": "Polygon bindet Solana an seinen Open Money Stack an",
+      "summary": "Polygon beschreibt einen Zahlungsablauf, der Bankeinzahlungen, Stablecoins auf Solana und Auszahlungen über seine Dienste verbindet.",
+      "context": "Der Ablauf zeigt, an welcher Stelle Bankgeld in einen Token umgewandelt wird.",
+      "graphic": {
+        "kind": "flow",
+        "caption": "Der Zahlungsablauf laut Polygon",
+        "labels": [
+          "Bankeinzahlung",
+          "Stablecoin auf Solana",
+          "Auszahlung"
+        ]
+      },
+      "source": {
+        "name": "Polygon",
+        "url": "https://polygon.technology/blog/polygon-oms-supports-solana",
+        "date": "2026-10-29",
+        "label": "29. Oktober 2026"
+      },
+      "editorial": {
+        "relevance": 4,
+        "impact": 3
+      }
+    }
+  ]
+}
