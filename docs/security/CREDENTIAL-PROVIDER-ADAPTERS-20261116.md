@@ -77,3 +77,19 @@ python3 -m unittest discover -s scripts/growth-agent -p 'test_provider_metadata.
 ```
 
 Rollback: revert only this PR's `provider_metadata.py`, `provider_metadata_cli.py`, `test_provider_metadata.py` and this document. No durable state, provider credential or environment needs restoration. No claim of credential-validity verification until an authenticated, scoped provider readback is independently evidenced.
+
+## Connector-scoped read-only evidence, 2026-11-16
+
+All observations below came from separately connected, read-only provider operations. They are **metadata readbacks only**, not proof of secret validity, OAuth refresh capability, current application authorization, or independently attested provider provenance. No credential value, decrypted token, private key, signing secret, account UUID or webhook URL was queried or recorded in this report.
+
+| Provider | Non-secret readback on 2026-11-16 | Evidentiary boundary |
+| --- | --- | --- |
+| Supabase | Connected project's `public.social_media_accounts` schema includes `user_id`, `platform`, `status`, `token_expires_at`. Restricted aggregate for X: 1 connected account, 1 distinct user, 1 expired access-token timestamp, earliest expiry `2026-10-13T03:13:28.980Z`; YouTube: 1 connected account, 1 distinct user, 1 expired timestamp, earliest expiry `2026-11-07T16:34:20.585Z`. | **EXPIRED access-token metadata**; `owner_bound` **NOT_PROVEN** because the aggregation is project-wide, even though each platform has exactly one distinct user. Refresh-token validity and integration availability are **NOT_PROVEN**. |
+| Render | Authorized `list_services` identified the expected web service and a GitHub registry credential (metadata `updatedAt=2026-09-29T20:44:48.431669Z`). | Registry update time is **not** key expiry. Credential expiry and immutable runtime digest **NOT_PROVEN**. |
+| Stripe | Authorized live-mode webhook-endpoint list returned 4 entries: 3 enabled, 1 disabled. | No signing-secret value requested or returned; signing-secret expiry and API-key lifecycle **NOT_PROVEN**. |
+| Google Cloud | No authorized, independently attributable IAM service-account key metadata readback was available in this session. | `validBeforeTime`, key-ID binding to any deployed workload, and provenance **NOT_PROVEN**. No private keys fetched. |
+| GitHub | GitHub REST readback confirms PR/commit/check provenance for this branch. | This is CI provenance, **not** proof of GitHub Actions secret expiry or PAT validity; those remain **NOT_PROVEN**. |
+
+**Trust decision:** Provider connectors establish what their authorized responses reported during this session, but there is no retained independent signed operation receipt or owner-identity link for the Supabase aggregate. Do not promote any adapter input to `VERIFIED` via its JSON `scope`, `method`, `owner_bound` or time fields alone. The tool reports `INPUT_VALIDATED_NOT_ATTESTED` and the lifecycle report stays fail-closed. These numbers are not test fixtures and should not be used as proof of a currently working OAuth integration.
+
+**Regression repair on the existing branch:** Event timestamps (`Render.registry_updated_at`, `Stripe.created_at`, `GitHub.updated_at`) now must be at or before their own canonical `observed_at`. A new negative test rejects an event at `00:10Z` when the claimed readback is `00:00Z`, even if evaluation time is later. Future *expiry* dates remain valid and do not mean a provider token is verified. This boundary change uses existing CI; no new workflow or scheduler.
