@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, LogOut } from 'lucide-react';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
+import { VerifiedProfileAvatar } from './VerifiedProfileAvatar';
 
 export interface AccountBadge {
   id: string;
@@ -21,6 +22,7 @@ export interface AccountSession {
     subject: string;
     email: string;
     name: string;
+    avatarUrl?: string | null;
   } | null;
   account?: {
     available: boolean;
@@ -139,6 +141,7 @@ export function AccountPageShell({
               <h1 className="mt-1 text-2xl font-black">{title}</h1>
               <p className="mt-1 max-w-2xl text-sm text-slate-400">{description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <VerifiedProfileAvatar avatarUrl={session.user?.avatarUrl} name={session.user?.name} size="small" />
                 <span className="font-bold text-white">{session.user?.name || tr.accountUser}</span>
                 {accountDisplay(session) && (
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-mono text-amber-200">
