@@ -57,6 +57,14 @@ def _bound_timestamp(value, observed):
     return None
 
 
+def _event_timestamp(value, observed):
+    """Event creation/update time must not postdate its readback."""
+    dt = _bound_timestamp(value, observed)
+    if dt is not None and dt > _utc(observed):
+        raise ValueError("future provider event timestamp")
+    return dt
+
+
 def _supabase(records, observed):
     seen = set()
     observations = []
@@ -95,7 +103,7 @@ def _render(records, observed):
     _fields(record, ("service_id", "registry_credential_present", "registry_updated_at"))
     if record["service_id"] != "srv-dau1rp893c1s73cdhm1g" or type(record["registry_credential_present"]) is not bool:
         raise ValueError("unexpected render service binding")
-    _bound_timestamp(record["registry_updated_at"], observed)
+    _event_timestamp(record["registry_updated_at"], observed)
     if not record["registry_credential_present"] and record["registry_updated_at"] is not None:
         raise ValueError("invalid registry metadata")
     return [], "EXPIRY_NOT_EXPOSED"
@@ -111,7 +119,7 @@ def _stripe(records, observed):
         seen.add(identity)
         if type(record["livemode"]) is not bool or record["status"] not in ("enabled", "disabled"):
             raise ValueError("invalid stripe webhook metadata")
-        _bound_timestamp(record["created_at"], observed)
+        _event_timestamp(record["created_at"], observed)
     # Webhook endpoints are not signing-secret expiration evidence.
     return [], "EXPIRY_NOT_EXPOSED"
 
@@ -143,7 +151,7 @@ def _github(records, observed):
         if not isinstance(name, str) or not GITHUB_NAME.fullmatch(name) or name in seen:
             raise ValueError("invalid github secret metadata")
         seen.add(name)
-        _bound_timestamp(record["updated_at"], observed)
+        _event_timestamp(record["updated_at"], observed)
     # Actions secret updated_at is NOT its expiration, and PAT metadata
     # cannot be inferred from GitHub Actions secret names.
     return [], "EXPIRY_NOT_EXPOSED"
