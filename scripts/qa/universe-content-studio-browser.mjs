@@ -147,6 +147,18 @@ try {
       assert.ok(dom.buddy.height >= 44 && dom.buddy.height <= 56, 'Closed JaJa mobile height should preserve a compact touch target');
     }
     assert.equal(dom.buddyTextOverlap, false, 'JaJa assistant visually covers Chart-Lernatlas text at ' + viewport.width);
+    // Capture the actual chart, not only the Universe header above the fold.
+    await evaluate('document.querySelector("section[aria-label=Chart-Lernatlas] figure").scrollIntoView({block:"center"})');
+    await pause(220);
+    const chartFrame = await evaluate('(() => { const el=document.querySelector("section[aria-label=Chart-Lernatlas] figure svg"); const b=el?.getBoundingClientRect(); return b?{left:b.left,right:b.right,width:b.width,height:b.height,visible:b.bottom>0&&b.top<innerHeight}:null; })()');
+    assert.ok(chartFrame?.visible && chartFrame.width > 100, 'Chart SVG is not visible in the viewport');
+    assert.ok(chartFrame.left >= -1 && chartFrame.right <= viewport.width + 1, 'Chart SVG exceeds viewport bounds');
+    const chartShot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
+    const chartBytes = Buffer.from(chartShot.data, 'base64');
+    assert.ok(chartBytes.length > 8_000, 'Chart screenshot missing');
+    await writeFile(join(output, 'chart-universe-' + viewport.width + '.png'), chartBytes);
+    evidence.chartFrame = chartFrame;
+    evidence.chartScreenshotSha256 = createHash('sha256').update(chartBytes).digest('hex');
     evidence.status = 'DOM_LAYOUT_PASS';
   }
   report.status = 'TARGETED_PASS';
