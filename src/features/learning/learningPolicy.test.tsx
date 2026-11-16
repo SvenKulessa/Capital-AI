@@ -217,3 +217,28 @@ test('PR 522: Buddy note text is human-readable, account-scoped via existing API
   assert.doesNotMatch(notes, /localStorage/);
   assert.match(learning, /api\/learning\/vocabulary\/quiz\/consume/);
 });
+
+test('owner-only frontend prompt selection and screen capture remain local and fail closed', async () => {
+  const {readFileSync} = await import('node:fs');
+  const {buildFrontendDesignPrompt, FRONTEND_FEATURES} = await import('../../components/buddyFrontendPrompt.mjs');
+  const brief = buildFrontendDesignPrompt({notes:['Globus beibehalten'],featureIds:['responsive','universe'],images:['markierung.png']});
+  assert.match(brief,/CSS Grid/);
+  assert.match(brief,/Globus beibehalten/);
+  assert.match(brief,/markierung.png/);
+  assert.throws(()=>buildFrontendDesignPrompt({notes:[],featureIds:['responsive']}));
+  assert.ok(FRONTEND_FEATURES.every(feature=>feature.label&&feature.spec));
+  const buddy = readFileSync(new URL('../../components/BuddyStickyNotes.tsx',import.meta.url),'utf8');
+  const capture = readFileSync(new URL('../../components/BuddyCapturePanel.tsx',import.meta.url),'utf8');
+  const hero = readFileSync(new URL('../../components/HeroBuddy.tsx',import.meta.url),'utf8');
+  assert.match(buddy,/session\.account\?\.available === true && session\.account\?\.iamRole === 'owner'/);
+  assert.match(buddy,/ownerPromptAllowed&&<section aria-label="Owner Frontend-Prompt"/);
+  assert.match(buddy,/setSelectedLines/);
+  assert.match(buddy,/clearPrivateImages/);
+  assert.doesNotMatch(buddy,/window\.localStorage|localStorage\.setItem/);
+  assert.match(capture,/navigator\.mediaDevices\.getDisplayMedia/);
+  assert.match(capture,/getTracks\(\)\.forEach\(track=>track\.stop\(\)\)/);
+  assert.match(capture,/new Set\(\['image\/png','image\/jpeg','image\/webp'\]\)/);
+  assert.match(hero,/JaJa CAM: Screenshot aufnehmen/);
+  assert.match(hero,/JaJa Stift: Bereiche markieren/);
+  assert.match(buddy,/Kein automatischer Export/);
+});
