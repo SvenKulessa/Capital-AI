@@ -7,9 +7,12 @@ LABEL org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI
       capital-ai.component="offline-langgraph-worker" \
       capital-ai.activation="disabled-by-default"
 
-# Reuse the Alpine 3.24 security-patched Python family already tested in
-# deploy/pr-agent/Dockerfile.alpine; never introduce Debian comparison residuals.
-RUN apk upgrade --no-cache
+# Reuse the glibc Python base needed by the pinned sqlite-vec manylinux wheel.
+# Keep Debian package metadata for full vulnerability scanning.
+RUN apt-get update \
+    && apt-get upgrade --yes --no-install-recommends \
+    && apt-get install --yes --only-upgrade --no-install-recommends libpcre2-8-0 libssl3t64 openssl openssl-provider-legacy \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
@@ -28,8 +31,8 @@ COPY docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md /app/docs/platform/LANG
 
 # Candidate Render disk mount: /var/lib/capital-ai-agent. Requiring pre-owned
 # 0700 directories fails closed if a future provider mount hides this tree.
-RUN addgroup -g 10001 -S capitalagent \
-    && adduser -S -D -u 10001 -G capitalagent capitalagent \
+RUN groupadd --gid 10001 capitalagent \
+    && useradd --no-create-home --uid 10001 --gid 10001 capitalagent \
     && install -d -m 0700 -o 10001 -g 10001 /var/lib/capital-ai-agent \
     && install -d -m 0700 -o 10001 -g 10001 /var/lib/capital-ai-agent/checkpoints \
        /var/lib/capital-ai-agent/inbox /var/lib/capital-ai-agent/approvals
