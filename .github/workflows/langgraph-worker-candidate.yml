@@ -33,7 +33,7 @@ jobs:
       - name: Build unactivated worker candidate
         shell: bash
         env:
-          PYTHON_BASE: \${{ steps.base.outputs.ref }}
+          PYTHON_BASE: ${{ steps.base.outputs.ref }}
         run: |
           set -euo pipefail
           docker build --platform linux/amd64 \
