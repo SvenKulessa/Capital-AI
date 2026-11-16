@@ -1017,12 +1017,12 @@
     {
       "id": "falling-wedge",
       "path": "falling-wedge.svg",
-      "sha256": "bbfd00dc408933dbfb770424baea303714af468c429f149f283afe928625ea0a",
+      "sha256": "0b1a0321ac18656edba7f36947461dc62ca22991a2ce6e2cb5d52f9eb3aa7644",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "falling-wedge.media-project.json",
-      "projectSha256": "9297a38a9e2c5f99b705071d5390c6cec7a772ebbfe24dfc0c91453c53a7995c",
+      "projectSha256": "c06d111389aca0ec03a24daee53504ea25eb6671cb43b3d05fa92dc3eebda4e0",
       "post": "Fallender Keil: Beide Grenzen fallen; die obere Grenze fällt schneller und verengt die Spanne.\n\nErkennen: Beide Grenzen fallen; die obere Grenze fällt schneller und verengt die Spanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=falling-wedge\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1058,12 +1058,12 @@
     {
       "id": "bull-pennant",
       "path": "bull-pennant.svg",
-      "sha256": "5f948c780de9fe810d7ede757f45bd6c39f5460ee7bf9c714f0c9f79e7826e7c",
+      "sha256": "b183c21bdf12c55d345b04a3b9739842db8ab7d2ba11f00f330e165ad5431d5f",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bull-pennant.media-project.json",
-      "projectSha256": "53537c8b1120fb820f78d3739ab0b3f6da75af1183ad9ea09cbf8d71b8bc5461",
+      "projectSha256": "8a3efb48e9847db624b9ba62c4a19499db2c0a926b2414f8db57a11b93fb80f8",
       "post": "Bullischer Wimpel: Ein Aufwärtsimpuls geht in eine kurze konvergierende Konsolidierung über.\n\nErkennen: Ein Aufwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-pennant\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1099,12 +1099,12 @@
     {
       "id": "bear-pennant",
       "path": "bear-pennant.svg",
-      "sha256": "667df143a9920a47eb2819889bfeaefd9ab4ce54986454eac7a43a73e44af41c",
+      "sha256": "618f75bc148e1dc35e1a0b0afbfe98d05e15e7d8354ef7cb77c473bfb2e67426",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bear-pennant.media-project.json",
-      "projectSha256": "6c33f5d1d0b428a6ed6a05c23674f0327853a73e292477f9dcbe7e5e8f6dc052",
+      "projectSha256": "28d26c804ffaeafc9e484350b4bff1962a3401eb77d11c4601761fa534aec843",
       "post": "Bärischer Wimpel: Ein Abwärtsimpuls geht in eine kurze konvergierende Konsolidierung über.\n\nErkennen: Ein Abwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bear-pennant\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1140,12 +1140,12 @@
     {
       "id": "bull-rectangle",
       "path": "bull-rectangle.svg",
-      "sha256": "476c09dbda6c07ec915261bb022251f504d5adb5f1f8562ac34a73bf065716e8",
+      "sha256": "f2062fd23cdef4783df7e07f9c220121156c0306011365f40dfd1acc598611be",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bull-rectangle.media-project.json",
-      "projectSha256": "2184896b480d9047381af98841a68d09b9d18b19bff9ef5cdfea39ce73b31953",
+      "projectSha256": "50fa93dd8ffb0f39e0b1f6854b591a80c1bf7e1279c34c66151a2cb01bf5101c",
       "post": "Bullisches Rechteck: Nach einem Anstieg pendelt der Kurs zwischen annähernd horizontalen Grenzen.\n\nErkennen: Nach einem Anstieg pendelt der Kurs zwischen annähernd horizontalen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-rectangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1181,12 +1181,12 @@
     {
       "id": "bear-rectangle",
       "path": "bear-rectangle.svg",
-      "sha256": "f19756f6b1b8a923a2e335e61351bc338aa96b6756d68b229fc2225d5d95e543",
+      "sha256": "b2d29edd9a1532dd7c564c61af129ee5ca65c8944a9b03433faccf066d88a234",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bear-rectangle.media-project.json",
-      "projectSha256": "3ab42151ca19e97ed67db10aa7211b15e6e83e43711c7c11498a8027650e18c1",
+      "projectSha256": "697c9a6fe3afc3dd5b7bc5e8cd16eaebaa76488c9bd56b85f92dd2c806b103bb",
       "post": "Bärisches Rechteck: Nach einem Rückgang folgt eine seitwärts verlaufende Handelsspanne.\n\nErkennen: Nach einem Rückgang folgt eine seitwärts verlaufende Handelsspanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bear-rectangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1222,12 +1222,12 @@
     {
       "id": "ascending-channel",
       "path": "ascending-channel.svg",
-      "sha256": "58360cfcb4defc9fdfcc061717c977f7f1c0020b09b95dfd98a29090179e7e4f",
+      "sha256": "33fcfd013b57a471ef24316eb5a9a76808c9cff9e24fa0395bab566c24109944",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "ascending-channel.media-project.json",
-      "projectSha256": "15c775bffc2211491f2c5b90fc6bf699ce43db59bc76d07c9e502ba0094a0a0c",
+      "projectSha256": "7ba25802ae9cb5db9342c880e2e5f638c133b69c4ae386a0a0466e8c60c1fd59",
       "post": "Aufwärtskanal: Höhere Hochs und höhere Tiefs verlaufen in ungefähr parallelen Grenzen.\n\nErkennen: Höhere Hochs und höhere Tiefs verlaufen in ungefähr parallelen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=ascending-channel\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1263,12 +1263,12 @@
     {
       "id": "descending-channel",
       "path": "descending-channel.svg",
-      "sha256": "cdd6ac371832d0dff91cde58d8d6871d939c2fe610a3ebbec2ff1787c3b5c1d8",
+      "sha256": "9cea7f0c6f2ef35876a9ec025f527e4acc5112eb009af9a894d391e3a97a3ef5",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "descending-channel.media-project.json",
-      "projectSha256": "1ac61acc0dbdd229b418915da6194ce463cdd277a7c56cd5ad063866facf22d2",
+      "projectSha256": "20d1a57e7c59abcbb863543d622c3291111911e3a632e43083f4894c8155eee1",
       "post": "Abwärtskanal: Tiefere Hochs und tiefere Tiefs verlaufen in ungefähr parallelen Grenzen.\n\nErkennen: Tiefere Hochs und tiefere Tiefs verlaufen in ungefähr parallelen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=descending-channel\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1304,12 +1304,12 @@
     {
       "id": "horizontal-channel",
       "path": "horizontal-channel.svg",
-      "sha256": "d460f5ba508340cf8f18677994ab7669d3f80595bf3ca446332e025509a981f6",
+      "sha256": "878928dc231bcf10acb19af183e40b81b2d8aa98ab639ee138d9ced7e2c14944",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "horizontal-channel.media-project.json",
-      "projectSha256": "a508e25e85c75493f8ae664e114633d41387fd6422750da0725204c83ea3cf7f",
+      "projectSha256": "c8beae175c183faf0f8b250a39b560ea15c61cf72924863b8af0ddf105372d74",
       "post": "Seitwärtskanal: Wiederholte Richtungswechsel bleiben innerhalb einer waagerechten Spanne.\n\nErkennen: Wiederholte Richtungswechsel bleiben innerhalb einer waagerechten Spanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=horizontal-channel\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1345,12 +1345,12 @@
     {
       "id": "broadening-top",
       "path": "broadening-top.svg",
-      "sha256": "5ddccc546dae87578eb4751d128b11d76c07c419642b26fc3cb0c32913b9776d",
+      "sha256": "0fa62d4f18649cb7c67720712864b77cf311eb1edc7231d261215b15a3d5cb98",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "broadening-top.media-project.json",
-      "projectSha256": "15a5acba4510002441e294d47b01624c973e4d400c75d65b05e69e673df8a71d",
+      "projectSha256": "4206b19b7163838ce9b6f854c98dd5b5462fb382009c1058a22e0eda1de3ea09",
       "post": "Sich ausweitende Formation: Höhere Hochs und tiefere Tiefs vergrößern die Schwankungsbreite.\n\nErkennen: Höhere Hochs und tiefere Tiefs vergrößern die Schwankungsbreite. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=broadening-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1386,12 +1386,12 @@
     {
       "id": "diamond-top",
       "path": "diamond-top.svg",
-      "sha256": "c2e7f04a55ed193f053d708ea69181f42e814b8f69f053c593c789d8cbabfe18",
+      "sha256": "f90ff0ff4dedd20c5a68d08ebbe1fe639fd4864d2bed2a76469b4a38f50b2431",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "diamond-top.media-project.json",
-      "projectSha256": "e84e70be2026cfef6a3333160af34dfcb0e69ef467ec1390bf465c92ad14bf2f",
+      "projectSha256": "bdd1bb5a9dc356c0e4e41ea90eb0417d6f6a503b1f1d1917e307fecdbf6407d9",
       "post": "Diamant am Hoch: Nach einem Anstieg weitet sich die Spanne zunächst aus und zieht sich anschließend zusammen.\n\nErkennen: Nach einem Anstieg weitet sich die Spanne zunächst aus und zieht sich anschließend zusammen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=diamond-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1427,12 +1427,12 @@
     {
       "id": "diamond-bottom",
       "path": "diamond-bottom.svg",
-      "sha256": "bdc1889c290c5ffe83cb0c08df9098a77e696b42e9423d0a5d7c801ae8df7bea",
+      "sha256": "dd663039b721da97adc1a8e4a3c05a910d6aaa86a62421c53f4045ad336df315",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "diamond-bottom.media-project.json",
-      "projectSha256": "674bb00cd9d2a4b094e321e090b130cddd14b9cd6673dc5561a88dcf7e55270f",
+      "projectSha256": "ef1deb810b519be18dee095d0ab462a560ca75917bb6a6e4a32fd62750b0482b",
       "post": "Diamant am Tief: Nach einem Rückgang weitet sich die Spanne zunächst aus und wird danach enger.\n\nErkennen: Nach einem Rückgang weitet sich die Spanne zunächst aus und wird danach enger. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=diamond-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1468,12 +1468,12 @@
     {
       "id": "rounding-bottom",
       "path": "rounding-bottom.svg",
-      "sha256": "4aef5817c62573146d6530ff388e05b4bf01bcdc31479dc41e0ca92756f1c151",
+      "sha256": "21587c5ae1443c3b2287d53a3e69a89ff167306b7a70a810a84e7db0263e32ff",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "rounding-bottom.media-project.json",
-      "projectSha256": "8cbf160baa26fcc0c519d141ff0bdaf677b1bfeab157051128750979725b2723",
+      "projectSha256": "66a502ed55c26e5eba6f1e779821741e21bd17029d6cd6cbd779dc328083b706",
       "post": "Runder Boden: Ein länger werdender Rückgang verliert Steigung und geht in eine gerundete Erholung über.\n\nErkennen: Ein länger werdender Rückgang verliert Steigung und geht in eine gerundete Erholung über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rounding-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
