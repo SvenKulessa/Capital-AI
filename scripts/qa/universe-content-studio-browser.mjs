@@ -65,12 +65,15 @@ const inspect = [
   'const clipped=swatches.some(el=>{const r=el.getBoundingClientRect();return r.left<box.left-1||r.right>box.right+1||r.width<=0||r.height<=0;});',
   'const buddy=document.querySelector("[data-hero-buddy=agent] > button");',
   'const br=buddy?.getBoundingClientRect();',
+  'const spectrum=document.querySelector("section[aria-label=Chart-Lernatlas] svg [data-universe-spectrum]");',
+  'const chartDots=Array.from(spectrum?.querySelectorAll("circle")??[]);',
   'const atlasHeader=document.querySelector("section[aria-label=Chart-Lernatlas] > div:first-child");',
   'const textRects=atlasHeader?[...atlasHeader.querySelectorAll("h2,p")].flatMap(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()];}):[];',
   'const buddyTextOverlap=!!br && textRects.some(r=>r.right>br.left+2 && r.left<br.right-2 && r.bottom>br.top+2 && r.top<br.bottom-2);',
   'return {heading:document.getElementById("capital-universe-profile")?.textContent.trim()??null,',
   'names,colours:swatches.map(el=>getComputedStyle(el).backgroundColor),overflow,clipped,',
   'panelWidth:box.width,panelLeft:box.left,panelRight:box.right,',
+  'chartUniverseColours:chartDots.map(el=>el.getAttribute("fill")),chartUniverseDecorative:spectrum?.getAttribute("aria-hidden")==="true",',
   'buddy:br?{x:br.x,y:br.y,width:br.width,height:br.height,ariaLabel:buddy.getAttribute("aria-label")}:null,buddyTextOverlap,',
   'cookiePanelVisible:!!document.querySelector("[aria-labelledby=cookie-consent-v3-title]"),',
   'documentWidth:document.documentElement.clientWidth,',
@@ -130,6 +133,9 @@ try {
     assert.ok(dom.heading?.includes('Universum'));
     assert.deepEqual(dom.names.map(name=>name.toLowerCase()), families);
     assert.deepEqual(dom.colours, expected);
+    assert.deepEqual(dom.chartUniverseColours, families.map(name => tokens.color.universe[name].$value),
+      'Chart SVG does not contain all seven canonical Universe hues at ' + viewport.width);
+    assert.equal(dom.chartUniverseDecorative, true, 'Decorative Universe chart SVG dots leaked accessibility semantics');
     assert.equal(dom.clipped, false, 'Swatches clipped at ' + viewport.width);
     assert.ok(dom.overflow <= 2, 'Horizontal overflow at ' + viewport.width + ': ' + dom.overflow);
     assert.ok(dom.panelLeft >= -1 && dom.panelRight <= viewport.width + 1);
