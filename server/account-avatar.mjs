@@ -1,29 +1,7 @@
-/**
- * Presentation-only identity picture. User metadata is untrusted and NEVER grants access.
- * Expose only HTTPS provider CDN URLs or same-origin public uploaded avatar paths.
- * Fail closed to the existing shield icon for every unsupported URL.
- */
-export function safeAccountAvatarUrl(candidate) {
-  if (typeof candidate !== 'string' || candidate.length > 2048) return null;
-  if (candidate.startsWith('/api/profile/avatar/')) {
-    return /^\/api\/profile\/avatar\/[A-Za-z0-9_-]{1,120}$/.test(candidate) ? candidate : null;
-  }
-  try {
-    const value = new URL(candidate);
-    if (value.protocol !== 'https:' || value.username || value.password || value.port || value.hash) return null;
-    const host = value.hostname.toLowerCase();
-    const trusted = host === 'lh3.googleusercontent.com' ||
-      host.endsWith('.googleusercontent.com') ||
-      host === 'pbs.twimg.com' ||
-      host === 'images.notion.so' ||
-      host === 'www.notion.so' ||
-      host === 'secure.notion-static.com' ||
-      host === 'prod-files-secure.s3.us-west-2.amazonaws.com';
-    return trusted ? value.href : null;
-  } catch {
-    return null;
-  }
-}
+import { safeAccountAvatarUrl } from '../shared/account-avatar-policy.mjs';
+export { safeAccountAvatarUrl } from '../shared/account-avatar-policy.mjs';
+
+/** The auth provider has verified the identity; picture URLs are presentation-only. */
 export function accountAvatarForVerifiedUser(authUser) {
   if (!authUser || typeof authUser !== 'object') return null;
   const meta = authUser.user_metadata || {};
