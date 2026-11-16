@@ -37,7 +37,7 @@ src/platform/
 
 Erstelle zunächst eine Dokumentenanalyse.
 
-Erzeuge noch keine Änderungen.
+Im beauftragten Konsolidierungsauftrag zuerst die betroffenen Verantwortlichkeiten und Dokumentenüberschneidungen feststellen, danach konkrete zulässige Korrekturen an den betroffenen Dokumenten umsetzen, Referenzen und Konsistenz prüfen, vorhandene Tests/CI auswerten und den PR gemäß Root-`AGENTS.md` abschließen. Nur bei ausdrücklich reinen Analyse- oder Read-only-Aufträgen nach der Bestandsaufnahme aufhören; bestehende historische Evidenz bleibt erhalten.
 
 ---
 

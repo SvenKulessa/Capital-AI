@@ -3,12 +3,12 @@ FROM nats:2.15.3-alpine@sha256:558394a23dd3c36f2d3a64b51865fd09908010e80a542cea5
 ARG TARGETARCH
 ARG TARGETVARIANT
 COPY deploy/fetch-nats-release.sh /tmp/fetch-nats-release.sh
-# Official 2.15.2 release binaries use Go 1.27.3 (CVE-2026-111943 fix); each archive is hash-pinned.
+# Official 2.15.3 release binaries use Go 1.27.4 (CVE-2026-111943 fix); each archive is hash-pinned.
 RUN sh /tmp/fetch-nats-release.sh
 
 FROM nats:2.15.3-alpine@sha256:558394a23dd3c36f2d3a64b51865fd09908010e80a542cea5e75c2af543ed62a
-ENV NATS_SERVER=2.15.2
-LABEL org.opencontainers.image.version="2.15.2"
+ENV NATS_SERVER=2.15.3
+LABEL org.opencontainers.image.version="2.15.3"
 COPY --from=release-binary /out/nats-server /usr/local/bin/nats-server
 COPY --from=release-binary /out/LICENSE /usr/share/licenses/nats-server/LICENSE
 RUN apk add --no-cache 'zlib>=1.3.2-r1' 'musl>=1.2.5-r13' 'musl-utils>=1.2.5-r13' \
@@ -17,7 +17,7 @@ RUN apk add --no-cache 'zlib>=1.3.2-r1' 'musl>=1.2.5-r13' 'musl-utils>=1.2.5-r13
     && chown -R 1000:1000 /var/data \
     && chmod 0755 /var/data \
     && chmod 0700 /var/data/jetstream
-RUN test "$(nats-server --version)" = 'nats-server: v2.15.2'
+RUN test "$(nats-server --version)" = 'nats-server: v2.15.3'
 COPY deploy/nats-server.conf /etc/nats/nats-server.conf
 COPY --chmod=0555 deploy/nats-entrypoint.sh /usr/local/bin/capital-nats-entrypoint
 # Final container is always rootless. Empty Docker named volumes copy up this

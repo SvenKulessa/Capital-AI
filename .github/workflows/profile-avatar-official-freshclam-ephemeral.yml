@@ -1,0 +1,106 @@
+name: Avatar Official FreshClam Ephemeral Evidence
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/profile-avatar-official-freshclam-ephemeral.yml
+      - scripts/qa/profile-avatar-freshclam-staging.sh
+      - scripts/qa/profile-avatar-freshclam-staging.test.mjs
+      - deploy/profile-avatar/**
+permissions:
+  contents: read
+concurrency:
+  group: avatar-freshclam-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  official-freshclam-evidence:
+    # Does not run for forks or other PRs; not a required check.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.number == 762 &&
+      github.event.pull_request.head.repo.full_name == 'SvenKulessa/Capital-AI'
+    name: Ephemeral FreshClam evidence (optional)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact authorized PR head without persistent token
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Verify isolation and resource budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "SvenKulessa/Capital-AI"
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          test -f scripts/qa/profile-avatar-freshclam-staging.sh
+          node --test scripts/qa/profile-avatar-freshclam-staging.test.mjs
+          mkdir -p avatar-staging-evidence
+          node -e 'const fs=require("node:fs");const mem=fs.readFileSync("/proc/meminfo","utf8").match(/^MemAvailable:\s+(\d+)/m);fs.writeFileSync("avatar-staging-evidence/runner.json",JSON.stringify({schema:"CAPITAL_AI_AVATAR_FREE_RUNNER_BUDGET@1",sourceSha:process.env.GITHUB_SHA,runner:process.env.RUNNER_ENVIRONMENT,availableMemKiB:Number(mem?.[1]||0),cpuCount:require("node:os").availableParallelism(),stagingOnly:true,productionAccess:false},null,2)+"\n")'
+          df -Pk /tmp | tail -n 1
+          if [ "$(awk '/^MemAvailable:/{print $2}' /proc/meminfo)" -lt 4194304 ]; then
+            echo "Insufficient free runner RAM for official ClamAV signature DB" >&2
+            exit 1
+          fi
+          if [ "$(df -Pk /tmp | awk 'END{print $4}')" -lt 8388608 ]; then
+            echo "Insufficient disk for build and fresh signature DB" >&2
+            exit 1
+          fi
+      - name: Build minimal pinned ClamAV test image with empty context
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Read-only project source is mounted later. The test image never
+          # contains or builds the application nor its production secrets.
+          docker build --tag capital-ai-avatar-official-probe:pr-762 - <<'DOCKERFILE'
+          FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94
+          RUN apk add --no-cache 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' 'clamav-scanner=1.4.6-r0'
+          RUN mkdir -p /run/clamav /app/server && chown -R 1000:1000 /run/clamav && chmod 0700 /run/clamav
+          USER 1000:1000
+          WORKDIR /app
+          DOCKERFILE
+          docker run --rm --network none --entrypoint /bin/sh \
+            capital-ai-avatar-official-probe:pr-762 \
+            -ec 'for binary in freshclam clamd sigtool node stat df awk du; do command -v "$binary" >/dev/null || exit 80; done'
+      # Parser fix for ClamAV 1.4.6: ScriptedUpdates requires a BOOL (yes/no).
+      - name: Real official FreshClam/CVD/PNG/EICAR test
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p avatar-staging-evidence
+          # No application secrets, service keys or GitHub token passed to container.
+          # Isolated local scratch storage is destroyed after completion.
+          set +e
+          docker run --rm --name capital-ai-avatar-official-pr-762 \
+            --user 1000:1000 --read-only \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --pids-limit 160 --cpus 2 --memory 7g --memory-swap 7g \
+            --tmpfs /run/clamav:rw,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=64m \
+            --tmpfs /tmp:rw,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=6g \
+            --network bridge \
+            -e CAPITAL_AI_ISOLATED_STAGING=true \
+            -e PROFILE_AVATAR_UPLOAD_ENABLED=false \
+            -v "$PWD/scripts/qa:/app/scripts/qa:ro" \
+            -v "$PWD/server/profile-avatar-upload.mjs:/app/server/profile-avatar-upload.mjs:ro" \
+            --workdir /app --entrypoint /bin/sh \
+            capital-ai-avatar-official-probe:pr-762 \
+            scripts/qa/profile-avatar-freshclam-staging.sh \
+            | tee avatar-staging-evidence/scanner-output.jsonl
+          result=${PIPESTATUS[0]}
+          set -e
+          printf '{"schema":"CAPITAL_AI_AVATAR_EPHEMERAL_RUN@1","exitCode":%s,"sourceSha":"%s","environment":"github-hosted-ephemeral","renderStagingVerified":false,"prodEnabled":false}\n' \
+            "$result" "${{ github.event.pull_request.head.sha }}" \
+            > avatar-staging-evidence/result.json
+          exit "$result"
+      - name: Save sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4.6.2
+        with:
+          name: avatar-official-freshclam-pr-762-${{ github.run_id }}
+          path: avatar-staging-evidence/
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Remove ephemeral Docker image
+        if: always()
+        run: docker image rm -f capital-ai-avatar-official-probe:pr-762 || true
