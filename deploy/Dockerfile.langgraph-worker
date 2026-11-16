@@ -1,0 +1,33 @@
+# Candidate only. Not referenced by render.yaml or any deployed service.
+# Reuse the currently pinned Python base from existing PR-agent evidence.
+FROM python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d
+LABEL org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI" \
+      capital-ai.component="offline-langgraph-worker" \
+      capital-ai.activation="disabled-by-default"
+
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
+    LANGGRAPH_STRICT_MSGPACK=true \
+    CAPITAL_AI_OFFLINE_WORKER_ENABLED=false
+
+WORKDIR /app
+COPY scripts/growth-agent/requirements.lock /app/scripts/growth-agent/requirements.lock
+RUN python -m pip install --no-cache-dir --disable-pip-version-check \
+      -r /app/scripts/growth-agent/requirements.lock \
+    && python -m pip check
+COPY scripts/growth-agent /app/scripts/growth-agent
+COPY AGENTS.md /app/AGENTS.md
+COPY docs/architecture/EXECUTION-FIRST-LANGGRAPH.md /app/docs/architecture/EXECUTION-FIRST-LANGGRAPH.md
+COPY docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md /app/docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md
+
+# Proposed Render disk mount: /var/lib/capital-ai-agent. The disk must
+# already be owner-private under UID 10001; startup fails closed otherwise.
+RUN groupadd -g 10001 capitalagent \
+    && useradd --no-create-home --uid 10001 --gid 10001 capitalagent \
+    && install -d -m 0700 -o 10001 -g 10001 /var/lib/capital-ai-agent \
+    && install -d -m 0700 -o 10001 -g 10001 /var/lib/capital-ai-agent/checkpoints \
+       /var/lib/capital-ai-agent/inbox /var/lib/capital-ai-agent/approvals
+USER 10001:10001
+STOPSIGNAL SIGTERM
+# No HTTP port, no provider calls, no task submission endpoint.
+ENTRYPOINT ["python", "/app/scripts/growth-agent/worker_service.py", "--serve"]
