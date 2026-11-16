@@ -4,6 +4,9 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/profile-avatar-official-freshclam-ephemeral.yml
+      - scripts/qa/profile-avatar-freshclam-staging.sh
+      - scripts/qa/profile-avatar-freshclam-staging.test.mjs
+      - deploy/profile-avatar/**
 permissions:
   contents: read
 concurrency:
