@@ -114,7 +114,7 @@ export async function scanClamavLocal(bytes, socketPath, timeoutMs = 5000, {
   const version = verifyClamavVersion(await exchange(socketPath, 'VERSION', null, timeoutMs), nowMs);
   const verdict = await exchange(socketPath, 'INSTREAM', bytes, timeoutMs);
   if (verdict === 'stream: OK') return { clean: true, ...version };
-  if (/^stream: [^\r\n\0]{1,128} FOUND$/.test(verdict)) {
+  if (/^stream: [A-Za-z0-9][A-Za-z0-9_.:+()-]{0,127} FOUND$/.test(verdict)) {
     return { clean: false, ...version };
   }
   throw new Error('CLAMAV_BAD_REPLY');
