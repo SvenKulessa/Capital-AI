@@ -43,15 +43,6 @@ weiterhin ausdrücklich beachtet werden. Reine Prüf-/Statusaufträge
 werden nicht stillschweigend zu Implementierungsaufträgen.
 Unabhängige autorisierte Teilaufgaben bei echten Blockern fortführen.
 
-### Sperrvererbung vermeiden: Fortsetzung versus neuer Auftrag
-
-- **Fortsetzung desselben ausdrücklich eingeschränkten Auftrags** (z. B. „fahre fort“): konkretes Read-only-/No-Merge-/No-Deploy-Verbot gilt weiterhin, bis der Owner es ausdrücklich ändert oder der Auftrag endet.
-- **Neuer, eigenständig formulierter Implementierungsauftrag:** keine alte No-Merge-/No-Deploy- oder Read-only-Floskel aus historischen Chat-Antworten, PR-Beschreibungen oder älteren Prompt-Vorschlägen übernehmen. Der aktuelle Auftrag und Root-`AGENTS.md` bestimmen den zulässigen Weg. Ein fehlendes Verbot ist keine zusätzliche Produktiv-/Kosten-/Provider-Autorisierung.
-- **Kein pauschales Handoff:** Bei wirklich gesperrter Aktivierung genau den belegten Teil benennen und den anderen bereits autorisierten Code-, CI- und delegierten Merge-Scope eigenständig abschließen. Nicht wegen fehlender Post-Deployment-Evidence den vorab sicheren Code-Merge sperren, sofern Root-`AGENTS.md` den vollständig implementierten, wirksam deaktivierten Feature-Flag-Slice ausdrücklich erlaubt.
-- **Nie übersteuern:** aus dem konkret fortgesetzten Auftrag stammende Einschränkungen, aktueller Human-Auftrag, höherrangige Regeln, tatsächliche GitHub-Rulesets, Kosten, Geheimnisse, Lizenz-/Providerrechte und kritische aktivierte Trust Boundaries bleiben unberührt.
-
-Für einen eigenständigen neuen Umsetzungsauftrag ist als Standard die positive Handlungsanweisung „implementieren → testen → belegte Fehler beheben → delegiert mergen (nur nach Gates) → bestehenden Main-Deployment-Pfad beobachten“ zu verwenden, nicht ein ungefragtes „kein Merge/Deployment“.
-
 Bevorzugter kopierbarer Folgeprompt für eine autorisierte Reparatur:
 
 ```text
