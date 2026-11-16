@@ -104,6 +104,26 @@ class ProviderMetadataTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.adapt(entry, entry)
 
+    def test_future_provider_event_timestamps_fail_closed(self):
+        # A timestamp may be earlier than NOW but still postdate the
+        # provider readback. It must not be accepted as provenance.
+        future_event = "2026-11-16T00:10:00Z"
+        cases = (
+            readback("render", [{"service_id": "srv-dau1rp893c1s73cdhm1g",
+                                  "registry_credential_present": True,
+                                  "registry_updated_at": future_event}]),
+            readback("stripe", [{"endpoint_id": "we_1UPracPKr4joNbEc4xqcYEFF",
+                                  "livemode": True, "status": "enabled",
+                                  "created_at": future_event}]),
+            readback("github", [{"secret_name": "RENDER_API_KEY_TEST",
+                                  "updated_at": future_event}]),
+        )
+        for entry in cases:
+            with self.subTest(provider=entry["provider"]), self.assertRaisesRegex(
+                ValueError, "future provider event timestamp"
+            ):
+                self.adapt(entry)
+
     def test_stale_and_future_timestamps_are_not_fresh_evidence(self):
         entry = readback("render", [{"service_id": "srv-dau1rp893c1s73cdhm1g",
                                      "registry_credential_present": False, "registry_updated_at": None}])
