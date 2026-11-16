@@ -10,7 +10,7 @@ Kein Render-Service, keine Disk, keine GitHub-Berechtigung, kein LLM-Abo oder
 Provider-Token wird eingerichtet. Die Rust/NATS-Provider-Bridge bleibt suspendiert.
 
 Der neue `deploy/Dockerfile.langgraph-worker` erzwingt einen zur Buildzeit aufgelösten, unveränderlichen
-musl/Alpine-Python-Base-Digest sowie ein aus dem vorhandenen LangGraph-Lock
+glibc-Python-Base-Digest sowie ein aus dem vorhandenen LangGraph-Lock
 abgeleitetes, strikt gepinntes `requirements.offline-worker.lock`. Der Worker führt keine
 GitHub-, Render-, Supabase- oder LLM-Aufrufe aus. Vor produktivem Einsatz
 müssen Image-Scan, Dependency-Evidence und Runtime-Tauglichkeit separat
@@ -20,7 +20,7 @@ Docker-Kandidat bewusst nicht gebaut werden.
 Beispiel zum ausschließlich lokalen Build mit immutable linux/amd64-Provenance:
 
 ```bash
-PYTHON_BASE="python:3.14.7-alpine3.24@sha256:9e9fde4d32eedce0b661d9ab91e826b62dddf28e928c230ec55f1866cac66b01"
+PYTHON_BASE="python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d"
 docker pull --platform linux/amd64 "$PYTHON_BASE"
 docker build --platform linux/amd64 \\
   --build-arg "PYTHON_BASE=$PYTHON_BASE" \\
@@ -31,15 +31,17 @@ docker build --platform linux/amd64 \\
 Der zugehörige Dockerfile-spezifische Build-Kontext ist in
 `deploy/Dockerfile.langgraph-worker.dockerignore` eingeschränkt; die
 Produktions-`.dockerignore` bleibt unverändert. Ein lokaler Build
-aktiviert keinen Render-Service. Das Offline-RAG benötigt keine sqlite-vec-Erweiterung: die auf
-musllinux nicht verfügbare optionale Binärdatei wird nur aus dem
-Worker-Kandidaten ausgeschlossen. Der bestehende Graph-Lock bleibt unverändert.
-Der Worker-Pinset erhöht certifi auf 2026.10.23, da der alte Pin
-2026.7.22 nachweislich vom Candidate-Scan als CRITICAL erkannt wurde.
-Der glibc-Debian-Kandidat scheiterte am Trivy-Scan mit 47 HIGH OS
-und 7 HIGH/CRITICAL Python-Funden (CI 43829291408); das ist keine
-Scan-Ausnahme. Auch der Alpine-Kandidat muss den unveränderten Trivy-Gate
-bestehen. Ein erfolgreicher Build allein ist keine Security-Freigabe.
+aktiviert keinen Render-Service. Das offizielle langgraph-checkpoint-sqlite==3.1.3 verlangt
+sqlite-vec>=0.1.6 bereits zur Installation. Der upstream-Pin sqlite-vec==0.1.9
+veröffentlicht nur manylinux/glibc-Wheels, keine musllinux-Wheels. Ein
+Alpine-Versuch ohne sqlite-vec scheiterte korrekt an der Paketauflösung
+(CI 43867219306). Keine Umgehung mit --no-deps und keine inoffizielle
+glibc-Emulation. Der Worker-Pinset bewahrt die Pflichtabhängigkeit und
+erhöht allein certifi von 2026.7.22 auf 2026.10.23. Der vorherige
+glibc-Debian-Kandidat scheiterte am unveränderten Trivy-Scan mit 47 HIGH OS
+und 7 HIGH/CRITICAL Python-Funden (CI 43829291408). Aktuell gibt es
+keine gesicherte Container-Abnahme; neuer Scan bleibt eine echte,
+nicht abschwächbare Sicherheitsbedingung.
 
 ## LangGraph und RAG
 

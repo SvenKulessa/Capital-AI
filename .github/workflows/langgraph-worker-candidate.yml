@@ -21,12 +21,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Verify immutable Python Alpine base
+      - name: Verify immutable Python glibc base
         id: base
         shell: bash
         run: |
           set -euo pipefail
-          ref="python:3.14.7-alpine3.24@sha256:9e9fde4d32eedce0b661d9ab91e826b62dddf28e928c230ec55f1866cac66b01"
+          ref="python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d"
           docker pull --platform linux/amd64 "$ref"
           test "$(docker image inspect --format '{{.Architecture}}' "$ref")" = "amd64"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
