@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/donchian.svg",
-      "sha256": "04bf58f19c86437ca62d167f4f2e992c27f49b26fd7ad0652f2d23e2c9a23c00",
+      "sha256": "d2d940bff8a15a18eec6d0d825424cb15cfb065a358172e33e9e24ea1551d346",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

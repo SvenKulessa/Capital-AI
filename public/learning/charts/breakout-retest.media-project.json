@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/breakout-retest.svg",
-      "sha256": "84cd2234ceddcb9d06ad4cc2714247530eb900ecb881e28849aa9ba68a949027",
+      "sha256": "62062f3c739158b6675acb5fd8b7f0fb51593c080dc234f0da419712051dbe6f",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

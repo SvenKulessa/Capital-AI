@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/inverse-head-shoulders.svg",
-      "sha256": "b1fd1ea04fdefca7cc55be960190b7df968341df143e84ed654b5285daeff183",
+      "sha256": "ee7e0bfb0131e5fcf446633b64d871760699c3574820e3c746a6b5ea9d539a93",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

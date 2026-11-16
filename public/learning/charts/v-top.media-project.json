@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/v-top.svg",
-      "sha256": "75b58730bbb0784f96210d30f48d44b92604e324368d4ce038f813c772e72e7f",
+      "sha256": "78669d3332639f39ad175ce740f2d1c19789d5b77478a3eab6662dc059056746",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

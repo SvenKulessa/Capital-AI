@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/descending-channel.svg",
-      "sha256": "cdd6ac371832d0dff91cde58d8d6871d939c2fe610a3ebbec2ff1787c3b5c1d8",
+      "sha256": "9cea7f0c6f2ef35876a9ec025f527e4acc5112eb009af9a894d391e3a97a3ef5",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

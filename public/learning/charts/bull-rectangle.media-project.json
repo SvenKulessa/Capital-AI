@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/bull-rectangle.svg",
-      "sha256": "476c09dbda6c07ec915261bb022251f504d5adb5f1f8562ac34a73bf065716e8",
+      "sha256": "f2062fd23cdef4783df7e07f9c220121156c0306011365f40dfd1acc598611be",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

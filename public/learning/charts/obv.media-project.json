@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/obv.svg",
-      "sha256": "10fc65fb204197872b426ebdaf5431d7a03ec96d8ce3db04f32dc420e8bb5001",
+      "sha256": "6e7b15b3bb81d8a439fb8960b83af3d102bbd94e4b9a58e185a200c0c77fb55a",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

@@ -10,13 +10,17 @@ Machine-readable registry: [registry.json](registry.json) (`CAPITAL_AI_DOMAIN_SK
 - Advisory examples: design critiques; market licensing architecture; runtime/SLO costs; risk/contract applicability; release/marketing channels. Advisory gives justified options, not marketing platitudes.
 - For cross-cutting work choose a primary domain for branch/PR naming, then include whichever additional domain skills match real code/system boundaries.
 
+## Execution-first in allen Domains
+
+Bei ausdrücklich beauftragter Implementierung oder Reparatur die passenden Engineering-Skills im selben Auftrag auf Diagnose, kleinste reversible Änderung, Positiv-/Negativtests, vorhandene CI, autonomes Beheben technischer Fehler, Evidence, gegebenenfalls delegierten Merge und nachgelagerten Live-Readback anwenden. Analysephasen aus älteren Aufgabenprompts sind Zwischenphasen, kein pauschaler Ausführungsstopp. Kopierbare Folgeschritte beschreiben positive nächste Aktionen und übernehmen nur tatsächlich geltende Read-only-, No-Merge-/No-Deploy-/No-Publish-, Sicherheits-, Lizenz-, Provider-, Kosten- und Production-Grenzen aus dem konkreten Auftrag und Root-`AGENTS.md`. Beratungs-/Statusfragen autorisieren keine Schreibaktion; Skills erzeugen keine eigenen Berechtigungen oder Gates.
+
 ## State of the art (on demand, not a background promise)
 
 For materially changing questions confirm current official documentation, public standards, security advisories, license/terms and the **exact** code/runtime evidence. Prefer primary sources; show versions, dates and links. Differentiate normative requirements from guidance and project preference. When verification is impossible label the conclusion `NOT_VERIFIED`, never assert perpetual freshness, and do not claim the skill can fetch tools that the active chat cannot access.
 
 ## Safety and permission boundaries
 
-Skills are **instruction files**, not executables, connectors, approvals or capability grants. No new internal admissions or review gates arise from this directory. Human-owner merge requirements, technical security and data-rights boundaries remain unchanged; a successful test does not authorize production, market data, providers or licenses.
+Skills are **instruction files**, not executables, connectors, approvals or capability grants. No new internal admissions or review gates arise from this directory. Die delegierte Agenten-Merge-Regel aus Root-`AGENTS.md` bleibt unverändert mit allen verbindlichen GitHub-Rulesets, Required Checks und Trust Boundaries gültig; kein Skill verlangt eine zusätzliche persönliche Owner-Einzelfreigabe für einen bereits delegierten Merge. Tatsächlich persönliche Owner-Handlungen, technische Sicherheits- und Datenrechtsgrenzen bleiben bestehen; erfolgreiche Tests allein erlauben keine Produktion, Marktdaten-, Provider- oder Lizenzaktivierung.
 
 ## Validate
 

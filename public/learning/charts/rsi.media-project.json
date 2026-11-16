@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/rsi.svg",
-      "sha256": "1f8940c9c6e56962c6cc22878dae4f46ce0e57b343db1426aa8000de1b1cd6c8",
+      "sha256": "a8011f309411617e63d9e32aca3bd7577accb31ae09d21dee850a38f642f54be",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

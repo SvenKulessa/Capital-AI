@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/pennant.svg",
-      "sha256": "450eb61f88f9a021102824c969416b3741f0a9cf5be098e116d7ec56d07492d7",
+      "sha256": "8f1772d820bb0ce139b1339f8d13315c3cfd37a4a953c9a8fad6c0bee3848df3",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
