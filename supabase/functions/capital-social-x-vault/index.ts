@@ -199,7 +199,9 @@ async function execute(fetchImpl, keys, userId, input) {
     return { accountId: row.external_account_id, handle: row.handle,
       accessCipher: row.access_token_encrypted, expiresAt: row.token_expires_at,
       leaseActive: row.refresh_lease_id !== null,
-      retryAfter: row.refresh_retry_after };
+      retryAfter: row.refresh_retry_after,
+      // Only a boolean crosses the owner workload boundary; no extra token material.
+      mediaWriteApproved: Array.isArray(row.scopes) && row.scopes.includes('media.write') };
   }
   // One-shot owner-authenticated X milestone receipts; never exposed to browsers.
   if (['milestone_status', 'milestone_claim', 'milestone_record'].includes(operation)) {
@@ -343,11 +345,16 @@ async function execute(fetchImpl, keys, userId, input) {
       && Date.parse(account.token_expires_at) < Date.now() + 86400000
       && Array.isArray(account.scopes)
       && account.scopes.length === scopes.length
+        + (channel === 'X' && account.scopes.includes('media.write') ? 1 : 0)
       && scopes.every(x => account.scopes.includes(x)));
+    // Preserve only the grant explicitly verified by the owner OAuth exchange.
+    // Reject any other or duplicate scope at this signed Edge trust boundary.
+    const persistedScopes = [...scopes,
+      ...(channel === 'X' && account.scopes.includes('media.write') ? ['media.write'] : [])];
     const row = {
       user_id: userId, platform, status: 'connected',
       external_account_id: account.external_account_id, handle: account.handle,
-      account_name: account.account_name, scopes,
+      account_name: account.account_name, scopes: persistedScopes,
       access_token_encrypted: account.access_token_encrypted,
       refresh_token_encrypted: account.refresh_token_encrypted,
       token_expires_at: account.token_expires_at, connected_at: new Date().toISOString(),
@@ -386,7 +393,9 @@ async function execute(fetchImpl, keys, userId, input) {
     // This response must never be forwarded by Render to a browser.
     return { claimed: true, leaseId: input.leaseId,
       refreshCipher: row.refresh_token_encrypted,
-      accountId: row.external_account_id, handle: row.handle, scopes };
+      accountId: row.external_account_id, handle: row.handle,
+      // Preserve the optional grant for the rotating-token downgrade check.
+      scopes: [...scopes, ...(row.scopes.includes('media.write') ? ['media.write'] : [])] };
   }
   if (operation === 'refresh_finish') {
     abortUnless(channel === 'X' && UUID.test(input.leaseId || '')
