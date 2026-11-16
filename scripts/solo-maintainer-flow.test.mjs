@@ -124,5 +124,29 @@ test('execution-first is auditable without weakening root security boundaries', 
     'keine eigenständige Tool-Berechtigung', 'Keine Selbstautorisierung', 'NOT_PROVEN']) {
     assert.ok(flow.includes(value), `missing execution-first protection: ${value}`);
   }
-  assert.match(read('.github/copilot-instructions.md'), /AUTONOMOUS_EXECUTION_FIRST/);
+
+  assert.match(read('.github/copilot-instructions.md'), /do not automatically carry historical no-merge\/no-deploy boilerplate/);
+});
+
+test('prompt scope does not inherit old blanket bans into independent implementation', () => {
+  const contract = section(policy, '## Ausführungskontrakt: AUTONOMOUS_EXECUTION_FIRST');
+  const expected = [
+    'Auftragsgrenzen bei neuen Prompts',
+    'Fortsetzung desselben Auftrags',
+    'Eigenständiger neuer Auftrag',
+    'keine pauschale Sperrvererbung',
+    'keine automatisch angehängten negativen Standardsätze',
+    'wenn alle delegierten Mergebedingungen erfüllt sind',
+  ];
+  for (const guard of expected) assert.ok(contract.includes(guard), 'missing prompt-scoping guard: ' + guard);
+  for (const guard of expected) {
+    const weakened = contract.replace(guard, '[REMOVED]');
+    assert.ok(!weakened.includes(guard), 'removal must be detected for ' + guard);
+  }
+  const copilot = read('.github/copilot-instructions.md');
+  assert.match(copilot, /when a short follow-up continues the same bounded task/);
+  assert.match(copilot, /newly commissioned independent implementation/);
+  assert.match(contract, /tatsächliche GitHub-Rulesets/);
+  assert.match(contract, /Kosten/);
+  assert.match(contract, /Trust Boundaries/);
 });
