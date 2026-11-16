@@ -56,6 +56,7 @@ mkdir -m 700 "$scratch/db"
 sock="/run/clamav/staging-$(basename "$scratch" | tr -cd 'A-Za-z0-9').sock"
 cat > "$scratch/freshclam.conf" <<EOF
 DatabaseDirectory $scratch/db
+DatabaseOwner node
 DatabaseMirror database.clamav.net
 ScriptedUpdates no
 Checks 6
