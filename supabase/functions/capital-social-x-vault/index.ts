@@ -393,7 +393,9 @@ async function execute(fetchImpl, keys, userId, input) {
     // This response must never be forwarded by Render to a browser.
     return { claimed: true, leaseId: input.leaseId,
       refreshCipher: row.refresh_token_encrypted,
-      accountId: row.external_account_id, handle: row.handle, scopes };
+      accountId: row.external_account_id, handle: row.handle,
+      // Preserve the optional grant for the rotating-token downgrade check.
+      scopes: [...scopes, ...(row.scopes.includes('media.write') ? ['media.write'] : [])] };
   }
   if (operation === 'refresh_finish') {
     abortUnless(channel === 'X' && UUID.test(input.leaseId || '')
