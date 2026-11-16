@@ -130,13 +130,13 @@ def build_research_graph(repo_root: Path, *, checkpointer=None):
     graph.add_node("route", route)
     graph.add_node("retrieve", search)
     for domain in DOMAINS:
-        graph.add_node(domain.lower(), specialist(domain))
-        graph.add_edge(domain.lower(), "trust")
+        graph.add_node("agent_" + domain.lower(), specialist(domain))
+        graph.add_edge("agent_" + domain.lower(), "trust")
     graph.add_node("trust", trust)
     graph.add_edge(START, "route")
     graph.add_conditional_edges("route", lambda s: "stop" if s["status"] == "BLOCKED" else "retrieve",
                                 {"stop": END, "retrieve": "retrieve"})
-    graph.add_conditional_edges("retrieve", lambda s: s["domain"].lower() if s["status"] == "SOURCES_FOUND" else "stop",
-                                {**{d.lower(): d.lower() for d in DOMAINS}, "stop": END})
+    graph.add_conditional_edges("retrieve", lambda s: "agent_" + s["domain"].lower() if s["status"] == "SOURCES_FOUND" else "stop",
+                                {**{"agent_" + d.lower(): "agent_" + d.lower() for d in DOMAINS}, "stop": END})
     graph.add_edge("trust", END)
     return graph.compile(checkpointer=checkpointer)
