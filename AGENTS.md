@@ -80,6 +80,15 @@ nicht autorisierende gemeinsame Vorlage
 Deren alte Analyse-/Berichts-Stopps sind bei einem ausdrücklichen
 Implementierungsauftrag nur interne Phasengrenzen, kein neues Gate.
 
+### Auftragsgrenzen bei neuen Prompts – keine pauschale Sperrvererbung
+
+- **Fortsetzung desselben Auftrags:** Ausdrücklich vereinbarte Read-only-, No-Merge-, No-Deploy- oder No-Publish-Grenzen gelten auch bei kurzen Fortsetzungen wie „fahre fort“, solange der Auftrag unverändert fortgesetzt wird.
+- **Eigenständiger neuer Auftrag:** Ein später neu formulierter Implementierungs-/Reparaturauftrag erbt nicht allein aufgrund historischer Chat-Nachrichten, vorheriger Antworten, PR-Beschreibungen oder kopierter Folgeprompt-Vorlagen pauschale Mutations-/Merge-/Deployment-Verbote aus einem anderen abgeschlossenen Auftrag. Aktuelle ausdrückliche Anweisungen und übergeordnete Regeln haben Vorrang.
+- **Kopierbare Folgeprompts:** Keine automatisch angehängten negativen Standardsätze („keine Änderungen“, „kein Merge“, „kein Deployment“). Bestehende verbindliche Sicherheits-, Rechte-, Lizenz-, Kosten- und Produktionsgrenzen werden präzise genannt, nicht als globale Inaktivitätsvorgabe umgeschrieben. Bei erneuter Bearbeitung des *gleichen* ausdrücklich eingeschränkten Auftrags dessen konkrete Sperren weiterführen.
+- **Ausführung statt Handoff:** Bei einem beauftragten Implementierungsauftrag zuerst den autorisierten Scope tatsächlich beheben, bestehende CI abnehmen und – wenn alle delegierten Mergebedingungen erfüllt sind und kein aktuelles Verbot gilt – den bestehenden Merge-/Main-Deployment-Pfad abschließen. Ist eine Aktion tatsächlich gesperrt, nur diese Aktion mit belegter Ursache ausnehmen; unabhängige Änderungen weiter umsetzen. Die tatsächliche GitHub-Rulesets-Prüfung darf nicht umgangen werden: tatsächliche GitHub-Rulesets, bestehende Required Checks und Toolrechte bleiben bindend. Keine allgemeine Merge- oder Deployment-Freigabe durch diese Erläuterung.
+
+
+
 ## Chat-Start: Domain-Roadmap gegen aktuellen main abgleichen (Owner-Beschluss 2026-10-14)
 
 Beim **ersten Abruf der Chat-/Agentenanweisungen je Domain-Auftrag** beginnt der Agent mit einer kompakten, tatsächlichen Bestandsprüfung, bevor er neue Aufgaben plant oder Änderungen vornimmt:
