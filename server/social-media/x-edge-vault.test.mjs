@@ -247,11 +247,23 @@ test('Edge persists only signed owner-bound ciphertext and never returns the cip
   assert.deepEqual(response, { connected: true, accountId: '123456789', handle: 'CapitalAITest' });
   assert.ok(!JSON.stringify(response).includes('v1.'));
   assert.equal(dbWritten, 1);
+  const mediaGrant = await handler(signedRequest({ operation: 'persist', userId,
+    account: { ...account, scopes: [...scopes, 'media.write'] } }));
+  assert.equal(mediaGrant.status, 200);
+  assert.equal(dbWritten, 2);
+  const invalidScopes = await handler(signedRequest({ operation: 'persist', userId,
+    account: { ...account, scopes: [...scopes, 'media.write', 'admin.write'] } }));
+  assert.equal(invalidScopes.status, 503);
+  assert.equal(dbWritten, 2);
+  const duplicateScope = await handler(signedRequest({ operation: 'persist', userId,
+    account: { ...account, scopes: [...scopes, 'media.write', 'media.write'] } }));
+  assert.equal(duplicateScope.status, 503);
+  assert.equal(dbWritten, 2);
 
   const tampered = await handler(signedRequest({ operation: 'persist', userId,
     account: { ...account, external_account_id: 'attacker-chosen-id' } }));
   assert.equal(tampered.status, 503);
-  assert.equal(dbWritten, 1);
+  assert.equal(dbWritten, 2);
 });
 
 test('Edge returns token-free account status, owner identity bound', async () => {
