@@ -44,28 +44,22 @@ jobs:
             echo "Insufficient disk for build and fresh signature DB" >&2
             exit 1
           fi
-      - name: Build scoped runtime image without publication
+      - name: Build minimal pinned ClamAV test image with empty context
         shell: bash
         run: |
           set -euo pipefail
-          docker build --target runtime --file Dockerfile \
-            --tag capital-ai-avatar-official-staging:pr-762 \
-            --label org.opencontainers.image.revision="${{ github.event.pull_request.head.sha }}" .
-          # The production image deliberately omits sigtool. Alpine provides it
-          # in clamav-scanner; add it ONLY to this temporary test image.
-          cat > "$RUNNER_TEMP/Dockerfile.avatar-official-probe" <<'DOCKERFILE'
-          FROM capital-ai-avatar-official-staging:pr-762
-          USER root
-          RUN apk add --no-cache 'clamav-scanner=1.4.6-r0'
+          # Read-only project source is mounted later. The test image never
+          # contains or builds the application nor its production secrets.
+          docker build --tag capital-ai-avatar-official-probe:pr-762 - <<'DOCKERFILE'
+          FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94
+          RUN apk add --no-cache 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' 'clamav-scanner=1.4.6-r0'
+          RUN mkdir -p /run/clamav /app/server && chown -R 1000:1000 /run/clamav && chmod 0700 /run/clamav
           USER 1000:1000
+          WORKDIR /app
           DOCKERFILE
-          docker build --file "$RUNNER_TEMP/Dockerfile.avatar-official-probe" \
-            --tag capital-ai-avatar-official-probe:pr-762 .
           docker run --rm --network none --entrypoint /bin/sh \
             capital-ai-avatar-official-probe:pr-762 \
             -ec 'for binary in freshclam clamd sigtool node stat df awk du; do command -v "$binary" >/dev/null || exit 80; done'
-          docker builder prune --force
-      # One diagnostic rerun: fail-closed FreshClam classifications remain NOT_PROVEN.
       - name: Real official FreshClam/CVD/PNG/EICAR test
         shell: bash
         run: |
@@ -84,6 +78,7 @@ jobs:
             -e CAPITAL_AI_ISOLATED_STAGING=true \
             -e PROFILE_AVATAR_UPLOAD_ENABLED=false \
             -v "$PWD/scripts/qa:/app/scripts/qa:ro" \
+            -v "$PWD/server/profile-avatar-upload.mjs:/app/server/profile-avatar-upload.mjs:ro" \
             --workdir /app --entrypoint /bin/sh \
             capital-ai-avatar-official-probe:pr-762 \
             scripts/qa/profile-avatar-freshclam-staging.sh \
@@ -104,4 +99,4 @@ jobs:
           if-no-files-found: warn
       - name: Remove ephemeral Docker image
         if: always()
-        run: docker image rm -f capital-ai-avatar-official-staging:pr-762 capital-ai-avatar-official-probe:pr-762 || true
+        run: docker image rm -f capital-ai-avatar-official-probe:pr-762 || true
