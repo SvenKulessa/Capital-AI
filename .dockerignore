@@ -208,6 +208,8 @@
 !scripts/qa/
 !scripts/qa/screener-blueprint-reset-browser.mjs
 !scripts/qa/profile-avatar-clamd-smoke.mjs
+!scripts/qa/profile-avatar-freshclam-staging.sh
+!scripts/qa/profile-avatar-freshclam-staging.test.mjs
 !scripts/cads-growth-quality.test.mjs
 !scripts/masterclass-templates.test.mjs
 !scripts/static-legal-routes.test.mjs

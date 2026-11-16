@@ -70,3 +70,12 @@ running scanner or production Storage RLS. Claim NOT_PROVEN until staging.
   There is no customer data, public upload, production DB or paid API involved.
 - This tests the real scanner binary/socket, NOT official signed/fresh databases,
   persistent signature storage, memory/egress readiness or staging tenant isolation.
+
+## Staging official FreshClam proof (not executed against a provider)
+- Manual only: scripts/qa/profile-avatar-freshclam-staging.sh, POSIX sh, isolated disposable UID 1000 staging with CAPITAL_AI_ISOLATED_STAGING=true.
+- Never run with production service identity, upload enabled or Supabase service key. No user data or public Storage writes.
+- Exact CVD mode using FreshClam official database.clamav.net and ScriptedUpdates off. sigtool must report Verification OK for main.cvd and daily.cvd, daily build age <=48 hours.
+- Real clamd private socket UID 1000/mode 0600, valid 2x2 PNG clean and EICAR FOUND via production scanner adapter. Fail closed on missing DB, invalid signature, stale date, scan failure, insufficient 3 GiB available memory or 5 GiB free disk.
+- Evidence JSON includes phase/status/exitCode, duration, sampled FreshClam peak RSS KiB and ClamD VmHWM KiB. Temporary downloaded files, process, socket and output are deleted on exit. It does not prove staging reachability or official signatures until actually executed.
+- Do not merge, deploy, enable production upload, use the unrelated recovery project, or publish this probe's status as VERIFIED without a real run ID and provider resource identity.
+- Official references: https://docs.clamav.net/manual/Usage/SignatureManagement.html ; https://docs.clamav.net/manual/Signatures.html ; https://docs.clamav.net/manual/Installing/Docker.html
