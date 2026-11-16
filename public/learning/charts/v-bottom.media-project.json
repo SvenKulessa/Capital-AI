@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/v-bottom.svg",
-      "sha256": "ce6cb7062883b82d3f6fad769f331504b7eb60afb35229bebd52819cde1d7306",
+      "sha256": "32c18fc1a8b756563ad6da35ba999e4fd34e80f583bb98c7bb433d31f4f94c2e",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

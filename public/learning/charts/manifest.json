@@ -1509,12 +1509,12 @@
     {
       "id": "rounding-top",
       "path": "rounding-top.svg",
-      "sha256": "1604cd1eead13e12478a993e1baa6cf2ebccd7a8b1e4177ca8bdabd887bd2eed",
+      "sha256": "c3f0d6d28aef70d4383e9307569f570df9ac9b2543acd1a6e8d0caefd316ba4b",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "rounding-top.media-project.json",
-      "projectSha256": "71400ca47769148649965680a5f37155bcc7cec441989312f8d574cca61e1e15",
+      "projectSha256": "4609d998f503f9c7cc1bebeaa1f2c3f08381946153c2fc3f4eb4a956389bba81",
       "post": "Rundes Top: Ein Anstieg verliert Steigung und geht in einen gerundeten Rückgang über.\n\nErkennen: Ein Anstieg verliert Steigung und geht in einen gerundeten Rückgang über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rounding-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1550,12 +1550,12 @@
     {
       "id": "cup-handle",
       "path": "cup-handle.svg",
-      "sha256": "5b1dfda067eb82de6b4e369d23eb0b7aaf786f98d805cdcaed2e799dcdcfda35",
+      "sha256": "fe9044d1945eb3d5cff33fb1f8eb75764fa3d2b4cf6d7111a4bad5e1a1ae73fa",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "cup-handle.media-project.json",
-      "projectSha256": "907938c6a872bcbadbfa6f4792603ba32f2773b5eaa43d84b2016b3bd36a248d",
+      "projectSha256": "41456e163660ae9129d66e09fa3a376bc1d23241d82055e82dbfa7dc82cf9264",
       "post": "Tasse mit Henkel: Auf eine gerundete Erholung zum alten Hoch folgt eine kleinere Konsolidierung.\n\nErkennen: Auf eine gerundete Erholung zum alten Hoch folgt eine kleinere Konsolidierung. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=cup-handle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1591,12 +1591,12 @@
     {
       "id": "inverse-cup-handle",
       "path": "inverse-cup-handle.svg",
-      "sha256": "300a1e6fb73dcc74489b41db431d1627a3b64e13d03d4ef00030645b1dd18db7",
+      "sha256": "4dd39b087b660d3b389d26e4cbb4ba7a5f9d63c8e26a5a452a26d6f2e06eee41",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "inverse-cup-handle.media-project.json",
-      "projectSha256": "18688e08608a2eb15515eaf5f47ff38c691df62fdf9b032671ac50740b18888b",
+      "projectSha256": "effaa9b222f27e5339f91fba23583c8054b1e602fa8ac6c4a0d32f510d9d1c9e",
       "post": "Inverse Tasse mit Henkel: Auf einen gerundeten Rückgang zum alten Tief folgt eine kleinere Erholung.\n\nErkennen: Auf einen gerundeten Rückgang zum alten Tief folgt eine kleinere Erholung. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=inverse-cup-handle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1632,12 +1632,12 @@
     {
       "id": "v-bottom",
       "path": "v-bottom.svg",
-      "sha256": "ce6cb7062883b82d3f6fad769f331504b7eb60afb35229bebd52819cde1d7306",
+      "sha256": "32c18fc1a8b756563ad6da35ba999e4fd34e80f583bb98c7bb433d31f4f94c2e",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "v-bottom.media-project.json",
-      "projectSha256": "39f4154a22a6cccbae3877eb14d465685a73762a814a2630ac4a30561c0f6d7c",
+      "projectSha256": "469619f8d39cca5336fd760a6562c1432ab0fa64bcb5e3ed564e3f4f8825e58c",
       "post": "V-Boden: Ein steiler Abverkauf wird unmittelbar von einer schnellen Erholung gefolgt.\n\nErkennen: Ein steiler Abverkauf wird unmittelbar von einer schnellen Erholung gefolgt. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=v-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1673,12 +1673,12 @@
     {
       "id": "v-top",
       "path": "v-top.svg",
-      "sha256": "75b58730bbb0784f96210d30f48d44b92604e324368d4ce038f813c772e72e7f",
+      "sha256": "78669d3332639f39ad175ce740f2d1c19789d5b77478a3eab6662dc059056746",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "v-top.media-project.json",
-      "projectSha256": "7e129fa73e0c92d801d58aed074f635944993b3bc2a0e9ce0559018f4e1c945b",
+      "projectSha256": "4e8440bb4ce86638117fe088752bd32c200ff6caa883fcbf30571f931f2e4ae3",
       "post": "V-Top: Ein steiler Anstieg geht unmittelbar in einen schnellen Rückgang über.\n\nErkennen: Ein steiler Anstieg geht unmittelbar in einen schnellen Rückgang über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=v-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1714,12 +1714,12 @@
     {
       "id": "failed-breakout",
       "path": "failed-breakout.svg",
-      "sha256": "5c5b7de012ffd24810d0d4562bd30bc6667f8557952167b1b30b00d71683c99c",
+      "sha256": "8f8f13196d3720647eb08e87a5f015bca330c1670bd7be4f1ec36bc16d4fce18",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "failed-breakout.media-project.json",
-      "projectSha256": "c18d0a0bb8a77b141e17845aa847174a75fdd689e7f9b61f62d271c2abe2a443",
+      "projectSha256": "c781f6a5094d155d87e4f0505691241e818071e77ba9afa1b0bb92a23a983223",
       "post": "Fehlausbruch nach oben: Der Kurs überschreitet eine Spanne kurz und fällt dann unter die Ausbruchszone zurück.\n\nErkennen: Der Kurs überschreitet eine Spanne kurz und fällt dann unter die Ausbruchszone zurück. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=failed-breakout\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1755,12 +1755,12 @@
     {
       "id": "failed-breakdown",
       "path": "failed-breakdown.svg",
-      "sha256": "4f8cd1194893d3418638b81308d29ebd6e89586cab96e9a2437268d7135ac5ae",
+      "sha256": "c5789be1930630782c9cc5dab22497a93a1cd4155dfd944964a9a1062659d0fa",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "failed-breakdown.media-project.json",
-      "projectSha256": "305c0750b53939e83269c01a922ed9627c47761bf0f75acecbda16c0f55a6fdd",
+      "projectSha256": "2d1d2dacaf0454912b304c0779c210f2cc81fb794fad06d26ea96b2c4a31fe58",
       "post": "Fehlausbruch nach unten: Der Kurs unterschreitet eine Spanne kurz und kehrt dann oberhalb der Ausbruchszone zurück.\n\nErkennen: Der Kurs unterschreitet eine Spanne kurz und kehrt dann oberhalb der Ausbruchszone zurück. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=failed-breakdown\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1796,12 +1796,12 @@
     {
       "id": "breakout-retest",
       "path": "breakout-retest.svg",
-      "sha256": "84cd2234ceddcb9d06ad4cc2714247530eb900ecb881e28849aa9ba68a949027",
+      "sha256": "62062f3c739158b6675acb5fd8b7f0fb51593c080dc234f0da419712051dbe6f",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "breakout-retest.media-project.json",
-      "projectSha256": "4d08f9934108da8e81890f8694962222dcb0044a08e4748a5c543a9ed37d33c5",
+      "projectSha256": "17100bb47794c9e82f4519d0ab3afbd4f33eac8d905a0c5bef6759e3262ad8aa",
       "post": "Ausbruch mit Retest: Ein Ausbruch wird durch eine Rückkehr zur bisherigen Begrenzung und erneute Bewegung ergänzt.\n\nErkennen: Ein Ausbruch wird durch eine Rückkehr zur bisherigen Begrenzung und erneute Bewegung ergänzt. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=breakout-retest\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1837,12 +1837,12 @@
     {
       "id": "high-tight-flag",
       "path": "high-tight-flag.svg",
-      "sha256": "d65b4dbfead3236a7eb392188aee3fec8a79289094142766d5ebb260c9e0ca05",
+      "sha256": "c8a19b681b8f44cd14204a1974f731fa0a8a979d01d83062be6dbeba75c018c5",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "high-tight-flag.media-project.json",
-      "projectSha256": "725188482d28b4e9dfa0a60a5316379c26d485b6af87b8b6ece488737431526b",
+      "projectSha256": "e11d7781cef5927295ecd7160100ef0572366190ac0d537c93ee9997bca02cc3",
       "post": "High-Tight-Flag: Auf einen außergewöhnlich steilen Anstieg folgt eine enge, kurze Konsolidierung nahe dem Hoch.\n\nErkennen: Auf einen außergewöhnlich steilen Anstieg folgt eine enge, kurze Konsolidierung nahe dem Hoch. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=high-tight-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1878,12 +1878,12 @@
     {
       "id": "flat-bull-flag",
       "path": "flat-bull-flag.svg",
-      "sha256": "562fb3ae22b6aa40025d40b9330f02b01c791cbf9dd0940c9e808490d9357d80",
+      "sha256": "23a3f805b492725d8950a314447d088cfc6bdc1f58399a09b192c19978e8fc16",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "flat-bull-flag.media-project.json",
-      "projectSha256": "e9d9b133ed0411f7375cb63142699e39919c70c27eadada35a8c89033ad50f41",
+      "projectSha256": "de13f5d139fd74f75f0e25ee00ccd0df9913c12d68d8708fbad03b2964f13936",
       "post": "Flache bullische Flagge: Nach einem Aufwärtsimpuls verläuft die kurze Pause nahezu waagerecht.\n\nErkennen: Nach einem Aufwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=flat-bull-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1919,12 +1919,12 @@
     {
       "id": "flat-bear-flag",
       "path": "flat-bear-flag.svg",
-      "sha256": "296ed89d2701da72c326aec1c8fb44bb8abde109ff1737aabc33f81b34b40d36",
+      "sha256": "a480080c7255e815cc94fd6c518395834d2ae559f1f838ff45c9e2d64f3a9291",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "flat-bear-flag.media-project.json",
-      "projectSha256": "783bf3c612c2e329abd68a29fa4b9a20ec3cc224e556572c64a1b187f1019b33",
+      "projectSha256": "fc0a91e4aa2be5159cbb4cce2eec788b1c1a240a89f26466407a876da3451183",
       "post": "Flache bärische Flagge: Nach einem Abwärtsimpuls verläuft die kurze Pause nahezu waagerecht.\n\nErkennen: Nach einem Abwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=flat-bear-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1960,12 +1960,12 @@
     {
       "id": "bull-flag-retest",
       "path": "bull-flag-retest.svg",
-      "sha256": "0df52bf9457bdb54b8cacb97b3553b0b1cf6a8c35f4340f9251a19befa0b3e18",
+      "sha256": "d3a9522b8936878650e9a821b687adaf9ddb02653fd52e14a12ea72d1c246612",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bull-flag-retest.media-project.json",
-      "projectSha256": "0d11260033bd967d6022c5789b662496f09147e0658cecc51e0e36d0b512dc12",
+      "projectSha256": "87a0f6232cd9b6f4dfa847a298cad74af5569b5670d53961a6c39fa7ce98ec70",
       "post": "Bull Flag mit Retest: Die Flagge löst sich nach oben auf; anschließend wird die Ausbruchszone erneut getestet.\n\nErkennen: Die Flagge löst sich nach oben auf; anschließend wird die Ausbruchszone erneut getestet. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-flag-retest\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {

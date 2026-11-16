@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/flat-bear-flag.svg",
-      "sha256": "296ed89d2701da72c326aec1c8fb44bb8abde109ff1737aabc33f81b34b40d36",
+      "sha256": "a480080c7255e815cc94fd6c518395834d2ae559f1f838ff45c9e2d64f3a9291",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
