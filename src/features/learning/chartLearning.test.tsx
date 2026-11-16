@@ -6,7 +6,8 @@ import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CHART_LESSONS, CHART_LEARNING_DISCLOSURE, lessonPost } from '../../data/chartLearning.ts';
-import { ChartLessonGraphic } from './ChartLessonGraphic.tsx';
+import { ChartLessonGraphic, resolveChartUniversePalette } from './ChartLessonGraphic.tsx';
+import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { ChartLearningAtlas } from './ChartLearningAtlas.tsx';
 import { LearningCadsShowcase } from '../home/LearningCadsShowcase.tsx';
 import { validateMediaProjectV2 } from '../../platform/SocialMediaEngine/Contracts/MediaProjectValidation.ts';
@@ -14,6 +15,18 @@ import { validateMediaProjectV2 } from '../../platform/SocialMediaEngine/Contrac
 const directory = new URL('../../../public/learning/charts/', import.meta.url);
 const read = (name:string) => readFileSync(new URL(name,directory));
 const digest = (value:Uint8Array) => createHash('sha256').update(value).digest('hex');
+const spectrum = ['cyan', 'violet', 'gold', 'pink', 'rose', 'blue', 'green'] as const;
+
+test('seven-colour Universe signature is complete, deterministic and fail-closed', () => {
+  assert.deepEqual(resolveChartUniversePalette(), spectrum.map(name => BRAND_COLORS[name]));
+  const missing:Record<string,unknown> = {...BRAND_COLORS}; delete missing.green;
+  for (const corrupted of [
+    missing,
+    {...BRAND_COLORS, green:BRAND_COLORS.cyan},
+    {...BRAND_COLORS, green:'url(https://untrusted.example)'},
+    {...BRAND_COLORS, injected:'#123456'},
+  ]) assert.throws(() => resolveChartUniversePalette(corrupted), /UNIVERSE_PALETTE_SEVEN_REQUIRED/);
+});
 
 test('every learning example has bounded geometry, explanations and no claimed live signal',()=>{
   assert.equal(CHART_LESSONS.length,52);
@@ -37,6 +50,10 @@ test('every learning example has bounded geometry, explanations and no claimed l
     assert.match(svg,/<title>.+<\/title>/);
     assert.match(svg,/keine berechneten Signale/);
     assert.doesNotMatch(svg,/<script|<foreignObject|\bon\w+=|href=/i);
+    assert.match(svg, /data-universe-spectrum="CAPITAL_AI_UNIVERSE@1"/);
+    for (const colour of spectrum) {
+      assert.ok(svg.includes(`fill="${BRAND_COLORS[colour]}"`), 'missing Universe hue: ' + colour);
+    }
   }
   assert.deepEqual(CHART_LESSONS.find(item=>item.id==='rsi')?.domain,[0,100]);
   assert.ok(CHART_LESSONS.find(item=>item.id==='macd')!.domain[0]<0);
@@ -50,6 +67,11 @@ test('static social exports match source, asset hashes and canonical non-publish
   assert.equal(manifest.assets.length,52);
   for(const asset of manifest.assets){
     assert.equal(digest(read(asset.path)),asset.sha256);
+    const svg = read(asset.path).toString();
+    assert.match(svg, /<g aria-hidden="true" data-universe-spectrum="CAPITAL_AI_UNIVERSE@1">/);
+    assert.equal((svg.match(/<circle /g) ?? []).length, 7);
+    assert.doesNotMatch(svg, /<(script|foreignObject|image)\b|(?:href|src)="https?:/i);
+    for (const family of spectrum) assert.ok(svg.includes(`fill="${BRAND_COLORS[family]}"`));
     assert.equal(digest(read(asset.projectPath)),asset.projectSha256);
     const project=JSON.parse(read(asset.projectPath).toString());
     assert.deepEqual(validateMediaProjectV2(project).errors,[]);
