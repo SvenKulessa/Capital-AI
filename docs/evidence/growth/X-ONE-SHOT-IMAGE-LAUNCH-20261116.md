@@ -8,6 +8,7 @@ Scope: Ausschließlich Owner-only-X-Milestone-Pfad und dessen X-Publisher; kein 
 - `LAUNCH_CONTENT_KEY` ist an den exakten Posttext und die finale Infografik-SHA gebunden.
 - Bildprüfung per Dateiread mit fester Pfadvorgabe, PNG-Signatur, Maximalgröße und SHA-256.
 - `x_credentials` gibt nur `mediaWriteApproved: boolean` an den signierten Owner-Workload zurück.
+- OAuth Scope-Korrektur: Der bestehende Owner-Start fordert `media.write` ausschließlich bei drei ausdrücklich aktiven Medien-Pilot-Flags an; Token-Exchange verlangt den tatsächlichen Grant und persistiert ihn ohne Secret-Offenlegung. Die signierte Vault-Grenze erlaubt nur den Basisscope-Satz oder Basisscopes + `media.write`, niemals andere zusätzliche Scopes. Keine OAuth-Verbindung wurde ausgeführt.
 - Vor dem ersten X-Request: Owner-Auth, Origin, X-Budgetflags, Media-Schalter, exakte Datei, media.write, Kontobindung und atomarer `milestone_claim`.
 - X v2 Bild-Upload per `/2/media/upload`, danach genau ein `POST /2/tweets` mit `media.media_ids`.
 - Bei Timeout, unbekannter Antwort oder ungültiger ID: kein automatischer Retry und kein weiterer Post; X-Readback verlangt Autor, nichtleeren Text und genau ein angehängtes Medium (X kann URLs beim Provider-Readback normalisieren).
@@ -45,3 +46,9 @@ Scope: Ausschließlich Owner-only-X-Milestone-Pfad und dessen X-Publisher; kein 
 - Docker Security Gate Run [43775147613](https://github.com/SvenKulessa/Capital-AI/actions/runs/43775147613): **success**.
 - Nach der ursprünglichen CI-Abnahme ist ein binärer Asset-Commit hinzugekommen; die CI am aktuellen vollständigen Head ist getrennt auszuwerten. Tests des geänderten Wirkungspfads werden nicht durch einen früheren grünen Commit ersetzt.
 - Aktueller Asset-Commit vor dieser Dokumentationsaktualisierung: `448738c592485c0f22ab308e6d6ea88f40406f52`; die anschließende Evidence-Aktualisierung bewirkt einen weiteren Head und neue CI.
+
+## Nachtrag: OAuth-Scope-Regression vom 16.11.2026
+- Reproduzierter Codebefund im ursprünglichen PR-Slice: `x-oauth-start` forderte `media.write` nicht an; `x-oauth-exchange` verwarf zusätzliche Provider-Scopes; die Vault-Persistenz lehnte zusätzliche Scopes ab. Der Medien-Pilot wäre trotz späterer Owner-Reautorisierung nicht nutzbar gewesen.
+- Reversibler Fix am **bestehenden PR-Branch**: opt-in Scope nur mit `SOCIAL_X_MILESTONE_MEDIA_ENABLED`, `SOCIAL_X_MEDIA_UPLOAD_ENABLED`, `SOCIAL_X_PAID_MEDIA_APPROVED` = true; ohne diese Flags bleibt der bisherige OAuth-Vertrag unverändert.
+- Negative Tests: fehlender Grant blockiert vor Profile-/DB-Aufruf; Extra-/Doppelscopes blockiert; Nicht-Owner kann keinen OAuth-State erstellen.
+- Owner-Reconnect, Token-Refresh und tatsächliche Providerberechtigung bleiben **BLOCKED/NOT_PROVEN** bis separater autorisierter produktiver Freigabe. Keine produktiven OAuth-/DB-/X-Mutationen.
