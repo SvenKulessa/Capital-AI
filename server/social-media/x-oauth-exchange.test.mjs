@@ -208,3 +208,31 @@ test('X OAuth Edge mode performs encrypted persistence without any Render admin 
     'Bearer ' + 'synthetic-owner-access-' + 'a'.repeat(75));
   assert.ok(!JSON.stringify(requests[2].options.headers).includes('sb_secret_'));
 });
+
+
+test('X media OAuth grant is preserved only with all explicit pilot flags', async () => {
+  const mediaTokens = { ...TOKENS, scope: TOKENS.scope + ' media.write' };
+  for (const flags of [
+    {}, { SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true',
+      SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'true' },
+    { SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true',
+      SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'true',
+      SOCIAL_X_PAID_MEDIA_APPROVED: 'true' },
+  ]) {
+    const { fetchImpl, calls } = mockFlow(mediaTokens);
+    await createSocialXOAuthExchange({ env: { ...ENV, ...flags }, fetchImpl })(trusted);
+    const saved = JSON.parse(calls[2].options.body);
+    assert.deepEqual(saved.scopes,
+      flags.SOCIAL_X_PAID_MEDIA_APPROVED === 'true'
+        ? ['tweet.read','tweet.write','users.read','offline.access','media.write']
+        : ['tweet.read','tweet.write','users.read','offline.access']);
+  }
+  const { fetchImpl, calls } = mockFlow(TOKENS);
+  await assert.rejects(
+    createSocialXOAuthExchange({ env: { ...ENV,
+      SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',
+      SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',
+      SOCIAL_X_PAID_MEDIA_APPROVED:'true' }, fetchImpl })(trusted),
+    /SOCIAL_X_MEDIA_WRITE_SCOPE_MISSING/);
+  assert.equal(calls.length, 1, 'missing grant must not trigger profile or DB read/write');
+});
