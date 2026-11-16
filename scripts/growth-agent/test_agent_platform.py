@@ -155,7 +155,9 @@ print(json.dumps({"status":result["status"],"agents":result["agent_route"],"cita
         content = container.read_text(encoding="utf-8")
         self.assertIn("USER 10001:10001", content)
         self.assertIn("CAPITAL_AI_OFFLINE_WORKER_ENABLED=false", content)
-        self.assertIn("@sha256:", content)
+        self.assertIn("ARG PYTHON_BASE", content)
+        self.assertIn("FROM ${PYTHON_BASE}", content)
+        self.assertIn("--only-binary=:all:", content)
         self.assertIn("--serve", content)
 
     def test_invalid_private_task_does_not_create_checkpoint(self):
