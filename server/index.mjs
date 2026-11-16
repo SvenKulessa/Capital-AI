@@ -92,11 +92,16 @@ const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
 const embeddedSourceSha = '__CAPITAL_AI_SOURCE_SHA_UNBOUND__';
 const embeddedBuilder = '__CAPITAL_AI_BUILDER_UNBOUND__';
+const embeddedRenderGitSha = '__CAPITAL_AI_RENDER_GIT_SHA_UNBOUND__';
 const buildIdentity =
   /^[0-9a-f]{40}$/.test(embeddedSourceSha) &&
   embeddedBuilder === 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml'
     ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
     : { bound: false, sourceSha: null };
+// A separate Render Git build-argument claim is not a GitHub/OCI attestation.
+const renderGitBuildIdentity = /^[0-9a-f]{40}$/.test(embeddedRenderGitSha) && !buildIdentity.bound
+  ? { sourceSha: embeddedRenderGitSha, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED' }
+  : { sourceSha: null, evidence: 'NOT_PROVEN' };
 const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = SECURITY_HEADERS;
 const publicVocabularyEntries = vocabularyMetadata;
@@ -550,7 +555,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await cadsCommerce.handle(req, res, url, json)) return;
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
-  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
+  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, renderGitBuildIdentity, runtimeIdentity });
   if (url.pathname === '/metrics') {
     if (!metricsAuthorized(req)) {
       writeAuditEvent({ eventType: 'observability.metrics.denied', requestId: requestContext.requestId, result: 'DENIED' });

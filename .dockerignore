@@ -428,6 +428,7 @@
 !server/learning-simulator.mjs
 !server/learning-simulator.test.mjs
 !server/learning-inquiry.test.mjs
+!scripts/write-runtime-identity.mjs
 !scripts/activate-learning-measurement.mjs
 !scripts/activate-learning-measurement.test.mjs
 !scripts/generate-cookie-storage-notice.mjs

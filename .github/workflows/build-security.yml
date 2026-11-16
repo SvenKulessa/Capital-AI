@@ -54,6 +54,7 @@ jobs:
             scripts/domain-merge-group.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
+            scripts/write-runtime-identity.test.mjs \
             scripts/os-source-inventory.test.mjs \
             scripts/verify-os-source-mirror.test.mjs \
             scripts/registry-manifest-evidence.test.mjs \
