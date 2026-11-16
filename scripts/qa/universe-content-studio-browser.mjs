@@ -72,6 +72,7 @@ const inspect = [
   'names,colours:swatches.map(el=>getComputedStyle(el).backgroundColor),overflow,clipped,',
   'panelWidth:box.width,panelLeft:box.left,panelRight:box.right,',
   'buddy:br?{x:br.x,y:br.y,width:br.width,height:br.height,ariaLabel:buddy.getAttribute("aria-label")}:null,buddyTextOverlap,',
+  'cookiePanelVisible:!!document.querySelector("[aria-labelledby=cookie-consent-v3-title]"),',
   'documentWidth:document.documentElement.clientWidth,',
   'reducedMotion:matchMedia("(prefers-reduced-motion: reduce)").matches};',
   '})()',
@@ -107,7 +108,15 @@ try {
     await command('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor:1 });
     await command('Page.navigate', { url:origin + route });
     await until(() => evaluate('document.readyState==="complete" && !!document.querySelector("[aria-labelledby=capital-universe-profile]")'), 'PANEL_' + viewport.width);
-    await evaluate('Array.from(document.querySelectorAll("button")).find(b=>/^(Nur notwendige|Necessary only)$/.test(b.textContent.trim()))?.click()');
+    // A fresh isolated browser always starts with no cookie receipt. Wait for
+    // React's consent UI before rejecting optional tracking; the previous
+    // best-effort click could run before hydration and hide the actual preview.
+    if (viewport.width === 320) {
+      await until(() => evaluate('!!document.querySelector("[aria-labelledby=cookie-consent-v3-title] button")'), 'COOKIE_BANNER');
+      const rejected = await evaluate('(() => { const panel=document.querySelector("[aria-labelledby=cookie-consent-v3-title]"); const button=panel?.querySelector("button"); button?.click(); return !!button; })()');
+      assert.equal(rejected, true, 'Consent rejection button unavailable');
+    }
+    await until(() => evaluate('!document.querySelector("[aria-labelledby=cookie-consent-v3-title]")'), 'COOKIE_DISMISSED_' + viewport.width);
     await evaluate('document.querySelector("[aria-labelledby=capital-universe-profile]").scrollIntoView({block:"center"})');
     await pause(220);
     const dom = await evaluate(inspect);
@@ -125,6 +134,7 @@ try {
     assert.ok(dom.overflow <= 2, 'Horizontal overflow at ' + viewport.width + ': ' + dom.overflow);
     assert.ok(dom.panelLeft >= -1 && dom.panelRight <= viewport.width + 1);
     assert.equal(dom.reducedMotion, true);
+    assert.equal(dom.cookiePanelVisible, false, 'Consent UI obstructs visual regression screenshot');
     assert.ok(dom.buddy?.ariaLabel?.startsWith('JaJa Chat'), 'JaJa assistant lost its accessible control');
     if (viewport.mobile) {
       assert.ok(dom.buddy.width >= 44 && dom.buddy.width <= 56, 'Closed JaJa mobile width should preserve a compact touch target');
