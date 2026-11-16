@@ -57,7 +57,7 @@ sock="/run/clamav/staging-$(basename "$scratch" | tr -cd 'A-Za-z0-9').sock"
 cat > "$scratch/freshclam.conf" <<EOF
 DatabaseDirectory $scratch/db
 DatabaseMirror database.clamav.net
-ScriptedUpdates off
+ScriptedUpdates no
 Checks 6
 Foreground yes
 EOF
@@ -75,7 +75,7 @@ wait "$fresh_pid" || {
     phase=OFFICIAL_FEED_RATE_LIMITED
   elif grep -Eqi 'cannot resolve|could not resolve|name resolution|DNS lookup|network is unreachable|connection refused' "$scratch/freshclam.log"; then
     phase=OFFICIAL_FEED_UNREACHABLE
-  elif grep -Eqi 'error parsing|invalid configuration|unknown option|unrecognized option|configuration error' "$scratch/freshclam.log"; then
+  elif grep -Eqi 'error parsing|incorrect argument format|invalid configuration|unknown option|unrecognized option|configuration error' "$scratch/freshclam.log"; then
     phase=FRESHCLAM_CONFIG_INVALID
   elif grep -Eqi 'permission denied|access denied|cannot create|not writable' "$scratch/freshclam.log"; then
     phase=FRESHCLAM_PERMISSION_DENIED

@@ -60,6 +60,7 @@ jobs:
           docker run --rm --network none --entrypoint /bin/sh \
             capital-ai-avatar-official-probe:pr-762 \
             -ec 'for binary in freshclam clamd sigtool node stat df awk du; do command -v "$binary" >/dev/null || exit 80; done'
+      # Parser fix for ClamAV 1.4.6: ScriptedUpdates requires a BOOL (yes/no).
       - name: Real official FreshClam/CVD/PNG/EICAR test
         shell: bash
         run: |
