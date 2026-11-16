@@ -290,6 +290,15 @@ jobs:
           cache-from: type=gha,scope=capital-ai-verified-build
           # Export only from trusted main pushes; PRs cannot populate the shared cache.
           cache-to: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'type=gha,scope=capital-ai-verified-build,mode=max' || '' }}
+      - name: Exakte BuildIdentity im finalen Runtime-Image nachweisen
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint cat "capital-ai:${{ github.sha }}" /app/server/index.mjs \
+            > security-reports/baked-server-index.mjs
+          node scripts/write-runtime-identity.mjs verify security-reports/baked-server-index.mjs "$GITHUB_SHA"
+          rm security-reports/baked-server-index.mjs
       - name: SEO-Contract real ausführen
         run: |
           docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges \
