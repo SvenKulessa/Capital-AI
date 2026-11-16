@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/head-shoulders.svg",
-      "sha256": "19f1efc123011e4a14eb8a494aa71523026221b35f06d5a25ca75c77335c5bb6",
+      "sha256": "b9b881ba59c6137d5b23623a5c065b2fbd352f805d79d94d0f6b94506d644acc",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

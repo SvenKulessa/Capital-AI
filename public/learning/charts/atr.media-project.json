@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/atr.svg",
-      "sha256": "9feea1d3d6974f25fd72fb15f398ecfe7b060958d2bdbb272a890f9663f982d2",
+      "sha256": "0defa08b9c28e2b954ad4c380e45b700b30201c44b58c4ad7c217a7054ad6225",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

@@ -32,7 +32,7 @@ export function ChartLearningAtlas({ studio = false }: { studio?: boolean }) {
     </label>
     <figure><ChartLessonGraphic lesson={lesson} /><figcaption className="mt-2 text-xs text-slate-300">Eigene schematische Illustration. Indikatorlinien sind keine aus Kursdaten berechneten Werte.</figcaption></figure>
     <dl className="grid gap-4 md:grid-cols-3">{[['Erkennen',lesson.recognition],['Bestätigung beobachten',lesson.confirmation],['Fehlersignal prüfen',lesson.invalidation]].map(([label,text])=>
-      <div key={label} className="rounded-xl border border-slate-700 p-4"><dt className="font-semibold text-cyan-200">{label}</dt><dd className="mt-2 text-sm leading-relaxed text-slate-200">{text}</dd></div>)}</dl>
+      <div key={label} className="rounded-xl border border-slate-700 p-4"><dt className="font-semibold text-cyan-200">{label}</dt><dd className="mt-2 pr-14 text-sm leading-relaxed text-slate-200 sm:pr-0">{text}</dd></div>)}</dl>
     <div className="rounded-xl border border-slate-700 p-4"><h3 className="font-semibold text-white">Selbstcheck</h3><p className="mt-2 text-sm text-slate-200">{lesson.checkpoint}</p>
       <button type="button" aria-expanded={revealed} onClick={()=>setRevealed(!revealed)} className="mt-3 rounded-lg border border-cyan-300 px-4 py-2 text-sm text-cyan-200">{revealed?'Erklärung verbergen':'Erklärung anzeigen'}</button>
       {revealed&&<p className="mt-3 text-sm text-slate-200">{lesson.answer}</p>}</div>

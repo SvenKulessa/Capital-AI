@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/failed-breakdown.svg",
-      "sha256": "4f8cd1194893d3418638b81308d29ebd6e89586cab96e9a2437268d7135ac5ae",
+      "sha256": "c5789be1930630782c9cc5dab22497a93a1cd4155dfd944964a9a1062659d0fa",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

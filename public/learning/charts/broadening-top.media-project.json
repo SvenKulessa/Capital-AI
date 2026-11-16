@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/broadening-top.svg",
-      "sha256": "5ddccc546dae87578eb4751d128b11d76c07c419642b26fc3cb0c32913b9776d",
+      "sha256": "0fa62d4f18649cb7c67720712864b77cf311eb1edc7231d261215b15a3d5cb98",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
