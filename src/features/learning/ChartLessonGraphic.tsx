@@ -1,16 +1,38 @@
 import React from 'react';
 import { CHART_LEARNING_DISCLOSURE, type ChartLesson } from '../../data/chartLearning.ts';
+import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
+
+const CHART_UNIVERSE_FAMILIES = ['cyan', 'violet', 'gold', 'pink', 'rose', 'blue', 'green'] as const;
+
+/** Visual decoration only; chart values, semantic series and risk states never inherit these hues. */
+export function resolveChartUniversePalette(palette: Record<string, unknown> = BRAND_COLORS): readonly string[] {
+  if (!palette || Object.keys(palette).length !== CHART_UNIVERSE_FAMILIES.length ||
+      CHART_UNIVERSE_FAMILIES.some(name => !Object.hasOwn(palette, name))) {
+    throw new Error('UNIVERSE_PALETTE_SEVEN_REQUIRED');
+  }
+  const colors = CHART_UNIVERSE_FAMILIES.map(name => palette[name]);
+  if (!colors.every(color => typeof color === 'string' && /^#[a-f0-9]{6}$/i.test(color)) ||
+      new Set(colors.map(color => String(color).toLowerCase())).size !== 7) {
+    throw new Error('UNIVERSE_PALETTE_SEVEN_REQUIRED');
+  }
+  return colors as string[];
+}
+
 
 /** Same deterministic SVG is used in the website and the offline social export. */
 export function ChartLessonGraphic({ lesson, quiz = false }: { lesson: ChartLesson; quiz?: boolean }) {
   const x = (index: number) => 115 + index * 80;
   const y = (value: number) => 480 - (value - lesson.domain[0]) / (lesson.domain[1] - lesson.domain[0]) * 300;
   const colors = ['#67e8f9', '#fcd34d'];
+  const universeColors = resolveChartUniversePalette();
   return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img"
     aria-label={quiz ? "Unbeschriftetes synthetisches Chartmuster für das Erkennungstraining" : `${lesson.title}. ${lesson.recognition} ${CHART_LEARNING_DISCLOSURE}`} className="h-auto w-full rounded-xl">
     <title>{quiz ? "Chart-Erkennungstraining" : `${lesson.title} · synthetisches Lernbeispiel`}</title>
     <desc>{quiz ? "Preislinie ohne Musterbezeichnung. Zur barrierearmen Alternative den Chart-Lernatlas verwenden." : `${lesson.recognition} ${lesson.confirmation} ${lesson.invalidation}`}</desc>
     <rect width="1200" height="675" rx="24" fill="#080d1c" />
+    <g aria-hidden="true" data-universe-spectrum="CAPITAL_AI_UNIVERSE@1">
+      {universeColors.map((color, index) => <circle key={color} cx={890 + index * 42} cy="42" r="7" fill={color} />)}
+    </g>
     <g fontFamily="system-ui, sans-serif">
       <text x="60" y="48" fill="#fcd34d" fontSize="22">CAPITAL-AI · CHART-LERNATLAS</text>
       <text x="60" y="96" fill="#f1f5f9" fontSize="34" fontWeight="700">{quiz ? "Welches Muster erkennen Sie?" : lesson.title}</text>
