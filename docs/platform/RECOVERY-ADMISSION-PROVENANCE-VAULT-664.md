@@ -29,6 +29,8 @@ Do not import real production data until all checks are independently VERIFIED:
 5. Confirm encryption-at-rest, isolated credentials/KMS, target-only service keys, no production secrets or shared callbacks. Record only boolean statuses and key identifiers, never key material.
 6. Define cleanup, TTL, cost cap, redacted audit log and rollback. **Do not run restore before admission evidence.**
 
+**Managed-project limitation:** [Supabase Network Restrictions](https://supabase.com/docs/guides/platform/network-restrictions) filter **incoming** Postgres/pooler connections, not outgoing `pg_net` HTTP requests, Auth SMTP, Edge Functions or Storage/REST HTTPS traffic. Do not count that setting as an egress deny. The existing hosted recovery target **cannot yet be admitted for real production data**. For negative tests involving any externally executable task, use a self-controlled, disposable runner/PG17 fixture with an enforced `--network none` equivalent and independent proof of denied outbound connections. If a fully isolated managed target is required, obtain separate provider-grade egress evidence instead of claiming it from SQL catalog checks.
+
 ## B. Immutable encrypted provenance manifest (template, no real values)
 
 Each entry must be produced by the authorized owner/runner from actual GCS and client-side bytes; **do not populate with guessed hashes**. The manifest itself must be integrity-protected and stored separately from the encrypted backup. Do not store credentials, plaintext data, signed URLs or decrypted Vault values.
@@ -61,6 +63,7 @@ Each entry must be produced by the authorized owner/runner from actual GCS and c
     "bucket_count_expected": 2,
     "metadata_rows_expected_at_preflight": 1,
     "binary_object_count": null,
+    "objects": [],
     "all_objects_byte_sha256_verified": false,
     "private_bucket_acl_verified": false
   },
@@ -82,9 +85,22 @@ Each entry must be produced by the authorized owner/runner from actual GCS and c
 
 The database dump alone does **not** contain Storage object bytes. Enumerate the object inventory via an authorized Storage/S3 API, export each binary to an encrypted independent object, compare SHA-256 on upload and independent download, and verify metadata-to-binary joins. Use GCS **generation** pinning for the downloaded immutable object. If any generation or hash differs, stop and do not restore.
 
+For client-side, **offline and read-only** checksum consistency, use the existing PG17 workflow's Node.js verifier:
+
+```bash
+node --test scripts/platform/verify-recovery-provenance.test.mjs
+node scripts/platform/verify-recovery-provenance.mjs \
+  /safe/evidence/manifest.json /safe/evidence/downloaded-encrypted.age \
+  /safe/evidence/storage-bytes/
+```
+
+Only run the second command with an authorized **redacted** manifest and independent encrypted/downloaded files, not secrets or Vault keys. The manifest's `gcs.generation`/`metageneration` must be positive decimal **strings** from provider-side metadata; both SHA-256 fields must be distinct independently generated attestations of matching ciphertext bytes. Every `storage.objects[]` entry has a path relative to the configured local root and a 64-character lowercase SHA-256, and `binary_object_count` must equal the number of objects. A missing or empty inventory, symlink escape, changed byte, mismatched checksum or missing generation **fails closed**. Provider authenticity, a genuine GCS object generation, encryption-at-rest semantics, signed provenance, all Storage objects, and successful Restore are **not proven by a passing local verifier**. Its only success label is `LOCAL_BYTES_VERIFIED_NOT_PROVIDER` and it is not a production admission gate.
+
+Read-only provider-side GCS metadata can be inspected by an authorized Owner from Acode with `gcloud storage objects describe gs://BUCKET/OBJECT --format=json`; the **actual object generation and immutable version** must be independently confirmed before download. The GCS service in this ChatGPT connection has no directly authorized object-readback action; no GCS proof is inferred from local tests.
+
 ## C. Vault recovery — synthetic canaries only
 
-1. Obtain **written, current provider-supported procedure** for `supabase_vault 0.3.2` key portability or safe re-provisioning between distinct Supabase projects. Matching extension versions **do not** prove root-key portability.
+1. Current [Supabase Vault docs](https://supabase.com/docs/guides/database/vault) explicitly describe **different per-project encryption keys** and a managed `GET/PUT /v1/projects/{ref}/pgsodium` key migration route for manual `pg_dump/pg_restore`. The [Management API PUT](https://supabase.com/docs/reference/api/v1-update-pgsodium-config) is explicitly **experimental/Beta** and warns that updating a root key can make data encrypted under the old key inaccessible. Treat this as a **documented but high-risk, separately authorized provider procedure**: compare exact source/target capability, ask provider to confirm target-only portability, preserve rollback and target pre-existing canaries, and never automatically copy production keys. Matching `supabase_vault 0.3.2` versions **do not** prove key portability. A `pgcrypto` local-only test does not validate Vault.
 2. In the isolated target, create **only a fresh synthetic, non-sensitive canary** via the documented API after explicit target-write authorization; validate decryption using a locally held test expected value. Do not output the plaintext.
 3. Prove negative behavior on wrong key or intentionally mismatched ciphertext, and repeat after a fresh target lifecycle if the provider supports it. Do not simulate real Supabase Vault with generic `pgcrypto` and claim provider parity.
 4. If the provider cannot support migration of production Vault key material, mark `BLOCKED` and plan explicit credential re-provisioning/rotation under separate approval. **No real Vault ciphertext/key material or secrets may be exported in this slice.**
