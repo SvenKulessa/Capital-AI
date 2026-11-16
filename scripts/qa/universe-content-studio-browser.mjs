@@ -63,9 +63,15 @@ const inspect = [
   'const names=Array.from(strip.children).map(el=>el.textContent.trim());',
   'const overflow=Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth);',
   'const clipped=swatches.some(el=>{const r=el.getBoundingClientRect();return r.left<box.left-1||r.right>box.right+1||r.width<=0||r.height<=0;});',
+  'const buddy=document.querySelector("[data-hero-buddy=agent] > button");',
+  'const br=buddy?.getBoundingClientRect();',
+  'const atlasHeader=document.querySelector("section[aria-label=\\\"Chart-Lernatlas\\\"] > div:first-child");',
+  'const textRects=atlasHeader?[...atlasHeader.querySelectorAll("h2,p")].flatMap(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()];}):[];',
+  'const buddyTextOverlap=!!br && textRects.some(r=>r.right>br.left+2 && r.left<br.right-2 && r.bottom>br.top+2 && r.top<br.bottom-2);',
   'return {heading:document.getElementById("capital-universe-profile")?.textContent.trim()??null,',
   'names,colours:swatches.map(el=>getComputedStyle(el).backgroundColor),overflow,clipped,',
   'panelWidth:box.width,panelLeft:box.left,panelRight:box.right,',
+  'buddy:br?{width:br.width,height:br.height,ariaLabel:buddy.getAttribute("aria-label")}:null,buddyTextOverlap,',
   'documentWidth:document.documentElement.clientWidth,',
   'reducedMotion:matchMedia("(prefers-reduced-motion: reduce)").matches};',
   '})()',
@@ -112,6 +118,12 @@ try {
     assert.ok(dom.overflow <= 2, 'Horizontal overflow at ' + viewport.width + ': ' + dom.overflow);
     assert.ok(dom.panelLeft >= -1 && dom.panelRight <= viewport.width + 1);
     assert.equal(dom.reducedMotion, true);
+    assert.ok(dom.buddy?.ariaLabel?.startsWith('JaJa Chat'), 'JaJa assistant lost its accessible control');
+    if (viewport.mobile) {
+      assert.ok(dom.buddy.width >= 44 && dom.buddy.width <= 56, 'Closed JaJa mobile width should preserve a compact touch target');
+      assert.ok(dom.buddy.height >= 44 && dom.buddy.height <= 56, 'Closed JaJa mobile height should preserve a compact touch target');
+    }
+    assert.equal(dom.buddyTextOverlap, false, 'JaJa assistant visually covers Chart-Lernatlas text at ' + viewport.width);
     const shot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
     const bytes = Buffer.from(shot.data, 'base64');
     assert.ok(bytes.length > 8_000);
