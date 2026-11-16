@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/bull-pennant.svg",
-      "sha256": "5f948c780de9fe810d7ede757f45bd6c39f5460ee7bf9c714f0c9f79e7826e7c",
+      "sha256": "b183c21bdf12c55d345b04a3b9739842db8ab7d2ba11f00f330e165ad5431d5f",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

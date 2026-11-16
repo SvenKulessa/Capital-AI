@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/triple-bottom.svg",
-      "sha256": "4253097840c36808a66ed701c5f24589160e58519b8c7aae93a92120fc2b95af",
+      "sha256": "05e597675130e1d1f14b1aca19105c0edb185df4391dd3d4ad66d42643fc3ccc",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

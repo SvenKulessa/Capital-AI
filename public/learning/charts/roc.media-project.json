@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/roc.svg",
-      "sha256": "abdd71660efc840c66f5465237fd131866f7ad4920531a090d9bcc56b221e1a2",
+      "sha256": "97b27129dc06b3ad3cc0050d615c56b12415bd41259d6238cd6b565f07b253ea",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

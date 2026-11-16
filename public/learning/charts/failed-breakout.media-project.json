@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/failed-breakout.svg",
-      "sha256": "5c5b7de012ffd24810d0d4562bd30bc6667f8557952167b1b30b00d71683c99c",
+      "sha256": "8f8f13196d3720647eb08e87a5f015bca330c1670bd7be4f1ec36bc16d4fce18",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/cci.svg",
-      "sha256": "49fc826b4788817960a43a8243e3d5b6c64044b8729d6b8c75251e0211655df6",
+      "sha256": "901c4e160cda3b9291abeed44dcf04d78ad9224f5988d27119f72086327a590a",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

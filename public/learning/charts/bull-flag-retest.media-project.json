@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/bull-flag-retest.svg",
-      "sha256": "0df52bf9457bdb54b8cacb97b3553b0b1cf6a8c35f4340f9251a19befa0b3e18",
+      "sha256": "d3a9522b8936878650e9a821b687adaf9ddb02653fd52e14a12ea72d1c246612",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

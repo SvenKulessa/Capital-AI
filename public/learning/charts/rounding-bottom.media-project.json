@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/rounding-bottom.svg",
-      "sha256": "4aef5817c62573146d6530ff388e05b4bf01bcdc31479dc41e0ca92756f1c151",
+      "sha256": "21587c5ae1443c3b2287d53a3e69a89ff167306b7a70a810a84e7db0263e32ff",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

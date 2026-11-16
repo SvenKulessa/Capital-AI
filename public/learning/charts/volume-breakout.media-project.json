@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/volume-breakout.svg",
-      "sha256": "8affac076fffbd92a96907654c12bc4a9a5491b491d41e430288ed94cd6099c6",
+      "sha256": "bb807e4b0e5f2d3d9201f639a7294b09c832b342db4625b3b588df9d35c6c3b4",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

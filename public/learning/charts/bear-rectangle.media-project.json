@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/bear-rectangle.svg",
-      "sha256": "f19756f6b1b8a923a2e335e61351bc338aa96b6756d68b229fc2225d5d95e543",
+      "sha256": "b2d29edd9a1532dd7c564c61af129ee5ca65c8944a9b03433faccf066d88a234",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

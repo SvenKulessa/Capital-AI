@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/ascending-triangle.svg",
-      "sha256": "075358eaa7c33077ffdd159c913db914ec36be35daef21253dc4df74921c8706",
+      "sha256": "e863bce6e80dad558709603ba1d3bbaa09437a9660ac585826ffb6b668ed9c0e",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
