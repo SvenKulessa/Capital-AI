@@ -1,4 +1,4 @@
-FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS crypto-base
+FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS crypto-base
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
 # Use the patched zlib from the base image's existing stable Alpine 3.24 branch.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
@@ -150,7 +150,7 @@ COPY .github/workflows/daily-dependency-security-watch.yml .github/workflows/mer
 COPY scripts/daily-dependency-watch.test.mjs ./scripts/
 # Source-only independent review test must exist in the offline build stage.
 COPY scripts/independent-review-manifest.mjs scripts/independent-review-manifest.test.mjs ./scripts/
-RUN --network=none node --test scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
+RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
     && node --test scripts/mail-templates.test.mjs server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs server/account-avatar.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
@@ -200,7 +200,7 @@ COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY --from=build /app/supabase/email-templates/capital-ai-auth-email-shell.html ./supabase/email-templates/capital-ai-auth-email-shell.html
 COPY src/i18n/messages.ts src/i18n/landingSectionCopy.ts ./src/i18n/
 COPY shared ./shared
-COPY docs/licenses/node-v26.13.0-LICENSE.txt ./licenses/Node-LICENSE.txt
+COPY docs/licenses/node-v26.13.1-LICENSE.txt ./licenses/Node-LICENSE.txt
 COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapter-MIT.txt
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app /opt/ga4-mcp
