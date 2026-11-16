@@ -1,0 +1,76 @@
+name: Optional Offline LangGraph Worker Candidate
+
+on:
+  pull_request:
+    paths:
+      - 'deploy/Dockerfile.langgraph-worker'
+      - 'deploy/Dockerfile.langgraph-worker.dockerignore'
+      - 'scripts/growth-agent/agent_platform.py'
+      - 'scripts/growth-agent/checkpoint_store.py'
+      - 'scripts/growth-agent/worker_service.py'
+      - '.github/workflows/langgraph-worker-candidate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Resolve immutable Python Alpine base
+        id: base
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull --platform linux/amd64 python:3.14.7-alpine3.24
+          ref="$(docker image inspect --format '{{index .RepoDigests 0}}' python:3.14.7-alpine3.24)"
+          [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+      - name: Build unactivated worker candidate
+        shell: bash
+        env:
+          PYTHON_BASE: \${{ steps.base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker build --platform linux/amd64 \
+            --build-arg "PYTHON_BASE=$PYTHON_BASE" \
+            --file deploy/Dockerfile.langgraph-worker \
+            --tag "capital-ai-langgraph-candidate:$GITHUB_SHA" .
+      - name: Verify UID and offline default-deny
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="capital-ai-langgraph-candidate:$GITHUB_SHA"
+          test "$(docker image inspect --format '{{.Config.User}}' "$image")" = "10001:10001"
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python "$image" \
+            -c 'import sys;sys.path.insert(0,"/app/scripts/growth-agent");from agent_platform import build_research_graph;g=build_research_graph("/app");result=g.invoke({"task_id":"smoke","domain":"PLATFORM","query":"LangGraph checkpoint"});assert result["status"]=="RESEARCH_DRAFT",result;assert "trust_reviewer" in result["agent_route"];print("OFFLINE_RAG_PASS")'
+          set +e
+          output="$(docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges "$image" 2>&1)"
+          code=$?
+          set -e
+          test "$code" -ne 0
+          grep -q 'worker disabled by default' <<< "$output"
+          echo "DEFAULT_DENY_PASS"
+      - name: Scan entire candidate for vulnerabilities and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="capital-ai-langgraph-candidate:$GITHUB_SHA"
+          docker save "$image" --output /tmp/offline-candidate.tar
+          chmod 0644 /tmp/offline-candidate.tar
+          docker run --rm \
+            -v /tmp/offline-candidate.tar:/candidate.tar:ro \
+            aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb \
+            image --input /candidate.tar --scanners vuln,secret \
+            --ignorefile /dev/null --severity HIGH,CRITICAL \
+            --exit-code 1 --no-progress
+          echo "CANDIDATE_SCAN_PASS"
