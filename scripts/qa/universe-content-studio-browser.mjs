@@ -65,7 +65,7 @@ const inspect = [
   'const clipped=swatches.some(el=>{const r=el.getBoundingClientRect();return r.left<box.left-1||r.right>box.right+1||r.width<=0||r.height<=0;});',
   'const buddy=document.querySelector("[data-hero-buddy=agent] > button");',
   'const br=buddy?.getBoundingClientRect();',
-  'const atlasHeader=document.querySelector("section[aria-label=\\\"Chart-Lernatlas\\\"] > div:first-child");',
+  'const atlasHeader=document.querySelector("section[aria-label=Chart-Lernatlas] > div:first-child");',
   'const textRects=atlasHeader?[...atlasHeader.querySelectorAll("h2,p")].flatMap(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()];}):[];',
   'const buddyTextOverlap=!!br && textRects.some(r=>r.right>br.left+2 && r.left<br.right-2 && r.bottom>br.top+2 && r.top<br.bottom-2);',
   'return {heading:document.getElementById("capital-universe-profile")?.textContent.trim()??null,',
