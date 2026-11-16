@@ -71,7 +71,7 @@ const inspect = [
   'return {heading:document.getElementById("capital-universe-profile")?.textContent.trim()??null,',
   'names,colours:swatches.map(el=>getComputedStyle(el).backgroundColor),overflow,clipped,',
   'panelWidth:box.width,panelLeft:box.left,panelRight:box.right,',
-  'buddy:br?{width:br.width,height:br.height,ariaLabel:buddy.getAttribute("aria-label")}:null,buddyTextOverlap,',
+  'buddy:br?{x:br.x,y:br.y,width:br.width,height:br.height,ariaLabel:buddy.getAttribute("aria-label")}:null,buddyTextOverlap,',
   'documentWidth:document.documentElement.clientWidth,',
   'reducedMotion:matchMedia("(prefers-reduced-motion: reduce)").matches};',
   '})()',
@@ -111,6 +111,13 @@ try {
     await evaluate('document.querySelector("[aria-labelledby=capital-universe-profile]").scrollIntoView({block:"center"})');
     await pause(220);
     const dom = await evaluate(inspect);
+    // Persist the evidence even when a geometry assertion fails.
+    const shot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
+    const bytes = Buffer.from(shot.data, 'base64');
+    await writeFile(join(output,'content-studio-' + viewport.width + '.png'), bytes);
+    const evidence = {...viewport,status:'MEASURED',...dom,screenshotSha256:createHash('sha256').update(bytes).digest('hex')};
+    report.viewports.push(evidence);
+    assert.ok(bytes.length > 8_000);
     assert.ok(dom.heading?.includes('Universum'));
     assert.deepEqual(dom.names.map(name=>name.toLowerCase()), families);
     assert.deepEqual(dom.colours, expected);
@@ -124,11 +131,7 @@ try {
       assert.ok(dom.buddy.height >= 44 && dom.buddy.height <= 56, 'Closed JaJa mobile height should preserve a compact touch target');
     }
     assert.equal(dom.buddyTextOverlap, false, 'JaJa assistant visually covers Chart-Lernatlas text at ' + viewport.width);
-    const shot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
-    const bytes = Buffer.from(shot.data, 'base64');
-    assert.ok(bytes.length > 8_000);
-    await writeFile(join(output,'content-studio-' + viewport.width + '.png'), bytes);
-    report.viewports.push({...viewport,status:'DOM_LAYOUT_PASS',...dom,screenshotSha256:createHash('sha256').update(bytes).digest('hex')});
+    evidence.status = 'DOM_LAYOUT_PASS';
   }
   report.status = 'TARGETED_PASS';
 } catch (error) {
