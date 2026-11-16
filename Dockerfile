@@ -80,7 +80,7 @@ COPY public/downloads/market-screener-hub-open-source.html ./public/downloads/ma
 COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/learning-simulator.test.mjs server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/founder-access.mjs server/founder-access.test.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.mjs server/blueprint-commerce.test.mjs server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/purchase-receipt.mjs server/purchase-receipt.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.mjs server/tool-catalog-assessment.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs server/chat-buddy-learn.test.mjs ./server/
-COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/account-avatar.test.mjs server/historical-analytics-demo.test.mjs ./server/
+COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/account-avatar.test.mjs server/profile-avatar-upload.test.mjs server/profile-avatar-clamav.test.mjs server/historical-analytics-demo.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
@@ -101,6 +101,7 @@ COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-ro
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs
 COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs
 COPY scripts/qa/screener-blueprint-reset-browser.mjs ./scripts/qa/screener-blueprint-reset-browser.mjs
+COPY scripts/qa/profile-avatar-freshclam-staging.sh scripts/qa/profile-avatar-freshclam-staging.test.mjs ./scripts/qa/
 COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
 COPY scripts/masterclass-templates.test.mjs ./scripts/masterclass-templates.test.mjs
 COPY supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql ./supabase/migrations/
@@ -129,7 +130,7 @@ COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL
 COPY CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json ./CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 COPY CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json ./CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
 COPY CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json ./CAPITAL-AI-GROWTH/
-COPY server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/account-avatar.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
+COPY server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
 COPY docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md ./docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
@@ -142,7 +143,7 @@ COPY docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.jso
 COPY scripts/ecb-reference-admission.test.mjs ./scripts/ecb-reference-admission.test.mjs
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 # Offline createApp integration tests require the same runtime module closure.
-COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
 COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
@@ -170,12 +171,18 @@ RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scrip
 FROM crypto-base AS production-deps
 WORKDIR /runtime
 COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
+RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
+    && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
+    && rm -rf /root/.npm
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-RUN apk add --no-cache 'python3>=3.14.8-r0'
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' \
+    && mkdir -p /run/clamav /var/lib/clamav \
+    && chown -R 1000:1000 /run/clamav /var/lib/clamav \
+    && chmod 0700 /run/clamav /var/lib/clamav
+COPY deploy/profile-avatar/clamd.conf deploy/profile-avatar/freshclam.conf ./deploy/profile-avatar/
 COPY ["Chat Buddy/README.md", "./Chat Buddy/README.md"]
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
@@ -184,7 +191,7 @@ COPY docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md ./docs/licenses/C
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
 COPY --from=build /app/packages/benchmark-core ./packages/benchmark-core
 COPY --from=build /app/contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
-COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
 COPY server/purchase-receipt.mjs ./server/
 COPY server/render-owner-dashboard.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
@@ -205,6 +212,9 @@ COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapte
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app /opt/ga4-mcp
 USER 1000:1000
+# Isolated real clamd EICAR protocol test; test-only DB is removed in the same layer.
+RUN --mount=type=bind,source=scripts/qa/profile-avatar-clamd-smoke.mjs,target=/tmp/profile-avatar-clamd-smoke.mjs,readonly \
+    node /tmp/profile-avatar-clamd-smoke.mjs
 EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD ["node", "-e", "fetch('http://127.0.0.1:'+process.env.PORT+'/healthz',{signal:AbortSignal.timeout(3000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
 CMD ["node", "server/index.mjs"]
