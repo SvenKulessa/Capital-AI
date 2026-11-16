@@ -458,7 +458,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
           setOpen(value => !value);
           setSpeech(null);
         }}
-        className="relative flex h-28 w-24 shrink-0 touch-none items-center justify-center border-0 bg-transparent p-0 drop-shadow-lg sm:h-36 sm:w-32 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+        className={`relative flex ${open ? 'h-28 w-24' : 'h-12 w-12 rounded-full bg-slate-950/90 ring-1 ring-amber-300/40'} shrink-0 touch-none items-center justify-center border-0 p-0 drop-shadow-lg sm:h-36 sm:w-32 sm:bg-transparent sm:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300`}
       >
         {!reducedMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window ? (
           <Suspense fallback={<BuddyMark pulse={false} speaking={false} />}>
