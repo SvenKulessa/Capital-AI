@@ -18,6 +18,6 @@ test('staging proof rejects any service key before external requests',()=>{
  assert.match(r.stdout,/REFUSED_PRODUCTION_OR_SECRET_CONTEXT/);
 });
 test('official provenance and negative fail-closed controls must remain intact',()=>{
- for(const s of ['ScriptedUpdates no','Verification OK','48*3600000','CLAMD_SOCKET_PERMISSIONS','CVD_SIGNATURE_NOT_VERIFIED','SIGNATURE_OLDER_THAN_48H','CLAMD_SOCKET_TIMEOUT','scanClamavLocal','PROFILE_AVATAR_UPLOAD_ENABLED','CAPITAL_AI_AVATAR_OFFICIAL_FRESHCLAM_STAGING@1'])
+ for(const s of ['ScriptedUpdates no','DatabaseOwner node','Verification OK','48*3600000','CLAMD_SOCKET_PERMISSIONS','CVD_SIGNATURE_NOT_VERIFIED','SIGNATURE_OLDER_THAN_48H','CLAMD_SOCKET_TIMEOUT','scanClamavLocal','PROFILE_AVATAR_UPLOAD_ENABLED','CAPITAL_AI_AVATAR_OFFICIAL_FRESHCLAM_STAGING@1'])
  assert.ok(source.includes(s),s);
 });
