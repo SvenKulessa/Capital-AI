@@ -108,7 +108,7 @@
     "test:assets": "node --test server/account-avatar.test.mjs server/profile-avatar-upload.test.mjs server/profile-avatar-clamav.test.mjs scripts/qa/profile-avatar-freshclam-staging.test.mjs scripts/media/learning-mastermind-badge.test.mjs && node --import tsx --test src/features/account/VerifiedProfileAvatar.test.tsx"
   },
   "dependencies": {
-    "@google/genai": "^3.0.0",
+    "@google/genai": "^3.3.0",
     "@nats-io/jetstream": "3.4.0",
     "@nats-io/transport-node": "3.4.0",
     "@tailwindcss/vite": "^4.3.5",
@@ -117,9 +117,9 @@
     "dotenv": "^18.0.10",
     "express": "^5.3.0",
     "jspdf": "^4.2.1",
-    "lucide-react": "1.70.0",
-    "motion": "^14.11.1",
-    "nodemailer": "10.4.0",
+    "lucide-react": "1.72.0",
+    "motion": "^14.14.0",
+    "nodemailer": "10.5.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "recharts": "^3.10.1",
@@ -127,7 +127,7 @@
     "spdx-expression-parse": "5.0.0",
     "spdx-license-ids": "3.0.24",
     "three": "0.187.0",
-    "vite": "^8.3.7",
+    "vite": "^8.3.8",
     "zod": "^4.6.7"
   },
   "devDependencies": {
