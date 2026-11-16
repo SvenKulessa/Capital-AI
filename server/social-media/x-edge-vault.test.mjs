@@ -247,11 +247,23 @@ test('Edge persists only signed owner-bound ciphertext and never returns the cip
   assert.deepEqual(response, { connected: true, accountId: '123456789', handle: 'CapitalAITest' });
   assert.ok(!JSON.stringify(response).includes('v1.'));
   assert.equal(dbWritten, 1);
+  const mediaGrant = await handler(signedRequest({ operation: 'persist', userId,
+    account: { ...account, scopes: [...scopes, 'media.write'] } }));
+  assert.equal(mediaGrant.status, 200);
+  assert.equal(dbWritten, 2);
+  const invalidScopes = await handler(signedRequest({ operation: 'persist', userId,
+    account: { ...account, scopes: [...scopes, 'media.write', 'admin.write'] } }));
+  assert.equal(invalidScopes.status, 503);
+  assert.equal(dbWritten, 2);
+  const duplicateScope = await handler(signedRequest({ operation: 'persist', userId,
+    account: { ...account, scopes: [...scopes, 'media.write', 'media.write'] } }));
+  assert.equal(duplicateScope.status, 503);
+  assert.equal(dbWritten, 2);
 
   const tampered = await handler(signedRequest({ operation: 'persist', userId,
     account: { ...account, external_account_id: 'attacker-chosen-id' } }));
   assert.equal(tampered.status, 503);
-  assert.equal(dbWritten, 1);
+  assert.equal(dbWritten, 2);
 });
 
 test('Edge returns token-free account status, owner identity bound', async () => {
@@ -337,12 +349,19 @@ test('Edge refresh claim returns sealed credential only to signed owner workload
   assert.equal(accepted.status,200);
   assert.equal((await accepted.json()).refreshCipher,cipher);
   assert.equal(claimCalls,1);
+  scopes.push('media.write');
+  const mediaClaim = await handler(signedRequest({
+    operation:'refresh_claim',userId,channel:'X',leaseId,
+  }));
+  assert.equal(mediaClaim.status,200);
+  assert.equal((await mediaClaim.json()).scopes.includes('media.write'),true);
+  assert.equal(claimCalls,2);
   const crossUser = await handler(signedRequest({
     operation:'refresh_claim',userId:'aae0e41d-9566-430a-b698-3cf50bbb4ec0',
     channel:'X',leaseId,
   }));
   assert.equal(crossUser.status,503);
-  assert.equal(claimCalls,1);
+  assert.equal(claimCalls,2);
 });
 
 test('Edge refresh CAS rotation never reflects ciphertext or allows invalid lease', async () => {
@@ -444,6 +463,7 @@ test('signed owner X article credentials are ciphertext-only and receipts are ow
   const secret=await creds.json();
   assert.equal(secret.accessCipher,accessCipher);
   assert.equal(secret.accountId,accountId);
+  assert.equal(secret.mediaWriteApproved,false);
   assert.equal(secret.refreshCipher,undefined);
   const claimed=await handler(signedRequest({operation:'article_claim',channel:'X',userId,
     contentKey,accountId}));
