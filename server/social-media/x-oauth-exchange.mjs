@@ -74,9 +74,12 @@ async function jsonResponse(response) {
   try { return JSON.parse(body); } catch { throw Error('SOCIAL_X_RESPONSE_INVALID'); }
 }
 async function request(fetchImpl, target, options) {
+  // The one-time authorization-code exchange must not be retried after an
+  // ambiguous network result. Allow a bounded extra margin for provider latency.
+  const timeoutMs = target === 'https://api.x.com/2/oauth2/token' ? 14000 : 8000;
   try {
     return await fetchImpl(target, {
-      ...options, redirect: 'error', signal: AbortSignal.timeout(8000),
+      ...options, redirect: 'error', signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {
     throw Error('SOCIAL_X_PROVIDER_UNAVAILABLE');
