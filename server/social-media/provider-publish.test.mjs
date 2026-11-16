@@ -218,6 +218,9 @@ test('x image upload is hash-bound and attaches exactly one provider media ID', 
   assert.equal(seen.length,2);
   assert.equal(seen[0].url,'https://api.x.com/2/media/upload');
   assert.deepEqual(Buffer.from(seen[0].body.media,'base64'),image);
+  // Contract regression: X /2/media/upload requires the tweet_image category.
+  assert.equal(seen[0].body.media_category,'tweet_image');
+  assert.deepEqual(Object.keys(seen[0].body).sort(),['media','media_category']);
   assert.equal(seen[1].url,'https://api.x.com/2/tweets');
   assert.deepEqual(seen[1].body,{text:'CAPITAL-AI',
     media:{media_ids:['123456789012345678']}});
