@@ -345,11 +345,16 @@ async function execute(fetchImpl, keys, userId, input) {
       && Date.parse(account.token_expires_at) < Date.now() + 86400000
       && Array.isArray(account.scopes)
       && account.scopes.length === scopes.length
+        + (channel === 'X' && account.scopes.includes('media.write') ? 1 : 0)
       && scopes.every(x => account.scopes.includes(x)));
+    // Preserve only the grant explicitly verified by the owner OAuth exchange.
+    // Reject any other or duplicate scope at this signed Edge trust boundary.
+    const persistedScopes = [...scopes,
+      ...(channel === 'X' && account.scopes.includes('media.write') ? ['media.write'] : [])];
     const row = {
       user_id: userId, platform, status: 'connected',
       external_account_id: account.external_account_id, handle: account.handle,
-      account_name: account.account_name, scopes,
+      account_name: account.account_name, scopes: persistedScopes,
       access_token_encrypted: account.access_token_encrypted,
       refresh_token_encrypted: account.refresh_token_encrypted,
       token_expires_at: account.token_expires_at, connected_at: new Date().toISOString(),
