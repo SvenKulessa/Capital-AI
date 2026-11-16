@@ -19,6 +19,11 @@ Source has `PUBLIC USAGE` on `net`, and `PUBLIC INSERT/UPDATE/DELETE` on `net.ht
 
 Historical evidence: [Issue #664](https://github.com/SvenKulessa/Capital-AI/issues/664), [reader decision](https://github.com/SvenKulessa/Capital-AI/issues/664#issuecomment-6889914439), existing PG17.11 synthetic contract and recovery slices. No source or target mutation in this readback.
 
+### Target-native Vault transaction canary (2026-11-16)
+
+**VERIFIED, strictly same-project and transactional:** On recovery project `wcvorlvhwvuprqsjcten`, an explicit `BEGIN; DO ... vault.create_secret(...); SELECT boolean checks; ROLLBACK;` with **only a clearly synthetic value** returned `canary_decrypt_ok=true` and `wrong_canary_rejected=true`. The negative check is a **wrong plaintext comparison**, not a cryptographic wrong-key proof and not a cross-project root-key transfer. The separate subsequent readback returned `vault_rows_after_rollback=0`, `canary_rows_after_rollback=0`, `active_cron_jobs=0`, `pending_net_requests=0`. No plaintext or ciphertext from a real secret was selected or printed. No root key, Management API write, GCS action, Auth user or production role was touched. **Cross-project root-key recovery, egress denial and production restore remain NOT_PROVEN / BLOCKED.**
+
+
 ## A. Target admission (fail closed)
 
 Do not import real production data until all checks are independently VERIFIED:
