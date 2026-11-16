@@ -253,7 +253,7 @@ test('X launch refuses media writes without scope, approval or exact pinned imag
     {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',SOCIAL_X_MEDIA_UPLOAD_ENABLED:'false'},
     {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'false'},
   ]) {
-    const f=fixture({flags:config}),r=response();
+    const f=fixture({flags:{...config,SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED:'true'}}),r=response();
     await f.handler.handle(request(),r,new URL(root+'/publish'),json);
     assert.equal(r.code,403);
     assert.deepEqual(f.calls,[]);
