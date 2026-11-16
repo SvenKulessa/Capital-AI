@@ -1,40 +1,48 @@
-/**
- * Presentation-only identity picture. User metadata is untrusted and NEVER grants access.
- * Expose only HTTPS provider CDN URLs or same-origin public uploaded avatar paths.
- * Fail closed to the existing shield icon for every unsupported URL.
- */
-export function safeAccountAvatarUrl(candidate) {
-  if (typeof candidate !== 'string' || candidate.length > 2048) return null;
-  if (candidate.startsWith('/api/profile/avatar/')) {
-    return /^\/api\/profile\/avatar\/[A-Za-z0-9_-]{1,120}$/.test(candidate) ? candidate : null;
-  }
-  try {
-    const value = new URL(candidate);
-    if (value.protocol !== 'https:' || value.username || value.password || value.port || value.hash) return null;
-    const host = value.hostname.toLowerCase();
-    const trusted = host === 'lh3.googleusercontent.com' ||
-      host.endsWith('.googleusercontent.com') ||
-      host === 'pbs.twimg.com' ||
-      host === 'images.notion.so' ||
-      host === 'www.notion.so' ||
-      host === 'secure.notion-static.com' ||
-      host === 'prod-files-secure.s3.us-west-2.amazonaws.com';
-    return trusted ? value.href : null;
-  } catch {
-    return null;
-  }
+import { safeAccountAvatarUrl } from '../shared/account-avatar-policy.mjs';
+export { safeAccountAvatarUrl } from '../shared/account-avatar-policy.mjs';
+
+/** Presentation only; a provider picture never grants entitlement or ownership. */
+function providerOfUrl(url) {
+  if (url.startsWith('/api/profile/avatar/')) return 'upload';
+  const host = new URL(url).hostname;
+  if (host === 'lh3.googleusercontent.com' || host.endsWith('.googleusercontent.com')) return 'google';
+  if (host === 'pbs.twimg.com') return 'twitter';
+  if (['images.notion.so', 'www.notion.so', 'secure.notion-static.com',
+       'prod-files-secure.s3.us-west-2.amazonaws.com'].includes(host)) return 'notion';
+  return null;
+}
+function normalizeProvider(provider) {
+  if (typeof provider !== 'string') return null;
+  const value = provider.toLowerCase();
+  return value === 'x' ? 'twitter' : ['google', 'twitter', 'notion'].includes(value) ? value : null;
 }
 export function accountAvatarForVerifiedUser(authUser) {
   if (!authUser || typeof authUser !== 'object') return null;
   const meta = authUser.user_metadata || {};
+  const uploaded = safeAccountAvatarUrl(meta.custom_avatar_url);
+  if (uploaded?.startsWith('/api/profile/avatar/')) return uploaded;
+
   const identities = Array.isArray(authUser.identities) ? authUser.identities : [];
-  const candidates = [
-    meta.custom_avatar_url, meta.avatar_url, meta.picture,
-    ...identities.flatMap(identity => [identity?.identity_data?.avatar_url, identity?.identity_data?.picture]),
-  ];
-  for (const value of candidates) {
+  const activeProvider = normalizeProvider(authUser.app_metadata?.provider);
+  const providerPictures = identities.flatMap(identity => {
+    const provider = normalizeProvider(identity?.provider);
+    return [identity?.identity_data?.avatar_url, identity?.identity_data?.picture]
+      .map(value => ({value, provider}));
+  });
+  if (activeProvider) {
+    const candidates = [
+      ...providerPictures.filter(item => item.provider === activeProvider).map(item => item.value),
+      meta.avatar_url, meta.picture,
+    ];
+    for (const value of candidates) {
+      const safe = safeAccountAvatarUrl(value);
+      if (safe && providerOfUrl(safe) === activeProvider) return safe;
+    }
+    return null;
+  }
+  for (const value of [meta.avatar_url, meta.picture, ...providerPictures.map(item => item.value)]) {
     const safe = safeAccountAvatarUrl(value);
-    if (safe) return safe;
+    if (safe && providerOfUrl(safe) !== 'upload') return safe;
   }
   return null;
 }
