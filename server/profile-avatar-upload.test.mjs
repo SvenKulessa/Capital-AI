@@ -91,3 +91,47 @@ test('signature validator rejects SVG and javascript despite image suffix',()=>{
   assert.equal(imageMagicMime(Buffer.from('<svg/onload=alert(1)>')),null);
   assert.equal(imageMagicMime(png),'image/png');
 });
+
+test('ClamAV signature-age, engine and authorization policy reject unsafe evidence', async () => {
+  const { scanClamavLocal, verifyClamavVersion } = await import('./profile-avatar-upload.mjs');
+  const now = Date.UTC(2026, 10, 16, 12);
+  const version = age => 'ClamAV 1.4.6/27600/' + new Date(now - age).toUTCString();
+  const okStat = { isSocket: () => true, isSymbolicLink: () => false, uid: 1000, mode: 0o140600 };
+  const params = {
+    nowMs: now, expectedUid: 1000, socketStat: async () => okStat,
+    exchange: async (path, cmd) => cmd === 'VERSION' ? version(60 * 60_000) : 'stream: OK',
+  };
+  assert.equal(verifyClamavVersion(version(1000), now).signatureVersion, 27600);
+  assert.equal((await scanClamavLocal(png, '/run/clamav/clamd.sock', 5000, params)).clean, true);
+  for (const age of [49 * 60 * 60_000, -6 * 60_000]) {
+    await assert.rejects(scanClamavLocal(png, '/run/clamav/clamd.sock', 5000, {
+      ...params, exchange: async (path, cmd) => cmd === 'VERSION' ? version(age) : 'stream: OK',
+    }), /CLAMAV_SIGNATURES_STALE/);
+  }
+  for (const unsafe of ['ClamAV 0.105.0/27600/' + new Date(now).toUTCString(),
+    'ClamAV 1.4.6/0/' + new Date(now).toUTCString(), 'garbage', '']) {
+    assert.throws(() => verifyClamavVersion(unsafe, now), /CLAMAV_VERSION_INVALID/);
+  }
+  for (const bad of [
+    { ...okStat, mode: 0o140666 }, { ...okStat, uid: 1234 },
+    { ...okStat, isSocket: () => false },
+    { ...okStat, isSymbolicLink: () => true },
+  ]) {
+    await assert.rejects(scanClamavLocal(png, '/run/clamav/clamd.sock', 5000,
+      { ...params, socketStat: async () => bad }), /PERMISSIONS_INVALID/);
+  }
+  await assert.rejects(scanClamavLocal(png, '/tmp/clamd.sock', 5000, params), /SOCKET_UNAVAILABLE/);
+  await assert.rejects(scanClamavLocal(png, '/run/clamav/clamd.sock', 5000,
+    { ...params, socketStat: async () => { throw new Error('ENOENT'); } }), /SOCKET_UNAVAILABLE/);
+  for (const reply of ['stream: Broken ERROR', 'stream: OK\\nstream: FOUND', '']) {
+    await assert.rejects(scanClamavLocal(png, '/run/clamav/clamd.sock', 5000,
+      { ...params, exchange: async (path, cmd) => cmd === 'VERSION' ? version(1000) : reply }), /BAD_REPLY/);
+  }
+  const infected = await scanClamavLocal(png, '/run/clamav/clamd.sock', 5000, {
+    ...params, exchange: async (path, cmd) => cmd === 'VERSION' ? version(1000) : 'stream: Eicar-Test-Signature FOUND',
+  });
+  assert.equal(infected.clean, false);
+  await assert.rejects(scanClamavLocal(png, '/run/clamav/clamd.sock', 5000, {
+    ...params, exchange: async () => { throw new Error('CLAMAV_TIMEOUT'); },
+  }), /CLAMAV_TIMEOUT/);
+});

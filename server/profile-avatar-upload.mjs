@@ -1,9 +1,10 @@
 /**
  * Owner-neutral, authenticated profile avatar ingestion.
  * Disabled by default. No direct browser access to Storage or service key.
- * A local ClamAV Unix socket and a real decoder must both pass before writing.
+ * A local permission-checked ClamAV socket, fresh DB and decoder are mandatory.
  */
 import net from 'node:net';
+import { lstat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 
 const LIMIT = 2 * 1024 * 1024;
@@ -37,45 +38,86 @@ function credentials(env) {
   } catch { return null; }
 }
 
-/** ClamAV INSTREAM protocol on an explicitly approved local Unix socket. */
-export function scanClamavLocal(bytes, socketPath, timeoutMs = 5000) {
-  if (!Buffer.isBuffer(bytes) || bytes.length === 0 || bytes.length > LIMIT ||
-      typeof socketPath !== 'string' || !/^\/(?:run|var\/run)\/clamav\/[a-zA-Z0-9_.-]+\.sock$/.test(socketPath)) {
-    return Promise.reject(new Error('CLAMAV_SOCKET_UNAVAILABLE'));
+/** Only a same-UID, mode-0600 Unix socket with a fresh signed ClamAV DB may scan. */
+export function verifyClamavVersion(reply, nowMs = Date.now()) {
+  if (typeof reply !== 'string') throw new Error('CLAMAV_VERSION_UNAVAILABLE');
+  const match = /^ClamAV (1\.4\.6)\/([1-9][0-9]*)\/(.+)$/.exec(reply.trim());
+  if (!match) throw new Error('CLAMAV_VERSION_INVALID');
+  const published = Date.parse(match[3] + (/\b(?:GMT|UTC)\b/.test(match[3]) ? '' : ' GMT'));
+  const age = nowMs - published;
+  if (!Number.isFinite(published) || age < -5 * 60_000 || age > 48 * 60 * 60_000) {
+    throw new Error('CLAMAV_SIGNATURES_STALE');
   }
+  return { engine: 'clamav', signatureVersion: Number(match[2]), signatureAgeMs: age };
+}
+
+async function clamdCommand(socketPath, command, data, timeoutMs) {
   return new Promise((resolve, reject) => {
     const socket = net.createConnection({ path: socketPath });
-    let response = Buffer.alloc(0), settled = false;
-    function finish(err, result) {
+    let response = Buffer.alloc(0);
+    let settled = false;
+    function finish(error, message) {
       if (settled) return;
       settled = true;
       socket.destroy();
-      if (err) reject(err); else resolve(result);
+      if (error) reject(error); else resolve(message);
     }
     socket.setTimeout(timeoutMs, () => finish(new Error('CLAMAV_TIMEOUT')));
     socket.once('error', () => finish(new Error('CLAMAV_UNAVAILABLE')));
     socket.once('connect', () => {
-      socket.write(Buffer.from('zINSTREAM\0'));
-      for (let offset = 0; offset < bytes.length; offset += 65536) {
-        const part = bytes.subarray(offset, offset + 65536);
-        const size = Buffer.alloc(4);
-        size.writeUInt32BE(part.length);
-        socket.write(size);
-        socket.write(part);
+      if (command === 'VERSION') {
+        socket.write(Buffer.from('zVERSION\0'));
+      } else {
+        socket.write(Buffer.from('zINSTREAM\0'));
+        for (let offset = 0; offset < data.length; offset += 65536) {
+          const part = data.subarray(offset, offset + 65536);
+          const length = Buffer.alloc(4);
+          length.writeUInt32BE(part.length);
+          socket.write(length);
+          socket.write(part);
+        }
+        socket.write(Buffer.alloc(4));
       }
-      socket.write(Buffer.alloc(4));
     });
     socket.on('data', chunk => {
-      if (response.length + chunk.length > 256) return finish(new Error('CLAMAV_BAD_REPLY'));
+      if (response.length + chunk.length > 256) return finish(new Error('CLAMAV_REPLY_OVERSIZE'));
       response = Buffer.concat([response, chunk]);
-      if (!response.includes(0)) return;
-      const verdict = response.toString('utf8').replace(/\0.*$/s, '').trim();
-      if (verdict === 'stream: OK') return finish(null, { clean: true, engine: 'clamav' });
-      if (/^stream: .+ FOUND$/.test(verdict)) return finish(null, { clean: false, engine: 'clamav' });
-      finish(new Error('CLAMAV_BAD_REPLY'));
+      const end = response.indexOf(0);
+      if (end < 0) return;
+      finish(null, response.toString('utf8', 0, end).trim());
     });
     socket.once('end', () => { if (!settled) finish(new Error('CLAMAV_INCOMPLETE')); });
   });
+}
+
+/**
+ * Strict socket, engine, signature-age and INSTREAM checks are all necessary.
+ * Injected transport/stat are for deterministic tests only, never for app wiring.
+ */
+export async function scanClamavLocal(bytes, socketPath, timeoutMs = 5000, {
+  socketStat = lstat, exchange = clamdCommand, nowMs = Date.now(),
+  expectedUid = process.getuid?.(),
+} = {}) {
+  if (!Buffer.isBuffer(bytes) || bytes.length === 0 || bytes.length > LIMIT ||
+      typeof socketPath !== 'string' ||
+      !/^\/(?:run|var\/run)\/clamav\/[a-zA-Z0-9_.-]+\.sock$/.test(socketPath) ||
+      !Number.isInteger(expectedUid)) {
+    throw new Error('CLAMAV_SOCKET_UNAVAILABLE');
+  }
+  let info;
+  try { info = await socketStat(socketPath); }
+  catch { throw new Error('CLAMAV_SOCKET_UNAVAILABLE'); }
+  if (!info?.isSocket?.() || info?.isSymbolicLink?.() || info.uid !== expectedUid ||
+      (info.mode & 0o777) !== 0o600) {
+    throw new Error('CLAMAV_SOCKET_PERMISSIONS_INVALID');
+  }
+  const version = verifyClamavVersion(await exchange(socketPath, 'VERSION', null, timeoutMs), nowMs);
+  const verdict = await exchange(socketPath, 'INSTREAM', bytes, timeoutMs);
+  if (verdict === 'stream: OK') return { clean: true, ...version };
+  if (/^stream: [^\r\n\0]{1,128} FOUND$/.test(verdict)) {
+    return { clean: false, ...version };
+  }
+  throw new Error('CLAMAV_BAD_REPLY');
 }
 
 /** Dependency is deliberately optional until its pinned runtime image is validated. */

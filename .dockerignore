@@ -87,6 +87,8 @@
 !server/account-avatar.test.mjs
 !server/profile-avatar-upload.mjs
 !server/profile-avatar-upload.test.mjs
+!server/profile-avatar-clamav.mjs
+!server/profile-avatar-clamav.test.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
 !server/subscription-entitlements.mjs
@@ -151,6 +153,9 @@
 !shared/locale-policy.mjs
 !deploy/
 !deploy/runtime/
+!deploy/profile-avatar/
+!deploy/profile-avatar/clamd.conf
+!deploy/profile-avatar/freshclam.conf
 !deploy/runtime/package.json
 !deploy/runtime/package-lock.json
 !deploy/social-media/

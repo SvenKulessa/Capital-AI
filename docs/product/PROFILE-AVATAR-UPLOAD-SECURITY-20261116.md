@@ -21,10 +21,17 @@ entitlement remain unchanged. Presentational 300×100 cards stay separate.
 
 ## Deployment blockers (fail closed)
 - PROFILE_AVATAR_UPLOAD_ENABLED defaults off. No productive DB migration or secrets changed.
-- Local ClamAV daemon, signed/current signature set, Unix socket restricted to the web
-  process and a verified sharp runtime dependency are not provisioned by this PR.
-- The runtime image has no installed sharp package. Dynamic import throws and endpoint
-  returns 503; do not enable without pinned lockfile, Alpine support and security scans.
+- Image blueprint now pins sharp 0.35.5 (Apache-2.0) including its musl binaries via
+  deploy/runtime/package-lock.json. A real PNG decode/encode smoke is in the Docker production-deps stage.
+- ClamAV 1.4.6-r0 and FreshClam 1.4.6-r0 (GPL-2.0-only; verify distribution/source obligations)
+  are included in the final Alpine 3.24 runtime, but scanner processes start **only** with
+  both PROFILE_AVATAR_UPLOAD_ENABLED=true and exact Unix socket path configured.
+- ClamD socket must be UID 1000 owned, mode 0600; local VERSION must identify engine
+  1.4.6 and signatures not older than 48 hours. FreshClam fetches official signatures
+  on startup and checks at most six times daily; failure leaves the endpoint closed.
+- Live runtime memory budget, download egress, persistent signature DB storage, private
+  Bucket/RLS and actual signature age remain NOT_PROVEN until isolated staging. ClamAV
+  documentation recommends substantial memory (potentially 4 GiB) for signature sets.
 - Validate private bucket, explicit absence of broad storage.objects policies, RLS
   negative A/B tests with authenticated user tokens, actual EICAR fixture and clean PNG,
   scanner outage, delete/replace lifecycle and cross-instance convergence in staging.
@@ -36,3 +43,19 @@ review of stored per-user data and authorized retention/deletion plan.
 
 Evidence: automated mocked route isolation tests are necessary, not proof of a
 running scanner or production Storage RLS. Claim NOT_PROVEN until staging.
+
+
+## Exact runtime integration (PR #762 continuation)
+- Disabled by default: unchanged web CMD invokes local supervisor only when explicitly enabled;
+  no scanner or signature-network request from CI at the default configuration.
+- Local runtime configuration: deploy/profile-avatar/{clamd,freshclam}.conf; scanner binds
+  only /run/clamav/clamd.sock, mode 0600, no TCP listener, runs as existing uid 1000.
+- Fail closed before a *single* Storage request for permission mismatch, unavailable UDS,
+  engine mismatch, stale/future signatures, timeout, malformed VERSION, and EICAR/FOUND.
+- Production package pin: sharp@0.35.5 and @img/sharp-linuxmusl-x64@0.35.5,
+  @img/sharp-libvips-linuxmusl-x64@1.3.4 as lockfile optionals; no new paid API.
+- Freshclam writes /var/lib/clamav; a writable persistent mount for signatures and
+  writable /run/clamav require explicit infrastructure/readback before enablement.
+- ClamAV's GPL-2.0-only and Sharp Apache-2.0 require standard license/notice reviews;
+  no claim of blanket commercial license clearance or compliance certification.
+- Unchanged critical stop: no merge, deployment or product enablement under this request.
