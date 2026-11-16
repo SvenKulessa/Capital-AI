@@ -214,3 +214,59 @@ test('owner start hides arbitrary exception contents and blocks non-owner diagno
   assert.equal(b.body.diagnostic, undefined);
   assert.equal(called, 0);
 });
+
+
+test('X OAuth media.write is an independent fail-closed consent opt-in for verified owners', async () => {
+  const cases = [
+    { flags: {}, media: false },
+    { flags: { SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true',
+      SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'true', SOCIAL_X_PAID_MEDIA_APPROVED: 'true' }, media: false },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'false' }, media: false },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: '1' }, media: false },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'true' }, media: true },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'true',
+      SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'false', SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'false',
+      SOCIAL_X_PAID_MEDIA_APPROVED: 'false', SOCIAL_X_PAID_WRITE_APPROVED: 'false',
+      SOCIAL_X_PAID_READ_APPROVED: 'false' }, media: true },
+  ];
+  for (const { flags, media } of cases) {
+    let starts = 0;
+    const handler = createSocialXOAuthStart({
+      env: { ...ENV, ...flags },
+      auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+        authorizeIamRole: async () => true },
+      store: { beginOAuth: async () => { starts++; return { state: 'a'.repeat(43) }; } },
+    });
+    const response = res();
+    await handler.handle(req(), response, url(), json);
+    assert.equal(response.status, 303);
+    assert.equal(starts, 1);
+    const scopes = new URL(response.headers.Location).searchParams.get('scope').split(' ');
+    assert.deepEqual(scopes, ['tweet.read', 'tweet.write', 'users.read', 'offline.access',
+      ...(media ? ['media.write'] : [])]);
+  }
+  let states = 0;
+  for (const identity of [
+    { userId: USER, emailVerified: false },
+    { userId: USER, emailVerified: true },
+  ]) {
+    const handler = createSocialXOAuthStart({
+      env: { ...ENV, SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'true' },
+      auth: { verify: async () => identity, authorizeIamRole: async () => false },
+      store: { beginOAuth: async () => { states++; } },
+    });
+    const denied = res();
+    await handler.handle(req(), denied, url(), json);
+    assert.equal(denied.status, 403);
+  }
+  const disabled = createSocialXOAuthStart({
+    env: { ...ENV, SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'true',
+      SOCIAL_X_OAUTH_CONNECT_ENABLED: 'false' },
+    auth: { verify: async () => { states++; } },
+    store: { beginOAuth: async () => { states++; } },
+  });
+  const r = res();
+  await disabled.handle(req(), r, url(), json);
+  assert.equal(r.status, 503);
+  assert.equal(states, 0, 'consent flag must not enable OAuth or create state');
+});
