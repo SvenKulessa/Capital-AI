@@ -9,11 +9,9 @@ const START_PATH = '/api/social-media/x/auth/start';
 const CALLBACK_PATH = '/api/social-media/auth/callback';
 const BASE_SCOPES = 'tweet.read tweet.write users.read offline.access';
 function ownerRequestedScopes(env) {
-  // The extra scope is opt-in for the pinned one-shot image pilot only.
-  // No OAuth flow is started unless an authenticated IAM owner explicitly requests it.
-  return env.SOCIAL_X_MILESTONE_MEDIA_ENABLED === 'true'
-    && env.SOCIAL_X_MEDIA_UPLOAD_ENABLED === 'true'
-    && env.SOCIAL_X_PAID_MEDIA_APPROVED === 'true'
+  // Consent is independent of paid publishing gates and defaults to disabled.
+  // This does not start OAuth; only an authenticated IAM owner can initiate it.
+  return env.SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED === 'true'
     ? BASE_SCOPES + ' media.write' : BASE_SCOPES;
 }
  
