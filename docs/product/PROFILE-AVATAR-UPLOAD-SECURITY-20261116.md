@@ -59,3 +59,14 @@ running scanner or production Storage RLS. Claim NOT_PROVEN until staging.
 - ClamAV's GPL-2.0-only and Sharp Apache-2.0 require standard license/notice reviews;
   no claim of blanket commercial license clearance or compliance certification.
 - Unchanged critical stop: no merge, deployment or product enablement under this request.
+
+## Isolated real clamd/EICAR Docker build smoke
+- A BuildKit bind-mount (test source is not shipped in the final image) executes
+  scripts/qa/profile-avatar-clamd-smoke.mjs as UID 1000.
+- A temporary, unsigned .hdb contains only the EICAR test-vector hash; clamd
+  serves a mode-0600 local socket and must return a clean OK and an EICAR FOUND
+  using the actual INSTREAM protocol.
+- Temporary signature bytes/socket/daemon are destroyed in the same RUN step.
+  There is no customer data, public upload, production DB or paid API involved.
+- This tests the real scanner binary/socket, NOT official signed/fresh databases,
+  persistent signature storage, memory/egress readiness or staging tenant isolation.

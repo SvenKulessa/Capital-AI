@@ -211,6 +211,9 @@ COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapte
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app /opt/ga4-mcp
 USER 1000:1000
+# Isolated real clamd EICAR protocol test; test-only DB is removed in the same layer.
+RUN --mount=type=bind,source=scripts/qa/profile-avatar-clamd-smoke.mjs,target=/tmp/profile-avatar-clamd-smoke.mjs,readonly \
+    node /tmp/profile-avatar-clamd-smoke.mjs
 EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD ["node", "-e", "fetch('http://127.0.0.1:'+process.env.PORT+'/healthz',{signal:AbortSignal.timeout(3000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
 CMD ["node", "server/index.mjs"]
