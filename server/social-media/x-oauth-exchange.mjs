@@ -114,6 +114,13 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
     const tokens = await jsonResponse(tokenRes);
     const scopes = typeof tokens.scope === 'string' ? tokens.scope.split(' ').filter(Boolean) : [];
     assert(REQUIRED_SCOPES.every(s => scopes.includes(s)), 'SOCIAL_X_OAUTH_SCOPES_MISSING');
+    // Match the start opt-in: never infer OAuth consent from paid media flags.
+    const mediaScopeRequested = env.SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED === 'true';
+    if (mediaScopeRequested) {
+      assert(scopes.includes('media.write'), 'SOCIAL_X_MEDIA_WRITE_SCOPE_MISSING');
+    }
+    const grantedScopes = [...REQUIRED_SCOPES,
+      ...(mediaScopeRequested ? ['media.write'] : [])];
     assert(Number.isSafeInteger(tokens.expires_in) && tokens.expires_in >= 60
       && tokens.expires_in <= 86400, 'SOCIAL_X_OAUTH_EXPIRY_INVALID');
     assert(typeof tokens.token_type === 'string' && tokens.token_type.toLowerCase() === 'bearer',
@@ -135,7 +142,7 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
       user_id: trusted.userId, platform: 'x', status: 'connected',
       account_name: typeof account.name === 'string' && account.name.trim() ? account.name.slice(0, 140) : account.username,
       handle: account.username, external_account_id: account.id,
-      scopes: REQUIRED_SCOPES,
+      scopes: grantedScopes,
       access_token_encrypted: seal(tokens.access_token, cfg.key, { userId: trusted.userId, kind: 'access' }),
       refresh_token_encrypted: seal(tokens.refresh_token, cfg.key, { userId: trusted.userId, kind: 'refresh' }),
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),

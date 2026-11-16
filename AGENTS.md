@@ -80,6 +80,15 @@ nicht autorisierende gemeinsame Vorlage
 Deren alte Analyse-/Berichts-Stopps sind bei einem ausdrücklichen
 Implementierungsauftrag nur interne Phasengrenzen, kein neues Gate.
 
+### Auftragsgrenzen bei neuen Prompts – keine pauschale Sperrvererbung
+
+- **Fortsetzung desselben Auftrags:** Ausdrücklich vereinbarte Read-only-, No-Merge-, No-Deploy- oder No-Publish-Grenzen gelten auch bei kurzen Fortsetzungen wie „fahre fort“, solange der Auftrag unverändert fortgesetzt wird.
+- **Eigenständiger neuer Auftrag:** Ein später neu formulierter Implementierungs-/Reparaturauftrag erbt nicht allein aufgrund historischer Chat-Nachrichten, vorheriger Antworten, PR-Beschreibungen oder kopierter Folgeprompt-Vorlagen pauschale Mutations-/Merge-/Deployment-Verbote aus einem anderen abgeschlossenen Auftrag. Aktuelle ausdrückliche Anweisungen und übergeordnete Regeln haben Vorrang.
+- **Kopierbare Folgeprompts:** Keine automatisch angehängten negativen Standardsätze („keine Änderungen“, „kein Merge“, „kein Deployment“). Bestehende verbindliche Sicherheits-, Rechte-, Lizenz-, Kosten- und Produktionsgrenzen werden präzise genannt, nicht als globale Inaktivitätsvorgabe umgeschrieben. Bei erneuter Bearbeitung des *gleichen* ausdrücklich eingeschränkten Auftrags dessen konkrete Sperren weiterführen.
+- **Ausführung statt Handoff:** Bei einem beauftragten Implementierungsauftrag zuerst den autorisierten Scope tatsächlich beheben, bestehende CI abnehmen und – wenn alle delegierten Mergebedingungen erfüllt sind und kein aktuelles Verbot gilt – den bestehenden Merge-/Main-Deployment-Pfad abschließen. Ist eine Aktion tatsächlich gesperrt, nur diese Aktion mit belegter Ursache ausnehmen; unabhängige Änderungen weiter umsetzen. Die tatsächliche GitHub-Rulesets-Prüfung darf nicht umgangen werden: tatsächliche GitHub-Rulesets, bestehende Required Checks und Toolrechte bleiben bindend. Keine allgemeine Merge- oder Deployment-Freigabe durch diese Erläuterung.
+
+
+
 ## Chat-Start: Domain-Roadmap gegen aktuellen main abgleichen (Owner-Beschluss 2026-10-14)
 
 Beim **ersten Abruf der Chat-/Agentenanweisungen je Domain-Auftrag** beginnt der Agent mit einer kompakten, tatsächlichen Bestandsprüfung, bevor er neue Aufgaben plant oder Änderungen vornimmt:
@@ -357,6 +366,7 @@ Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie domainübergreifende 
 2. **Weiterarbeit statt Handoff:** Geeignete, bereits autorisierte Arbeit eigenständig erledigen, bevor nächste Schritte vorgeschlagen werden. Domainübergreifende Aufgaben im **gleichen Chat** fortführen; keine künstlichen Domain-Handoffs, unnötigen Rückfragen oder Aufforderungen zur wiederholten Zustimmung. Persönliche Owner-Schritte wie Vertrag, Credential-Eingabe oder kostenpflichtige Aktivierung mit `👋⚙️` kennzeichnen.
 3. **Platzierung und Länge:** Die 1–3 Vorschläge in Status-/Abschlussantworten unter `🔧 OFFEN / NÄCHSTE SCHRITTE` aufführen; andere inhaltliche Antworten erhalten am Ende eine knappe Passage mit 1–3 passenden nächsten Chat-Aktionen. Nicht denselben Vorschlag zusätzlich in einer separaten Liste wiederholen. Bei vollständig abgeschlossenen Aufträgen sinnvolle optionale Folgeaktionen statt fiktiver Blocker nennen.
 4. **Grenzen:** Nur Optionen vorschlagen, die zum Thema und zu vorhandenen Berechtigungen passen. Keine Ausführung, Kosten, Provider-/Lizenzrechte, Security-Freigabe, Merge- oder Production-Fähigkeit behaupten, die nicht belegt sind. Die bisherigen zwei Status-Codeblöcke, Required Checks `Docker Security Gate` und `Domain Governance`, der `SOLO_MAINTAINER_FLOW@2` und die delegierte Agenten-Merge-Regel gelten verbindlich.
+5. **Kopierbare Folgeprompts sind ausführungsorientiert:** Bei ausdrücklich beauftragter Implementierung oder Reparatur lauten vorgeschlagene Folgeschritte positiv auf Ursachenbehebung, tatsächliche Code-/Konfigurationsänderung im erlaubten Scope, passende Tests/CI, Evidence und – sobald sämtliche bestehenden Voraussetzungen nachgewiesen sind – die delegierte Mergeentscheidung sowie den vorhandenen Main-Deployment-/Live-Readback-Pfad. Keine pauschalen Schlussformeln wie „keine Mutationen, Änderungen, Merges oder Deployments“ aus Vorsicht hinzufügen. Ausdrückliche `read-only`-/No-Merge-/No-Deploy-/No-Publish-Grenzen des konkret fortgesetzten Auftrags, tatsächliche Sicherheits-/Rechte-/Kosten-/Lizenzgrenzen und GitHub-Rulesets bleiben dagegen vollständig erhalten. Status-/Prüfaufträge werden nicht durch ein Folgeprompt nachträglich zu Schreibaufträgen. Nur echte, nachgewiesene Blocker als gezielte Ausnahme angeben; unabhängige autorisierte Arbeit aktiv fortsetzen. Diese Formulierung schafft keine neuen Rechte, Required Checks oder Freigabestufen.
 
 ## Status in ChatGPT
 

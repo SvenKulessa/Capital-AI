@@ -1,6 +1,8 @@
 // CAPITAL_AI_SOCIAL_PROVIDER_PUBLISH@1
 // Server-only provider submissions. No HTTP route is registered here.
 // Every provider remains disabled unless explicit server-side switches are set.
+import { createHash } from 'node:crypto';
+
 const MAX_MEDIA_BYTES_DEFAULT = 128 * 1024 * 1024;
 
 function fail(code, attempted = false) {
@@ -255,10 +257,41 @@ export function createSocialProviderPublishTransport({ env = process.env, fetchI
     assert(enabled(env, 'SOCIAL_X_PAID_WRITE_APPROVED'), 'SOCIAL_X_PAID_WRITE_NOT_APPROVED');
     const accessToken = token(input?.accessToken);
     const text = boundedText(input?.metadata?.caption, 280, 'SOCIAL_X_TEXT_REQUIRED');
+    // Media is optional for legacy text-only use. The owner-only milestone
+    // performs its durable atomic claim BEFORE invoking this transport.
+    let mediaIds;
+    if (input?.mediaBytes !== undefined) {
+      assert(enabled(env, 'SOCIAL_X_MEDIA_UPLOAD_ENABLED'),
+        'SOCIAL_X_MEDIA_UPLOAD_DISABLED');
+      assert(enabled(env, 'SOCIAL_X_PAID_MEDIA_APPROVED'),
+        'SOCIAL_X_PAID_MEDIA_NOT_APPROVED');
+      // Fail before ANY provider call if media or its checksum is suspicious.
+      assert(Buffer.isBuffer(input.mediaBytes), 'SOCIAL_X_MEDIA_BYTES_REQUIRED');
+      const bytes = input.mediaBytes;
+      const pngMagic = Buffer.from([137,80,78,71,13,10,26,10]);
+      assert(bytes.length > pngMagic.length && bytes.length <= 5 * 1024 * 1024
+        && bytes.subarray(0,8).equals(pngMagic), 'SOCIAL_X_MEDIA_INVALID');
+      assert(typeof input.mediaSha256 === 'string'
+        && /^[a-f0-9]{64}$/.test(input.mediaSha256)
+        && createHash('sha256').update(bytes).digest('hex') === input.mediaSha256,
+      'SOCIAL_X_MEDIA_HASH_MISMATCH');
+      // X v2 simple image upload accepts base64 data in JSON.
+      // One request only, no automatic retries on ambiguous outcomes.
+      const uploaded = await fetchAttempt(fetchImpl, 'https://api.x.com/2/media/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ media: bytes.toString('base64'), media_category: 'tweet_image' }),
+      });
+      const uploadedData = await json(uploaded);
+      if (!uploaded.ok || !/^[0-9]{1,25}$/.test(uploadedData?.data?.id || '')) {
+        fail('SOCIAL_X_MEDIA_UPLOAD_REJECTED', true);
+      }
+      mediaIds = [uploadedData.data.id];
+    }
     const response = await fetchAttempt(fetchImpl, 'https://api.x.com/2/tweets', {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, ...(mediaIds ? { media: { media_ids: mediaIds } } : {}) }),
     });
     const data = await json(response);
     if (!response.ok || typeof data?.data?.id !== 'string') fail('SOCIAL_X_SUBMISSION_REJECTED', true);
