@@ -51,6 +51,19 @@ jobs:
           docker build --target runtime --file Dockerfile \
             --tag capital-ai-avatar-official-staging:pr-762 \
             --label org.opencontainers.image.revision="${{ github.event.pull_request.head.sha }}" .
+          # The production image deliberately omits sigtool. Alpine provides it
+          # in clamav-scanner; add it ONLY to this temporary test image.
+          cat > "$RUNNER_TEMP/Dockerfile.avatar-official-probe" <<'DOCKERFILE'
+          FROM capital-ai-avatar-official-staging:pr-762
+          USER root
+          RUN apk add --no-cache 'clamav-scanner=1.4.6-r0'
+          USER 1000:1000
+          DOCKERFILE
+          docker build --file "$RUNNER_TEMP/Dockerfile.avatar-official-probe" \
+            --tag capital-ai-avatar-official-probe:pr-762 .
+          docker run --rm --network none --entrypoint /bin/sh \
+            capital-ai-avatar-official-probe:pr-762 \
+            -ec 'for binary in freshclam clamd sigtool node stat df awk du; do command -v "$binary" >/dev/null || exit 80; done'
           docker builder prune --force
       - name: Real official FreshClam/CVD/PNG/EICAR test
         shell: bash
@@ -71,7 +84,7 @@ jobs:
             -e PROFILE_AVATAR_UPLOAD_ENABLED=false \
             -v "$PWD/scripts/qa:/app/scripts/qa:ro" \
             --workdir /app --entrypoint /bin/sh \
-            capital-ai-avatar-official-staging:pr-762 \
+            capital-ai-avatar-official-probe:pr-762 \
             scripts/qa/profile-avatar-freshclam-staging.sh \
             | tee avatar-staging-evidence/scanner-output.jsonl
           result=${PIPESTATUS[0]}
@@ -90,4 +103,4 @@ jobs:
           if-no-files-found: warn
       - name: Remove ephemeral Docker image
         if: always()
-        run: docker image rm -f capital-ai-avatar-official-staging:pr-762 || true
+        run: docker image rm -f capital-ai-avatar-official-staging:pr-762 capital-ai-avatar-official-probe:pr-762 || true
