@@ -7,7 +7,15 @@ import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 
 const START_PATH = '/api/social-media/x/auth/start';
 const CALLBACK_PATH = '/api/social-media/auth/callback';
-const SCOPES = 'tweet.read tweet.write users.read offline.access';
+const BASE_SCOPES = 'tweet.read tweet.write users.read offline.access';
+function ownerRequestedScopes(env) {
+  // The extra scope is opt-in for the pinned one-shot image pilot only.
+  // No OAuth flow is started unless an authenticated IAM owner explicitly requests it.
+  return env.SOCIAL_X_MILESTONE_MEDIA_ENABLED === 'true'
+    && env.SOCIAL_X_MEDIA_UPLOAD_ENABLED === 'true'
+    && env.SOCIAL_X_PAID_MEDIA_APPROVED === 'true'
+    ? BASE_SCOPES + ' media.write' : BASE_SCOPES;
+}
  
 // Only ever show an allowlisted error category to a verified IAM owner.
 // Never forward provider responses, errors, URLs, credentials, JWTs or verifier
@@ -103,7 +111,7 @@ export function createSocialXOAuthStart({ env = process.env, auth,
       authorize.searchParams.set('response_type', 'code');
       authorize.searchParams.set('client_id', clientId);
       authorize.searchParams.set('redirect_uri', redirectUri);
-      authorize.searchParams.set('scope', SCOPES);
+      authorize.searchParams.set('scope', ownerRequestedScopes(env));
       authorize.searchParams.set('state', issued.state);
       authorize.searchParams.set('code_challenge', challenge);
       authorize.searchParams.set('code_challenge_method', 'S256');
