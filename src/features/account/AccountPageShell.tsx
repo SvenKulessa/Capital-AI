@@ -55,7 +55,14 @@ async function readSession(signal?: AbortSignal): Promise<AccountSession> {
   if (!response.ok || !body || typeof body.authenticated !== 'boolean') {
     throw new Error('SESSION_UNAVAILABLE');
   }
-  return body as AccountSession;
+  const session = body as AccountSession;
+  if (session.authenticated && session.user?.id) {
+    try {
+      const avatar = await fetch('/api/profile/logo', { credentials: 'same-origin', cache: 'no-store', signal });
+      if (avatar.ok) session.user.avatarUrl = '/api/profile/avatar/current';
+    } catch { /* Provider photo remains the fallback on unavailable private storage. */ }
+  }
+  return session;
 }
 
 export function AccountPageShell({

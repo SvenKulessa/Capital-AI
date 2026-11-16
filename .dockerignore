@@ -85,6 +85,8 @@
 !server/auth.mjs
 !server/account-avatar.mjs
 !server/account-avatar.test.mjs
+!server/profile-avatar-upload.mjs
+!server/profile-avatar-upload.test.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
 !server/subscription-entitlements.mjs

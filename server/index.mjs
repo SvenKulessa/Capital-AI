@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
+import { createProfileAvatarUpload } from './profile-avatar-upload.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
@@ -355,6 +356,7 @@ export function createApp(root = defaultRoot, options = {}) {
     : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
+  const profileAvatarUpload = createProfileAvatarUpload({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth, scan: options.profileAvatarScan, transcode: options.profileAvatarTranscode });
   const oauthConsent = createOAuthConsent({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const learningInquiry = createLearningInquiry({ ...options, auth });
   const learningSimulator = createLearningSimulator({ ...options, auth });
@@ -513,6 +515,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await profileAvatarUpload.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
