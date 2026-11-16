@@ -349,12 +349,19 @@ test('Edge refresh claim returns sealed credential only to signed owner workload
   assert.equal(accepted.status,200);
   assert.equal((await accepted.json()).refreshCipher,cipher);
   assert.equal(claimCalls,1);
+  scopes.push('media.write');
+  const mediaClaim = await handler(signedRequest({
+    operation:'refresh_claim',userId,channel:'X',leaseId,
+  }));
+  assert.equal(mediaClaim.status,200);
+  assert.equal((await mediaClaim.json()).scopes.includes('media.write'),true);
+  assert.equal(claimCalls,2);
   const crossUser = await handler(signedRequest({
     operation:'refresh_claim',userId:'aae0e41d-9566-430a-b698-3cf50bbb4ec0',
     channel:'X',leaseId,
   }));
   assert.equal(crossUser.status,503);
-  assert.equal(claimCalls,1);
+  assert.equal(claimCalls,2);
 });
 
 test('Edge refresh CAS rotation never reflects ciphertext or allows invalid lease', async () => {
