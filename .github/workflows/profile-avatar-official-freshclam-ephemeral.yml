@@ -65,6 +65,7 @@ jobs:
             capital-ai-avatar-official-probe:pr-762 \
             -ec 'for binary in freshclam clamd sigtool node stat df awk du; do command -v "$binary" >/dev/null || exit 80; done'
           docker builder prune --force
+      # One diagnostic rerun: fail-closed FreshClam classifications remain NOT_PROVEN.
       - name: Real official FreshClam/CVD/PNG/EICAR test
         shell: bash
         run: |

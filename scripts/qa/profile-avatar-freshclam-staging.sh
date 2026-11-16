@@ -61,7 +61,7 @@ ScriptedUpdates off
 Checks 6
 Foreground yes
 EOF
-freshclam --config-file="$scratch/freshclam.conf" >/dev/null 2>&1 &
+freshclam --config-file="$scratch/freshclam.conf" >"$scratch/freshclam.log" 2>&1 &
 fresh_pid=$!
 while kill -0 "$fresh_pid" 2>/dev/null; do
   rss=$(awk '/^VmRSS:/{print $2}' "/proc/$fresh_pid/status" 2>/dev/null || echo 0)
@@ -69,7 +69,24 @@ while kill -0 "$fresh_pid" 2>/dev/null; do
   [ "$rss" -le "$fresh_peak" ] || fresh_peak=$rss
   sleep 0.25
 done
-wait "$fresh_pid" || { phase=FRESHCLAM_FAILED; exit 85; }
+wait "$fresh_pid" || {
+  phase=FRESHCLAM_FAILED
+  if grep -Eqi 'HTTP[^[:digit:]]*(403|429)|rate.limit|blocked by cloudflare|forbidden' "$scratch/freshclam.log"; then
+    phase=OFFICIAL_FEED_RATE_LIMITED
+  elif grep -Eqi 'cannot resolve|could not resolve|name resolution|DNS lookup|network is unreachable|connection refused' "$scratch/freshclam.log"; then
+    phase=OFFICIAL_FEED_UNREACHABLE
+  elif grep -Eqi 'error parsing|invalid configuration|unknown option|unrecognized option|configuration error' "$scratch/freshclam.log"; then
+    phase=FRESHCLAM_CONFIG_INVALID
+  elif grep -Eqi 'permission denied|access denied|cannot create|not writable' "$scratch/freshclam.log"; then
+    phase=FRESHCLAM_PERMISSION_DENIED
+  fi
+  # No application credentials are passed. Only bounded diagnostic lines are emitted;
+  # suppress URLs, filenames, and any user-provided network data.
+  grep -Ei 'ERROR|WARNING|FAILED|BLOCKED|HTTP|DNS|INITIALIZ' "$scratch/freshclam.log" |
+    head -n 8 |
+    sed -E 's#https?://[^[:space:]]+#<redacted-url>#g; s#/[A-Za-z0-9_./-]+#<redacted-path>#g' >&2 || :
+  exit 85
+}
 fresh_pid=
 
 phase=SIGNED_CVD_AND_FRESHNESS
