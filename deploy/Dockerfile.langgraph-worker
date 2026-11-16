@@ -2,7 +2,7 @@
 # Supply an immutable linux/amd64 python@sha256 digest after explicit resolution.
 # Deliberately fail closed when PYTHON_BASE is omitted.
 ARG PYTHON_BASE
-FROM \${PYTHON_BASE}
+FROM ${PYTHON_BASE}
 LABEL org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI" \
       capital-ai.component="offline-langgraph-worker" \
       capital-ai.activation="disabled-by-default"
