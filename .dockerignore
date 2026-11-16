@@ -83,6 +83,8 @@
 !server/benchmark-store.mjs
 !server/benchmark-store.test.mjs
 !server/auth.mjs
+!server/account-avatar.mjs
+!server/account-avatar.test.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
 !server/subscription-entitlements.mjs

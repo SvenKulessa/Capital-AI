@@ -14,6 +14,20 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public/learning/charts"
 
 
+def draw_universe_markers(draw: ImageDraw.ImageDraw, palette, width: int = 1200, height: int = 675):
+    """Low-impact seven-colour signature outside the synthetic plot area.
+
+    The legend and graph strokes remain semantically independent of branding.
+    """
+    hues = palette.universe_colors
+    if len(hues) != 7 or len(set(h.lower() for h in hues)) != 7:
+        raise ValueError("UNIVERSE_PALETTE_SEVEN_REQUIRED")
+    for index, hue in enumerate(hues):
+        cx = width - 306 + index * 42
+        cy = height - 18
+        draw.ellipse((cx-7, cy-7, cx+7, cy+7), fill=hue)
+
+
 def main():
     source = OUT / "manifest.json"
     payload = json.loads(source.read_text())
@@ -56,6 +70,7 @@ def main():
         draw.text((1075, 500), "Zeit →", anchor="rt", font=_font(20), fill=palette.text_secondary)
         draw.text((60, 597), "Synthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung", font=_font(20), fill=palette.text_primary)
         draw.text((60, 632), "Schematische Geometrie · keine berechneten Signale · capital-ai.online/learning", font=_font(19), fill=palette.text_secondary)
+        draw_universe_markers(draw, palette)
         target = OUT / f"{asset['id']}.png"
         image.save(target)
         assets.append({"id":asset["id"],"path":target.name,"sha256":hashlib.sha256(target.read_bytes()).hexdigest(),

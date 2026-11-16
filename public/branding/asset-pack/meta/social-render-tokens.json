@@ -41,7 +41,45 @@
       "borderLight": {
         "$value": "#25304A"
       }
+    },
+    "universe": {
+      "cyan": {
+        "$value": "#67E8F9"
+      },
+      "violet": {
+        "$value": "#B794F4"
+      },
+      "gold": {
+        "$value": "#F9BF21"
+      },
+      "pink": {
+        "$value": "#F9A8D4"
+      },
+      "rose": {
+        "$value": "#F87171"
+      },
+      "blue": {
+        "$value": "#60A5FA"
+      },
+      "green": {
+        "$value": "#4ADE80"
+      }
     }
   },
-  "publishReady": false
+  "publishReady": false,
+  "universeDesign": {
+    "version": "CAPITAL_AI_UNIVERSE@1",
+    "artDirection": "ORIGINAL_COSMIC_FINTECH",
+    "motifs": [
+      "orbital-rings",
+      "constellation-network",
+      "luminous-data-grid",
+      "spectral-hud"
+    ],
+    "paletteRule": "ALL_SEVEN_COLORS_PER_VISUAL",
+    "franchiseAssets": "NOT_PERMITTED",
+    "textAndStatusIndependentFromColor": true,
+    "motion": "REDUCED_MOTION_SUPPORTED",
+    "publicationAuthority": "UNCHANGED_DRAFT_ONLY"
+  }
 }

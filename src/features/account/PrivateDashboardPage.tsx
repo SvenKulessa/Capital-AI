@@ -22,6 +22,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [writeLocked, setWriteLocked] = useState(false);
   const revoked = useRef(false);
   const savingRef = useRef(false);
 
@@ -35,6 +36,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
     setConflict(null);
     setStatus('');
     setError('');
+    setWriteLocked(false);
     readNotes(userId, controller.signal).then(body => {
       if (!controller.signal.aborted && !revoked.current) {
         setText(body.notes);
@@ -94,7 +96,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!loaded || savingRef.current || revoked.current || revision === null || conflict) return;
+    if (!loaded || savingRef.current || revoked.current || revision === null || conflict || writeLocked) return;
     savingRef.current = true;
     setBusy(true);
     setError('');
@@ -118,6 +120,10 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
     } catch (reason) {
       if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
         revokeSession();
+      } else if (!revoked.current && reason instanceof NotesClientError &&
+                 reason.code === 'NOTES_WRITE_LOCKED') {
+        setWriteLocked(true);
+        setError('Notizen sind serverseitig schreibgeschützt. Dein Entwurf bleibt hier zum Kopieren erhalten.');
       } else if (!revoked.current) {
         setError('Speichern nicht bestätigt. Deine Eingabe bleibt erhalten. Bitte Serverstand prüfen.');
       }
@@ -135,11 +141,12 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
     setText('');
     setSavedText('');
     setStatus('');
+    setWriteLocked(false);
     setError(changedSessionMessage);
   }
 
   async function mergeConflict(merged: string) {
-    if (!conflict || savingRef.current || revoked.current) return;
+    if (!conflict || savingRef.current || revoked.current || writeLocked) return;
     savingRef.current = true;
     setBusy(true);
     setError('');
@@ -160,6 +167,9 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
     } catch (reason) {
       if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
         revokeSession();
+      } else if (reason instanceof NotesClientError && reason.code === 'NOTES_WRITE_LOCKED') {
+        setWriteLocked(true);
+        setError('Zusammenführung ist serverseitig gesperrt. Bitte kopiere deinen Entwurf.');
       } else {
         setError('Zusammenführung nicht bestätigt. Dein Entwurf bleibt erhalten.');
       }
@@ -214,14 +224,14 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
             <textarea id="private-notes" rows={10} maxLength={10000} disabled={!loaded || busy || !!conflict}
               value={text} onChange={event => { setText(event.target.value); setStatus(''); }}
               className="w-full rounded-xl border border-slate-500 bg-slate-950 p-4 text-base leading-7 text-white focus-visible:outline-2 focus-visible:outline-brand-gold" />
-            <button disabled={!loaded || busy}
+            <button disabled={!loaded || busy || writeLocked || !!conflict}
               className="min-h-11 rounded-xl bg-brand-gold px-5 py-3 font-semibold text-black disabled:opacity-50">
               {busy ? 'Speichern …' : 'Notizen speichern'}
             </button>
             {!loaded && !error && <p role="status" className="text-slate-300">Notizen werden geladen …</p>}
             {status && <p role="status" className="text-emerald-200">{status}</p>}
             {error && <p role="alert" className="text-rose-200">{error}</p>}
-            {conflict && <NotesConflictPanel conflict={conflict} busy={busy}
+            {conflict && <NotesConflictPanel conflict={conflict} busy={busy || writeLocked}
               onUseServer={acceptServer} onMerge={text => void mergeConflict(text)} />}
           </form>
         </section>

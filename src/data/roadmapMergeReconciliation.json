@@ -1,16 +1,16 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 705,
-  "mergeCount": 570,
-  "fromPr": 697,
-  "toPr": 705,
-  "sourceSha": "8a5b81200ad4a0e592031107a5c46d76e0b7b69c",
-  "reconciledAt": "2026-11-14T13:53:36.904Z",
+  "lastReconciledPr": 734,
+  "mergeCount": 600,
+  "fromPr": 735,
+  "toPr": 734,
+  "sourceSha": "6581b2fbb8888cc623d7cc19da374892ab97bd03",
+  "reconciledAt": "2026-11-15T17:40:07.885Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "bc5efa37a58fb1645ea8677c06a35f2e42459a026c88600b042a55c89e441aaf"
+      "sha256": "c2252cc31db3d6e8318afa3a8d088733b771f61e0c5a2c3cee5f75a6f2d2201e"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
@@ -623,13 +623,16 @@
     {
       "id": "CA-PLATFORM-DOCSYNC-02",
       "owner": "PLATFORM",
-      "recordedState": "UNGEKLÄRT",
+      "recordedState": "OFFEN",
       "evidencePathsPresent": [
-        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md"
+        "docs/platform/CAPITAL-AI-ECOSYSTEM-ROADMAP-2026-11-10.md",
+        "scripts/upload-drive/drive-sync-delta.mjs",
+        "scripts/upload-drive/drive-sync-delta.test.mjs",
+        "docs/platform/DRIVE-DOCSYNC-DELTA-20261114.md"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
-      "effectiveState": "UNGEKLÄRT"
+      "effectiveState": "OFFEN"
     },
     {
       "id": "CA-GROWTH-DOCBUILD-04",

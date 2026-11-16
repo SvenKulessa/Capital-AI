@@ -56,7 +56,7 @@ import { MAIN_HUBS_CONFIG, type MainHubId } from './HubCatalog';
 
 interface HeaderSession {
   authenticated: boolean;
-  user?: { name?: string; email?: string } | null;
+  user?: { name?: string; email?: string; avatarUrl?: string | null } | null;
   account?: {
     available?: boolean;
     iamRole?: string | null;
@@ -79,6 +79,15 @@ interface HeaderProps {
   onViewAllMarkets?: () => void;
   onNavigateLogin?: () => void;
   onNavigate?: (path: string) => void;
+}
+
+function ProfileAvatar({ url, owner, size = 'sm' }: { url?: string | null; owner: boolean; size?: 'sm' | 'md' }) {
+  return <span className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border ${size === 'md' ? 'h-8 w-8' : 'h-6 w-6'} ${owner ? 'border-rose-400/40 bg-rose-500/10 text-rose-300' : 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300'}`}>
+    <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+    {url && <img key={url} src={url} alt="" referrerPolicy="no-referrer" loading="lazy"
+      onError={event => { event.currentTarget.hidden = true; }}
+      className="absolute inset-0 h-full w-full rounded-full object-cover" />}
+  </span>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -105,6 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [authStatus, setAuthStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [sessionRetry, setSessionRetry] = useState(0);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isDrawerAccountExpanded, setIsDrawerAccountExpanded] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -238,7 +248,10 @@ export const Header: React.FC<HeaderProps> = ({
           aria-expanded={isMenuOpen}
           aria-controls="capital-ai-mobile-navigation"
           aria-haspopup="dialog"
-          onClick={() => setIsMenuOpen(true)}
+          onClick={() => {
+            setIsDrawerAccountExpanded(false);
+            setIsMenuOpen(true);
+          }}
           className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 active:bg-white/15 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition-all shadow-[0_0_12px_rgba(249,191,33,0.12)] cursor-pointer shrink-0"
         >
           <Menu className="w-5 h-5 stroke-[2]" />
@@ -275,13 +288,13 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
-              className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
+              className={`flex min-h-11 items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
               aria-controls="header-account-navigation"
               aria-expanded={isAccountOpen}
               aria-label={t('navAccount')}
               title="Kontomenü"
             >
-              <ShieldCheck className={`w-3.5 h-3.5 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
+              <ProfileAvatar url={authSession.user?.avatarUrl} owner={isOwner} size="md" />
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
@@ -302,31 +315,27 @@ export const Header: React.FC<HeaderProps> = ({
                     document.getElementById('header-profile-btn')?.focus();
                   }
                 }}
-                className="absolute right-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur-xl"
+                className="absolute right-0 top-full z-[70] mt-2 w-64 max-w-[calc(100vw-1rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur-xl"
               >
-                <button
-                  type="button"
-                  
-                  onClick={() => navigateAccount('/profile')}
-                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
-                >
-                  <User className="h-4 w-4 text-amber-300" /> {nav.profile}
-                </button>
-                <button
-                  type="button"
-                  
-                  onClick={() => navigateAccount('/profile/security')}
-                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
-                >
-                  <ShieldCheck className="h-4 w-4 text-cyan-300" /> {nav.security}
-                </button>
-
+                {[
+                  { path: '/profile' as const, label: nav.profile, icon: User },
+                  { path: '/profile/security' as const, label: nav.security, icon: ShieldCheck },
+                  { path: '/profile/rights' as const, label: nav.rights, icon: Scale },
+                  { path: '/profile/subscription' as const, label: nav.subscription, icon: CreditCard },
+                  { path: '/profile/dashboard' as const, label: nav.dashboard, icon: LayoutDashboard },
+                ].map(item => {
+                  const Icon = item.icon;
+                  return <button key={item.path} type="button" onClick={() => navigateAccount(item.path)}
+                    className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+                    <Icon className="h-4 w-4 shrink-0 text-amber-300" /> {item.label}
+                  </button>;
+                })}
                 <div className="my-1 border-t border-white/10" />
                 <button
                   type="button"
                   
                   onClick={() => void logout()}
-                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-rose-200 hover:bg-rose-500/10"
+                  className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                 >
                   <LogOut className="h-4 w-4" /> {nav.logout}
                 </button>
@@ -409,13 +418,24 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   ) : authSession?.authenticated ? (
                     <div className={`space-y-1 rounded-2xl border p-2 ${isOwner ? "border-red-400/35 bg-red-500/5" : "border-emerald-400/25 bg-emerald-500/5"}`}>
-                      <div className="px-2 py-2">
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className={`h-4 w-4 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
-                          <span className={`truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
-                        </div>
-                        {accountTier && <p className={`mt-1 pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
-                      </div>
+                      <button
+                        id="drawer-account-toggle"
+                        type="button"
+                        aria-expanded={isDrawerAccountExpanded}
+                        aria-controls="drawer-account-links"
+                        onClick={() => setIsDrawerAccountExpanded(expanded => !expanded)}
+                        className="flex min-h-14 w-full items-center justify-between gap-2 rounded-xl px-2 py-2 text-left hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <ProfileAvatar url={authSession.user?.avatarUrl} owner={isOwner} />
+                            <span className={`min-w-0 truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
+                          </span>
+                          {accountTier && <span className={`mt-1 block truncate pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</span>}
+                        </span>
+                        <ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 text-slate-300 transition-transform ${isDrawerAccountExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                      <div id="drawer-account-links" role="group" aria-label={nav.profile} hidden={!isDrawerAccountExpanded} className="space-y-1">
                       {[
                         { path: '/profile' as const, label: nav.profile, icon: User },
                         { path: '/profile/security' as const, label: nav.security, icon: ShieldCheck },
@@ -429,7 +449,7 @@ export const Header: React.FC<HeaderProps> = ({
                             key={item.path}
                             type="button"
                             onClick={() => navigateAccount(item.path)}
-                            className="flex min-h-10 w-full items-center justify-between rounded-xl px-3 text-xs font-bold text-slate-200 hover:bg-white/10"
+                            className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-xs font-bold text-slate-200 hover:bg-white/10"
                           >
                             <span className="flex items-center gap-2"><Icon className="h-4 w-4" /> {item.label}</span>
                             <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
@@ -439,10 +459,11 @@ export const Header: React.FC<HeaderProps> = ({
                       <button
                         type="button"
                         onClick={() => void logout()}
-                        className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-xs font-bold text-rose-200 hover:bg-rose-500/10"
+                        className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                       >
                         <LogOut className="h-4 w-4" /> {nav.logout}
                       </button>
+                      </div>
                     </div>
                   ) : (
                     <a
@@ -485,8 +506,9 @@ export const Header: React.FC<HeaderProps> = ({
                           setIsMenuOpen(false);
                           openHubSidebar(hub.id);
                         }}
-                        className="hub-switch hub-sidebar-card min-h-11 w-full flex items-center justify-between gap-1.5 px-1.5 py-1.5 border transition-all cursor-pointer group text-left shadow-sm"
+                        className="hub-switch hub-sidebar-card min-h-14 w-full flex items-center justify-between gap-1.5 px-1.5 py-1.5 border transition-all cursor-pointer group text-left shadow-sm"
                         style={{
+                          minHeight: '3.5rem',
                           backgroundColor: `${hub.color}14`,
                           borderColor: `${hub.color}45`,
                           boxShadow: `0 0 8px ${hub.glow}`,

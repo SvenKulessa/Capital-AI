@@ -13,6 +13,11 @@ on:
       - 'src/components/Hero.tsx'
       - 'src/platform/SocialMediaEngine/Visualization/BrandGlobe*'
       - 'scripts/brand-globe-browser.mjs'
+      - 'scripts/qa/universe-content-studio-browser.mjs'
+      - 'scripts/growth/universe-media-contract.test.mjs'
+      - 'src/features/studio/ContentStudioPanel.tsx'
+      - 'src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts'
+      - 'src/platform/SocialMediaEngine/Branding/ScreenerBlueprintBadgeRenderer.mjs'
       - 'scripts/scorer-methodology-browser.mjs'
       - 'src/components/HubCatalog.tsx'
       - 'src/components/EcosystemRoadmapPanel.tsx'
@@ -45,6 +50,13 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           npm run build
+      - name: Universe Media CADS and asset identity regression
+        run: |
+          node --import tsx --test \
+            scripts/growth/universe-media-contract.test.mjs \
+            scripts/media/screener-blueprint-badges.test.mjs \
+            scripts/cads-growth-quality.test.mjs
+
       - name: Start isolated BFF without external services
         env:
           PORT: '17871'
@@ -72,6 +84,13 @@ jobs:
           "$CHROME_BIN" --version
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/product-accessibility-browser.mjs http://127.0.0.1:17871 \
             | tee artifacts-browser-result.json
+      - name: Universe Content Studio mobile and desktop visual QA
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/universe-content-studio-browser.mjs
+
       - name: Screener Blueprint YAML reset regression (synthetic)
         run: |
           set -euo pipefail
@@ -122,6 +141,8 @@ jobs:
             ecosystem-roadmap-browser-result.json
             artifacts/globe-browser/*.png
             artifacts/globe-browser/result.json
+            artifacts/universe-content-studio/*.png
+            artifacts/universe-content-studio/result.json
             artifacts/course-inquiry-browser/result.json
             simulator-server.log
           if-no-files-found: warn

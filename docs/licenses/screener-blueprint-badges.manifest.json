@@ -8,29 +8,32 @@
     {
       "variant": "data",
       "path": "public/branding/badges/screener-data-blueprint.svg",
-      "sha256": "8f301a30b57b24300cf4eed1da0e50c0a3898d77353dfb2f2e6e1d6eaf1fb1c6",
+      "sha256": "3aba2f5328fa29cf1829f4f6861dd94f7781c565462a05b1ae9126e6830d58db",
       "width": 256,
       "height": 256,
       "license": "LicenseRef-CAPITAL-AI-SCREENER-BLUEPRINT-BADGE-PREVIEW-1.0",
-      "publishReady": false
+      "publishReady": false,
+      "universeIdentity": "CAPITAL_AI_UNIVERSE@1"
     },
     {
       "variant": "scoring",
       "path": "public/branding/badges/screener-scoring-blueprint.svg",
-      "sha256": "902db5b5e4ef7ef5452710a6806ef8e7ce4f0c2429adff83050e455291edf536",
+      "sha256": "7aeef99ec8ed0432673b5f16251f1ec75a9fdc12b24d6fd1cdd16531d086903b",
       "width": 256,
       "height": 256,
       "license": "LicenseRef-CAPITAL-AI-SCREENER-BLUEPRINT-BADGE-PREVIEW-1.0",
-      "publishReady": false
+      "publishReady": false,
+      "universeIdentity": "CAPITAL_AI_UNIVERSE@1"
     },
     {
       "variant": "bundle",
       "path": "public/branding/badges/screener-bundle-blueprint.svg",
-      "sha256": "858904ad1d55dd90d647b329f75700b32a383bdf61c45c856d3c038de9d6a385",
+      "sha256": "6b3c13a6b151e051255407ad7e6320c6d73f6454c16880e298f49e84efda382d",
       "width": 256,
       "height": 256,
       "license": "LicenseRef-CAPITAL-AI-SCREENER-BLUEPRINT-BADGE-PREVIEW-1.0",
-      "publishReady": false
+      "publishReady": false,
+      "universeIdentity": "CAPITAL_AI_UNIVERSE@1"
     }
   ]
 }
