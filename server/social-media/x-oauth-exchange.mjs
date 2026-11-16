@@ -114,9 +114,8 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
     const tokens = await jsonResponse(tokenRes);
     const scopes = typeof tokens.scope === 'string' ? tokens.scope.split(' ').filter(Boolean) : [];
     assert(REQUIRED_SCOPES.every(s => scopes.includes(s)), 'SOCIAL_X_OAUTH_SCOPES_MISSING');
-    const mediaScopeRequested = env.SOCIAL_X_MILESTONE_MEDIA_ENABLED === 'true'
-      && env.SOCIAL_X_MEDIA_UPLOAD_ENABLED === 'true'
-      && env.SOCIAL_X_PAID_MEDIA_APPROVED === 'true';
+    // Match the start opt-in: never infer OAuth consent from paid media flags.
+    const mediaScopeRequested = env.SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED === 'true';
     if (mediaScopeRequested) {
       assert(scopes.includes('media.write'), 'SOCIAL_X_MEDIA_WRITE_SCOPE_MISSING');
     }
