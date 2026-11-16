@@ -65,7 +65,7 @@ Bewerte
 - mögliche Event Producer
 - mögliche Event Consumer
 
-Noch keinen Code erzeugen.
+Den Readiness Report als interne Diagnosephase für einen beauftragten Implementierungsauftrag nutzen. Anschließend den kleinsten sicheren, fachlich benötigten Event-Mesh-Slice auf bestehender Architektur implementieren, mit Positiv-/Negativtests und bestehender CI prüfen, reproduzierte Fehler beheben und PR/Mergeentscheidung gemäß Root-`AGENTS.md` abschließen. Lizenz-, Provider-, Kosten- und Produktionsgrenzen gelten weiterhin; reine Analyse-/Read-only-Aufträge bleiben lesend.
 
 ---
 
