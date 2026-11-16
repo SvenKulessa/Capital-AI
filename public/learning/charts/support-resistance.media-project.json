@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/support-resistance.svg",
-      "sha256": "be7a72d528bb5a2f49045c651d43366a8db1b1fc344974f5091015826c719708",
+      "sha256": "28b8efdffc60df6b920a595a9b4390bde0d4a583b586de6574ece259d11b4a35",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

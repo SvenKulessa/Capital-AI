@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/bear-pennant.svg",
-      "sha256": "667df143a9920a47eb2819889bfeaefd9ab4ce54986454eac7a43a73e44af41c",
+      "sha256": "618f75bc148e1dc35e1a0b0afbfe98d05e15e7d8354ef7cb77c473bfb2e67426",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

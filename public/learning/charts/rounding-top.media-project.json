@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/rounding-top.svg",
-      "sha256": "1604cd1eead13e12478a993e1baa6cf2ebccd7a8b1e4177ca8bdabd887bd2eed",
+      "sha256": "c3f0d6d28aef70d4383e9307569f570df9ac9b2543acd1a6e8d0caefd316ba4b",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
