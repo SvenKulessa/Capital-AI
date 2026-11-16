@@ -52,3 +52,8 @@ Scope: Ausschließlich Owner-only-X-Milestone-Pfad und dessen X-Publisher; kein 
 - Reversibler Fix am **bestehenden PR-Branch**: opt-in Scope nur mit `SOCIAL_X_MILESTONE_MEDIA_ENABLED`, `SOCIAL_X_MEDIA_UPLOAD_ENABLED`, `SOCIAL_X_PAID_MEDIA_APPROVED` = true; ohne diese Flags bleibt der bisherige OAuth-Vertrag unverändert.
 - Negative Tests: fehlender Grant blockiert vor Profile-/DB-Aufruf; Extra-/Doppelscopes blockiert; Nicht-Owner kann keinen OAuth-State erstellen.
 - Owner-Reconnect, Token-Refresh und tatsächliche Providerberechtigung bleiben **BLOCKED/NOT_PROVEN** bis separater autorisierter produktiver Freigabe. Keine produktiven OAuth-/DB-/X-Mutationen.
+
+## Refresh-Regression: optionales X-Media-Grant
+- Erweiterter Negativbefund: Der vorhandene X-Token-Refresh validierte ursprünglich nur die vier Basisscopes. Dadurch hätte ein Provider-Downgrade von `media.write` unbemerkt hinter einem gespeicherten `mediaWriteApproved=true` verbleiben können.
+- Fix: Signed-Edge-`refresh_claim` übermittelt den optional tatsächlich gespeicherten Grant; die Owner-Refresh-Logik verlangt bei Medienberechtigung den vollständigen Provider-Grant. Fehlende Scope-Rückgabe oder Downgrade blockiert die Rotation, verlangt Reconnect und verhindert den kostenpflichtigen X-Account-Readback nach der Scopeprüfung.
+- Synthetische Positiv-/Negativtests in `owner-token-refresh.test.mjs` und `x-edge-vault.test.mjs`. Kein echter Provider-Aufruf, keine Token-Ausgabe und keine Provider-/Datenbankmutation.
