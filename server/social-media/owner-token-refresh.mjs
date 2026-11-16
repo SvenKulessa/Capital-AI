@@ -67,7 +67,8 @@ function oauthClient(env) {
     'SOCIAL_REFRESH_CLIENT_UNCONFIGURED');
   return { clientId, clientSecret };
 }
-async function providerRefresh(fetchImpl, env, channel, oldToken, accountId) {
+async function providerRefresh(fetchImpl, env, channel, oldToken, accountId,
+  requiredScopes = X_SCOPES) {
   const { clientId, clientSecret } = oauthClient(env);
   const form = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: oldToken });
   const url = 'https://api.x.com/2/oauth2/token';
@@ -94,7 +95,8 @@ async function providerRefresh(fetchImpl, env, channel, oldToken, accountId) {
       'SOCIAL_REFRESH_NEW_TOKEN_INVALID');
   }
   const scopes = typeof result.scope === 'string' ? result.scope.split(' ').filter(Boolean) : null;
-  must(!scopes || X_SCOPES.every(x => scopes.includes(x)),
+  must(scopes ? requiredScopes.every(x => scopes.includes(x))
+    : requiredScopes.length === X_SCOPES.length,
     'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
   // Account binding must be checked after refresh, before rotating stored tokens.
   const accountRes = await safeFetch(fetchImpl, 'https://api.x.com/2/users/me',
@@ -126,7 +128,10 @@ export async function refreshOwnerXForWorkload({ env = process.env, userId,
       'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
     const key = keyFromEnv(env, channel);
     const oldToken = unseal(claim.refreshCipher, key, userId, channel);
-    const tokens = await providerRefresh(fetchImpl, env, channel, oldToken, claim.accountId);
+    const expectedScopes = claim.scopes.includes('media.write')
+      ? [...X_SCOPES, 'media.write'] : X_SCOPES;
+    const tokens = await providerRefresh(fetchImpl, env, channel, oldToken,
+      claim.accountId, expectedScopes);
     if (tokens.outcome !== 'success') {
       const disposition = tokens.outcome === 'rate_limited' ? 'rate_limited' : 'reconnect';
       await edge.refreshEnd(userId, leaseId, disposition);
