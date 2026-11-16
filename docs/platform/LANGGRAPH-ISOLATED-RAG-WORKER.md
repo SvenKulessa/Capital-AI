@@ -10,7 +10,7 @@ Kein Render-Service, keine Disk, keine GitHub-Berechtigung, kein LLM-Abo oder
 Provider-Token wird eingerichtet. Die Rust/NATS-Provider-Bridge bleibt suspendiert.
 
 Der neue `deploy/Dockerfile.langgraph-worker` erzwingt einen zur Buildzeit aufgelösten, unveränderlichen
-Alpine-3.24-Python-Base-Digest aus dem vorhandenen PR-Agent-Stack und das
+glibc-Python-Base-Digest aus dem vorhandenen PR-Agent-Stack und das
 bestehende `scripts/growth-agent/requirements.lock`. Der Worker führt keine
 GitHub-, Render-, Supabase- oder LLM-Aufrufe aus. Vor produktivem Einsatz
 müssen Image-Scan, Dependency-Evidence und Runtime-Tauglichkeit separat
@@ -20,9 +20,8 @@ Docker-Kandidat bewusst nicht gebaut werden.
 Beispiel zum ausschließlich lokalen Build mit immutable linux/amd64-Provenance:
 
 ```bash
-docker pull --platform linux/amd64 python:3.14.7-alpine3.24
-PYTHON_BASE="$(docker image inspect --format '{{index .RepoDigests 0}}' python:3.14.7-alpine3.24)"
-[[ "$PYTHON_BASE" =~ ^python@sha256:[0-9a-f]{64}$ ]] || exit 2
+PYTHON_BASE="python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d"
+docker pull --platform linux/amd64 "$PYTHON_BASE"
 docker build --platform linux/amd64 \\
   --build-arg "PYTHON_BASE=$PYTHON_BASE" \\
   --file deploy/Dockerfile.langgraph-worker \\
@@ -32,7 +31,11 @@ docker build --platform linux/amd64 \\
 Der zugehörige Dockerfile-spezifische Build-Kontext ist in
 `deploy/Dockerfile.langgraph-worker.dockerignore` eingeschränkt; die
 Produktions-`.dockerignore` bleibt unverändert. Ein lokaler Build
-aktiviert keinen Render-Service.
+aktiviert keinen Render-Service. Die gepinnte sqlite-vec-Version wird
+als manylinux-Wheel für glibc benötigt; ein Alpine-Build scheiterte
+nachgewiesen ohne kompatibles musllinux-Wheel. Die bekannten OS-Restrisiken
+der glibc-Basis müssen durch den vollständigen Container-Scan bewertet und
+gegebenenfalls behoben werden; ein erfolgreicher Build allein genügt nicht.
 
 ## LangGraph und RAG
 
