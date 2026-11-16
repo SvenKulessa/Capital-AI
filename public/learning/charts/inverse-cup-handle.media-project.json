@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/inverse-cup-handle.svg",
-      "sha256": "300a1e6fb73dcc74489b41db431d1627a3b64e13d03d4ef00030645b1dd18db7",
+      "sha256": "4dd39b087b660d3b389d26e4cbb4ba7a5f9d63c8e26a5a452a26d6f2e06eee41",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

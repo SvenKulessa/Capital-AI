@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/keltner.svg",
-      "sha256": "ce8b5e9f3d46036ede4b0b509a26f94943ddf0d9f4e8e657b909872f832cba13",
+      "sha256": "a93f738827938671a7e0a2499c6dfab267f6b2e6a9953017bbca869efc15fe53",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

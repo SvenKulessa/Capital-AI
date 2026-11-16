@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/stochastic.svg",
-      "sha256": "58cd9571278aeade34490021c690cfe5dacdbca9c69ef0612a18ef4543ff76ec",
+      "sha256": "577f840f4a3d5a6ce757b7b691c9be03c1050c730ff1b9dbce7626e795bc9f85",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

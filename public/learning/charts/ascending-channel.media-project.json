@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/ascending-channel.svg",
-      "sha256": "58360cfcb4defc9fdfcc061717c977f7f1c0020b09b95dfd98a29090179e7e4f",
+      "sha256": "33fcfd013b57a471ef24316eb5a9a76808c9cff9e24fa0395bab566c24109944",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

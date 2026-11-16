@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/adx.svg",
-      "sha256": "2ee5425bca1bb5093553598bda8a1ee102a60f7bf2d697a90935ca78bb58aecf",
+      "sha256": "0ce7d9c40e2724500927f483fd25f587d1886736851e4eb5adf480b236c07555",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

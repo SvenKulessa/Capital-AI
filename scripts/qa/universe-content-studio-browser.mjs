@@ -63,9 +63,19 @@ const inspect = [
   'const names=Array.from(strip.children).map(el=>el.textContent.trim());',
   'const overflow=Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth);',
   'const clipped=swatches.some(el=>{const r=el.getBoundingClientRect();return r.left<box.left-1||r.right>box.right+1||r.width<=0||r.height<=0;});',
+  'const buddy=document.querySelector("[data-hero-buddy=agent] > button");',
+  'const br=buddy?.getBoundingClientRect();',
+  'const spectrum=document.querySelector("section[aria-label=Chart-Lernatlas] svg [data-universe-spectrum]");',
+  'const chartDots=Array.from(spectrum?.querySelectorAll("circle")??[]);',
+  'const atlasHeader=document.querySelector("section[aria-label=Chart-Lernatlas] > div:first-child");',
+  'const textRects=atlasHeader?[...atlasHeader.querySelectorAll("h2,p")].flatMap(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()];}):[];',
+  'const buddyTextOverlap=!!br && textRects.some(r=>r.right>br.left+2 && r.left<br.right-2 && r.bottom>br.top+2 && r.top<br.bottom-2);',
   'return {heading:document.getElementById("capital-universe-profile")?.textContent.trim()??null,',
   'names,colours:swatches.map(el=>getComputedStyle(el).backgroundColor),overflow,clipped,',
   'panelWidth:box.width,panelLeft:box.left,panelRight:box.right,',
+  'chartUniverseColours:chartDots.map(el=>el.getAttribute("fill")),chartUniverseDecorative:spectrum?.getAttribute("aria-hidden")==="true",',
+  'buddy:br?{x:br.x,y:br.y,width:br.width,height:br.height,ariaLabel:buddy.getAttribute("aria-label")}:null,buddyTextOverlap,',
+  'cookiePanelVisible:!!document.querySelector("[aria-labelledby=cookie-consent-v3-title]"),',
   'documentWidth:document.documentElement.clientWidth,',
   'reducedMotion:matchMedia("(prefers-reduced-motion: reduce)").matches};',
   '})()',
@@ -101,22 +111,58 @@ try {
     await command('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor:1 });
     await command('Page.navigate', { url:origin + route });
     await until(() => evaluate('document.readyState==="complete" && !!document.querySelector("[aria-labelledby=capital-universe-profile]")'), 'PANEL_' + viewport.width);
-    await evaluate('Array.from(document.querySelectorAll("button")).find(b=>/^(Nur notwendige|Necessary only)$/.test(b.textContent.trim()))?.click()');
+    // A fresh isolated browser always starts with no cookie receipt. Wait for
+    // React's consent UI before rejecting optional tracking; the previous
+    // best-effort click could run before hydration and hide the actual preview.
+    if (viewport.width === 320) {
+      await until(() => evaluate('!!document.querySelector("[aria-labelledby=cookie-consent-v3-title] button")'), 'COOKIE_BANNER');
+      const rejected = await evaluate('(() => { const panel=document.querySelector("[aria-labelledby=cookie-consent-v3-title]"); const button=panel?.querySelector("button"); button?.click(); return !!button; })()');
+      assert.equal(rejected, true, 'Consent rejection button unavailable');
+    }
+    await until(() => evaluate('!document.querySelector("[aria-labelledby=cookie-consent-v3-title]")'), 'COOKIE_DISMISSED_' + viewport.width);
     await evaluate('document.querySelector("[aria-labelledby=capital-universe-profile]").scrollIntoView({block:"center"})');
     await pause(220);
     const dom = await evaluate(inspect);
+    // Persist the evidence even when a geometry assertion fails.
+    const shot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
+    const bytes = Buffer.from(shot.data, 'base64');
+    await writeFile(join(output,'content-studio-' + viewport.width + '.png'), bytes);
+    const evidence = {...viewport,status:'MEASURED',...dom,screenshotSha256:createHash('sha256').update(bytes).digest('hex')};
+    report.viewports.push(evidence);
+    assert.ok(bytes.length > 8_000);
     assert.ok(dom.heading?.includes('Universum'));
     assert.deepEqual(dom.names.map(name=>name.toLowerCase()), families);
     assert.deepEqual(dom.colours, expected);
+    assert.deepEqual(dom.chartUniverseColours, families.map(name => tokens.color.universe[name].$value),
+      'Chart SVG does not contain all seven canonical Universe hues at ' + viewport.width);
+    assert.equal(dom.chartUniverseDecorative, true, 'Decorative Universe chart SVG dots leaked accessibility semantics');
     assert.equal(dom.clipped, false, 'Swatches clipped at ' + viewport.width);
     assert.ok(dom.overflow <= 2, 'Horizontal overflow at ' + viewport.width + ': ' + dom.overflow);
     assert.ok(dom.panelLeft >= -1 && dom.panelRight <= viewport.width + 1);
     assert.equal(dom.reducedMotion, true);
-    const shot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
-    const bytes = Buffer.from(shot.data, 'base64');
-    assert.ok(bytes.length > 8_000);
-    await writeFile(join(output,'content-studio-' + viewport.width + '.png'), bytes);
-    report.viewports.push({...viewport,status:'DOM_LAYOUT_PASS',...dom,screenshotSha256:createHash('sha256').update(bytes).digest('hex')});
+    assert.equal(dom.cookiePanelVisible, false, 'Consent UI obstructs visual regression screenshot');
+    assert.ok(dom.buddy?.ariaLabel?.startsWith('JaJa Chat'), 'JaJa assistant lost its accessible control');
+    if (viewport.mobile) {
+      assert.ok(dom.buddy.width >= 44 && dom.buddy.width <= 56, 'Closed JaJa mobile width should preserve a compact touch target');
+      assert.ok(dom.buddy.height >= 44 && dom.buddy.height <= 56, 'Closed JaJa mobile height should preserve a compact touch target');
+    }
+    assert.equal(dom.buddyTextOverlap, false, 'JaJa assistant visually covers Chart-Lernatlas text at ' + viewport.width);
+    // Capture the actual chart, not only the Universe header above the fold.
+    await evaluate('document.querySelector("section[aria-label=Chart-Lernatlas] figure").scrollIntoView({block:"center"})');
+    await pause(220);
+    const chartFrame = await evaluate('(() => { const el=document.querySelector("section[aria-label=Chart-Lernatlas] figure svg"); const b=el?.getBoundingClientRect(); return b?{left:b.left,right:b.right,width:b.width,height:b.height,visible:b.bottom>0&&b.top<innerHeight}:null; })()');
+    assert.ok(chartFrame?.visible && chartFrame.width > 100, 'Chart SVG is not visible in the viewport');
+    assert.ok(chartFrame.left >= -1 && chartFrame.right <= viewport.width + 1, 'Chart SVG exceeds viewport bounds');
+    const atlasTextOverlap = await evaluate('(() => { const b=document.querySelector("[data-hero-buddy=agent] > button")?.getBoundingClientRect(); const atlas=document.querySelector("section[aria-label=Chart-Lernatlas]"); if(!b||!atlas)return null; return [...atlas.querySelectorAll("dl dd")].some(el=>{const r=document.createRange();r.selectNodeContents(el);return [...r.getClientRects()].some(t=>t.right>b.left+2&&t.left<b.right-2&&t.bottom>b.top+2&&t.top<b.bottom-2);}); })()');
+    assert.equal(atlasTextOverlap, false, 'JaJa assistant obscures Chart-Lernatlas explanation text at ' + viewport.width);
+    const chartShot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
+    const chartBytes = Buffer.from(chartShot.data, 'base64');
+    assert.ok(chartBytes.length > 8_000, 'Chart screenshot missing');
+    await writeFile(join(output, 'chart-universe-' + viewport.width + '.png'), chartBytes);
+    evidence.chartFrame = chartFrame;
+    evidence.chartTextOverlap = atlasTextOverlap;
+    evidence.chartScreenshotSha256 = createHash('sha256').update(chartBytes).digest('hex');
+    evidence.status = 'DOM_LAYOUT_PASS';
   }
   report.status = 'TARGETED_PASS';
 } catch (error) {
