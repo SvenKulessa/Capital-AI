@@ -1,0 +1,11 @@
+# Dedicated Dockerfile-specific allowlist. Does not affect production Dockerfile.
+**
+!AGENTS.md
+!scripts/
+!scripts/growth-agent/
+!scripts/growth-agent/**
+!docs/
+!docs/architecture/
+!docs/architecture/EXECUTION-FIRST-LANGGRAPH.md
+!docs/platform/
+!docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md
