@@ -21,14 +21,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Resolve immutable Python Alpine base
+      - name: Resolve immutable Python glibc base
         id: base
         shell: bash
         run: |
           set -euo pipefail
-          docker pull --platform linux/amd64 python:3.14.7-alpine3.24
-          ref="$(docker image inspect --format '{{index .RepoDigests 0}}' python:3.14.7-alpine3.24)"
-          [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+          ref="python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d"
+          docker pull --platform linux/amd64 "$ref"
+          test "$(docker image inspect --format '{{.Architecture}}' "$ref")" = "amd64"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
       - name: Build unactivated worker candidate
         shell: bash
