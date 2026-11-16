@@ -214,3 +214,39 @@ test('owner start hides arbitrary exception contents and blocks non-owner diagno
   assert.equal(b.body.diagnostic, undefined);
   assert.equal(called, 0);
 });
+
+
+test('X OAuth media.write opt-in needs all three explicit media flags and verified owner', async () => {
+  for (const flags of [
+    {}, { SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true' },
+    { SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true', SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'true' },
+    { SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true', SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'true',
+      SOCIAL_X_PAID_MEDIA_APPROVED: 'true' },
+  ]) {
+    let starts = 0;
+    const handler = createSocialXOAuthStart({
+      env: { ...ENV, ...flags },
+      auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+        authorizeIamRole: async () => true },
+      store: { beginOAuth: async () => { starts++; return {state: 'a'.repeat(43)}; } },
+    });
+    const response = res();
+    await handler.handle(req(), response, url(), json);
+    assert.equal(response.status, 303);
+    assert.equal(starts, 1);
+    const scopes = new URL(response.headers.Location).searchParams.get('scope');
+    assert.equal(scopes.includes('media.write'), flags.SOCIAL_X_PAID_MEDIA_APPROVED === 'true');
+  }
+  let states = 0;
+  const handler = createSocialXOAuthStart({
+    env: { ...ENV, SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true',
+      SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'true', SOCIAL_X_PAID_MEDIA_APPROVED: 'true' },
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => false },
+    store: { beginOAuth: async () => { states++; } },
+  });
+  const denied = res();
+  await handler.handle(req(), denied, url(), json);
+  assert.equal(denied.status, 403);
+  assert.equal(states, 0);
+});
