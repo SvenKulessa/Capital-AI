@@ -56,7 +56,7 @@ const auth = {
   authorizeIamRole: async () => true,
   internalAccessToken: async () => JWT,
 };
-function fixture(channel, { provider, ownerAuth=auth } = {}) {
+function fixture(channel, { provider, ownerAuth=auth, grantMedia=false, providerScopes=null } = {}) {
   const oldToken = 'synthetic-refresh-OLD-TOKEN';
   const previous = seal(oldToken, channel);
   const calls = { lease: [], finish: [], end: [], network: [] };
@@ -69,7 +69,8 @@ function fixture(channel, { provider, ownerAuth=auth } = {}) {
         assert.equal(userId, USER);
         calls.lease.push(leaseId);
         return { claimed: true, leaseId, refreshCipher: previous,
-          accountId, scopes: channel === 'X' ? X_SCOPES : YT_SCOPES };
+          accountId, scopes: channel === 'X'
+            ? (grantMedia ? [...X_SCOPES,'media.write'] : X_SCOPES) : YT_SCOPES };
       },
       async refreshFinish(...args) {
         calls.finish.push(args);
@@ -90,7 +91,9 @@ function fixture(channel, { provider, ownerAuth=auth } = {}) {
         access_token: 'synthetic-access-NEW-TOKEN',
         ...(channel === 'X' ? { refresh_token: 'synthetic-refresh-NEW-TOKEN' } : {}),
         expires_in: 3600, token_type: 'Bearer',
-        scope: (channel === 'X' ? X_SCOPES : YT_SCOPES).join(' '),
+        scope: (providerScopes ?? (channel === 'X'
+          ? (grantMedia ? [...X_SCOPES,'media.write'] : X_SCOPES)
+          : YT_SCOPES)).join(' '),
       }) };
     }
     return { ok: true, status: 200, text: async () => JSON.stringify(
@@ -216,4 +219,29 @@ test('X refresh never claims or contacts a paid provider when read-budget approv
   assert.deepEqual(res.body,{error:'social_x_paid_read_not_approved'});
   assert.equal(edgeCalls,0);
   assert.equal(networkCalls,0);
+});
+
+
+test('X refresh preserves optional media.write after validated provider scope', async () => {
+  const { handler, calls } = fixture('X', { grantMedia: true });
+  const res = makeResponse();
+  await handler.handle(request(), res, url('X'), json);
+  assert.equal(res.status, 200);
+  assert.equal(calls.finish.length, 1);
+  assert.equal(calls.end.length, 0);
+});
+
+test('X media grant downgrade on refresh blocks persistence and requires reconnect', async () => {
+  for (const scopes of [X_SCOPES, []]) {
+    const { handler, calls } = fixture('X', {
+      grantMedia: true, providerScopes: scopes,
+    });
+    const res = makeResponse();
+    await handler.handle(request(), res, url('X'), json);
+    assert.equal(res.status, 503);
+    assert.equal(res.body.status, 'reconnect_required');
+    assert.equal(calls.finish.length, 0);
+    assert.equal(calls.end.length, 1);
+    assert.equal(calls.network.length, 1, 'reject before paid profile readback');
+  }
 });

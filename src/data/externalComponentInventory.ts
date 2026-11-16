@@ -358,13 +358,13 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'node-runtime', name: 'Node.js', domain: 'PLATFORM', kind: 'Runtime',
-    installedAt: null, activeVersion: '26.13.0', pipelineVersion: 'node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '26.13.1', pipelineVersion: 'node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5', lifecycle: 'ACTIVE',
     functionSummary: 'Build- und Production-JavaScript-Runtime; Container-Base ist version- und digest-gepinnt.',
     webAppBinding: 'Dockerfile', license: 'MIT', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['build image', 'production runtime'],
     dependencies: ['npm-cli'],
     alternatives: [{ name: 'Node.js 24 LTS', role: 'fallback', license: 'MIT' }],
-    evidence: ['Dockerfile', 'Node.js v26.10.0 official release'],
+    evidence: ['Dockerfile', 'Node.js v26.13.1 upstream tag'],
   },
   {
     id: 'npm-cli', name: 'npm CLI', domain: 'PLATFORM', kind: 'Package Manager',
@@ -438,7 +438,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-runtime-dependencies', name: 'Web Runtime Dependency Closure', domain: 'PLATFORM', kind: 'Node Runtime Dependencies',
-    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.1 / zod 4.6.7 / nodemailer 10.4.0', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.1 / zod 4.6.7 / nodemailer 10.5.0', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Minimale Production-Dependency-Closure für NATS, Valkey/Redis und Runtime-Validierung.',
     webAppBinding: 'deploy/runtime/package.json + deploy/runtime/package-lock.json', license: 'Apache-2.0 / MIT', cadsScore: 90.0, scoreState: 'VERIFIED',
     domainAssignments: ['production runtime'],
