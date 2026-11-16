@@ -2001,12 +2001,12 @@
     {
       "id": "atr",
       "path": "atr.svg",
-      "sha256": "9feea1d3d6974f25fd72fb15f398ecfe7b060958d2bdbb272a890f9663f982d2",
+      "sha256": "0defa08b9c28e2b954ad4c380e45b700b30201c44b58c4ad7c217a7054ad6225",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "atr.media-project.json",
-      "projectSha256": "159d8689e9296a1499c480dec910faa4d05ca710a37c3559874eae0a99193a92",
+      "projectSha256": "9c7e077ebd769cd04ea6f7c96e10bc0f284c2d1163b356fbaf6bf080085e1ad6",
       "post": "ATR · Schwankungsbreite: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Average True Range glättet True Ranges und misst Schwankungsbreite, keine Richtung. True Range berücksichtigt auch die Distanz zum vorigen Schlusskurs.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=atr\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2042,12 +2042,12 @@
     {
       "id": "adx",
       "path": "adx.svg",
-      "sha256": "2ee5425bca1bb5093553598bda8a1ee102a60f7bf2d697a90935ca78bb58aecf",
+      "sha256": "0ce7d9c40e2724500927f483fd25f587d1886736851e4eb5adf480b236c07555",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "adx.media-project.json",
-      "projectSha256": "9a540cc2c72f5b68699ed3d4041cdf337b9f883d106c0cc399d8a47a5dade60d",
+      "projectSha256": "f0b86cf71c9210a57342564a82cb1782ebd1f4f8bfd5d5b21be3ae674739cf80",
       "post": "ADX · Trendstärke: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Average Directional Index glättet die relative Differenz der Richtungsindikatoren. Ein höherer Wert beschreibt Trendstärke, nicht die Richtung des Trends.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=adx\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2083,12 +2083,12 @@
     {
       "id": "stochastic",
       "path": "stochastic.svg",
-      "sha256": "58cd9571278aeade34490021c690cfe5dacdbca9c69ef0612a18ef4543ff76ec",
+      "sha256": "577f840f4a3d5a6ce757b7b691c9be03c1050c730ff1b9dbce7626e795bc9f85",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "stochastic.media-project.json",
-      "projectSha256": "2ca88f8f695c1f4c69c6969e1be7f0acff3716bcfb3e2ddd33a0f21803906762",
+      "projectSha256": "1bd1dfcb3250afe394e0e4730d85d12f99183aa4a8184a3fb821b9b67837efce",
       "post": "Stochastik · Lage in der Handelsspanne: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Die Stochastik vergleicht den Schlusskurs mit Hoch und Tief des betrachteten Fensters. Marken bei 80 und 20 kennzeichnen relative Extrembereiche.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=stochastic\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2124,12 +2124,12 @@
     {
       "id": "williams-r",
       "path": "williams-r.svg",
-      "sha256": "a35771a966fa362c4b949f45b8040267e5351f93912466c3364149ca7b32fa1e",
+      "sha256": "bbc529087a459baed672dc5e00acef472312e2d2b6c231403bad59e56e8b3fbf",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "williams-r.media-project.json",
-      "projectSha256": "86b55ba1691fb7543e3532859f0e5846d87b076d32dbf7474359053e171c969a",
+      "projectSha256": "525df9bf7b706fc2d7df4109342c26f8880474b0c6efaa1913549b70d4bee40f",
       "post": "Williams %R: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Williams %R setzt den Abstand zum Periodenhoch ins Verhältnis zur Hoch-Tief-Spanne. Die Skala reicht von minus 100 bis null.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=williams-r\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2165,12 +2165,12 @@
     {
       "id": "cci",
       "path": "cci.svg",
-      "sha256": "49fc826b4788817960a43a8243e3d5b6c64044b8729d6b8c75251e0211655df6",
+      "sha256": "901c4e160cda3b9291abeed44dcf04d78ad9224f5988d27119f72086327a590a",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "cci.media-project.json",
-      "projectSha256": "412e39a9a34f668d18e6fc6933111cda1b7b674eef64f20a0855440af3c724a8",
+      "projectSha256": "304cf4da7b8774c35286356f032417045973a864a0528d0a2ba429b20cbf541d",
       "post": "CCI · Abweichung vom Durchschnitt: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Commodity Channel Index normiert die Abweichung des typischen Preises vom gleitenden Mittel mit dessen mittlerer absoluter Abweichung.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=cci\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2206,12 +2206,12 @@
     {
       "id": "roc",
       "path": "roc.svg",
-      "sha256": "abdd71660efc840c66f5465237fd131866f7ad4920531a090d9bcc56b221e1a2",
+      "sha256": "97b27129dc06b3ad3cc0050d615c56b12415bd41259d6238cd6b565f07b253ea",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "roc.media-project.json",
-      "projectSha256": "54cf573892c717a786fc9a5055ca99060f79bfae0a558e179a50a9aab7509212",
+      "projectSha256": "9fd61f479dc5dc3ae5b63426e88fdd16a7cda8bbbc8cd5c256336a41033f8256",
       "post": "Rate of Change: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Rate of Change beschreibt die prozentuale Preisänderung gegenüber einer festgelegten Anzahl vergangener Perioden. Die Fensterlänge beeinflusst die Interpretation.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=roc\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2247,12 +2247,12 @@
     {
       "id": "obv",
       "path": "obv.svg",
-      "sha256": "10fc65fb204197872b426ebdaf5431d7a03ec96d8ce3db04f32dc420e8bb5001",
+      "sha256": "6e7b15b3bb81d8a439fb8960b83af3d102bbd94e4b9a58e185a200c0c77fb55a",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "obv.media-project.json",
-      "projectSha256": "4063f7720bf2e6fa9137d41700bafc2cf0bb455925463f5dfe3eb9c16e1b7064",
+      "projectSha256": "d402357d8116b81d5068d5659bbd0642b865357f9667a527f4632c6dfb39c102",
       "post": "On-Balance Volume: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: On-Balance Volume addiert Volumen bei steigenden Schlusskursen und subtrahiert es bei fallenden Schlusskursen. Divergenzen sind Beobachtungen, keine Beweise.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=obv\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2288,12 +2288,12 @@
     {
       "id": "bollinger",
       "path": "bollinger.svg",
-      "sha256": "d04aaa0a92239986421c2635176b2fe26eea0c49cdaccdd2b8b59027e23ab9d9",
+      "sha256": "ddbacc7ecb1781d624021cfe083cdff6222622f168c85d5193a99b6f3d892795",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bollinger.media-project.json",
-      "projectSha256": "2354c55ac3295a1e1569cbe16aacda8dbd7b2f0a73fbe75e82046ba5915f77d4",
+      "projectSha256": "3f23d5b289721b9cec7da5200bc1e95a6e4ca133c186e27f8df8652b75c9222b",
       "post": "Bollinger-Bänder: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Bollinger-Bänder liegen in einem festgelegten Standardabweichungsabstand um einen gleitenden Durchschnitt. Engere Bänder zeigen geringere beobachtete Streuung.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bollinger\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2348,12 +2348,12 @@
     {
       "id": "keltner",
       "path": "keltner.svg",
-      "sha256": "ce8b5e9f3d46036ede4b0b509a26f94943ddf0d9f4e8e657b909872f832cba13",
+      "sha256": "a93f738827938671a7e0a2499c6dfab267f6b2e6a9953017bbca869efc15fe53",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "keltner.media-project.json",
-      "projectSha256": "301a671248240583526c8d70720c0623f12b1aa52b9f9c537ea77942bb1694b5",
+      "projectSha256": "395bfada8f6e6711ae3de56acbf1a471dff278543dadc48e6abb4a8d6b3ae2fd",
       "post": "Keltner-Kanal: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Ein Keltner-Kanal verwendet typischerweise einen EMA als Mitte und einen ATR-basierten Abstand. Perioden und Multiplikator müssen angegeben werden.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=keltner\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2408,12 +2408,12 @@
     {
       "id": "donchian",
       "path": "donchian.svg",
-      "sha256": "04bf58f19c86437ca62d167f4f2e992c27f49b26fd7ad0652f2d23e2c9a23c00",
+      "sha256": "d2d940bff8a15a18eec6d0d825424cb15cfb065a358172e33e9e24ea1551d346",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "donchian.media-project.json",
-      "projectSha256": "a6d5729ac37642aca4a55e6a524a27fd2a42b8b0516a9e7c4a136719860c97d7",
+      "projectSha256": "f0c95c93b2f67ec98063365137b1cec839f782f31c026d88b8ffe5a4cbc17f9f",
       "post": "Donchian-Kanal: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Ein Donchian-Kanal zeigt das höchste Hoch und das tiefste Tief eines Fensters. Ob die aktuelle Periode ausgeschlossen wird, bestimmt die Ausbruchsinterpretation.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=donchian\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
