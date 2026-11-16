@@ -9,12 +9,30 @@ Weder render.yaml noch das bestehende Produktions-Dockerfile werden verändert.
 Kein Render-Service, keine Disk, keine GitHub-Berechtigung, kein LLM-Abo oder
 Provider-Token wird eingerichtet. Die Rust/NATS-Provider-Bridge bleibt suspendiert.
 
-Der neue `deploy/Dockerfile.langgraph-worker` nutzt einen digest-pinned
-Python-Base-Image-Kandidaten aus dem vorhandenen PR-Agent-Stack und das
+Der neue `deploy/Dockerfile.langgraph-worker` erzwingt einen zur Buildzeit aufgelösten, unveränderlichen
+Alpine-3.24-Python-Base-Digest aus dem vorhandenen PR-Agent-Stack und das
 bestehende `scripts/growth-agent/requirements.lock`. Der Worker führt keine
 GitHub-, Render-, Supabase- oder LLM-Aufrufe aus. Vor produktivem Einsatz
 müssen Image-Scan, Dependency-Evidence und Runtime-Tauglichkeit separat
-bestätigt werden.
+bestätigt werden. Ohne die ARG-Eingabe `PYTHON_BASE` kann der
+Docker-Kandidat bewusst nicht gebaut werden.
+
+Beispiel zum ausschließlich lokalen Build mit immutable linux/amd64-Provenance:
+
+```bash
+docker pull --platform linux/amd64 python:3.14.7-alpine3.24
+PYTHON_BASE="$(docker image inspect --format '{{index .RepoDigests 0}}' python:3.14.7-alpine3.24)"
+[[ "$PYTHON_BASE" =~ ^python@sha256:[0-9a-f]{64}$ ]] || exit 2
+docker build --platform linux/amd64 \\
+  --build-arg "PYTHON_BASE=$PYTHON_BASE" \\
+  --file deploy/Dockerfile.langgraph-worker \\
+  --tag capital-ai-offline-worker:local .
+```
+
+Der zugehörige Dockerfile-spezifische Build-Kontext ist in
+`deploy/Dockerfile.langgraph-worker.dockerignore` eingeschränkt; die
+Produktions-`.dockerignore` bleibt unverändert. Ein lokaler Build
+aktiviert keinen Render-Service.
 
 ## LangGraph und RAG
 
