@@ -10,12 +10,12 @@
     {
       "id": "bull-flag",
       "path": "bull-flag.svg",
-      "sha256": "c1d0810e1a0a1f5f3166edea6f45bf8b8e71a587456d3e77cac5634df2f76cb5",
+      "sha256": "da00b462a0c8b96a7b47f994550aa5eac72c977cdf8b731d38ec31f216258976",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bull-flag.media-project.json",
-      "projectSha256": "8ebe37bdfcfffafa0fa15d73a8b6f4b759733b2ea2a7ba0bc439feddc5313765",
+      "projectSha256": "32be54d26f241f677de715fc6093fba66d84bd9ea2daa0140ca565279d5bbb6f",
       "post": "Bull Flag: Impuls, Pause, Ausbruch: drei Teile einer Flagge.\n\nErkennen: Nach einem steilen Anstieg folgt ein kurzer, leicht abwärts gerichteter Parallelkanal.\nBestätigung: Ein Schlusskurs oberhalb des Kanals kann die Fortsetzungsthese stützen; Volumen und Zeitebene mitprüfen.\nFehlersignal: Ein Bruch unter die Konsolidierung oder ein Rückfall nach dem Ausbruch widerspricht der Fortsetzung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -74,12 +74,12 @@
     {
       "id": "bear-flag",
       "path": "bear-flag.svg",
-      "sha256": "f1cb6fc24871f602548ceb039ca1e0efbb0e2b74f1c0791803aa2eefc5aface6",
+      "sha256": "855bb305f1a14f46bad0f6acffb9f897cca713b1ced3a2be8e96df6045fc0268",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "bear-flag.media-project.json",
-      "projectSha256": "e14660b71b3f03653db4d6bbccbe77bbd7a23daded9d7f225835997a036421b7",
+      "projectSha256": "b67577161bc236987b9ad2f7a64e31157115b3725ba1dca3c6957a363fe487c6",
       "post": "Bear Flag: Eine Erholung kann nur eine Pause im Abwärtstrend sein.\n\nErkennen: Auf einen starken Rückgang folgt ein kurzer, leicht aufwärts gerichteter Parallelkanal.\nBestätigung: Ein Schlusskurs unter dem Kanal kann die Abwärtsthese stützen. Ein einzelner Docht reicht nicht.\nFehlersignal: Ein nachhaltiger Bruch nach oben oder schnelle Rückkehr in den Kanal schwächt die These.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bear-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -138,12 +138,12 @@
     {
       "id": "pennant",
       "path": "pennant.svg",
-      "sha256": "450eb61f88f9a021102824c969416b3741f0a9cf5be098e116d7ec56d07492d7",
+      "sha256": "8f1772d820bb0ce139b1339f8d13315c3cfd37a4a953c9a8fad6c0bee3848df3",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "pennant.media-project.json",
-      "projectSha256": "0feb1fbcdb7c68d35b5dfca2e4dbc14f297052a3a8a7d709f6ca4972081ebe68",
+      "projectSha256": "2c20a457f09edc8351f2e2c70b646c0a8856ff538411fdfd1357ebe1bd0b970f",
       "post": "Wimpel / Pennant: Die Schwankungen werden enger – die Richtung bleibt offen.\n\nErkennen: Nach einem Impuls laufen obere und untere Begrenzung der kurzen Konsolidierung zusammen.\nBestätigung: Erst der Ausbruch und dessen Fortbestand zeigen eine mögliche Auflösung; beide Richtungen beobachten.\nFehlersignal: Ein Fehlausbruch oder eine lange, unscharfe Seitwärtsphase passt nicht zum kurzen Wimpel.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=pennant\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -202,12 +202,12 @@
     {
       "id": "ascending-triangle",
       "path": "ascending-triangle.svg",
-      "sha256": "075358eaa7c33077ffdd159c913db914ec36be35daef21253dc4df74921c8706",
+      "sha256": "e863bce6e80dad558709603ba1d3bbaa09437a9660ac585826ffb6b668ed9c0e",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "ascending-triangle.media-project.json",
-      "projectSha256": "2ce2f3e6cc7c32096c0a2069c03111616611a4f3c9feae39b2b1a0c81fdcda0d",
+      "projectSha256": "1b18bb11df1de1f053e0c371299981f28ddec3153b59dc51282ac7ae9ca2d26d",
       "post": "Aufsteigendes Dreieck: Gleicher Widerstand, höhere Tiefs.\n\nErkennen: Mehrere Hochs liegen auf ähnlicher Höhe, während die Tiefs ansteigen.\nBestätigung: Ein Schlusskurs über dem Widerstand und ein möglicher Retest stützen die Ausbruchsthese.\nFehlersignal: Ein Bruch der steigenden Unterstützung oder Rückfall unter den Widerstand kann das Muster entkräften.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=ascending-triangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -266,12 +266,12 @@
     {
       "id": "double-top",
       "path": "double-top.svg",
-      "sha256": "3c231fdc3de1bdc54e7adac6ff5ae7102d28ff48c5e1383544d721408e616fc3",
+      "sha256": "a9b2ecea099707bc273ec24dd339be4064f7fd5bcb32c0368550931530382d75",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "double-top.media-project.json",
-      "projectSha256": "275f12b4f224291e539c417f1b23457fc8b41a6bffd7d5001e46663c85346966",
+      "projectSha256": "23a02317ceb469a83c72f4703decae0b9699473bbea192c64385fa07560a7b1e",
       "post": "Doppeltop: Zwei Hochs sind erst der Anfang der Beobachtung.\n\nErkennen: Zwei ähnliche Hochs werden durch ein Zwischentief getrennt. Dessen Niveau bildet die Nackenlinie.\nBestätigung: Ein Schlusskurs unter der Nackenlinie kann eine Umkehrthese stützen.\nFehlersignal: Neue Hochs oder Rückeroberung der Nackenlinie widersprechen der erwarteten Abwärtsauflösung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=double-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -330,12 +330,12 @@
     {
       "id": "double-bottom",
       "path": "double-bottom.svg",
-      "sha256": "343c0640ff6538e7d287d329d0cb6453569921f5f5187e3acbc28d19d8f3851a",
+      "sha256": "fd1a65a61a90f6b4bbe624160e881b5468f33a6a5c270622cb34224f565f10c8",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "double-bottom.media-project.json",
-      "projectSha256": "792d04984e8480f9bbe6087d1c1ec1b69b11718eece8ff13a6c926b8206fbe2d",
+      "projectSha256": "f13474be9eda30774fe1030b8b4d631fb3e720151f3322195bfebf375bf38e04",
       "post": "Doppelboden: Zwei Tiefs, ein dazwischenliegender Widerstand.\n\nErkennen: Zwei ähnliche Tiefs werden durch ein Zwischenhoch getrennt. Dieses bildet die Nackenlinie.\nBestätigung: Ein Schlusskurs oberhalb der Nackenlinie kann die Aufwärtsthese stützen.\nFehlersignal: Neue Tiefs oder Rückfall unter die Nackenlinie schwächen die Umkehrthese.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=double-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {

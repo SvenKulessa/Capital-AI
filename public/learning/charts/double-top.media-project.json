@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/double-top.svg",
-      "sha256": "3c231fdc3de1bdc54e7adac6ff5ae7102d28ff48c5e1383544d721408e616fc3",
+      "sha256": "a9b2ecea099707bc273ec24dd339be4064f7fd5bcb32c0368550931530382d75",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

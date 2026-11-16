@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/bear-flag.svg",
-      "sha256": "f1cb6fc24871f602548ceb039ca1e0efbb0e2b74f1c0791803aa2eefc5aface6",
+      "sha256": "855bb305f1a14f46bad0f6acffb9f897cca713b1ced3a2be8e96df6045fc0268",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
