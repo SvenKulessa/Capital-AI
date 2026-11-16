@@ -20,11 +20,7 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
     && rm -rf /root/.npm /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 # GA4 provider plane: build the pinned official MCP into an isolated venv.
 # Transitive pins keep known remediated versions inside the scanned image.
-RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' \
-    && mkdir -p /run/clamav /var/lib/clamav \
-    && chown -R 1000:1000 /run/clamav /var/lib/clamav \
-    && chmod 0700 /run/clamav /var/lib/clamav
-COPY deploy/profile-avatar/clamd.conf deploy/profile-avatar/freshclam.conf ./deploy/profile-avatar/ 'py3-pip>=26.1.2-r0' \
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
     && python3 -m venv /opt/ga4-mcp \
     && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 google-adk==2.14.0 opentelemetry-api==1.45.2 opentelemetry-sdk==1.45.2 msgpack==1.2.3 urllib3==2.8.0 \
     && /opt/ga4-mcp/bin/pip check \
@@ -181,7 +177,11 @@ RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-RUN apk add --no-cache 'python3>=3.14.8-r0'
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' \
+    && mkdir -p /run/clamav /var/lib/clamav \
+    && chown -R 1000:1000 /run/clamav /var/lib/clamav \
+    && chmod 0700 /run/clamav /var/lib/clamav
+COPY deploy/profile-avatar/clamd.conf deploy/profile-avatar/freshclam.conf ./deploy/profile-avatar/
 COPY ["Chat Buddy/README.md", "./Chat Buddy/README.md"]
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
@@ -190,7 +190,7 @@ COPY docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md ./docs/licenses/C
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
 COPY --from=build /app/packages/benchmark-core ./packages/benchmark-core
 COPY --from=build /app/contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
-COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
 COPY server/purchase-receipt.mjs ./server/
 COPY server/render-owner-dashboard.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
