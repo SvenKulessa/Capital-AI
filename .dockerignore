@@ -448,6 +448,7 @@
 
 # Exact new hub/owner dependencies and isolated build validation inputs.
 !shared/account-display.mjs
+!shared/account-avatar-policy.mjs
 !shared/analytics-demo.mjs
 !shared/hub-branding.mjs
 !server/historical-analytics-demo.mjs
