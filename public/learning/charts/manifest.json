@@ -394,12 +394,12 @@
     {
       "id": "head-shoulders",
       "path": "head-shoulders.svg",
-      "sha256": "19f1efc123011e4a14eb8a494aa71523026221b35f06d5a25ca75c77335c5bb6",
+      "sha256": "b9b881ba59c6137d5b23623a5c065b2fbd352f805d79d94d0f6b94506d644acc",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "head-shoulders.media-project.json",
-      "projectSha256": "776e435331f6f965d4c86733999be37e1f412aee3579508633f560d724812640",
+      "projectSha256": "76d7af5e4cca0b1ea08f1d7c8fca1a1e262b7012726e0b5efb7c7e0f72655b50",
       "post": "Schulter–Kopf–Schulter: Drei Hochs, das mittlere am höchsten.\n\nErkennen: Linke Schulter, höherer Kopf und rechte Schulter. Die beiden Zwischentiefs definieren die Nackenlinie.\nBestätigung: Ein Schlusskurs unter der Nackenlinie kann die Umkehrthese stützen.\nFehlersignal: Ein neues Hoch oder nachhaltige Rückeroberung der Nackenlinie schwächt die These.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=head-shoulders\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -458,12 +458,12 @@
     {
       "id": "support-resistance",
       "path": "support-resistance.svg",
-      "sha256": "be7a72d528bb5a2f49045c651d43366a8db1b1fc344974f5091015826c719708",
+      "sha256": "28b8efdffc60df6b920a595a9b4390bde0d4a583b586de6574ece259d11b4a35",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "support-resistance.media-project.json",
-      "projectSha256": "33789a363a022fa27fe0d3b604e27f0d32122e078258b1c4a60b876b595eeeff",
+      "projectSha256": "465538f8b411da6cc92a24f639f0c5b3992cb51c48117fbfdb77e22d2091feb2",
       "post": "Unterstützung & Widerstand: Zonen erklären Reaktionen besser als millimetergenaue Linien.\n\nErkennen: Wiederholte Reaktionen an ähnlichen Tiefs und Hochs bilden beobachtbare Unterstützungs- und Widerstandszonen.\nBestätigung: Wiederholte Reaktion oder Ausbruch mit anschließendem Retest beobachten.\nFehlersignal: Ein nachhaltiger Bruch zeigt, dass die bisherige Zone nicht mehr hält.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=support-resistance\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -522,12 +522,12 @@
     {
       "id": "rsi",
       "path": "rsi.svg",
-      "sha256": "1f8940c9c6e56962c6cc22878dae4f46ce0e57b343db1426aa8000de1b1cd6c8",
+      "sha256": "a8011f309411617e63d9e32aca3bd7577accb31ae09d21dee850a38f642f54be",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "rsi.media-project.json",
-      "projectSha256": "ac4eee4ddfbc6d0f5ded4a303b169773c1a653daef590bced8c32096ed1b9704",
+      "projectSha256": "9459ac0d351a808abcbc42636bcf6222c2426e5fae9056bc9976562c0ce03f19",
       "post": "RSI: Momentum lesen: Überkauft bedeutet nicht: Der Kurs muss sofort fallen.\n\nErkennen: Der RSI bewegt sich zwischen 0 und 100. 70 und 30 sind verbreitete Beobachtungsmarken, keine universellen Handelsregeln.\nBestätigung: Rückkehr aus Extrembereichen und den Preis-/Trendkontext gemeinsam betrachten.\nFehlersignal: In starken Trends kann RSI lange extrem bleiben. Ein Extremwert allein bestätigt keine Umkehr.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rsi\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -586,12 +586,12 @@
     {
       "id": "macd",
       "path": "macd.svg",
-      "sha256": "af2c6e536e95bef5f0ff9721ba57f04cf4207895e92e0bef79cc52cdf8d0d517",
+      "sha256": "d2f1157629417ec1b072e666eb7476c42a00209d65e0bca677d99ed28e8c883e",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "macd.media-project.json",
-      "projectSha256": "709dc23108c5fd5e0782f232ef2422f7e1747d976ffa7bc450a35d4dba77c72a",
+      "projectSha256": "b491fdc1b23711214869b689a7fe6bf786de0caaf60a6b80cee330f146d18623",
       "post": "MACD & Signallinie: Kreuzung und Nulllinie erzählen unterschiedliche Dinge.\n\nErkennen: Die MACD-Linie ist die Differenz zweier EMAs; die Signallinie glättet sie. Üblich sind 12/26/9 Perioden.\nBestätigung: Kreuzungen im Trendkontext beobachten. Die Nulllinie kennzeichnet die relative Lage der beiden Preis-EMAs.\nFehlersignal: Seitwärtsmärkte können viele wechselnde Kreuzungen erzeugen. Verzögerung und Fehlsignale mitbewerten.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=macd\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -658,12 +658,12 @@
     {
       "id": "moving-averages",
       "path": "moving-averages.svg",
-      "sha256": "45fd15c60a6b3a2a706d0d6616cb3aafe1e6370a664a0d847fd7e5095189bc48",
+      "sha256": "30e962c2b3cd2f2c00b1193cb221f56c9d3d9f74a08160c8e35f9339fd8c9469",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "moving-averages.media-project.json",
-      "projectSha256": "ff7e8b601d7db102ce74d02e1a6a8aa120219cd28cef8da45135db62192ef6fd",
+      "projectSha256": "f3a9779083b7af9e2f6aded6452af3346c7ac4ddfc18671a5402814a48e550bb",
       "post": "Gleitende Durchschnitte: Glättung schafft Übersicht, aber auch Verzögerung.\n\nErkennen: Ein kurzer Durchschnitt reagiert schneller als ein langer. Kreuzungen illustrieren mögliche Trendwechsel.\nBestätigung: Die Steigung und der übergeordnete Trend liefern Kontext; Perioden und SMA/EMA-Auswahl offenlegen.\nFehlersignal: In Seitwärtsphasen wechseln Kreuzungen häufig. Ein Durchschnitt erkennt keinen zukünftigen Kurs.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=moving-averages\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -718,12 +718,12 @@
     {
       "id": "volume-breakout",
       "path": "volume-breakout.svg",
-      "sha256": "8affac076fffbd92a96907654c12bc4a9a5491b491d41e430288ed94cd6099c6",
+      "sha256": "bb807e4b0e5f2d3d9201f639a7294b09c832b342db4625b3b588df9d35c6c3b4",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "volume-breakout.media-project.json",
-      "projectSha256": "e3846e137225d99d30f4c7b6408ed2e00e9aa6cccd1b721ae0e60eb64fd4681a",
+      "projectSha256": "d3feaac89b5608a57b7e7c3d0d7b38ed053d6c4fd8838bb1462097415b13c6a2",
       "post": "Volumen & Ausbruch: Mehr Aktivität kann einen Ausbruch stützen – nicht garantieren.\n\nErkennen: Die Aktivität am Ausbruch mit vorherigen Perioden desselben Markts, derselben Quelle und Zeitebene vergleichen.\nBestätigung: Erhöhtes Volumen und Fortbestand des Preisausbruchs können sich ergänzen; dieses Bild zeigt nur das Volumenkonzept.\nFehlersignal: Hohes Volumen kann auch am Ende einer Bewegung auftreten. Lücken und venue-spezifische Abdeckung prüfen.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=volume-breakout\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -771,12 +771,12 @@
     {
       "id": "inverse-head-shoulders",
       "path": "inverse-head-shoulders.svg",
-      "sha256": "b1fd1ea04fdefca7cc55be960190b7df968341df143e84ed654b5285daeff183",
+      "sha256": "ee7e0bfb0131e5fcf446633b64d871760699c3574820e3c746a6b5ea9d539a93",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "inverse-head-shoulders.media-project.json",
-      "projectSha256": "c3b3c7465c67132400d88aefc68941beab2d3f25cdea2c604d4dcc6aa1675083",
+      "projectSha256": "07c5ad6811f11375f737b0747fae37bb56bdab342a6b5a96f5f52d8e6d841080",
       "post": "Inverse Schulter–Kopf–Schulter: Drei Tiefs; das mittlere ist tiefer als die beiden Schultern.\n\nErkennen: Drei Tiefs; das mittlere ist tiefer als die beiden Schultern. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=inverse-head-shoulders\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -812,12 +812,12 @@
     {
       "id": "triple-top",
       "path": "triple-top.svg",
-      "sha256": "7e1c92bfd2082247f75f4a89de90fdcaa9c32a85652e98f5e147df0d174a35f0",
+      "sha256": "1f53137b7b67b3a70a1c362e0d5a01f51ec03b09f3c2bfcf53d95401bd8ae7ca",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "triple-top.media-project.json",
-      "projectSha256": "dc8b54e7fce47da40e60bce27647e5665dcf935802ac51961560b11066e1d491",
+      "projectSha256": "dd93901c85f79dc33829de1438a947466e2f87f280f2b4652edf118f8a486507",
       "post": "Dreifachtop: Drei ähnlich hohe Gipfel werden durch zwei Rückgänge getrennt.\n\nErkennen: Drei ähnlich hohe Gipfel werden durch zwei Rückgänge getrennt. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=triple-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -853,12 +853,12 @@
     {
       "id": "triple-bottom",
       "path": "triple-bottom.svg",
-      "sha256": "4253097840c36808a66ed701c5f24589160e58519b8c7aae93a92120fc2b95af",
+      "sha256": "05e597675130e1d1f14b1aca19105c0edb185df4391dd3d4ad66d42643fc3ccc",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "triple-bottom.media-project.json",
-      "projectSha256": "1aab0cf7dd4ffea9e1d9daa7f0edceb978186f66669f0dd20d23f30560c4e2ad",
+      "projectSha256": "cd86a941f7c99bbc0e14ae537b0e055ec6e33b26aeefe799f99903d712b7e0dc",
       "post": "Dreifachboden: Drei ähnliche Tiefpunkte wechseln sich mit zwei Erholungen ab.\n\nErkennen: Drei ähnliche Tiefpunkte wechseln sich mit zwei Erholungen ab. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=triple-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -894,12 +894,12 @@
     {
       "id": "descending-triangle",
       "path": "descending-triangle.svg",
-      "sha256": "4859304d320c61e87a84e3679bb67b76c24bbbf764f8de1a51f7188e48112ee7",
+      "sha256": "6e5e4d13552a23e7988fb5734858b67edb346428a3824606e382129fdd4c3155",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "descending-triangle.media-project.json",
-      "projectSha256": "9e9c2dc7e5d4555619ef33a0c9688e991703f7674f922af6ea47927d6922cc2c",
+      "projectSha256": "4bf11daea56b0a2e1c84ee9493e827f9ec13604543c0b9b0bf95873072f66479",
       "post": "Absteigendes Dreieck: Ähnliche Tiefs treffen auf schrittweise niedrigere Hochs.\n\nErkennen: Ähnliche Tiefs treffen auf schrittweise niedrigere Hochs. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=descending-triangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -935,12 +935,12 @@
     {
       "id": "symmetric-triangle",
       "path": "symmetric-triangle.svg",
-      "sha256": "b00f1e0352616548d3d3df5a30def03202c5c178cf5533d2b46ea6bbbdbce077",
+      "sha256": "e089af370b86bf076751429476fcba52252b6982633a0bef4bd60dfb60446a67",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "symmetric-triangle.media-project.json",
-      "projectSha256": "2044d439987265faa4822abc68712b9ea9391a4f3e285d443ac29096840d35a0",
+      "projectSha256": "0b04aed60cca1023d9eeaa2b7be849705cfb8eaeda4f080ae744a1fe3b69a427",
       "post": "Symmetrisches Dreieck: Fallende Hochs und steigende Tiefs nähern sich einander an.\n\nErkennen: Fallende Hochs und steigende Tiefs nähern sich einander an. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=symmetric-triangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -976,12 +976,12 @@
     {
       "id": "rising-wedge",
       "path": "rising-wedge.svg",
-      "sha256": "464238c390f19f097a5fa559f9a73dd7e39aa94ce39b8bb020125c9c1d83733b",
+      "sha256": "a482bad6ca0f816013e40d04fd36a4421402ee9b14169bd45156b6b22bc4c435",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675,
       "projectPath": "rising-wedge.media-project.json",
-      "projectSha256": "5bd69a031786770006a75ba80da3fc7375b8926146937c4069c242e1456c40d3",
+      "projectSha256": "6c67959e884bf8af1b83aa84a1f71c2557111ccb2a387464b9f9098aff85c1d8",
       "post": "Steigender Keil: Beide Grenzen steigen; die untere Grenze steigt schneller und verengt die Spanne.\n\nErkennen: Beide Grenzen steigen; die untere Grenze steigt schneller und verengt die Spanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rising-wedge\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {

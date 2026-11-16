@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/macd.svg",
-      "sha256": "af2c6e536e95bef5f0ff9721ba57f04cf4207895e92e0bef79cc52cdf8d0d517",
+      "sha256": "d2f1157629417ec1b072e666eb7476c42a00209d65e0bca677d99ed28e8c883e",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
