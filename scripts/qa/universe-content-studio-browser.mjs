@@ -153,11 +153,14 @@ try {
     const chartFrame = await evaluate('(() => { const el=document.querySelector("section[aria-label=Chart-Lernatlas] figure svg"); const b=el?.getBoundingClientRect(); return b?{left:b.left,right:b.right,width:b.width,height:b.height,visible:b.bottom>0&&b.top<innerHeight}:null; })()');
     assert.ok(chartFrame?.visible && chartFrame.width > 100, 'Chart SVG is not visible in the viewport');
     assert.ok(chartFrame.left >= -1 && chartFrame.right <= viewport.width + 1, 'Chart SVG exceeds viewport bounds');
+    const atlasTextOverlap = await evaluate('(() => { const b=document.querySelector("[data-hero-buddy=agent] > button")?.getBoundingClientRect(); const atlas=document.querySelector("section[aria-label=Chart-Lernatlas]"); if(!b||!atlas)return null; return [...atlas.querySelectorAll("dl dd")].some(el=>{const r=document.createRange();r.selectNodeContents(el);return [...r.getClientRects()].some(t=>t.right>b.left+2&&t.left<b.right-2&&t.bottom>b.top+2&&t.top<b.bottom-2);}); })()');
+    assert.equal(atlasTextOverlap, false, 'JaJa assistant obscures Chart-Lernatlas explanation text at ' + viewport.width);
     const chartShot = await command('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
     const chartBytes = Buffer.from(chartShot.data, 'base64');
     assert.ok(chartBytes.length > 8_000, 'Chart screenshot missing');
     await writeFile(join(output, 'chart-universe-' + viewport.width + '.png'), chartBytes);
     evidence.chartFrame = chartFrame;
+    evidence.chartTextOverlap = atlasTextOverlap;
     evidence.chartScreenshotSha256 = createHash('sha256').update(chartBytes).digest('hex');
     evidence.status = 'DOM_LAYOUT_PASS';
   }
