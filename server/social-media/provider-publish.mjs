@@ -280,7 +280,7 @@ export function createSocialProviderPublishTransport({ env = process.env, fetchI
       const uploaded = await fetchAttempt(fetchImpl, 'https://api.x.com/2/media/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ media: bytes.toString('base64') }),
+        body: JSON.stringify({ media: bytes.toString('base64'), media_category: 'tweet_image' }),
       });
       const uploadedData = await json(uploaded);
       if (!uploaded.ok || !/^[0-9]{1,25}$/.test(uploadedData?.data?.id || '')) {
