@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/moving-averages.svg",
-      "sha256": "45fd15c60a6b3a2a706d0d6616cb3aafe1e6370a664a0d847fd7e5095189bc48",
+      "sha256": "30e962c2b3cd2f2c00b1193cb221f56c9d3d9f74a08160c8e35f9339fd8c9469",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/horizontal-channel.svg",
-      "sha256": "d460f5ba508340cf8f18677994ab7669d3f80595bf3ca446332e025509a981f6",
+      "sha256": "878928dc231bcf10acb19af183e40b81b2d8aa98ab639ee138d9ced7e2c14944",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

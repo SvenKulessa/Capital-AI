@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/williams-r.svg",
-      "sha256": "a35771a966fa362c4b949f45b8040267e5351f93912466c3364149ca7b32fa1e",
+      "sha256": "bbc529087a459baed672dc5e00acef472312e2d2b6c231403bad59e56e8b3fbf",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

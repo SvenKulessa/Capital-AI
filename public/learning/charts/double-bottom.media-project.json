@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/double-bottom.svg",
-      "sha256": "343c0640ff6538e7d287d329d0cb6453569921f5f5187e3acbc28d19d8f3851a",
+      "sha256": "fd1a65a61a90f6b4bbe624160e881b5468f33a6a5c270622cb34224f565f10c8",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

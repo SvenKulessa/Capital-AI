@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/cup-handle.svg",
-      "sha256": "5b1dfda067eb82de6b4e369d23eb0b7aaf786f98d805cdcaed2e799dcdcfda35",
+      "sha256": "fe9044d1945eb3d5cff33fb1f8eb75764fa3d2b4cf6d7111a4bad5e1a1ae73fa",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675
