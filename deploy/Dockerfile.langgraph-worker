@@ -7,12 +7,10 @@ LABEL org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI
       capital-ai.component="offline-langgraph-worker" \
       capital-ai.activation="disabled-by-default"
 
-# Reuse the glibc Python base needed by the pinned sqlite-vec manylinux wheel.
-# Keep Debian package metadata for full vulnerability scanning.
-RUN apt-get update \
-    && apt-get upgrade --yes --no-install-recommends \
-    && apt-get install --yes --only-upgrade --no-install-recommends libpcre2-8-0 libssl3t64 openssl openssl-provider-legacy \
-    && rm -rf /var/lib/apt/lists/*
+# The offline, lexical RAG graph does not load sqlite-vec. Use an immutable
+# musl/Alpine image to avoid the unpatched Debian OS package findings.
+# Update packages from the stable Alpine branch; never suppress security scans.
+RUN apk upgrade --no-cache
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
@@ -20,10 +18,20 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     CAPITAL_AI_OFFLINE_WORKER_ENABLED=false
 
 WORKDIR /app
-COPY scripts/growth-agent/requirements.lock /app/scripts/growth-agent/requirements.lock
+# Worker-only immutable pinset: the common graph retains its original lock.
+# sqlite-vec is deliberately excluded because this graph uses lexical retrieval.
+COPY scripts/growth-agent/requirements.offline-worker.lock /app/scripts/growth-agent/requirements.offline-worker.lock
 RUN python -m pip install --no-cache-dir --only-binary=:all: --disable-pip-version-check \
-      -r /app/scripts/growth-agent/requirements.lock \
-    && python -m pip check
+      -r /app/scripts/growth-agent/requirements.offline-worker.lock \
+    && python -m pip check \
+    && python -c 'import importlib.util; assert importlib.util.find_spec("sqlite_vec") is None' \
+    && rm -rf /usr/local/lib/python3.14/site-packages/pip \
+      /usr/local/lib/python3.14/site-packages/pip-*.dist-info \
+      /usr/local/lib/python3.14/site-packages/setuptools \
+      /usr/local/lib/python3.14/site-packages/setuptools-*.dist-info \
+      /usr/local/lib/python3.14/site-packages/wheel \
+      /usr/local/lib/python3.14/site-packages/wheel-*.dist-info \
+      /usr/local/lib/python3.14/ensurepip /usr/local/bin/pip*
 COPY scripts/growth-agent /app/scripts/growth-agent
 COPY AGENTS.md /app/AGENTS.md
 COPY docs/architecture/EXECUTION-FIRST-LANGGRAPH.md /app/docs/architecture/EXECUTION-FIRST-LANGGRAPH.md

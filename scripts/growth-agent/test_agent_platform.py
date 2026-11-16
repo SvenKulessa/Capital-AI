@@ -172,5 +172,39 @@ print(json.dumps({"status":result["status"],"agents":result["agent_route"],"cita
             self.assertEqual(list((root / "checkpoints").iterdir()), [])
 
 
+    def test_symlinked_curated_source_parent_is_blocked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fixture(root)
+            original = root / "docs" / "architecture"
+            moved = root / "moved-architecture"
+            original.rename(moved)
+            original.symlink_to(moved, target_is_directory=True)
+            with self.assertRaises(ValueError):
+                retrieve(root, domain="PLATFORM", query="checkpoint")
+
+    def test_offline_lock_is_a_reviewable_subset_with_patched_certifi(self):
+        base = Path(__file__).with_name("requirements.lock").read_text(encoding="utf-8")
+        worker = Path(__file__).with_name("requirements.offline-worker.lock").read_text(encoding="utf-8")
+        common = [line for line in base.splitlines() if not line.startswith("sqlite-vec==")]
+        expected = "\n".join("certifi==2026.10.23" if x.startswith("certifi==") else x
+                             for x in common)
+        self.assertEqual(worker, expected + "\n" if not expected.endswith("\n") else expected)
+        self.assertNotIn("sqlite-vec==", worker)
+        self.assertIn("certifi==2026.10.23", worker)
+
+    def test_offline_image_has_no_glibc_base_or_runtime_pip(self):
+        docker = (Path(__file__).resolve().parents[2] / "deploy" /
+                  "Dockerfile.langgraph-worker").read_text(encoding="utf-8")
+        workflow = (Path(__file__).resolve().parents[2] / ".github" / "workflows" /
+                    "langgraph-worker-candidate.yml").read_text(encoding="utf-8")
+        self.assertIn("apk upgrade --no-cache", docker)
+        self.assertNotIn("apt-get", docker)
+        self.assertIn("requirements.offline-worker.lock", docker)
+        self.assertIn("rm -rf /usr/local/lib/python3.14/site-packages/pip", docker)
+        self.assertIn("python:3.14.7-alpine3.24@sha256:", workflow)
+        self.assertIn("--scanners vuln,secret", workflow)
+        self.assertIn("--exit-code 1", workflow)
+
 if __name__ == "__main__":
     unittest.main()

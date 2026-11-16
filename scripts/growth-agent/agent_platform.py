@@ -56,6 +56,13 @@ def retrieve(root: Path, *, domain: str, query: str, limit: int = 3) -> list[dic
         return []
     ranked = []
     for relative in SOURCES[domain]:
+        # Reject symlinks in every parent component, not only the final file.
+        path = root
+        for part in Path(relative).parts[:-1]:
+            path = path / part
+            parent = path.lstat()
+            if not stat.S_ISDIR(parent.st_mode) or stat.S_ISLNK(parent.st_mode):
+                raise ValueError("invalid curated source parent")
         path = root / relative
         info = path.lstat()
         if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_BYTES:

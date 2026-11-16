@@ -10,8 +10,8 @@ Kein Render-Service, keine Disk, keine GitHub-Berechtigung, kein LLM-Abo oder
 Provider-Token wird eingerichtet. Die Rust/NATS-Provider-Bridge bleibt suspendiert.
 
 Der neue `deploy/Dockerfile.langgraph-worker` erzwingt einen zur Buildzeit aufgelösten, unveränderlichen
-glibc-Python-Base-Digest aus dem vorhandenen PR-Agent-Stack und das
-bestehende `scripts/growth-agent/requirements.lock`. Der Worker führt keine
+musl/Alpine-Python-Base-Digest sowie ein aus dem vorhandenen LangGraph-Lock
+abgeleitetes, strikt gepinntes `requirements.offline-worker.lock`. Der Worker führt keine
 GitHub-, Render-, Supabase- oder LLM-Aufrufe aus. Vor produktivem Einsatz
 müssen Image-Scan, Dependency-Evidence und Runtime-Tauglichkeit separat
 bestätigt werden. Ohne die ARG-Eingabe `PYTHON_BASE` kann der
@@ -20,7 +20,7 @@ Docker-Kandidat bewusst nicht gebaut werden.
 Beispiel zum ausschließlich lokalen Build mit immutable linux/amd64-Provenance:
 
 ```bash
-PYTHON_BASE="python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d"
+PYTHON_BASE="python:3.14.7-alpine3.24@sha256:9e9fde4d32eedce0b661d9ab91e826b62dddf28e928c230ec55f1866cac66b01"
 docker pull --platform linux/amd64 "$PYTHON_BASE"
 docker build --platform linux/amd64 \\
   --build-arg "PYTHON_BASE=$PYTHON_BASE" \\
@@ -31,11 +31,15 @@ docker build --platform linux/amd64 \\
 Der zugehörige Dockerfile-spezifische Build-Kontext ist in
 `deploy/Dockerfile.langgraph-worker.dockerignore` eingeschränkt; die
 Produktions-`.dockerignore` bleibt unverändert. Ein lokaler Build
-aktiviert keinen Render-Service. Die gepinnte sqlite-vec-Version wird
-als manylinux-Wheel für glibc benötigt; ein Alpine-Build scheiterte
-nachgewiesen ohne kompatibles musllinux-Wheel. Die bekannten OS-Restrisiken
-der glibc-Basis müssen durch den vollständigen Container-Scan bewertet und
-gegebenenfalls behoben werden; ein erfolgreicher Build allein genügt nicht.
+aktiviert keinen Render-Service. Das Offline-RAG benötigt keine sqlite-vec-Erweiterung: die auf
+musllinux nicht verfügbare optionale Binärdatei wird nur aus dem
+Worker-Kandidaten ausgeschlossen. Der bestehende Graph-Lock bleibt unverändert.
+Der Worker-Pinset erhöht certifi auf 2026.10.23, da der alte Pin
+2026.7.22 nachweislich vom Candidate-Scan als CRITICAL erkannt wurde.
+Der glibc-Debian-Kandidat scheiterte am Trivy-Scan mit 47 HIGH OS
+und 7 HIGH/CRITICAL Python-Funden (CI 43829291408); das ist keine
+Scan-Ausnahme. Auch der Alpine-Kandidat muss den unveränderten Trivy-Gate
+bestehen. Ein erfolgreicher Build allein ist keine Security-Freigabe.
 
 ## LangGraph und RAG
 
