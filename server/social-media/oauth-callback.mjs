@@ -2,7 +2,7 @@
 // No authorization-start route and no built-in token exchanger are activated.
 import { createSocialProviderStore } from './provider-store.mjs';
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
-import { socialPlatformForChannel } from './provider-adapter.mjs';
+import { socialOAuthPlatformForChannel } from './provider-adapter.mjs';
 
 // Only the authenticated, email-confirmed IAM owner can receive these fixed
 // categories. Never reflect provider bodies, codes, state, tokens or exceptions.
@@ -134,7 +134,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
         allowedRedirectUris: [redirectUri], state, code,
         exchangeCode: async trusted => {
           if (trusted.userId !== identity.userId || trusted.channel !== channel
-            || socialPlatformForChannel(trusted.channel) !== channel.toLowerCase()) {
+            || socialOAuthPlatformForChannel(trusted.channel) !== channel.toLowerCase()) {
             throw new Error('SOCIAL_OAUTH_EXCHANGE_IDENTITY_MISMATCH');
           }
           // Allow injection only from internal server-side code; never from HTTP.
