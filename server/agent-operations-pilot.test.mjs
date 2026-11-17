@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { Readable } from 'node:stream';
 import { createAgentOperationsPilot, simulateAgentPilotWorkflow } from './agent-operations-pilot.mjs';
 
 const SHA = 'a'.repeat(40);
@@ -24,8 +25,11 @@ const make = (extra = {}) => createAgentOperationsPilot({
 
 async function call(pilot, method, pathname, body, subject = 'alice', tier = 'pro',
     origin = 'https://capital-ai.online') {
-  const req = { method, subject, tier, headers: { origin },
-    async *[Symbol.asyncIterator]() { if (body !== undefined) yield Buffer.from(JSON.stringify(body)); } };
+  const req = Readable.from(body === undefined ? [] : [Buffer.from(JSON.stringify(body))]);
+  req.method = method;
+  req.subject = subject;
+  req.tier = tier;
+  req.headers = { origin, 'content-type': 'application/json' };
   const headers = {};
   const res = { setHeader: (k, v) => { headers[k] = v; } };
   let status, payload;
