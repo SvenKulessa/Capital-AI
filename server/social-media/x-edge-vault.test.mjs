@@ -447,7 +447,7 @@ test('signed owner X article credentials are ciphertext-only and receipts are ow
     else if(target.includes('/social_media_accounts')) result=[{
       user_id:userId,status:'connected',external_account_id:accountId,
       handle:'CapitalAIOnline',
-      scopes:['tweet.read','tweet.write','users.read','offline.access'],
+      scopes:['tweet.read','tweet.write','users.read','offline.access','media.write'],
       access_token_encrypted:accessCipher,
       token_expires_at:new Date(Date.now()+3600000).toISOString(),
       refresh_reconnect_required:false,refresh_lease_id:null,
@@ -458,34 +458,37 @@ test('signed owner X article credentials are ciphertext-only and receipts are ow
     } else throw Error('unexpected REST URL');
     return {ok:true,text:async()=>JSON.stringify(result)};
   }});
-  const creds=await handler(signedRequest({operation:'x_credentials',channel:'X',userId}));
+  const creds=await handler(signedRequest({operation:'x_credentials',channel:'X_PUBLISH',userId}));
   assert.equal(creds.status,200);
   const secret=await creds.json();
   assert.equal(secret.accessCipher,accessCipher);
   assert.equal(secret.accountId,accountId);
-  assert.equal(secret.mediaWriteApproved,false);
+  assert.equal(secret.mediaWriteApproved,true);
+  assert.ok(calls.some(url=>url.includes('platform=eq.x_publish')));
   assert.equal(secret.refreshCipher,undefined);
-  const claimed=await handler(signedRequest({operation:'article_claim',channel:'X',userId,
+  const claimed=await handler(signedRequest({operation:'article_claim',channel:'X_PUBLISH',userId,
     contentKey,accountId}));
   assert.equal(claimed.status,200);
   assert.equal((await claimed.json()).claimed,true);
-  const status=await handler(signedRequest({operation:'article_status',channel:'X',userId,
+  const status=await handler(signedRequest({operation:'article_status',channel:'X_PUBLISH',userId,
     contentKey,accountId}));
   assert.equal(status.status,200);
   assert.equal((await status.json()).status,'NOT_SUBMITTED');
+  const legacy=await handler(signedRequest({operation:'x_credentials',channel:'X',userId}));
+  assert.equal(legacy.status,503);
   const count=calls.length;
-  const invalid=await handler(signedRequest({operation:'x_credentials',channel:'X',
+  const invalid=await handler(signedRequest({operation:'x_credentials',channel:'X_PUBLISH',
     userId},{omitSignature:true}));
   assert.equal(invalid.status,503);
   assert.equal(calls.length,count);
-  const impersonation=await handler(signedRequest({operation:'article_claim',channel:'X',
+  const impersonation=await handler(signedRequest({operation:'article_claim',channel:'X_PUBLISH',
     userId:'d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723102',contentKey,accountId}));
   assert.equal(impersonation.status,503);
 });
 
 test('X milestone Edge receipts require owner proof and enforce atomic state transitions', async () => {
   const userId='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
-  const input={channel:'X',userId,accountId:'123456789012345678',contentKey:'a'.repeat(64)};
+  const input={channel:'X_PUBLISH',userId,accountId:'123456789012345678',contentKey:'a'.repeat(64)};
   const config={get:name=>name==='SUPABASE_SERVICE_ROLE_KEY'
     ? 'sb_secret_synthetic_only_for_tests' : env.get(name)};
   let row=null, writes=0;
