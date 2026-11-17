@@ -74,6 +74,7 @@ import { createPurchaseReceipt } from './purchase-receipt.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
+import { createAgentOperationsPilot } from './agent-operations-pilot.mjs';
 import { createCadsMarketplace } from './cads-marketplace.mjs';
 import { createBenchmarkStore } from './benchmark-store.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
@@ -492,6 +493,7 @@ export function createApp(root = defaultRoot, options = {}) {
   cadsMarketplace.start();
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
   const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
+  const agentOperationsPilot = createAgentOperationsPilot({ auth, env: runtimeEnv });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -552,6 +554,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;
   if (await cadsCommerce.handle(req, res, url, json)) return;
+  if (await agentOperationsPilot.handle(req, res, url, json)) return;
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
