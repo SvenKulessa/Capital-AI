@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDecipheriv } from 'node:crypto';
+import { createDecipheriv, createCipheriv, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createSocialXOAuthStart } from './x-oauth-start.mjs';
 import { createSocialOAuthCallback } from './oauth-callback.mjs';
 import { createSocialXOAuthExchange, socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 import { createXPublishAccountStatus } from './x-publish-account-status.mjs';
-import { unsealOwnerXAccess } from './owner-token-refresh.mjs';
+import { unsealOwnerXAccess, refreshOwnerXForWorkload } from './owner-token-refresh.mjs';
 
 const USER = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
 const KEY_OLD = 'ab'.repeat(32), KEY_NEW = 'cd'.repeat(32);
@@ -219,6 +219,78 @@ test('publishing status is owner-only, signed Edge and never invokes X endpoints
   const bad=res();
   await forbidden.handle(req(),bad,url('/api/social-media/x/publish/account/status'),json);
   assert.equal(bad.status,403);
+});
+
+
+function sealRefresh(value, old = false) {
+  const iv=randomBytes(12),key=Buffer.from(old?KEY_OLD:KEY_NEW,'hex');
+  const cipher=createCipheriv('aes-256-gcm',key,iv);
+  cipher.setAAD(Buffer.from(JSON.stringify([
+    old ? 'capital-social-x-v1' : 'capital-social-x-publish-v1',USER,'refresh'])));
+  const data=Buffer.concat([cipher.update(value,'utf8'),cipher.final()]);
+  return 'v1.'+[iv,cipher.getAuthTag(),data].map(x=>x.toString('base64url')).join('.');
+}
+test('publisher refresh uses new client and requires preserved media.write scope',async()=>{
+  const calls=[],leaseId='443237bc-9730-444d-a509-1c523ff8e48e';
+  const oldCipher=sealRefresh('synthetic-publish-REFRESH-OLD');
+  const edgeFactory=({channel})=>{
+    assert.equal(channel,'X_PUBLISH');
+    return {
+      refreshClaim:async(_uid,lease)=>{
+        assert.match(lease,/^[a-f0-9-]{36}$/);
+        return {claimed:true,leaseId:lease,refreshCipher:oldCipher,
+          accountId:'123456789012345678',scopes:['tweet.read','tweet.write',
+            'users.read','offline.access','media.write']};
+      },
+      refreshFinish:async(_uid,lease,previous,access,refresh,expiresAt)=>{
+        assert.equal(previous,oldCipher);
+        assert.equal(unsealOwnerXAccess(access,USER,ENV,'X_PUBLISH'),'synthetic-publish-ACCESS-NEW');
+        assert.ok(/^v1\\./.test(refresh));
+        return {refreshed:true,channel:'X_PUBLISH',expiresAt};
+      },
+      refreshEnd:async()=>{throw Error('must not end successful refresh');},
+    };
+  };
+  const fetchImpl=async(uri,opts)=>{
+    calls.push({uri:String(uri),auth:opts.headers.Authorization});
+    if(String(uri).endsWith('/2/oauth2/token'))
+      return response(200,{token_type:'bearer',
+        access_token:'synthetic-publish-ACCESS-NEW',
+        refresh_token:'synthetic-publish-REFRESH-NEW',
+        expires_in:3600,scope:'tweet.read tweet.write users.read offline.access media.write'});
+    if(String(uri).endsWith('/2/users/me'))
+      return response(200,{data:{id:'123456789012345678'}});
+    throw Error('unknown provider');
+  };
+  const result=await refreshOwnerXForWorkload({
+    env:{...ENV,SOCIAL_X_PAID_READ_APPROVED:'true'},channel:'X_PUBLISH',
+    userId:USER,userAccessToken:'synthetic-jwt-'+'a'.repeat(80),fetchImpl,edgeFactory});
+  assert.equal(result.httpStatus,200);
+  assert.equal(result.body.channel,'X_PUBLISH');
+  assert.equal(calls.length,2);
+  assert.equal(calls[0].auth,'Basic '+Buffer.from(ENV.SOCIAL_X_PUBLISH_OAUTH_CLIENT_ID
+    +':'+ENV.SOCIAL_X_PUBLISH_OAUTH_CLIENT_SECRET).toString('base64'));
+  assert.notEqual(calls[0].auth,'Basic '+Buffer.from(ENV.SOCIAL_X_OAUTH_CLIENT_ID
+    +':'+ENV.SOCIAL_X_OAUTH_CLIENT_SECRET).toString('base64'));
+});
+
+test('legacy encrypted refresh grant cannot be used to rotate publisher token',async()=>{
+  const calls=[],outcomes=[];
+  const edgeFactory=()=>({
+    refreshClaim:async(_uid,leaseId)=>({
+      leaseId,refreshCipher:sealRefresh('synthetic-OLD-LOGIN-TOKEN',true),
+      accountId:'123456789012345678',
+      scopes:['tweet.read','tweet.write','users.read','offline.access','media.write']}),
+    refreshEnd:async(_uid,_leaseId,outcome)=>{outcomes.push(outcome);},
+    refreshFinish:async()=>{throw Error('unexpected token mutation');},
+  });
+  const outcome=await refreshOwnerXForWorkload({
+    env:{...ENV,SOCIAL_X_PAID_READ_APPROVED:'true'},channel:'X_PUBLISH',
+    userId:USER,userAccessToken:'synthetic-jwt-'+'a'.repeat(80),
+    edgeFactory,fetchImpl:async()=>{calls.push(1);throw Error('must not contact provider');}});
+  assert.equal(outcome.httpStatus,503);
+  assert.deepEqual(outcomes,['reconnect']);
+  assert.equal(calls.length,0);
 });
 
 test('migration changes only independent X publication namespaces and preserves existing rows',()=>{
