@@ -168,7 +168,7 @@ test('publisher uses only new OAuth client, media.write and domain-separated cip
   const saved=await exchange({userId:USER,channel:'X_PUBLISH',redirectUri:CALLBACK,
     code:goodCode,codeVerifier:'v'.repeat(43),
     userAccessToken:'synthetic-jwt-'+'a'.repeat(80)});
-  assert.deepEqual(saved,{connected:true,channel:'X',handle:'CapitalAIOnline'});
+  assert.deepEqual(saved,{connected:true,channel:'X_PUBLISH',handle:'CapitalAIOnline'});
   assert.deepEqual(calls.map(x=>x.target),[
     'https://api.x.com/2/oauth2/token','https://api.x.com/2/users/me',
     'https://fixture.supabase.co/functions/v1/capital-social-x-vault']);
