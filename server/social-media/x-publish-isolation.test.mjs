@@ -231,7 +231,7 @@ function sealRefresh(value, old = false) {
   return 'v1.'+[iv,cipher.getAuthTag(),data].map(x=>x.toString('base64url')).join('.');
 }
 test('publisher refresh uses new client and requires preserved media.write scope',async()=>{
-  const calls=[],leaseId='443237bc-9730-444d-a509-1c523ff8e48e';
+  const calls=[];
   const oldCipher=sealRefresh('synthetic-publish-REFRESH-OLD');
   const edgeFactory=({channel})=>{
     assert.equal(channel,'X_PUBLISH');
@@ -245,7 +245,7 @@ test('publisher refresh uses new client and requires preserved media.write scope
       refreshFinish:async(_uid,lease,previous,access,refresh,expiresAt)=>{
         assert.equal(previous,oldCipher);
         assert.equal(unsealOwnerXAccess(access,USER,ENV,'X_PUBLISH'),'synthetic-publish-ACCESS-NEW');
-        assert.ok(/^v1\\./.test(refresh));
+        assert.ok(refresh.startsWith('v1.'));
         return {refreshed:true,channel:'X_PUBLISH',expiresAt};
       },
       refreshEnd:async()=>{throw Error('must not end successful refresh');},
