@@ -5,24 +5,28 @@ import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const REQUIRED_SCOPES = ['tweet.read', 'tweet.write', 'users.read', 'offline.access'];
 const CALLBACK = '/api/social-media/auth/callback';
+const PUBLISH_CALLBACK = '/api/social-media/x/publish/auth/callback';
 const TEXT_MAX = 16 * 1024;
 
 function assert(condition, reason) { if (!condition) throw new Error(reason); }
-function providerConfig(env) {
-  assert(env?.SOCIAL_X_OAUTH_CONNECT_ENABLED === 'true'
-    && env?.SOCIAL_OAUTH_CALLBACK_ENABLED === 'true', 'SOCIAL_X_OAUTH_DISABLED');
+function providerConfig(env, channel = 'X') {
+  assert(['X', 'X_PUBLISH'].includes(channel), 'SOCIAL_X_OAUTH_CHANNEL_UNSUPPORTED');
+  const publish = channel === 'X_PUBLISH';
+  assert((publish ? env?.SOCIAL_X_PUBLISH_OAUTH_ENABLED : env?.SOCIAL_X_OAUTH_CONNECT_ENABLED) === 'true'
+    && env?.SOCIAL_OAUTH_CALLBACK_ENABLED === 'true'
+    && (!publish || socialXEdgeMode(env)), 'SOCIAL_X_OAUTH_DISABLED');
   const origin = new URL(env.PUBLIC_APP_ORIGIN);
   assert(origin.protocol === 'https:' && origin.pathname === '/' && !origin.search
     && !origin.hash && !origin.username && !origin.password, 'SOCIAL_X_OAUTH_ORIGIN_INVALID');
-  const clientId = env.SOCIAL_X_OAUTH_CLIENT_ID;
-  const clientSecret = env.SOCIAL_X_OAUTH_CLIENT_SECRET;
+  const clientId = publish ? env.SOCIAL_X_PUBLISH_OAUTH_CLIENT_ID : env.SOCIAL_X_OAUTH_CLIENT_ID;
+  const clientSecret = publish ? env.SOCIAL_X_PUBLISH_OAUTH_CLIENT_SECRET : env.SOCIAL_X_OAUTH_CLIENT_SECRET;
   assert(typeof clientId === 'string' && clientId.length >= 5 && clientId.length <= 256
     && !/[\s:]/.test(clientId)
     && typeof clientSecret === 'string' && clientSecret.length >= 8
     && clientSecret.length <= 2048, 'SOCIAL_X_OAUTH_CLIENT_UNCONFIGURED');
   // Render's generated 256-bit secrets are canonical padded base64. Keep the
   // original 64-character hex format compatible with previously sealed tokens.
-  const encodedKey = env.SOCIAL_X_TOKEN_ENCRYPTION_KEY;
+  const encodedKey = publish ? env.SOCIAL_X_PUBLISH_TOKEN_ENCRYPTION_KEY : env.SOCIAL_X_TOKEN_ENCRYPTION_KEY;
   let encryptionKey = null;
   if (typeof encodedKey === 'string' && /^[a-fA-F0-9]{64}$/.test(encodedKey)) {
     encryptionKey = Buffer.from(encodedKey, 'hex');
@@ -45,8 +49,10 @@ function providerConfig(env) {
       : (serviceKey.startsWith('sb_secret_') || isServiceRoleJwt(serviceKey))),
     'SOCIAL_X_STORE_UNCONFIGURED');
   return Object.freeze({
-    redirectUri: new URL(CALLBACK, origin).toString(),
+    redirectUri: new URL(publish ? PUBLISH_CALLBACK : CALLBACK, origin).toString(),
     clientId, clientSecret, key: encryptionKey,
+    aad: publish ? 'capital-social-x-publish-v1' : 'capital-social-x-v1',
+    platform: publish ? 'x_publish' : 'x',
     supabaseOrigin: supabase.origin, serviceKey,
   });
 }
@@ -56,15 +62,15 @@ function isServiceRoleJwt(key) {
     return JSON.parse(Buffer.from(key.split('.')[1], 'base64url')).role === 'service_role';
   } catch { return false; }
 }
-export function socialXOAuthConfigured(env = process.env) {
-  try { providerConfig(env); return true; } catch { return false; }
+export function socialXOAuthConfigured(env = process.env, channel = 'X') {
+  try { providerConfig(env, channel); return true; } catch { return false; }
 }
-function seal(value, key, { userId, kind }) {
+function seal(value, key, { userId, kind, aad = 'capital-social-x-v1' }) {
   assert(typeof value === 'string' && value.length >= 10 && value.length <= 8192,
     'SOCIAL_X_TOKEN_INVALID');
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', key, iv);
-  cipher.setAAD(Buffer.from(JSON.stringify(['capital-social-x-v1', userId, kind])));
+  cipher.setAAD(Buffer.from(JSON.stringify([aad, userId, kind])));
   const ciphertext = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
   return 'v1.' + [iv, cipher.getAuthTag(), ciphertext].map(v => v.toString('base64url')).join('.');
 }
@@ -74,9 +80,12 @@ async function jsonResponse(response) {
   try { return JSON.parse(body); } catch { throw Error('SOCIAL_X_RESPONSE_INVALID'); }
 }
 async function request(fetchImpl, target, options) {
+  // The one-time authorization-code exchange must not be retried after an
+  // ambiguous network result. Allow a bounded extra margin for provider latency.
+  const timeoutMs = target === 'https://api.x.com/2/oauth2/token' ? 14000 : 8000;
   try {
     return await fetchImpl(target, {
-      ...options, redirect: 'error', signal: AbortSignal.timeout(8000),
+      ...options, redirect: 'error', signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {
     throw Error('SOCIAL_X_PROVIDER_UNAVAILABLE');
@@ -89,14 +98,16 @@ function serviceHeaders(key) {
   return headers;
 }
 
-export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetch } = {}) {
+export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetch,
+  channel = 'X' } = {}) {
+  if (!['X', 'X_PUBLISH'].includes(channel)) throw Error('SOCIAL_X_OAUTH_CHANNEL_UNSUPPORTED');
   return async function exchangeCode(trusted) {
     // No HTTP-supplied user/account identifiers are accepted by this boundary.
-    assert(trusted?.channel === 'X' && UUID.test(trusted.userId || '')
+    assert(trusted?.channel === channel && UUID.test(trusted.userId || '')
       && typeof trusted.code === 'string' && trusted.code.length > 0 && trusted.code.length <= 2048
       && /^[A-Za-z0-9_~-]{43,128}$/.test(trusted.codeVerifier || ''),
       'SOCIAL_X_OAUTH_CONTEXT_INVALID');
-    const cfg = providerConfig(env);
+    const cfg = providerConfig(env, channel);
     assert(trusted.redirectUri === cfg.redirectUri, 'SOCIAL_X_OAUTH_REDIRECT_DENIED');
     const body = new URLSearchParams({
       grant_type: 'authorization_code', code: trusted.code,
@@ -115,7 +126,8 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
     const scopes = typeof tokens.scope === 'string' ? tokens.scope.split(' ').filter(Boolean) : [];
     assert(REQUIRED_SCOPES.every(s => scopes.includes(s)), 'SOCIAL_X_OAUTH_SCOPES_MISSING');
     // Match the start opt-in: never infer OAuth consent from paid media flags.
-    const mediaScopeRequested = env.SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED === 'true';
+    const mediaScopeRequested = channel === 'X_PUBLISH'
+      || env.SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED === 'true';
     if (mediaScopeRequested) {
       assert(scopes.includes('media.write'), 'SOCIAL_X_MEDIA_WRITE_SCOPE_MISSING');
     }
@@ -138,13 +150,17 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
     assert(account && /^[0-9]{1,25}$/.test(account.id || '')
       && /^[A-Za-z0-9_]{1,15}$/.test(account.username || ''),
       'SOCIAL_X_ACCOUNT_IDENTITY_INVALID');
+    if (channel === 'X_PUBLISH') {
+      assert(account.username.toLowerCase() === 'capitalaionline',
+        'SOCIAL_X_PUBLISH_WRONG_ACCOUNT');
+    }
     const record = {
-      user_id: trusted.userId, platform: 'x', status: 'connected',
+      user_id: trusted.userId, platform: cfg.platform, status: 'connected',
       account_name: typeof account.name === 'string' && account.name.trim() ? account.name.slice(0, 140) : account.username,
       handle: account.username, external_account_id: account.id,
       scopes: grantedScopes,
-      access_token_encrypted: seal(tokens.access_token, cfg.key, { userId: trusted.userId, kind: 'access' }),
-      refresh_token_encrypted: seal(tokens.refresh_token, cfg.key, { userId: trusted.userId, kind: 'refresh' }),
+      access_token_encrypted: seal(tokens.access_token, cfg.key, { userId: trusted.userId, kind: 'access', aad: cfg.aad }),
+      refresh_token_encrypted: seal(tokens.refresh_token, cfg.key, { userId: trusted.userId, kind: 'refresh', aad: cfg.aad }),
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       connected_at: new Date().toISOString(),
     };
@@ -152,12 +168,12 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
     // the Render X handler. Edge re-verifies the owner JWT and persists only
     // ciphertext; the Supabase admin key is absent from this transport.
     if (socialXEdgeMode(env)) {
-      const edge = createSocialXEdgeClient({ env, fetchImpl,
+      const edge = createSocialXEdgeClient({ env, fetchImpl, channel,
         userAccessToken: trusted.userAccessToken });
       const saved = await edge.persistAccount(trusted.userId, record);
       assert(saved?.connected === true && saved.handle === account.username,
         'SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED');
-      return Object.freeze({ connected: true, channel: 'X', handle: account.username });
+      return Object.freeze({ connected: true, channel, handle: account.username });
     }
     // Explicit upsert keyed by (user_id,platform). Service key never reaches a browser.
     const endpoint = cfg.supabaseOrigin
@@ -169,12 +185,12 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
     assert(savedRes.ok, 'SOCIAL_X_ACCOUNT_PERSIST_FAILED');
     const readback = await jsonResponse(savedRes);
     const row = Array.isArray(readback) && readback.length === 1 ? readback[0] : null;
-    assert(row?.user_id === trusted.userId && row?.platform === 'x'
+    assert(row?.user_id === trusted.userId && row?.platform === cfg.platform
       && row?.external_account_id === account.id && row?.handle === account.username
       && row?.status === 'connected'
       && row?.access_token_encrypted === record.access_token_encrypted
       && row?.refresh_token_encrypted === record.refresh_token_encrypted,
       'SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED');
-    return Object.freeze({ connected: true, channel: 'X', handle: account.username });
+    return Object.freeze({ connected: true, channel, handle: account.username });
   };
 }

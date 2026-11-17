@@ -6,11 +6,12 @@ import { createSocialOAuthState, socialOAuthStateDigest } from './provider-adapt
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CALLBACK = '/api/social-media/auth/callback';
+const PUBLISH_CALLBACK = '/api/social-media/x/publish/auth/callback';
 function must(test, code) { if (!test) throw new Error(code); }
 export function socialXEdgeMode(env = process.env) {
   return env.SOCIAL_X_EDGE_STORE_ENABLED === 'true';
 }
-function setup(env, userAccessToken) {
+function setup(env, userAccessToken, channel) {
   must(socialXEdgeMode(env), 'SOCIAL_X_EDGE_DISABLED');
   const base = new URL(env.SUPABASE_URL);
   must(base.protocol === 'https:' && base.pathname === '/' && !base.search
@@ -39,13 +40,13 @@ function setup(env, userAccessToken) {
     target: new URL('/functions/v1/capital-social-x-vault', base).toString(),
     publishable, userAccessToken,
     workloadKey: workloadBytes,
-    redirectUri: new URL(CALLBACK, app).toString(),
+    redirectUri: new URL(channel === 'X_PUBLISH' ? PUBLISH_CALLBACK : CALLBACK, app).toString(),
   };
 }
 export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
   userAccessToken, channel = 'X' } = {}) {
-  must(['X', 'YOUTUBE'].includes(channel), 'SOCIAL_EDGE_CHANNEL_INVALID');
-  const cfg = setup(env, userAccessToken);
+  must(['X', 'X_PUBLISH', 'YOUTUBE'].includes(channel), 'SOCIAL_EDGE_CHANNEL_INVALID');
+  const cfg = setup(env, userAccessToken, channel);
   async function invoke(operation, body) {
     const payload = JSON.stringify({ operation, ...body, channel });
     const timestamp = String(Date.now());
@@ -110,7 +111,7 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
     const data = await invoke('status', { userId });
     must(data?.channel === channel && typeof data.connected === 'boolean'
       && typeof data.status === 'string'
-      && (data.handle === null || (channel === 'X'
+      && (data.handle === null || (['X', 'X_PUBLISH'].includes(channel)
         ? /^@[A-Za-z0-9_]{1,15}$/.test(data.handle)
         : typeof data.handle === 'string' && data.handle.length <= 140)),
       'SOCIAL_X_EDGE_STATUS_INVALID');
@@ -124,7 +125,7 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
       && typeof result.refreshCipher === 'string'
       && /^v1\.[A-Za-z0-9_-]{16}\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{14,11000}$/.test(result.refreshCipher)
       && typeof result.accountId === 'string'
-      && (channel === 'X' ? /^[0-9]{1,25}$/.test(result.accountId)
+      && (['X', 'X_PUBLISH'].includes(channel) ? /^[0-9]{1,25}$/.test(result.accountId)
         : /^UC[A-Za-z0-9_-]{22}$/.test(result.accountId)),
       'SOCIAL_REFRESH_CLAIM_NOT_CONFIRMED');
     return Object.freeze(result);

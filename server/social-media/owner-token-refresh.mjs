@@ -12,11 +12,15 @@ const X_SCOPES = Object.freeze(['tweet.read', 'tweet.write', 'users.read', 'offl
 // Do not introduce a competing rotation path for the same Google grant.
 const ENDPOINTS = Object.freeze({
   X: '/api/social-media/x/account/refresh',
+  X_PUBLISH: '/api/social-media/x/publish/account/refresh',
 });
 const AAD = 'capital-social-x-v1';
+const PUBLISH_AAD = 'capital-social-x-publish-v1';
+function domain(channel) { return channel === 'X_PUBLISH' ? PUBLISH_AAD : AAD; }
 function must(ok, code) { if (!ok) throw Error(code); }
 function keyFromEnv(env, channel) {
-  const value = env.SOCIAL_X_TOKEN_ENCRYPTION_KEY;
+  const value = channel === 'X_PUBLISH'
+    ? env.SOCIAL_X_PUBLISH_TOKEN_ENCRYPTION_KEY : env.SOCIAL_X_TOKEN_ENCRYPTION_KEY;
   if (typeof value === 'string' && /^[a-fA-F0-9]{64}$/.test(value)) {
     return Buffer.from(value, 'hex');
   }
@@ -31,7 +35,7 @@ function unseal(ciphertext, key, userId, channel) {
     'SOCIAL_REFRESH_CIPHER_INVALID');
   const [, iv, tag, data] = CIPHER.exec(ciphertext);
   const decrypt = createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'base64url'));
-  decrypt.setAAD(Buffer.from(JSON.stringify([AAD, userId, 'refresh'])));
+  decrypt.setAAD(Buffer.from(JSON.stringify([domain(channel), userId, 'refresh'])));
   decrypt.setAuthTag(Buffer.from(tag, 'base64url'));
   const value = Buffer.concat([
     decrypt.update(Buffer.from(data, 'base64url')), decrypt.final(),
@@ -44,7 +48,7 @@ function seal(value, key, userId, channel, kind) {
     'SOCIAL_REFRESH_NEW_TOKEN_INVALID');
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', key, iv);
-  cipher.setAAD(Buffer.from(JSON.stringify([AAD, userId, kind])));
+  cipher.setAAD(Buffer.from(JSON.stringify([domain(channel), userId, kind])));
   const bytes = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
   return 'v1.' + [iv, cipher.getAuthTag(), bytes].map(x => x.toString('base64url')).join('.');
 }
@@ -59,9 +63,11 @@ async function safeFetch(fetchImpl, uri, options) {
       signal: AbortSignal.timeout(8000) });
   } catch { throw Error('SOCIAL_REFRESH_PROVIDER_AMBIGUOUS'); }
 }
-function oauthClient(env) {
-  const clientId = env.SOCIAL_X_OAUTH_CLIENT_ID;
-  const clientSecret = env.SOCIAL_X_OAUTH_CLIENT_SECRET;
+function oauthClient(env, channel) {
+  const clientId = channel === 'X_PUBLISH'
+    ? env.SOCIAL_X_PUBLISH_OAUTH_CLIENT_ID : env.SOCIAL_X_OAUTH_CLIENT_ID;
+  const clientSecret = channel === 'X_PUBLISH'
+    ? env.SOCIAL_X_PUBLISH_OAUTH_CLIENT_SECRET : env.SOCIAL_X_OAUTH_CLIENT_SECRET;
   must(typeof clientId === 'string' && clientId.length >= 5
     && typeof clientSecret === 'string' && clientSecret.length >= 8,
     'SOCIAL_REFRESH_CLIENT_UNCONFIGURED');
@@ -69,7 +75,7 @@ function oauthClient(env) {
 }
 async function providerRefresh(fetchImpl, env, channel, oldToken, accountId,
   requiredScopes = X_SCOPES) {
-  const { clientId, clientSecret } = oauthClient(env);
+  const { clientId, clientSecret } = oauthClient(env, channel);
   const form = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: oldToken });
   const url = 'https://api.x.com/2/oauth2/token';
   const headers = { Authorization: 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64'),
@@ -113,12 +119,13 @@ async function providerRefresh(fetchImpl, env, channel, oldToken, accountId,
 // Shared by the owner-only refresh route and owner-initiated Article publishing.
 // The caller must have already verified the current owner IAM session and JWT.
 export async function refreshOwnerXForWorkload({ env = process.env, userId,
-  userAccessToken, fetchImpl = fetch, edgeFactory = createSocialXEdgeClient } = {}) {
+  userAccessToken, fetchImpl = fetch, edgeFactory = createSocialXEdgeClient,
+  channel = 'X' } = {}) {
   must(USER_ID.test(userId || '') && typeof userAccessToken === 'string'
     && userAccessToken.length > 50 && socialXEdgeMode(env)
-    && socialXOAuthConfigured(env), 'SOCIAL_REFRESH_CONTEXT_INVALID');
+    && ['X', 'X_PUBLISH'].includes(channel)
+    && socialXOAuthConfigured(env, channel), 'SOCIAL_REFRESH_CONTEXT_INVALID');
   must(env.SOCIAL_X_PAID_READ_APPROVED === 'true', 'SOCIAL_X_PAID_READ_NOT_APPROVED');
-  const channel = 'X';
   let edge, claim = null;
   const leaseId = randomUUID();
   try {
@@ -128,8 +135,10 @@ export async function refreshOwnerXForWorkload({ env = process.env, userId,
       'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
     const key = keyFromEnv(env, channel);
     const oldToken = unseal(claim.refreshCipher, key, userId, channel);
-    const expectedScopes = claim.scopes.includes('media.write')
+    const expectedScopes = (channel === 'X_PUBLISH' || claim.scopes.includes('media.write'))
       ? [...X_SCOPES, 'media.write'] : X_SCOPES;
+    must(channel !== 'X_PUBLISH' || claim.scopes.includes('media.write'),
+      'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
     const tokens = await providerRefresh(fetchImpl, env, channel, oldToken,
       claim.accountId, expectedScopes);
     if (tokens.outcome !== 'success') {
@@ -158,14 +167,15 @@ export async function refreshOwnerXForWorkload({ env = process.env, userId,
 
 // The plaintext token is only constructed within the authenticated Render
 // workload. It is never sent to a browser, Edge response or persistent log.
-export function unsealOwnerXAccess(ciphertext, userId, env = process.env) {
+export function unsealOwnerXAccess(ciphertext, userId, env = process.env,
+  channel = 'X') {
   must(USER_ID.test(userId || ''), 'SOCIAL_X_ACCESS_OWNER_INVALID');
   must(typeof ciphertext === 'string' && CIPHER.test(ciphertext),
     'SOCIAL_X_ACCESS_CIPHER_INVALID');
   const [, iv, tag, data] = CIPHER.exec(ciphertext);
-  const decipher = createDecipheriv('aes-256-gcm', keyFromEnv(env, 'X'),
+  const decipher = createDecipheriv('aes-256-gcm', keyFromEnv(env, channel),
     Buffer.from(iv, 'base64url'));
-  decipher.setAAD(Buffer.from(JSON.stringify([AAD, userId, 'access'])));
+  decipher.setAAD(Buffer.from(JSON.stringify([domain(channel), userId, 'access'])));
   decipher.setAuthTag(Buffer.from(tag, 'base64url'));
   const access = Buffer.concat([decipher.update(Buffer.from(data, 'base64url')),
     decipher.final()]).toString('utf8');
@@ -204,7 +214,7 @@ export function createSocialOwnerTokenRefresh({ env = process.env, auth,
       json(res, 403, { error: 'owner_authorization_required' }); return true;
     }
     if (!USER_ID.test(identity.userId) || !socialXEdgeMode(env)
-      || !socialXOAuthConfigured(env)) {
+      || !socialXOAuthConfigured(env, channel)) {
       json(res, 503, { error: 'social_refresh_unavailable' }); return true;
     }
     // X user-identity readback is priced per user/resource in X API's
@@ -216,7 +226,7 @@ export function createSocialOwnerTokenRefresh({ env = process.env, auth,
     const result = await refreshOwnerXForWorkload({
       env, userId: identity.userId,
       userAccessToken: await auth?.internalAccessToken?.(req, res),
-      fetchImpl, edgeFactory,
+      fetchImpl, edgeFactory, channel,
     }).catch(() => ({ httpStatus: 503,
       body: { error: 'social_refresh_unavailable', status: 'not_refreshed' } }));
     json(res, result.httpStatus, result.body);

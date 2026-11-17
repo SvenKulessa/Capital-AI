@@ -165,6 +165,22 @@ test('X OAuth rejects malformed profile and storage readback without confirming 
   assert.equal(mismatch.calls.length, 3);
 });
 
+test('X OAuth network failure stops after exactly one attempted token exchange', async () => {
+  let calls = 0;
+  const handler = createSocialXOAuthExchange({ env: ENV, fetchImpl: async (target, options) => {
+    calls++;
+    assert.equal(target, 'https://api.x.com/2/oauth2/token');
+    assert.equal(options.signal instanceof AbortSignal, true);
+    throw new Error('synthetic secret-bearing network failure');
+  } });
+  await assert.rejects(handler(trusted), error => {
+    assert.equal(error.message, 'SOCIAL_X_PROVIDER_UNAVAILABLE');
+    assert.ok(!error.message.includes('secret-bearing'));
+    return true;
+  });
+  assert.equal(calls, 1);
+});
+
 test('X OAuth rejects provider token exchange error without disclosing provider payloads', async () => {
   let calls = 0;
   const handler = createSocialXOAuthExchange({ env: ENV, fetchImpl: async () => {
