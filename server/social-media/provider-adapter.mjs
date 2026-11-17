@@ -9,6 +9,7 @@ export const SOCIAL_PLATFORMS = Object.freeze({
   TIKTOK: 'tiktok',
   INSTAGRAM: 'instagram',
   X: 'x',
+  X_PUBLISH: 'x_publish',
   FACEBOOK: 'facebook',
 });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -293,7 +294,7 @@ export function createSocialOAuthState(input) {
   assert(validUserId(userId), 'SOCIAL_PROVIDER_OAUTH_USER_REQUIRED');
   assert(validHttpsUrl(redirectUri) && Array.isArray(allowedRedirectUris)
     && allowedRedirectUris.includes(redirectUri), 'SOCIAL_PROVIDER_OAUTH_REDIRECT_DENIED');
-  if (['X', 'YOUTUBE'].includes(channel)) {
+  if (['X', 'X_PUBLISH', 'YOUTUBE'].includes(channel)) {
     assert(typeof codeVerifier === 'string' && codeVerifier.length >= 43
       && codeVerifier.length <= 128, 'SOCIAL_PROVIDER_OAUTH_PKCE_REQUIRED');
   }
