@@ -78,6 +78,8 @@
 !server/cads-marketplace.test.mjs
 !server/cads-commerce.mjs
 !server/cads-commerce.test.mjs
+!server/agent-operations-pilot.mjs
+!server/agent-operations-pilot.test.mjs
 !server/benchmark-runs.mjs
 !server/benchmark-runs.test.mjs
 !server/benchmark-store.mjs
