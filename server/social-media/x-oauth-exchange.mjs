@@ -173,7 +173,7 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
       const saved = await edge.persistAccount(trusted.userId, record);
       assert(saved?.connected === true && saved.handle === account.username,
         'SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED');
-      return Object.freeze({ connected: true, channel: 'X', handle: account.username });
+      return Object.freeze({ connected: true, channel, handle: account.username });
     }
     // Explicit upsert keyed by (user_id,platform). Service key never reaches a browser.
     const endpoint = cfg.supabaseOrigin
@@ -191,6 +191,6 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
       && row?.access_token_encrypted === record.access_token_encrypted
       && row?.refresh_token_encrypted === record.refresh_token_encrypted,
       'SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED');
-    return Object.freeze({ connected: true, channel: 'X', handle: account.username });
+    return Object.freeze({ connected: true, channel, handle: account.username });
   };
 }
