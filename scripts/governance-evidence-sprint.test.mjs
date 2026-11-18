@@ -7,6 +7,7 @@ import { resolveSeoIndexingPolicy, SEO_INDEXING_STATES } from '../shared/seo-ind
 const page = readFileSync(new URL('../src/features/home/GovernanceEvidenceSprintPage.tsx', import.meta.url), 'utf8');
 const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
 const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+const commerce = readFileSync(new URL('../src/features/home/CommerceEntrySection.tsx', import.meta.url), 'utf8');
 const sample = readFileSync(new URL('../docs/growth/GOVERNANCE-EVIDENCE-SPRINT-MUSTERBERICHT-20261119.md', import.meta.url), 'utf8');
 const inquiry = readFileSync(new URL('../server/learning-inquiry.mjs', import.meta.url), 'utf8');
 const routeAnalytics = readFileSync(new URL('../src/platform/analytics/useRouteAnalytics.ts', import.meta.url), 'utf8');
@@ -15,7 +16,8 @@ test('sprint route is public, canonical and discoverable on the homepage', () =>
   assert.equal(resolveAppRoute('/governance-evidence-sprint'), '/governance-evidence-sprint');
   assert.equal(resolveAppRoute('/evidence-sprint/'), '/governance-evidence-sprint');
   assert.match(routes, /GovernanceEvidenceSprintPage/);
-  assert.match(home, /\/governance-evidence-sprint/);
+  assert.match(home, /CommerceEntrySection/);
+  assert.match(commerce, /\/governance-evidence-sprint/);
   assert.match(page, /href="#anfrage"/);
   assert.match(page, /href="#musterbericht"/);
   assert.equal(resolveSeoIndexingPolicy('/governance-evidence-sprint').classification, SEO_INDEXING_STATES.NOINDEX);
