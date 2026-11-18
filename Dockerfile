@@ -40,6 +40,8 @@ COPY AGENTS.md ./AGENTS.md
 # The offline branding/3D regression tests inspect these two non-secret build contracts.
 # Include them in build only; the final runtime image receives neither file.
 COPY Dockerfile .dockerignore ./
+# Offline isolation tests verify the actual dedicated production manifests, without installing them in build.
+COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runtime/
 COPY .agents/skills ./.agents/skills
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
