@@ -8,8 +8,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 import json
+import hashlib
+import uuid
 
-from auto_loop import Authority, execute
+from auto_loop import Authority, execute, execute_durable
 
 WORKFLOWS = {
     "ci-evidence": ("platform-engineering", "trust-engineering"),
@@ -110,6 +112,41 @@ def preview(workflow_id: str, payload: dict) -> dict:
         "assessment": adapter.assessment,
         "calls": adapter.calls,
         "mode": "LOCAL_LANGGRAPH_READ_ONLY",
+        "productionEligible": False,
+        "externalProviderCalls": 0,
+    }
+
+
+
+def preview_durable(workflow_id: str, payload: dict, *, tenant_id: str,
+                    idempotency_key: str, db_path: str) -> dict:
+    """Exercise existing SQLite-backed LangGraph read-only checkpoint recovery.
+
+    Caller must supply a VERIFIED tenant identity and independently bind the
+    payload hash to its idempotency key in the Supabase transactional ledger.
+    This is a separated, offline worker proof, not an HTTP execution adapter.
+    """
+    try:
+        tenant = str(uuid.UUID(tenant_id))
+    except (ValueError, TypeError, AttributeError):
+        return {"status": "BLOCKED", "reason": "INVALID_TENANT"}
+    if (not isinstance(workflow_id, str) or workflow_id not in WORKFLOWS
+            or not isinstance(idempotency_key, str)
+            or not re.fullmatch(r"[A-Za-z0-9_-]{12,64}", idempotency_key)
+            or _analyze(workflow_id, payload) is None):
+        return {"status": "BLOCKED", "reason": "INVALID_INPUT"}
+    # Hashed thread namespace prevents one user's key from resuming another's
+    # checkpoint and avoids including tenant identifiers in SQLite thread IDs.
+    material = "|".join((tenant, workflow_id, idempotency_key))
+    task_id = "agentpilot:" + hashlib.sha256(material.encode("utf-8")).hexdigest()[:48]
+    adapter = ReadOnlyDemoAdapter(workflow_id, payload)
+    state = execute_durable(adapter, Authority(read_only=True), task_id, db_path)
+    return {
+        "status": state["status"],
+        "history": state.get("history", []),
+        "calls": adapter.calls,
+        "checkpoint": "PRIVATE_SQLITE_DURABLE_READ_ONLY",
+        "replayedCheckpoint": not adapter.calls,
         "productionEligible": False,
         "externalProviderCalls": 0,
     }
