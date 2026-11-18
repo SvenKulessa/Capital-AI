@@ -1,6 +1,9 @@
 """Offline positive/negative cases for the existing LangGraph pilot adapter."""
 import unittest
-from agent_operations_pilot import preview
+import tempfile
+import os
+from pathlib import Path
+from agent_operations_pilot import preview, preview_durable
 
 SHA = "a" * 40
 CI = {
@@ -48,6 +51,41 @@ class PilotGraphTests(unittest.TestCase):
                 self.assertEqual(result["status"], "BLOCKED")
                 self.assertNotIn("SENSITIVE_123", str(result))
                 self.assertNotIn("merge", result["calls"])
+
+    def test_durable_sqlite_checkpoint_replay_is_tenant_scoped(self):
+        with tempfile.TemporaryDirectory() as folder:
+            os.chmod(folder, 0o700)
+            db_path = str(Path(folder) / "agent-pilot.sqlite3")
+            opts = {"idempotency_key": "restart_key_0001", "db_path": db_path}
+            alice = "11111111-1111-4111-8111-111111111111"
+            bob = "22222222-2222-4222-8222-222222222222"
+            first = preview_durable("ci-evidence", CI, tenant_id=alice, **opts)
+            self.assertEqual(first["status"], "READ_ONLY_COMPLETE")
+            self.assertEqual(first["calls"], ["analyze", "evidence"])
+            self.assertFalse(first["replayedCheckpoint"])
+            second = preview_durable("ci-evidence", CI, tenant_id=alice, **opts)
+            self.assertEqual(second["status"], "READ_ONLY_COMPLETE")
+            self.assertEqual(second["calls"], [])
+            self.assertTrue(second["replayedCheckpoint"])
+            other = preview_durable("ci-evidence", CI, tenant_id=bob, **opts)
+            self.assertEqual(other["calls"], ["analyze", "evidence"])
+            self.assertFalse(other["replayedCheckpoint"])
+
+    def test_durable_checkpoint_denies_invalid_identity_or_permissive_mount(self):
+        with tempfile.TemporaryDirectory() as folder:
+            db_path = str(Path(folder) / "agent-pilot.sqlite3")
+            opts = {"idempotency_key": "restart_key_0002", "db_path": db_path}
+            invalid = preview_durable("ci-evidence", CI, tenant_id="not-a-uuid", **opts)
+            self.assertEqual(invalid["status"], "BLOCKED")
+            self.assertFalse(Path(db_path).exists())
+            invalid_key = preview_durable("ci-evidence", CI,
+                tenant_id="11111111-1111-4111-8111-111111111111",
+                idempotency_key="x", db_path=db_path)
+            self.assertEqual(invalid_key["status"], "BLOCKED")
+            os.chmod(folder, 0o755)
+            with self.assertRaises(ValueError):
+                preview_durable("ci-evidence", CI,
+                    tenant_id="11111111-1111-4111-8111-111111111111", **opts)
 
 
 if __name__ == "__main__":
