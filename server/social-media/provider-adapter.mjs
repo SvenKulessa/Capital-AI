@@ -59,6 +59,11 @@ export function socialPlatformForChannel(channel) {
   const platform = SOCIAL_PLATFORMS[channel];
   return platform;
 }
+// OAuth-only namespace. Do NOT extend SOCIAL_PLATFORMS: x_publish is not a
+// generic content handoff or a second publication channel.
+export function socialOAuthPlatformForChannel(channel) {
+  return channel === 'X_PUBLISH' ? 'x_publish' : socialPlatformForChannel(channel);
+}
 export function socialChannelForPlatform(platform) {
   const channel = Object.keys(SOCIAL_PLATFORMS).find(key => SOCIAL_PLATFORMS[key] === platform);
   assert(channel, 'SOCIAL_PROVIDER_PLATFORM_UNSUPPORTED');
@@ -110,7 +115,7 @@ export function assertSocialManifestHandoff(manifest, handoff) {
  * Server-side callers must query via service_role with an authenticated, scoped userId.
  */
 export function publicSocialAccountProjection(row, userId, channel, now = Date.now()) {
-  const platform = socialPlatformForChannel(channel);
+  const platform = socialOAuthPlatformForChannel(channel);
   assert(validUserId(userId) && row?.user_id === userId, 'SOCIAL_PROVIDER_ACCOUNT_OWNER_MISMATCH');
   assert(validUserId(row.id) && row.platform === platform, 'SOCIAL_PROVIDER_ACCOUNT_PLATFORM_MISMATCH');
   const expiry = safeTime(row.token_expires_at);
@@ -281,7 +286,7 @@ export function socialOAuthStateDigest({ state, userId, channel, redirectUri }) 
   assert(validUserId(userId) && validHttpsUrl(redirectUri),
     'SOCIAL_PROVIDER_OAUTH_STATE_INVALID');
   const salt = JSON.stringify(['capital-social-oauth-state-v1', userId,
-    socialPlatformForChannel(channel), redirectUri]);
+    socialOAuthPlatformForChannel(channel), redirectUri]);
   return scryptSync(state, salt, 32, { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }).toString('hex');
 }
 
@@ -289,11 +294,11 @@ export function createSocialOAuthState(input) {
   // Production entropy is sourced exclusively from Node's CSPRNG; no caller override.
   const { userId, channel, redirectUri, allowedRedirectUris, codeVerifier = null,
     now = Date.now() } = input ?? {};
-  const platform = socialPlatformForChannel(channel);
+  const platform = socialOAuthPlatformForChannel(channel);
   assert(validUserId(userId), 'SOCIAL_PROVIDER_OAUTH_USER_REQUIRED');
   assert(validHttpsUrl(redirectUri) && Array.isArray(allowedRedirectUris)
     && allowedRedirectUris.includes(redirectUri), 'SOCIAL_PROVIDER_OAUTH_REDIRECT_DENIED');
-  if (['X', 'YOUTUBE'].includes(channel)) {
+  if (['X', 'X_PUBLISH', 'YOUTUBE'].includes(channel)) {
     assert(typeof codeVerifier === 'string' && codeVerifier.length >= 43
       && codeVerifier.length <= 128, 'SOCIAL_PROVIDER_OAUTH_PKCE_REQUIRED');
   }

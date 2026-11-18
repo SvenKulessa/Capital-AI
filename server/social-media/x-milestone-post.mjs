@@ -13,6 +13,7 @@ const POST = BASE + '/publish';
 const STATUS = BASE + '/status';
 const SCRIPT = '/x-milestone-post.js';
 const EXPECTED_HANDLE = 'CapitalAIOnline';
+const PUBLISH_CHANNEL = 'X_PUBLISH';
 const XID = /^[0-9]{1,25}$/;
 
 const LAUNCH = BASE + '/launch';
@@ -295,6 +296,7 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
       json(res, 403, { error: 'owner_authorization_required' }); return true;
     }
     if (env.SOCIAL_X_EDGE_STORE_ENABLED !== 'true'
+      || env.SOCIAL_X_PUBLISH_OAUTH_ENABLED !== 'true'
       || env.SOCIAL_X_MILESTONE_POST_ENABLED !== 'true') {
       json(res, 503, { error: 'x_milestone_not_enabled' }); return true;
     }
@@ -307,7 +309,7 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
     }
     try {
       const jwt = await auth?.internalAccessToken?.(req, res);
-      const edge = edgeFactory({ env, fetchImpl, channel: 'X', userAccessToken: jwt });
+      const edge = edgeFactory({ env, fetchImpl, channel: PUBLISH_CHANNEL, userAccessToken: jwt });
       if ([STATUS, LAUNCH_STATUS].includes(url.pathname)) {
         const account = await edge.invoke('x_credentials', { userId: identity.userId });
         must(account?.handle === EXPECTED_HANDLE && XID.test(account?.accountId || ''),

@@ -26,3 +26,20 @@ test('rejects active content, tracking and cross-boundary image URLs', () => {
   assert.equal(accountAvatarForVerifiedUser({user_metadata:{avatar_url:'https://evil.test/photo.png'}}), null);
   assert.equal(safeAccountAvatarUrl('x'.repeat(2049)), null);
 });
+
+test('uses the picture of the active OAuth provider, not stale metadata from another provider', () => {
+  const user = {
+    app_metadata: { provider: 'google' },
+    user_metadata: { picture: 'https://pbs.twimg.com/stale.png' },
+    identities: [
+      { provider: 'twitter', identity_data: { picture: 'https://pbs.twimg.com/stale.png' } },
+      { provider: 'google', identity_data: { picture: 'https://lh3.googleusercontent.com/current.png' } },
+    ],
+  };
+  assert.equal(accountAvatarForVerifiedUser(user), 'https://lh3.googleusercontent.com/current.png');
+  assert.equal(accountAvatarForVerifiedUser({...user, app_metadata:{provider:'notion'}}), null);
+  assert.equal(accountAvatarForVerifiedUser({...user, user_metadata:{custom_avatar_url:'/api/profile/avatar/private123'}}),
+    '/api/profile/avatar/private123');
+  assert.equal(accountAvatarForVerifiedUser({...user, user_metadata:{custom_avatar_url:'https://pbs.twimg.com/fake.png'}}),
+    'https://lh3.googleusercontent.com/current.png');
+});

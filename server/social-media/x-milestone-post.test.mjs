@@ -15,6 +15,10 @@ const ENV={
   SOCIAL_X_PAID_WRITE_APPROVED:'true',
   SOCIAL_X_PAID_READ_APPROVED:'true',
   SOCIAL_X_TOKEN_ENCRYPTION_KEY:KEY,
+  SOCIAL_X_PUBLISH_TOKEN_ENCRYPTION_KEY:KEY,
+  SOCIAL_X_PUBLISH_OAUTH_ENABLED:'true',
+  SOCIAL_X_PUBLISH_OAUTH_CLIENT_ID:'synthetic-publish-client',
+  SOCIAL_X_PUBLISH_OAUTH_CLIENT_SECRET:'synthetic-publish-secret',
   SOCIAL_X_OAUTH_CONNECT_ENABLED:'true',
   SOCIAL_OAUTH_CALLBACK_ENABLED:'true',
   SOCIAL_X_OAUTH_CLIENT_ID:'synthetic-x-client',
@@ -35,7 +39,7 @@ const json=(res,code,body)=>{res.code=code;res.body=body};
 function seal(value,kind='access'){
   const iv=randomBytes(12);
   const c=createCipheriv('aes-256-gcm',Buffer.from(KEY,'hex'),iv);
-  c.setAAD(Buffer.from(JSON.stringify(['capital-social-x-v1',USER,kind])));
+  c.setAAD(Buffer.from(JSON.stringify(['capital-social-x-publish-v1',USER,kind])));
   const bytes=Buffer.concat([c.update(value,'utf8'),c.final()]);
   return 'v1.'+[iv,c.getAuthTag(),bytes].map(x=>x.toString('base64url')).join('.');
 }
@@ -49,7 +53,9 @@ function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=
   const auth={sameOrigin:req=>req.headers['sec-fetch-site']==='same-origin',
     verify:async()=>owner?{userId:USER,emailVerified:true}:null,
     authorizeIamRole:async()=>owner,internalAccessToken:async()=> 'synthetic-jwt-'+'j'.repeat(80)};
-  const edgeFactory=()=>({
+  const edgeFactory=({channel})=>{
+    assert.equal(channel,'X_PUBLISH');
+    return ({
     async invoke(op,ctx){
       calls.push(op);
       if(op==='x_credentials')return {accountId:ACCOUNT,handle:'CapitalAIOnline',
@@ -75,20 +81,20 @@ function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=
     async refreshClaim(_user,leaseId){
       calls.push('refresh_claim');
       return {leaseId,refreshCipher:seal('synthetic-REFRESH-OLD-TOKEN','refresh'),
-        accountId:ACCOUNT,scopes:['tweet.read','tweet.write','users.read','offline.access']};
+        accountId:ACCOUNT,scopes:['tweet.read','tweet.write','users.read','offline.access','media.write']};
     },
     async refreshFinish(_user,_lease,_prev,newAccess,_newRefresh,expiry){
       calls.push('refresh_finish');accessCipher=newAccess;expiresAt=expiry;
-      return {refreshed:true,channel:'X',expiresAt:expiry};
+      return {refreshed:true,channel:'X_PUBLISH',expiresAt:expiry};
     },
-    async refreshEnd(){calls.push('refresh_end');return {channel:'X',status:'reconnect_required'};},
-  });
+    async refreshEnd(){calls.push('refresh_end');return {channel:'X_PUBLISH',status:'reconnect_required'};},
+  }); };
   let writeCount=0,readCount=0;
   const fetchImpl=async (url,options)=>{
     const path=String(url);
     if(path.endsWith('/2/oauth2/token'))return providerResult(200,{
       access_token:'synthetic-ACCESS-NEW-TOKEN',refresh_token:'synthetic-REFRESH-NEW-TOKEN',
-      token_type:'bearer',expires_in:3600,scope:'tweet.read tweet.write users.read offline.access'});
+      token_type:'bearer',expires_in:3600,scope:'tweet.read tweet.write users.read offline.access media.write'});
     if(path.endsWith('/2/users/me'))return providerResult(200,{data:{id:ACCOUNT}});
     if(path.endsWith('/2/tweets') && options?.method==='POST'){
       writeCount++;
