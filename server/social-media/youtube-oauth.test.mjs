@@ -52,6 +52,33 @@ test('YouTube start uses owner session, PKCE, offline consent and routing cookie
   assert.match(r.headers['Set-Cookie'].at(-1),/HttpOnly; Secure; SameSite=Lax/);
   assert.ok(!r.headers.Location.includes(starts[0].codeVerifier));
 });
+test('YouTube scope reconciliation rejects Drive overrides', async () => {
+  let issued = 0;
+  const start = createSocialYouTubeOAuthStart({
+    env: { ...env, SOCIAL_YOUTUBE_OAUTH_SCOPES: 'https://www.googleapis.com/auth/drive.readonly' },
+    auth,
+    store: { beginOAuth: async () => { issued++; return { state }; } },
+  });
+  const path = `/api/social-media/youtube/auth/start?privacy=${YOUTUBE_POLICY.version}`;
+  const accepted = response();
+  await start.handle(req, accepted, new URL(path, env.PUBLIC_APP_ORIGIN), json);
+  assert.equal(accepted.status, 303);
+  const requestedScopes = new URL(accepted.headers.Location).searchParams.get('scope')?.split(' ');
+  assert.deepEqual(requestedScopes, scopes, 'YouTube requests only its two required permissions');
+  assert.ok(!requestedScopes.includes('https://www.googleapis.com/auth/drive.readonly'));
+
+  for (const extra of [
+    '&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.readonly',
+    `&scope=${encodeURIComponent(scopes.join(' '))}`,
+  ]) {
+    const r = response();
+    await start.handle(req, r, new URL(path + extra, env.PUBLIC_APP_ORIGIN), json);
+    assert.equal(r.status, 303);
+    assert.equal(r.headers.Location, '/api/social-media/youtube/account/connect');
+  }
+  assert.equal(issued, 1, 'injected scope requests never issue OAuth state');
+});
+
 test('YouTube denies non-owner and cross-site start before issuing state', async () => {
   let calls=0;
   const start=createSocialYouTubeOAuthStart({ env, auth: { ...auth, authorizeIamRole: async () => false },
