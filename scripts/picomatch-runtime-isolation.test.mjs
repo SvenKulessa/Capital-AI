@@ -153,3 +153,52 @@ test('negative: removing the dev-only picomatch lock marker is rejected', () => 
 
 // Full Trivy --include-dev-deps scans intentionally remain enabled and may
 // continue to fail for this CVE until an upstream fix is released.
+
+
+const deployedManifest = readJson('deploy/runtime/package.json');
+const deployedLock = readJson('deploy/runtime/package-lock.json');
+const deployedDockerfile = readFileSync(path.join(projectRoot, 'Dockerfile'), 'utf8');
+
+// The real Render image uses deploy/runtime/package.json and its own lockfile.
+// This contract is independent of the frontend/root package classification.
+function verifyDockerRuntime(manifest, locked, dockerfile) {
+  assert.deepEqual(locked.packages[''].dependencies, manifest.dependencies,
+    'Docker runtime manifest does not match deploy/runtime lockfile');
+  assert.ok(dockerfile.includes('FROM crypto-base AS production-deps'),
+    'Missing dedicated production dependency stage');
+  assert.ok(dockerfile.includes('COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./'),
+    'Docker must use the dedicated runtime package files');
+  assert.ok(dockerfile.includes('npm ci --omit=dev --include=optional'),
+    'Docker must omit dev dependencies');
+  assert.ok(dockerfile.includes('COPY --from=production-deps /runtime/node_modules ./node_modules'),
+    'Docker must copy node_modules only from the dedicated production stage');
+  const production = closure(locked.packages, manifest.dependencies);
+  for (const target of RUNTIME_DENIED) {
+    assert.equal(production.has(target), false,
+      'Vulnerable build-only module reached in deploy/runtime: ' + target);
+    assert.equal(Object.hasOwn(locked.packages, target), false,
+      'Vulnerable build-only module was added to deploy/runtime lockfile: ' + target);
+  }
+}
+
+test('actual Render Docker runtime manifest excludes the vulnerable Vite/picomatch closure', () => {
+  verifyDockerRuntime(deployedManifest, deployedLock, deployedDockerfile);
+});
+
+test('negative: introducing picomatch into the dedicated production lockfile fails', () => {
+  const bad = structuredClone(deployedLock);
+  bad.packages['node_modules/picomatch'] = { version: '4.0.7' };
+  bad.packages['node_modules/redis'].dependencies ??= {};
+  bad.packages['node_modules/redis'].dependencies.picomatch = '^4.0.7';
+  assert.throws(() => verifyDockerRuntime(deployedManifest, bad, deployedDockerfile),
+    /picomatch/);
+});
+
+test('negative: Docker silently switching to root manifest is rejected', () => {
+  const bad = deployedDockerfile.replace(
+    'COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./',
+    'COPY package.json package-lock.json ./');
+  assert.notEqual(bad, deployedDockerfile);
+  assert.throws(() => verifyDockerRuntime(deployedManifest, deployedLock, bad),
+    /dedicated runtime package files/);
+});
