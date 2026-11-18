@@ -52,6 +52,9 @@ export function summarizeCiEfficiency({
       runSeconds: [],
       queueSeconds: [],
       jobWallSeconds: [],
+      rerunRuns: 0,
+      rerunCoverageMissing: 0,
+      observedPriorAttemptSeconds: 0,
     };
 
     entry.runs += 1;
@@ -66,13 +69,30 @@ export function summarizeCiEfficiency({
     if (queueSeconds !== null) entry.queueSeconds.push(queueSeconds);
 
     const jobs = jobsByRun.get(Number(run.id)) || jobsByRun.get(String(run.id)) || [];
+    const runAttempts = Number.isSafeInteger(run.run_attempt) && run.run_attempt > 0
+      ? run.run_attempt : null;
+    const observedJobAttempts = [...new Set(jobs.map(job => job.run_attempt)
+      .filter(attempt => Number.isSafeInteger(attempt) && attempt > 0))].sort((a, b) => a - b);
+    const allAttemptsObserved = runAttempts !== null
+      && observedJobAttempts.length === runAttempts
+      && observedJobAttempts.every((attempt, index) => attempt === index + 1);
+    if (runAttempts > 1) {
+      entry.rerunRuns += 1;
+      if (!allAttemptsObserved) entry.rerunCoverageMissing += 1;
+    }
     let jobWall = 0;
     let observedJobs = 0;
+    let priorAttemptSeconds = 0;
+    let observedPriorJobs = 0;
     for (const job of jobs) {
       const seconds = secondsBetween(job.started_at, job.completed_at);
       if (seconds !== null) {
         jobWall += seconds;
         observedJobs += 1;
+        if (runAttempts > 1 && Number.isSafeInteger(job.run_attempt) && job.run_attempt < runAttempts) {
+          priorAttemptSeconds += seconds;
+          observedPriorJobs += 1;
+        }
       }
       for (const step of Array.isArray(job.steps) ? job.steps : []) {
         if (step.status !== 'completed' || step.conclusion === 'skipped') continue;
@@ -90,6 +110,7 @@ export function summarizeCiEfficiency({
       }
     }
     if (observedJobs > 0) entry.jobWallSeconds.push(jobWall);
+    entry.observedPriorAttemptSeconds += priorAttemptSeconds;
 
     expensiveRuns.push({
       runId: Number(run.id),
@@ -97,6 +118,11 @@ export function summarizeCiEfficiency({
       event: run.event || null,
       conclusion: run.conclusion || null,
       htmlUrl: run.html_url || null,
+      runAttempts,
+      observedJobAttempts,
+      attemptCoverage: allAttemptsObserved ? 'ALL_ATTEMPTS_OBSERVED' : 'NOT_PROVEN',
+      observedPriorAttemptRunnerMinutes: observedPriorJobs > 0
+        ? round(priorAttemptSeconds / 60) : null,
       runSeconds: round(runSeconds),
       observedJobWallSeconds: observedJobs > 0 ? round(jobWall) : null,
       observedRunnerMinutes: observedJobs > 0 ? round(jobWall / 60) : null,
@@ -140,6 +166,12 @@ export function summarizeCiEfficiency({
       maxQueueSeconds: round(entry.queueSeconds.length ? Math.max(...entry.queueSeconds) : null),
       observedJobWallSeconds: round(totalJobWall),
       observedRunnerMinutes: round(totalJobWall / 60),
+      rerunRuns: entry.rerunRuns,
+      observedPriorAttemptRunnerMinutes: entry.rerunRuns === 0 ? 0
+        : entry.rerunCoverageMissing === 0
+          ? round(entry.observedPriorAttemptSeconds / 60) : null,
+      rerunCoverage: entry.rerunRuns === 0 ? 'NO_RERUNS_OBSERVED'
+        : entry.rerunCoverageMissing === 0 ? 'ALL_ATTEMPTS_OBSERVED' : 'PARTIAL_NOT_PROVEN',
       runnerMinuteEvidence: entry.jobWallSeconds.length ? 'OBSERVED_JOB_WALLTIME_NOT_BILLING' : 'NOT_PROVEN',
       slowestSteps: stepRows.filter(step => step.workflow === entry.workflow).slice(0, 5),
     };
@@ -156,6 +188,7 @@ export function summarizeCiEfficiency({
       workflowRuntime: 'VERIFIED_FROM_GITHUB_ACTIONS_TIMESTAMPS',
       queueDelay: 'VERIFIED_WHEN_CREATED_AT_AND_RUN_STARTED_AT_ARE_PRESENT',
       runnerMinutes: 'OBSERVED_JOB_WALLTIME_NOT_BILLING',
+      retryOverhead: 'OBSERVED_PRIOR_ATTEMPT_JOB_WALLTIME_NOT_BILLING',
       stepWalltime: stepRows.length ? 'OBSERVED_STEP_WALLTIME_NOT_BILLING' : 'NOT_PROVEN',
       billedMinutes: 'NOT_PROVEN',
       cacheHitRate: 'NOT_PROVEN',
@@ -232,10 +265,23 @@ async function collectRuns(repository, token, sinceMs, maxRuns) {
   return { runs: collected, truncated };
 }
 
-async function collectJobs(repository, token, runs) {
+// Fetch *all* attempts. A latest-only read silently omits failed Buildx retries
+// and understates the CI runner walltime in weekly read-only evidence.
+export async function collectJobs(repository, token, runs, read = githubJson) {
   const pairs = await mapLimit(runs, 8, async run => {
-    const data = await githubJson(`/repos/${repository}/actions/runs/${run.id}/jobs?per_page=100&filter=latest`, token);
-    return [Number(run.id), Array.isArray(data.jobs) ? data.jobs : []];
+    const jobs = [];
+    for (let page = 1; page <= 20; page += 1) {
+      const data = await read(`/repos/${repository}/actions/runs/${run.id}/jobs?per_page=100&filter=all&page=${page}`, token);
+      if (!Array.isArray(data.jobs)) throw new Error('CI_JOBS_INVALID_RESPONSE');
+      jobs.push(...data.jobs);
+      if (data.jobs.length < 100) {
+        if (Number.isSafeInteger(data.total_count) && jobs.length !== data.total_count) {
+          throw new Error('CI_JOBS_INCOMPLETE');
+        }
+        return [Number(run.id), jobs];
+      }
+    }
+    throw new Error('CI_JOBS_PAGINATION_LIMIT');
   });
   return new Map(pairs);
 }
