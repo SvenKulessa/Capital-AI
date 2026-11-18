@@ -118,6 +118,14 @@ export function HomePage({
       </section>
       <HomeSearchFocus />
       <CommerceEntrySection onNavigate={onNavigate} />
+      <section aria-labelledby="governance-sprint-cta" className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+        <div className="rounded-2xl border border-cyan-300/25 bg-slate-950/80 p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">CAPITAL-AI · B2B-Angebot</p>
+          <h2 id="governance-sprint-cta" className="mt-2 text-xl font-bold text-white">Governance & Evidence Sprint</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-200">Ein begrenzter, manuell erbrachter CI-/Security-Evidence-Review mit Musterbericht, klaren Grenzen und unverbindlicher Anfrage. Kein automatischer Tenant-Scan oder Zertifikat.</p>
+          <a href="/governance-evidence-sprint" className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-cyan-300/60 px-4 py-3 text-sm font-semibold text-cyan-100 hover:bg-cyan-950/70 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200">B2B-Angebot und Musterbericht ansehen</a>
+        </div>
+      </section>
       <HomeLatestLearning onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
