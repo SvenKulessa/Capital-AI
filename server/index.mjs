@@ -25,6 +25,7 @@ import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-e
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
 import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
+import { createXPublishAccountStatus } from './social-media/x-publish-account-status.mjs';
 import { createSocialOwnerTokenRefresh } from './social-media/owner-token-refresh.mjs';
 import { createXArticleTest } from './social-media/x-article-test.mjs';
 import { createXMilestonePost } from './social-media/x-milestone-post.mjs';
@@ -367,6 +368,11 @@ export function createApp(root = defaultRoot, options = {}) {
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
   });
+  const socialXPublishOAuthStart = createSocialXOAuthStart({
+    env: options.env || process.env, auth, channel: 'X_PUBLISH',
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialPublishOAuthStore || null,
+  });
   const youtubePrivateUpload = createYouTubePrivateUpload({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeOAuthStart = createSocialYouTubeOAuthStart({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
@@ -393,11 +399,18 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
   });
   const xExchange = createSocialXOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
+  const xPublishExchange = createSocialXOAuthExchange({
+    env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+    channel: 'X_PUBLISH',
+  });
   const youtubeExchange = createSocialYouTubeOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeAccountStatus = createSocialYouTubeAccountStatus({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialXAccountStatus = createSocialXAccountStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const socialXPublishAccountStatus = createXPublishAccountStatus({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialOwnerTokenRefresh = createSocialOwnerTokenRefresh({
@@ -411,6 +424,12 @@ export function createApp(root = defaultRoot, options = {}) {
   });
   const xUrlContext = createXUrlContext({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const socialPublishOAuthCallback = createSocialOAuthCallback({
+    env: options.env || process.env, auth,
+    fetchImpl: options.fetchImpl || fetch, publishOnly: true,
+    store: options.socialPublishOAuthStore || null,
+    exchangeCode: options.socialPublishOAuthCodeExchange || xPublishExchange,
   });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
@@ -521,6 +540,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await profileAvatarUpload.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await socialXPublishOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
   if (await socialFacebookOAuthStart.handle(req, res, url, json)) return;
@@ -529,10 +549,12 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
   if (await socialXAccountStatus.handle(req, res, url, json)) return;
+  if (await socialXPublishAccountStatus.handle(req, res, url, json)) return;
   if (await socialOwnerTokenRefresh.handle(req, res, url, json)) return;
   if (await xArticleTest.handle(req, res, url, json)) return;
   if (await xMilestonePost.handle(req, res, url, json)) return;
   if (await xUrlContext.handle(req, res, url, json)) return;
+  if (await socialPublishOAuthCallback.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;

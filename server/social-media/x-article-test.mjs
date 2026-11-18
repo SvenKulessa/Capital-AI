@@ -9,6 +9,7 @@ const POST = PAGE + '/publish';
 const STATUS = PAGE + '/status';
 const SCRIPT = '/x-article-test.js';
 const EXPECTED_HANDLE = 'CapitalAIOnline';
+const PUBLISH_CHANNEL = 'X_PUBLISH';
 const XID = /^[0-9]{1,25}$/;
 const blocks = [
   'Chartanalyse ohne Signal-Mythen: 5 Fragen vor jedem Indikator',
@@ -53,7 +54,8 @@ export async function resolveOwnerXCredentials({ edge, identity, jwt, env, fetch
   let refreshed = false;
   if (Date.parse(row.expiresAt) <= Date.now() + 300000) {
     const result = await refreshOwnerXForWorkload({
-      env, userId: identity.userId, userAccessToken: jwt, fetchImpl, edgeFactory });
+      env, userId: identity.userId, userAccessToken: jwt, fetchImpl, edgeFactory,
+      channel: PUBLISH_CHANNEL });
     must(result.httpStatus === 200 && result.body.refreshed === true,
       result.body.status === 'reconnect_required' ? 'x_reconnect_required' : 'x_refresh_not_available');
     const fresh = await edge.invoke('x_credentials', { userId: identity.userId });
@@ -64,7 +66,8 @@ export async function resolveOwnerXCredentials({ edge, identity, jwt, env, fetch
   }
   must(Date.parse(row.expiresAt) > Date.now() + 120000
     && row.leaseActive !== true, 'x_access_not_current');
-  return { accessToken: unsealOwnerXAccess(row.accessCipher, identity.userId, env),
+  return { accessToken: unsealOwnerXAccess(row.accessCipher, identity.userId, env,
+      PUBLISH_CHANNEL),
     accountId: row.accountId, refreshed };
 }
 async function publish({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
@@ -167,6 +170,7 @@ export function createXArticleTest({ env = process.env, auth, fetchImpl = fetch,
       res.end(PAGE_HTML); return true;
     }
     if (env.SOCIAL_X_EDGE_STORE_ENABLED !== 'true'
+      || env.SOCIAL_X_PUBLISH_OAUTH_ENABLED !== 'true'
       || env.SOCIAL_X_ARTICLE_TEST_ENABLED !== 'true') {
       json(res, 503, { error: 'x_article_test_not_enabled' }); return true;
     }
@@ -177,7 +181,7 @@ export function createXArticleTest({ env = process.env, auth, fetchImpl = fetch,
     }
     try {
       const jwt = await auth?.internalAccessToken?.(req, res);
-      const edge = edgeFactory({ env, fetchImpl, channel: 'X', userAccessToken: jwt });
+      const edge = edgeFactory({ env, fetchImpl, channel: PUBLISH_CHANNEL, userAccessToken: jwt });
       if (url.pathname === STATUS) {
         const account = await edge.invoke('x_credentials', { userId: identity.userId });
         must(account?.handle === EXPECTED_HANDLE && XID.test(account?.accountId || ''),
