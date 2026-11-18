@@ -80,6 +80,8 @@
 !server/cads-commerce.test.mjs
 !server/agent-operations-pilot.mjs
 !server/agent-operations-pilot.test.mjs
+!server/agent-operations-pilot-store.mjs
+!server/agent-operations-pilot-store.test.mjs
 !server/benchmark-runs.mjs
 !server/benchmark-runs.test.mjs
 !server/benchmark-store.mjs
@@ -227,6 +229,7 @@
 !scripts/stripe-catalog-readback.test.mjs
 !scripts/stripe-subscription-sync-migration.test.mjs
 !scripts/benchmark-ledger-migration.test.mjs
+!scripts/agent-operations-pilot-migration.test.mjs
 !scripts/benchmark-cost-calibration.test.mjs
 !scripts/stripe-three-purchase-e2e.mjs
 !scripts/stripe-three-purchase-e2e.test.mjs
@@ -360,6 +363,7 @@
 !supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
 !supabase/migrations/20261009104641_enforce_subscription_price_authority.sql
 !supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql
+!supabase/migrations/20261118180000_agent_operations_pilot_durable_ledger.sql
 !supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql
 
 !supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql
