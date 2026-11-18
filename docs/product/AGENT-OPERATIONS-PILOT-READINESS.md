@@ -1,57 +1,63 @@
-# CAPITAL-AI Agent Operations Suite – Commercial Pilot (unpublished)
+# CAPITAL-AI Agent Operations – durable pilot evidence
 
-Status: **IMPLEMENTED_SOURCE_ONLY / SYNTHETIC_DEMO / PRODUCTION_NOT_PROVEN**
-Baseline: main c1eded10a59864472a739e767084c273551444d5
-Contract: root AGENTS.md, SOLO_MAINTAINER_FLOW@2
+Status as of 2026-11-18: **IMPLEMENTED_SOURCE / TESTED_SYNTHETIC / DB_RUNTIME_NOT_PROVEN / CUSTOMER_LAUNCH_BLOCKED**
+Scope: PR #786, Root AGENTS.md, SOLO_MAINTAINER_FLOW@2
+Main at review: c56c91ef5974dbe522e616f26e70be84bab7daad (one commit after original branch base c1eded10a59864472a739e767084c273551444d5).
 
-## Customer workflows
+## What the pilot actually does
 
-| Workflow | Skills | Source-bounded result | Trust limit |
+| Workflow | Skill boundary | Evidence | Never asserts |
 |---|---|---|---|
-| ci-evidence | platform-engineering + trust-engineering | Compares self-supplied CI states and commit SHA | No live GitHub readback |
-| credential-expiry | trust-engineering + incident-response | Checks self-supplied credential *metadata* expiry | No secrets or provider API |
-| media-rights | growth-engineering + legal-compliance | Flags rights, source and attribution gaps | No legally effective clearance |
+| ci-evidence | PLATFORM / TRUST | User-supplied check states and SHA, integrity-bound receipt | Live GitHub verification |
+| credential-expiry | TRUST | Bounded metadata-only expiry classification | Provider token validity or key reading |
+| media-rights | GROWTH / TRUST | Rights/source/attribution gap classification | Media clearance, license ownership, publishing approval |
 
-The 26 canonical skills remain in .agents/skills/registry.json. A separately tested, *real* Python LangGraph integration reuses scripts/growth-agent/auto_loop.py as a read-only StateGraph. The Node HTTP preview is a distinct deterministic execution slice; it does not invoke the Python worker. There is no assertion of a running customer agent worker.
+- Existing Supabase session is resolved by auth.verify, website paid tier by auth.resolvePaidTier. Every paid request is server-gated; the browser cannot submit userId or tenantId.
+- Pilot tenant = a **single verified Supabase user UUID**. Organization membership and multi-user team tenants remain NOT_PROVEN.
+- The Node HTTP implementation is a deterministic source-bound demo, not a model-based execution service and not an active LangGraph worker.
+- Separate Python LangGraph adapter reuses scripts/growth-agent/auto_loop.py for read-only previews. The SQLite checkpoint adapter calls its existing execute_durable with 0700 private mount, lock and user-namespaced hashed thread ID. It does not handle customer HTTP requests.
 
-## API, security and costs
+## Persisted usage/evidence design (not applied live)
 
-- Public: GET /api/agent-operations-pilot/readiness; safe capability information only.
-- Authenticated POST: POST /api/agent-operations-pilot/runs. Requires verified Supabase session, existing Stripe-backed paid entitlement via auth.resolvePaidTier, exact same-origin, bounded schema and validated input.
-- Authenticated read: GET /api/agent-operations-pilot/runs/:id. Receipt belongs solely to the server-verified creator. Supplied tenantId or userId fields are forbidden.
-- Deployment opt-in: AGENT_OPERATIONS_PILOT_ENABLED=true. Default disabled. Do not enable on production without separate runtime/economic evidence.
-- Daily limits per verified account: Starter 2, Pro 10, Enterprise 30; all per-process, not durable or horizontally safe.
-- Idempotency keys, SHA-256 input/result/receipt digests, 24h process-local receipt retention. No external token/model/API calls, no new licenses, no new cloud services, no billing changes.
-- Security caveat: process-local quotas and volatile receipts are NOT suitable for paying multi-instance production customers; persistent, tenant-scoped usage ledger is a P0 next step.
+- SQL migration: supabase/migrations/20261118180000_agent_operations_pilot_durable_ledger.sql.
+- Table: public.agent_operations_pilot_runs with UUID foreign key to auth.users and on-delete cascade; single durable usage/event row contains one vetted synthetic JSONB receipt, canonical SHA-256, tenant UUID, UTC day, tier and idempotency key.
+- RLS is enabled with explicit deny and revoked table access for anon/authenticated/service_role. SQL SECURITY DEFINER RPCs have empty search_path and execution GRANT **only to service_role**. Verify actual role grants on target project before applying.
+- Atomically inside one PostgreSQL transaction: pg_advisory_xact_lock(hashtextextended(user_uuid::text, 0)), lookup by unique (user_id, idempotency_key), conflict on changed request hash, replay stored original receipt, then count user's UTC-day rows and insert if within tier limit.
+- Limits: starter 2, pro 10, enterprise 30 runs per verified user per UTC day. A retry with the identical idempotency key does not spend a second quota unit; the key is mandatory on POST.
+- Receipt hashes use recursively sorted JSON object keys, so PostgreSQL JSONB key reordering cannot invalidate the digest. Reads recompute the digest and fail closed on tampering.
+- GET by receipt UUID requires a new verified paid session and filters by user ID inside SQL. Cross-tenant lookups return 404; SQL RPC errors return 503, not raw provider messages.
+- Missing DB config, missing schema, insufficient privileges, failed RPC, invalid response or SHA mismatch means **NO in-memory fallback** and no successful execution.
+- BYOK remains metadata-only and additionally requires a separately trusted owner-verified vault-reference resolver; no secret values, LLM calls, external API calls or paid model activation.
+- Receipt content contains no raw request body, credentials, key references or email, but pseudonymous user ID and synthetic repository/asset metadata in server-only SQL require a retention policy.
 
-## BYOK: safe reference only
+## Deployment and cost gates
 
-No raw key, provider token, OAuth secret or credential storage. The optional byok vault_reference contract requires a separately trusted per-user metadata resolver and explicit AGENT_OPERATIONS_PILOT_BYOK_METADATA_ENABLED=true. It is disabled by default; external calls are always zero in this slice. Secret strings and unknown fields are rejected. Live BYOK retrieval, encryption, provider agreements and costs remain NOT_PROVEN.
+- The migration is COMMITTED AS SOURCE ONLY. It has NOT been applied to production or to the recovery/test Supabase project. There is no actual PostgreSQL concurrency/restore proof yet; SQL contract tests and shared-store Node mocks do not replace it.
+- AGENT_OPERATIONS_PILOT_ENABLED is disabled by default. It must remain false in production until an authorized migration, isolated DB transactional tests, verified backup/restore, valid entitlement and runtime readback. No database mutation is authorized by CI green.
+- No new Stripe products, prices or subscriptions; existing Starter/Pro/Enterprise catalog remains authoritative.
+- No paid provider activation. Database storage, traffic and existing CI resources can still incur operational consumption, even when modelCalls=0.
+- Retention/purge, backups, tenant membership for organizations, HTTP-to-LangGraph worker integration, reconciliation with the latest main and real paying-customer operation are NOT_PROVEN.
+- The private standalone HTML in docs/product/agent-operations-pilot-preview.html remains unpublished, no lead collection and no GA4 event dispatch.
 
-## Unpublished funnel
+## Verified paths and exact tests
 
-docs/product/agent-operations-pilot-preview.html is a private HTML concept, not routed in the public application. Three local, offline demo cards and data-funnel-event intent labels are present; no network requests or email collection occur. Owner-approved rollout later should reuse the existing contact endpoint (server/learning-inquiry.mjs) and consented GA4 event pipeline, with no unconsented tracking. Responsive/keyboard/mobile QA remains needed.
+Existing Docker Security Gate includes:
+- node --test server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs scripts/agent-operations-pilot-migration.test.mjs
+- Docker context, runtime dependency, module copy, license and security scans.
 
-## Rights and commercial guardrails
+Existing Google Maintenance and Local Growth Graph additionally executes those Node/SQL contract tests independently of Docker scans, and runs all scripts/growth-agent/test_*.py with the pinned LangGraph lock. Tests cover cross-tenant 404, parallel quota, restart/replay, changed-key 409, tamper 503, missing DB 503, BYOK-denied, and SQLite checkpoint 0700.
 
-- Existing first-party source and brand rights are reused. Main logo provenance: docs/licenses/Capital-AI-BRANDING.md; related Hero asset: public/branding/universe/hero-universe-orbit.svg.
-- Existing pinned langgraph==1.2.14 is used; its upstream source is MIT, subject to locked dependency/SBOM/license-acknowledgement review. No extra stock photos, voices, fonts, audio, model or API licenses added.
-- Google Gemini Notebook Enterprise documents licensed preview API audio-overview creation; no open consumer API for complete video podcasts or Shorts established. New API, provider, license and IAM activation require a separate authorization.
-- AI-generated license manifests are drafts, not legal clearance. Original source, brand, voice, audio and distribution rights require distinct evidence.
-- Existing Stripe Starter/Pro/Enterprise prices remain canonical; no new price/SKU activated.
+The Node test's persistent fake store checks API/contract semantics only; the transaction property is implemented by PostgreSQL SQL and inspected by SQL contract tests, not measured on a live database. A separate isolated PostgreSQL test must verify real simultaneous transactions and persistence across process/database restarts before enabling the feature.
 
-## Reproduction
+## Current independent security blocker
 
-1. Node positive/negative paths: node --test server/agent-operations-pilot.test.mjs
-2. LangGraph read-only tests: python3 -m unittest discover -s scripts/growth-agent -p 'test_agent_operations_pilot.py'
-3. Docker Security Gate includes Node suite; Google Maintenance and Local Growth Graph includes Python discovery. No new required checks.
-4. Existing CI, Docker Security Gate, Domain Governance, code SHA/readback, owner/legal/licensing rights must all be verified before customer launch.
-5. Rollback: revert pilot module/test, Python adapter/test, private preview/readiness docs, and server/index.mjs/Dockerfile integrations. No production SQL mutation required.
+Docker Security Gate source scan identified CVE-2026-112366 HIGH in picomatch 4.0.7 (ReDoS), with no published fixed version as of the check. package-lock.json is unchanged by PR #786; the issue is independent of the feature code. Do not suppress the scan or bypass the Required Check. Official references:
+- https://nvd.nist.gov/vuln/detail/CVE-2026-112366
+- https://advisories.gitlab.com/npm/picomatch/CVE-2026-112366/
+- https://github.com/micromatch/picomatch/issues/247
 
-## Official references
+## Rollback and smallest independent next step
 
-- https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-audio-overview
-- https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-notebooks
-- https://docs.cloud.google.com/gemini/enterprise/docs/release-notes
-- https://cloud.google.com/terms/service-terms
-- https://github.com/langchain-ai/langgraph/blob/main/LICENSE
+The default-off flag prevents HTTP execution before migration. Revert pilot module, store adapter, SQL migration, tests, CI wiring and docs on the current feature branch if needed. A database rollback after applying the migration requires an approved recovery plan and awareness that stored receipts would be lost. Never drop a ledger on production as an unreviewed rollback.
+
+After the upstream picomatch fix and isolated PostgreSQL proof, reconcile main and rerun invalidated checks. Assess pilot read-only readiness separately from publication, payment and real agent execution. No manual deployment or OAuth/secret changes are required for this source-only phase.
