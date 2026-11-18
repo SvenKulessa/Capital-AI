@@ -1,4 +1,5 @@
 const BlueprintOfferPage = lazy(() => import('../../features/pricing/BlueprintOfferPage').then(module => ({ default: module.BlueprintOfferPage })));
+const GovernanceEvidenceSprintPage = lazy(() => import('../../features/home/GovernanceEvidenceSprintPage').then(module => ({ default: module.GovernanceEvidenceSprintPage })));
 const CheckoutConfirmationPage = lazy(() => import('../../features/pricing/CheckoutConfirmationPage').then(module => ({ default: module.CheckoutConfirmationPage })));
 import { BrandLogo } from '../../components/BrandLogo';
 const AccountRightsPage = lazy(() => import('../../features/account/AccountRightsPage').then(module => ({default:module.AccountRightsPage})));
@@ -290,6 +291,7 @@ export function AppRoutes({
     );
   }
 
+  if (currentRoute === '/governance-evidence-sprint') return <GovernanceEvidenceSprintPage />;
   if (currentRoute === '/blueprints') return <BlueprintOfferPage />;
   if (currentRoute === '/checkout/confirmation') return <CheckoutConfirmationPage />;
 
