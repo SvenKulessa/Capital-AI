@@ -119,13 +119,25 @@ jobs:
         if: always()
         shell: bash
         run: |
-          set -uo pipefail
-          npm audit --omit=dev --json > security-reports/npm-update/npm-audit-production.json
-          audit_status=$?
-          npm audit --json > security-reports/npm-update/npm-audit-all.json
-          audit_all_status=$?
-          node scripts/license-engine.mjs > security-reports/npm-update/license-report.txt
-          license_status=$?
+          set -euo pipefail
+          # Actions starts Bash with -e; capture expected nonzero audit and
+          # license-tool statuses without aborting the evidence step.
+          # The independent Docker Security Gate remains fail-closed.
+          if npm audit --omit=dev --json > security-reports/npm-update/npm-audit-production.json; then
+            audit_status=0
+          else
+            audit_status=$?
+          fi
+          if npm audit --json > security-reports/npm-update/npm-audit-all.json; then
+            audit_all_status=0
+          else
+            audit_all_status=$?
+          fi
+          if node scripts/license-engine.mjs > security-reports/npm-update/license-report.txt; then
+            license_status=0
+          else
+            license_status=$?
+          fi
           jq -n             --argjson auditProduction "$audit_status"             --argjson auditAll "$audit_all_status"             --argjson license "$license_status"             '{auditProductionExit:$auditProduction,auditAllExit:$auditAll,licenseExit:$license}'             > security-reports/npm-update/tool-exit-status.json
           exit 0
 
