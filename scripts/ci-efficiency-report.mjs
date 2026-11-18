@@ -187,7 +187,7 @@ export function summarizeCiEfficiency({
     measurements: {
       workflowRuntime: 'VERIFIED_FROM_GITHUB_ACTIONS_TIMESTAMPS',
       queueDelay: 'VERIFIED_WHEN_CREATED_AT_AND_RUN_STARTED_AT_ARE_PRESENT',
-      runnerMinutes: 'OBSERVED_JOB_WALLTIME_ACROSS_RETRIEVED_ATTEMPTS_NOT_BILLING',
+      runnerMinutes: 'OBSERVED_JOB_WALLTIME_NOT_BILLING',
       retryOverhead: 'OBSERVED_PRIOR_ATTEMPT_JOB_WALLTIME_NOT_BILLING',
       stepWalltime: stepRows.length ? 'OBSERVED_STEP_WALLTIME_NOT_BILLING' : 'NOT_PROVEN',
       billedMinutes: 'NOT_PROVEN',
