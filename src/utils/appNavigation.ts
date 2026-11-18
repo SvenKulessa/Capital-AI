@@ -11,6 +11,7 @@ export function resolveAppRoute(rawPath: string): string {
   if (rawPath === '/checkout/confirmation') return '/checkout/confirmation';
   if (!rawPath) return '/';
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
+  if (clean === '/governance-evidence-sprint' || clean === '/evidence-sprint') return '/governance-evidence-sprint';
   const hubRoute = hubRouteForPath(clean);
   if (hubRoute) return hubRoute.hub;
   if (clean === '/architecture-hub' || clean === '/financial-intelligence') return '/architecture-hub';
