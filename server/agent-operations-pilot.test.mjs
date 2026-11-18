@@ -137,7 +137,7 @@ test('per-user starter daily quota and idempotency are bounded, independent per 
   assert.equal((await call(p, 'POST', '/api/agent-operations-pilot/runs',
     post('media-rights'), 'alice', 'starter')).status, 201);
   assert.equal((await call(p, 'POST', '/api/agent-operations-pilot/runs',
-    post('media-rights'), 'alice', 'starter')).status, 429);
+    post('media-rights', fixtures['media-rights'], { idempotencyKey: 'second-media-run-001' }), 'alice', 'starter')).status, 429);
   assert.equal((await call(p, 'POST', '/api/agent-operations-pilot/runs',
     post('media-rights'), 'bob', 'starter')).status, 201);
 });
