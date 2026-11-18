@@ -16,10 +16,38 @@ const auth = {
   resolvePaidTier: async req => req.tier || null,
   sameOrigin: req => req.headers.origin === 'https://capital-ai.online',
 };
+function durableFakeStore() {
+  const rows = new Map();
+  const limits = { starter: 2, pro: 10, enterprise: 30 };
+  return {
+    async create(request) {
+      // Simulates the single-transaction database RPC, not a real SQL test.
+      const key = request.userId + ':' + request.idempotencyKey;
+      const existing = rows.get(key);
+      if (existing) return existing.requestHash !== request.requestHash ?
+        { state: 'conflict' } :
+        { state: 'replayed', receipt: existing.receipt, receiptSha256: existing.receipt.receiptSha256 };
+      const consumed = [...rows.values()].filter(x => x.userId === request.userId).length;
+      const dailyLimit = limits[request.tier];
+      if (consumed >= dailyLimit) return { state: 'quota_exceeded', used: consumed, dailyLimit };
+      const entry = structuredClone(request);
+      rows.set(key, entry);
+      return { state: 'created', receipt: entry.receipt,
+        receiptSha256: entry.receipt.receiptSha256, used: consumed + 1, dailyLimit };
+    },
+    async getById(userId, id) {
+      const row = [...rows.values()].find(x => x.userId === userId && x.id === id);
+      return row ? { receipt: structuredClone(row.receipt),
+        receiptSha256: row.receipt.receiptSha256 } : null;
+    },
+    _rows: rows,
+  };
+}
 const make = (extra = {}) => createAgentOperationsPilot({
   auth, env: { AGENT_OPERATIONS_PILOT_ENABLED: 'true', ...extra.env },
   registryBound: extra.registryBound ?? true,
   byokResolver: extra.byokResolver ?? null,
+  store: extra.store || durableFakeStore(),
   now: extra.now ?? (() => Date.UTC(2026, 10, 17, 9, 0)),
 });
 
@@ -38,7 +66,7 @@ async function call(pilot, method, pathname, body, subject = 'alice', tier = 'pr
   return { handled, status, payload, headers };
 }
 function post(workflowId, input = fixtures[workflowId], extra = {}) {
-  return { workflowId, input, ...extra };
+  return { workflowId, input, idempotencyKey: 'generated-demo-001', ...extra };
 }
 
 test('three source-labelled workflows produce bounded synthetic decisions only', () => {
@@ -139,3 +167,60 @@ test('registry mismatch blocks every run and payloads are whitelisted', async ()
   const x = make();
   assert.equal((await call(x, 'POST', '/api/agent-operations-pilot/runs', post('ci-evidence', { unknown: true }))).status, 400);
 });
+
+test('durable ledger survives recreated API instances and denies cross-tenant replay', async () => {
+  const store = durableFakeStore();
+  const path = '/api/agent-operations-pilot/runs';
+  const a = make({ store });
+  const first = await call(a, 'POST', path, post('ci-evidence', fixtures['ci-evidence'], {
+    idempotencyKey: 'restart-resume-001',
+  }), 'alice', 'starter');
+  assert.equal(first.status, 201);
+  const b = make({ store }); // no shared in-memory maps in the API
+  const receiptPath = path + '/' + first.payload.receipt.id;
+  assert.equal((await call(b, 'GET', receiptPath, undefined, 'alice', 'starter')).status, 200);
+  assert.equal((await call(b, 'GET', receiptPath, undefined, 'bob', 'starter')).status, 404);
+  assert.equal((await call(b, 'POST', path, post('ci-evidence', fixtures['ci-evidence'], {
+    idempotencyKey: 'restart-resume-001',
+  }), 'alice', 'starter')).status, 200);
+  assert.equal((await call(b, 'POST', path, post('ci-evidence', fixtures['ci-evidence'], {
+    idempotencyKey: 'restart-resume-001',
+  }), 'bob', 'starter')).status, 201);
+  assert.equal(store._rows.size, 2);
+});
+
+test('parallel requests across independent servers cannot exceed shared ledger quota', async () => {
+  const store = durableFakeStore();
+  const servers = Array.from({ length: 5 }, () => make({ store }));
+  const outcomes = await Promise.all(Array.from({ length: 20 }, (_, i) =>
+    call(servers[i % servers.length], 'POST', '/api/agent-operations-pilot/runs',
+      post('credential-expiry', fixtures['credential-expiry'], {
+        idempotencyKey: 'quota-race-' + String(i).padStart(12, '0'),
+      }), 'alice', 'starter')));
+  assert.equal(outcomes.filter(x => x.status === 201).length, 2);
+  assert.equal(outcomes.filter(x => x.status === 429).length, 18);
+  assert.equal(store._rows.size, 2);
+});
+
+test('unavailable or tampered durable storage fails closed, never returns a receipt', async () => {
+  const unavailable = make({ store: { create: async () => { throw Error('secret-in-provider-body'); },
+    getById: async () => { throw Error('secret-in-provider-body'); } } });
+  const p = '/api/agent-operations-pilot/runs';
+  const failure = await call(unavailable, 'POST', p, post('media-rights'));
+  assert.equal(failure.status, 503);
+  assert.equal(failure.payload.retryWithSameIdempotencyKey, true);
+  assert.ok(!JSON.stringify(failure.payload).includes('secret-in-provider-body'));
+  const store = durableFakeStore();
+  const ok = await call(make({ store }), 'POST', p, post('media-rights'));
+  const id = ok.payload.receipt.id;
+  store._rows.values().next().value.receipt.result.candidateCount = 500;
+  assert.equal((await call(make({ store }), 'GET', p + '/' + id)).status, 503);
+  assert.equal((await call(make({ store }), 'POST', p, post('media-rights'))).status, 503);
+});
+
+test('server rejects missing idempotency key before using persistent ledger', async () => {
+  const result = await call(make(), 'POST', '/api/agent-operations-pilot/runs',
+    { workflowId: 'ci-evidence', input: fixtures['ci-evidence'] });
+  assert.equal(result.status, 400);
+});
+
