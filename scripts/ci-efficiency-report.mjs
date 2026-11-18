@@ -167,8 +167,9 @@ export function summarizeCiEfficiency({
       observedJobWallSeconds: round(totalJobWall),
       observedRunnerMinutes: round(totalJobWall / 60),
       rerunRuns: entry.rerunRuns,
-      observedPriorAttemptRunnerMinutes: entry.rerunRuns > 0
-        ? round(entry.observedPriorAttemptSeconds / 60) : 0,
+      observedPriorAttemptRunnerMinutes: entry.rerunRuns === 0 ? 0
+        : entry.rerunCoverageMissing === 0
+          ? round(entry.observedPriorAttemptSeconds / 60) : null,
       rerunCoverage: entry.rerunRuns === 0 ? 'NO_RERUNS_OBSERVED'
         : entry.rerunCoverageMissing === 0 ? 'ALL_ATTEMPTS_OBSERVED' : 'PARTIAL_NOT_PROVEN',
       runnerMinuteEvidence: entry.jobWallSeconds.length ? 'OBSERVED_JOB_WALLTIME_NOT_BILLING' : 'NOT_PROVEN',
