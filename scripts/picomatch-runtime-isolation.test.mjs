@@ -164,13 +164,14 @@ const deployedDockerfile = readFileSync(path.join(projectRoot, 'Dockerfile'), 'u
 function verifyDockerRuntime(manifest, locked, dockerfile) {
   assert.deepEqual(locked.packages[''].dependencies, manifest.dependencies,
     'Docker runtime manifest does not match deploy/runtime lockfile');
-  assert.ok(dockerfile.includes('FROM crypto-base AS production-deps'),
-    'Missing dedicated production dependency stage');
-  assert.ok(dockerfile.includes('COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./'),
+  const productionStage = dockerfile.split(/^FROM crypto-base AS production-deps$/m)[1]?.split(/^FROM /m)[0] ?? '';
+  assert.ok(productionStage, 'Missing dedicated production dependency stage');
+  assert.match(productionStage, /^COPY deploy\/runtime\/package\.json deploy\/runtime\/package-lock\.json \.\/$/m,
     'Docker must use the dedicated runtime package files');
-  assert.ok(dockerfile.includes('npm ci --omit=dev --include=optional'),
+  assert.match(productionStage, /npm ci --omit=dev --include=optional/,
     'Docker must omit dev dependencies');
-  assert.ok(dockerfile.includes('COPY --from=production-deps /runtime/node_modules ./node_modules'),
+  const runtimeStage = dockerfile.split(/^FROM crypto-base AS runtime$/m)[1] ?? '';
+  assert.match(runtimeStage, /^COPY --from=production-deps \/runtime\/node_modules \.\/node_modules$/m,
     'Docker must copy node_modules only from the dedicated production stage');
   const production = closure(locked.packages, manifest.dependencies);
   for (const target of RUNTIME_DENIED) {
@@ -196,7 +197,7 @@ test('negative: introducing picomatch into the dedicated production lockfile fai
 
 test('negative: Docker silently switching to root manifest is rejected', () => {
   const bad = deployedDockerfile.replace(
-    'COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./',
+    /^COPY deploy\/runtime\/package\.json deploy\/runtime\/package-lock\.json \.\/$/m,
     'COPY package.json package-lock.json ./');
   assert.notEqual(bad, deployedDockerfile);
   assert.throws(() => verifyDockerRuntime(deployedManifest, deployedLock, bad),
