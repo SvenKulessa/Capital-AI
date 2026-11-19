@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  AGENT_ROLES, agentFromTitle, evidenceState, ga4EventCount, ga4RealtimeEventCount,
+  AGENT_ROLES, agentFromTitle, evidenceState, ga4DiagnosticLabel, ga4EventCount, ga4RealtimeEventCount,
   isSnapshotStale, readDashboardSnapshot, visiblePullRequests,
 } from './ownerOperationsModel';
 const sha = 'a'.repeat(40);
@@ -70,4 +70,12 @@ test('GA4 realtime values remain NOT_PROVEN if source is missing, unverified or 
   assert.equal(ga4RealtimeEventCount(s, 'page_view'), null);
   s.ga4.status = 'NOT_PROVEN';
   assert.equal(ga4RealtimeEventCount(s, 'page_view'), null);
+});
+
+test('owner-only GA4 diagnostic labels reject arbitrary provider error text', () => {
+  assert.match(ga4DiagnosticLabel('GA4_PROPERTY_CONFIG_MISSING'), /Property/);
+  assert.match(ga4DiagnosticLabel('GA4_MCP_RUNTIME_UNAVAILABLE'), /MCP/);
+  assert.match(ga4DiagnosticLabel('GA4_PROPERTY_ACCESS_NOT_PROVEN'), /Zugriff/);
+  assert.equal(ga4DiagnosticLabel('GA4_MCP_RUNTIME_UNAVAILABLE secret-token'), 'GA4-Readback nicht nachgewiesen');
+  assert.equal(ga4DiagnosticLabel('confidential provider error'), 'GA4-Readback nicht nachgewiesen');
 });
