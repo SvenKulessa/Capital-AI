@@ -137,6 +137,8 @@ test('GA4 readback binds the configured property and exposes only aggregated eve
     'run_realtime_report',
     'run_report',
   ]);
+  const sevenDayCall = calls.find(entry => entry.tool === 'run_report');
+  assert.deepEqual(sevenDayCall?.args.date_ranges, [{ start_date: '6daysAgo', end_date: 'today' }]);
   const serialized = JSON.stringify(snapshot);
   assert.doesNotMatch(serialized, /secret-account-list-must-not-leak/);
   assert.doesNotMatch(serialized, /999999999/);
@@ -239,7 +241,7 @@ test('GA4 property detail checks reject a longer numeric property identifier', a
   assert.deepEqual(calls.map(entry => entry.tool), ['get_account_summaries', 'get_property_details']);
 });
 
-test('GA4 readback does not invent event counts from malformed numeric values', async () => {
+test('GA4 readback rejects malformed counts rather than inventing measured zero', async () => {
   const client = fakeClient();
   const original = client.callTool;
   client.callTool = async (tool, args) => {
@@ -253,8 +255,8 @@ test('GA4 readback does not invent event counts from malformed numeric values', 
     }
     return original(tool, args);
   };
-  const snapshot = await buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' });
-  assert.equal(snapshot.realtime.events[0].eventCount, 0);
-  assert.equal(snapshot.sevenDay.events[0].eventCount, 0);
-  assert.equal(snapshot.eventEvidence.status, 'NO_PAGE_VIEW_OBSERVED');
+  await assert.rejects(
+    () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
+    /GA4_EVENT_COUNT_INVALID/,
+  );
 });
