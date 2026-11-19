@@ -307,7 +307,7 @@
       "sourcePackage": "readline",
       "version": "8.3.3-r1",
       "aportsCommit": "a854c03acdac188901fb012f7acbee70a36e8041",
-      "apkbuildGitBlob": "4e3e8299678264484b5650e7fd2fc18d0f83e2",
+      "apkbuildGitBlob": "4e3e8299678264484b5650e7fd2fc18d0f83e2de",
       "path": "main/readline/APKBUILD",
       "declaredSha512Entries": 6,
       "verifiedSourceBytes": false,
