@@ -119,10 +119,11 @@ export function inspectCapBp001Admission(raw: unknown): CapBp001AdmissionReview 
   if (asset.status !== 'active') reasons.push('CAP_BP_001_ASSET_NOT_ACTIVE');
   if (!canonical.assetClassScope.includes(asset.assetClass))
     reasons.push('CAP_BP_001_ASSET_CLASS_NOT_IN_REGISTRY');
-  if (i.providerId !== p.providerId || !canonical.providerDependencies.includes(i.providerId))
-    reasons.push('CAP_BP_001_PROVIDER_ID_MISMATCH_OR_UNREGISTERED');
-  if (i.providerDataset !== p.providerDataset)
-    reasons.push('CAP_BP_001_PROVIDER_DATASET_MISMATCH');
+  const providerIdentityValid = i.providerId === p.providerId &&
+    canonical.providerDependencies.includes(i.providerId);
+  const datasetIdentityValid = i.providerDataset === p.providerDataset;
+  if (!providerIdentityValid) reasons.push('CAP_BP_001_PROVIDER_ID_MISMATCH_OR_UNREGISTERED');
+  if (!datasetIdentityValid) reasons.push('CAP_BP_001_PROVIDER_DATASET_MISMATCH');
   if (p.isDemo || p.isDelayed || !['public_realtime', 'commercial_redistribution'].includes(p.licenseScope))
     reasons.push('CAP_BP_001_PROVENANCE_MODE_NOT_REALTIME');
 
@@ -151,7 +152,7 @@ export function inspectCapBp001Admission(raw: unknown): CapBp001AdmissionReview 
     reasons.push('CAP_BP_001_PIT_RELEASE_AUTHENTICITY_NOT_PROVEN');
   }
 
-  let rightsConsistent = true;
+  let rightsConsistent = providerIdentityValid && datasetIdentityValid;
   if (!i.rights) {
     reasons.push('CAP_BP_001_PROVIDER_RIGHTS_EVIDENCE_MISSING');
     rightsConsistent = false;
