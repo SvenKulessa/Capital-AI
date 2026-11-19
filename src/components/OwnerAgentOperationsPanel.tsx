@@ -231,6 +231,7 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
             <Metric title="generate_lead Events" value={leads ?? '–'}/>
             <Metric title="purchase Events" value={purchaseEvents ?? '–'} note="Event, keine Zahlungsbestätigung"/>
             <Metric title="page_view Echtzeit" value={realtimeViews ?? '–'} note={ga4?.realtimeStatus || 'NOT_PROVEN'}/>
+            <Metric title="Umsatz / MRR" value="–" note="NOT_PROVEN · Kein Zahlungsnachweis"/>
           </div>
           <p className="mt-3 text-xs text-slate-400">GA4 Provider-Ereignisse; keine Besucherzahl, Zahlung oder Attribution daraus ableiten.</p>
           {!isVerified(ga4) && <p role="status" className="mt-3 text-xs text-amber-200">Der Render-eigene GA4-Readback ist nicht verifiziert. Eine verbundene Supermetrics-Sitzung in ChatGPT ersetzt keine Serverberechtigung.</p>}
