@@ -87,8 +87,9 @@ async function publicPage(width){
   assert.ok(m.overflow<=2,'public overflow at '+width+': '+m.overflow);
   assert.equal(m.privacyTag,false,'No analytics script without explicit consent');
   assert.ok(m.fields.filter(e=>['email','message'].includes(e.name)).every(e=>e.labelled&&e.width>0));
-  assert.ok(m.actions.filter(a=>/anfragen|senden|Musterbericht/.test(a.label))
-    .every(a=>a.height>=44),'public CTA touch target');
+  const undersized=m.actions.filter(a=>/anfragen|senden|Musterbericht/.test(a.label))
+    .filter(a=>a.height<44).map(a=>({label:a.label,height:Math.round(a.height*10)/10}));
+  assert.deepEqual(undersized,[],'public CTA touch targets shorter than 44 CSS px');
   assert.equal(await evaluate("!!document.querySelector('#musterbericht')"),true);
   assert.equal(await evaluate("document.querySelector('#anfrage button[type=submit]').disabled"),true);
   assert.equal(await evaluate("document.querySelector('#anfrage form').checkValidity()"),false);
