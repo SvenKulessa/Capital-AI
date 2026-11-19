@@ -105,3 +105,26 @@ test('current Alpine community recipes are valid while foreign or traversal path
     }
   }
 });
+
+
+test('current 34-recipe aports lock is source-image-bound and never authorizes distribution', async () => {
+  const { readFileSync } = await import('node:fs');
+  const path = new URL('../docs/security/evidence/os-aports-recipe-lock-03dcdb64-20261119.json', import.meta.url);
+  const current = JSON.parse(readFileSync(path, 'utf8'));
+  assert.equal(current.schema, 'CAPITAL_AI_OS_RECIPE_LOCK@1');
+  assert.equal(current.sourceSha, '03dcdb6426f30ca0b2b575060773d7ea84480fd0');
+  assert.equal(current.testedMergeSha, current.sourceSha);
+  assert.equal(current.binaryPackageCount, 50);
+  assert.equal(current.sourceRecipeCount, 34);
+  assert.equal(current.recipes.length, 34);
+  assert.equal(new Set(current.recipes.map(r => r.sourcePackage)).size, 34);
+  assert.equal(current.recipes.reduce((sum, r) => sum + r.declaredSha512Entries, 0), 228);
+  assert.deepEqual(current.recipes.filter(r => r.path.startsWith('community/')).map(r => r.sourcePackage).sort(), ['clamav', 'libmspack']);
+  assert.deepEqual(current.recipes.filter(r => r.declaredSha512Entries === 0).map(r => r.sourcePackage), ['alpine-base']);
+  assert.ok(current.recipes.every(r => /^[0-9a-f]{40}$/.test(r.aportsCommit) &&
+    /^[0-9a-f]{40}$/.test(r.apkbuildGitBlob) &&
+    ['main/', 'community/'].some(prefix => r.path === prefix + r.sourcePackage + '/APKBUILD') &&
+    r.verifiedSourceBytes === false && r.copyrightNoticesReviewed === false));
+  assert.equal(current.status.redistributionApproved, false);
+  assert.equal(current.publishedOCIManifestDigest, null);
+});
