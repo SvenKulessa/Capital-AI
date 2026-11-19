@@ -46,7 +46,6 @@ In run `44622825096`, the `service-usage-readback` job, repository identity chec
 
 **Evidence boundary:** Successful OIDC exchange and Service Usage GET prove the operator's effective permission for *that read path*, **not** project IAM-policy read permission, unrelated Cloud operations, configuration of Google Auth Platform Data Access, active end-user OAuth client associations, or Google verification approval. `iamEnabled` / `iamCredentialsEnabled` indicate enabled APIs, not IAM grants. Do not broaden service-account roles, request additional OAuth scopes, or dispatch the YouTube upload branch on this evidence.
 
-
 ## Failures and remediation
 
 - Auth action fails: check dedicated provider's issuer, mapped OIDC claims, exact condition and the WIF "Workload Identity User" binding on the **operator service account**, without broadening to the entire pool. Never turn off the condition as a workaround.
