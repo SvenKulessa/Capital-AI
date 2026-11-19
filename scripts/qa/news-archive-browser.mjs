@@ -133,7 +133,7 @@ try{
       assert.equal((csv.match(/"NOT_PROVEN"/g)||[]).length,3,'Forged impact status reached BI');
       assert.ok(!csv.includes('synthetic-archive-unreviewed')&&!csv.includes('"95"'),'Unapproved or forged CSV values');
       const setFilter=async(type,value)=>{
-        const expression="(() => {const e=[...document.querySelectorAll('#analytics-news-archive input')].find(x=>x.type==="+JSON.stringify(type)+");"+
+        const expression="(() => {const e=[...document.getElementById('analytics-news-archive').closest('section').querySelectorAll('input')].find(x=>x.type==="+JSON.stringify(type)+");"+
           "if(!e)return false;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,"+
           JSON.stringify(value)+");e.dispatchEvent(new Event('input',{bubbles:true}));"+
           "e.dispatchEvent(new Event('change',{bubbles:true}));return true;})()";
@@ -148,9 +148,9 @@ try{
       await until(count+'===1','DATE_FILTER');
       await setFilter('date','');
       await until(count+'===3','DATE_RESET');
-      const before=await evaluate("(() => {const s=document.querySelector('#analytics-news-archive details > summary');s.focus();return s.parentElement.open;})()");
+      const before=await evaluate("(() => {const s=document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary');s.focus();return s.parentElement.open;})()");
       for(const type of ['rawKeyDown','keyUp'])await send('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
-      await until("document.querySelector('#analytics-news-archive details > summary').parentElement.open==="+(!before),'SUMMARY_KEYBOARD');
+      await until("document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary').parentElement.open==="+(!before),'SUMMARY_KEYBOARD');
     }else assert.ok(archive.text.includes('Keine freigegebenen Nachrichten'),'Unreviewed news publicly visible');
     const fields=await evaluate("(() => {const r=document.getElementById('analytics-news-archive').closest('section');"+
       "const all=[...r.querySelectorAll('input')];const search=all.find(e=>e.type==='text');search?.focus();"+
