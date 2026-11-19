@@ -75,13 +75,19 @@ async function awaitPage(expression,timeout=24000) {
   }
   throw Error('PAGE_STATE_TIMEOUT');
 }
-async function visit(role,width,tag,expected=true) {
+async function visit(role,width,tag,expected=true,route='/profile/render-dashboard') {
   mode=role;
   await send('Emulation.setDeviceMetricsOverride',{
     width,height:900,deviceScaleFactor:1,mobile:width<=390});
   await evaluate('window.__qa_previous_document = true');
-  await send('Page.navigate',{url:base+'/profile/render-dashboard'});
+  await send('Page.navigate',{url:base+route});
   await awaitPage("window.__qa_previous_document === undefined && document.readyState === 'complete' && !!document.querySelector('h1')");
+  if(route==='/profile/dashboard' && expected){
+    await awaitPage("!!document.getElementById('dashboard-operations-tab')");
+    const opened=await evaluate("(() => { const button=document.getElementById('dashboard-operations-tab'); if(!button)return false; button.click(); return true; })()");
+    if(!opened)throw Error('OWNER_TAB_NOT_AVAILABLE');
+    await awaitPage("document.getElementById('dashboard-operations-tab')?.getAttribute('aria-selected') === 'true'");
+  }
   if(expected)await awaitPage("!!document.querySelector('.ops-mock')");
   else await awaitPage("!!document.querySelector('[role=status]') || !!document.querySelector('[role=alert]')");
   await wait(550);
@@ -105,6 +111,7 @@ async function visit(role,width,tag,expected=true) {
       donut:!!root?.querySelector('.ops-mock-donut'),
       lineSvg:!!root?.querySelector('.ops-mock-chart-area svg'),
       labels:[...root?.querySelectorAll('.ops-mock-kpi-value')||[]].map(x=>x.textContent.trim()),
+      ownerTabSelected:document.getElementById('dashboard-operations-tab')?.getAttribute('aria-selected')==='true',
       unauthorizedMessage:document.body.textContent.includes('für die aktuelle Anmeldung nicht verfügbar'),
       border:root?getComputedStyle(root).borderColor:null,
       kpiColumns:root?getComputedStyle(root.querySelector('.ops-mock-kpis')).gridTemplateColumns:null,
@@ -121,6 +128,8 @@ async function visit(role,width,tag,expected=true) {
     if(!state.ownerTitle||state.kpis!==4||state.panels!==4||state.agents!==6||!state.donut||(role!=='missing'&&!state.lineSvg))
       failures.push(tag+': owner operations visual elements missing');
     if(!state.rootBounds||state.rootBounds.right>width+2)failures.push(tag+': owner operations panel exceeds viewport');
+    if(route==='/profile/dashboard' && (!state.ownerTabSelected || state.path!=='/profile/dashboard'))
+      failures.push(tag+': private owner dashboard tab not selected');
     if(state.cardBounds.some(x=>x.right>width+2||x.width<=0))failures.push(tag+': card overflows viewport');
     if(state.controls.some(c=>c.name==='Aktualisieren'&&(c.width<44||c.height<44)))
       failures.push(tag+': refresh target under 44px');
@@ -158,7 +167,7 @@ async function visit(role,width,tag,expected=true) {
       checks.push({scenario:'owner-zoom-200',viewport:320,overflow});
       if(overflow>2)failures.push(tag+': 200 percent text zoom causes overflow');
       const zoom=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
-      await writeFile(join(output,'owner-operations-owner-320-zoom200.png'),Buffer.from(zoom.data,'base64'));
+      await writeFile(join(output,'owner-operations-'+tag+'-zoom200.png'),Buffer.from(zoom.data,'base64'));
     }
   }
 }
@@ -223,6 +232,10 @@ async function run() {
   await send('Page.enable');await send('Runtime.enable');
   await send('Fetch.enable',{patterns:[{urlPattern:base+'/api/*',requestStage:'Request'}]});
   for(const width of [320,390,1440])await visit('owner',width,'owner-'+width);
+  // Screenshot path: the real user opens Owner Operations as a tab inside /profile/dashboard.
+  // Exercise that exact route, not just the standalone owner-provider page.
+  for(const width of [320,390,1440])
+    await visit('owner',width,'private-owner-'+width,true,'/profile/dashboard');
   await visit('missing',390,'missing-390');
   await visit('nonowner',390,'nonowner-390',false);
   const report={schema:'CAPITAL_AI_OWNER_VISUAL_BROWSER_QA@1',
@@ -231,7 +244,9 @@ async function run() {
     widths:[320,390,1440],checks,failures,status:failures.length?'FAIL':'PASS'};
   await writeFile(join(output,'audit.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify({status:report.status,checks:checks.length,failures,
-    screenshots:['owner-operations-owner-320.png','owner-operations-owner-390.png','owner-operations-owner-1440.png','owner-operations-missing-390.png','owner-operations-owner-320-zoom200.png'],
+    screenshots:['owner-operations-owner-320.png','owner-operations-owner-390.png','owner-operations-owner-1440.png',
+      'owner-operations-private-owner-320.png','owner-operations-private-owner-390.png','owner-operations-private-owner-1440.png',
+      'owner-operations-missing-390.png','owner-operations-owner-320-zoom200.png','owner-operations-private-owner-320-zoom200.png'],
     realOwnerSession:false,productionProviderData:false},null,2));
   if(failures.length)process.exitCode=1;
 }
