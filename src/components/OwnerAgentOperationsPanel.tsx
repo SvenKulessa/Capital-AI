@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Activity, GitPullRequest, RefreshCw, ShieldCheck, Server, TrendingUp } from 'lucide-react';
 import {
-  AGENT_ROLES, evidenceState, ga4EventCount, ga4RealtimeEventCount, isSnapshotStale, isVerified,
+  AGENT_ROLES, evidenceState, ga4DiagnosticLabel, ga4EventCount, ga4RealtimeEventCount, isSnapshotStale, isVerified,
   readDashboardSnapshot, visiblePullRequests,
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
@@ -234,7 +234,7 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
             <Metric title="Umsatz / MRR" value="–" note="NOT_PROVEN · Kein Zahlungsnachweis"/>
           </div>
           <p className="mt-3 text-xs text-slate-400">GA4 Provider-Ereignisse; keine Besucherzahl, Zahlung oder Attribution daraus ableiten.</p>
-          {!isVerified(ga4) && <p role="status" className="mt-3 text-xs text-amber-200">Der Render-eigene GA4-Readback ist nicht verifiziert. Eine verbundene Supermetrics-Sitzung in ChatGPT ersetzt keine Serverberechtigung.</p>}
+          {!isVerified(ga4) && <p role="status" className="mt-3 text-xs text-amber-200">Der Render-eigene GA4-Readback ist nicht verifiziert. Eine verbundene Supermetrics-Sitzung in ChatGPT ersetzt keine Serverberechtigung. Diagnose: {ga4DiagnosticLabel(ga4?.reason)}.</p>}
           {isVerified(ga4) && ga4?.events?.length ? <div className="mt-4 space-y-3">
             {ga4.events.filter(row => Number.isSafeInteger(row.eventCount) && row.eventCount >= 0).map(row => {
               const largest = Math.max(1, ...(ga4.events || []).map(v => v.eventCount));
