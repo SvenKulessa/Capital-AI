@@ -20,13 +20,14 @@ function fixture(url) {
   if (s.endsWith('/deploys?limit=5')) return [{ deploy: { id: 'dep-test', status: 'live', commit: { id: sha }, finishedAt: '2026-11-19T03:30:00Z' } }];
   throw Error('unexpected path');
 }
-function setup({ allowed = true, role = true, ga4Broken = false, invalidRealtime = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
+function setup({ allowed = true, role = true, ga4Broken = false, ga4FailureCode = null, invalidRealtime = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
   const calls = [];
   let ga4Calls = 0;
   const ga4Readback = {
     authorized: async () => allowed && role,
     load: async () => {
       ga4Calls++;
+      if (ga4FailureCode) throw Error(ga4FailureCode);
       if (ga4Broken) throw Error('confidential_ga4_password');
       return { status: 'PROVIDER_READ_VERIFIED', property: { resourceName: 'properties/123456789' }, realtime: { events: [
         { eventName: 'page_view', eventCount: invalidRealtime ? 'INVALID' : 2 },
@@ -200,4 +201,30 @@ test('rejects malformed realtime counts without inventing GA4 events or breaking
   assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
   assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
   assert.doesNotMatch(JSON.stringify(body), /INVALID|private-user-id/);
+});
+
+test('owner-only GA4 diagnostics identify known boundary failures without exposing raw errors', async () => {
+  const allowed = [
+    ['GA4_PROPERTY_NUMBER_NOT_CONFIGURED', 'GA4_PROPERTY_CONFIG_MISSING'],
+    ['GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED', 'GA4_CREDENTIAL_CONFIG_MISSING'],
+    ['GA4_MCP_PROJECT_MISMATCH', 'GA4_PROJECT_BINDING_MISMATCH'],
+    ['GA4_MCP_PROCESS_START_FAILED', 'GA4_MCP_RUNTIME_UNAVAILABLE'],
+    ['GA4_MCP_TIMEOUT_tools/call', 'GA4_MCP_RUNTIME_TIMEOUT'],
+    ['GA4_PROPERTY_NOT_ACCESSIBLE', 'GA4_PROPERTY_ACCESS_NOT_PROVEN'],
+    ['GA4_PROPERTY_DETAILS_NOT_BOUND', 'GA4_PROPERTY_BINDING_NOT_PROVEN'],
+    ['GA4_READBACK_TIMEOUT', 'GA4_READBACK_TIMEOUT'],
+    ['GA4_EVENT_COUNT_INVALID', 'GA4_PROVIDER_RESPONSE_INVALID'],
+  ];
+  for (const [input, expected] of allowed) {
+    const h = setup({ ga4FailureCode: input });
+    const { body } = await h.request();
+    assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: expected });
+    assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal((await setup({ allowed: false, ga4FailureCode: input }).request()).status, 404);
+  }
+  const secret = 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED token=confidential-live-token';
+  const { body } = await setup({ ga4FailureCode: secret }).request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'PROVIDER_READ_FAILED' });
+  assert.doesNotMatch(JSON.stringify(body), /confidential-live-token|SERVICE_ACCOUNT_NOT_CONFIGURED/);
 });
