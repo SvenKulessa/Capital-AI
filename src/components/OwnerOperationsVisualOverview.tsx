@@ -115,8 +115,16 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
   const rows = ownerEvidenceRows(snapshot);
   const counts = ownerEvidenceCounts(rows);
   const events = ownerGa4Metrics(snapshot);
-  const ga4Rows = isVerified(ga4) && Array.isArray(ga4.events)
-    ? ga4.events.filter(row => Number.isSafeInteger(row.eventCount) && row.eventCount >= 0) : [];
+  const ga4Rows = isVerified(ga4)
+    ? (ga4?.events ?? []).filter(row => Number.isSafeInteger(row.eventCount) && row.eventCount >= 0) : [];
+  const ga4Cards = [
+    { label: 'page_view', count: events.views },
+    { label: 'session_start', count: events.sessionStarts },
+    { label: 'view_item', count: events.viewedItems },
+    { label: 'generate_lead', count: events.leads },
+    { label: 'purchase (Event)', count: events.purchaseEvents },
+    { label: 'page_view (Echtzeit)', count: events.realtimeViews },
+  ];
   const maxGa4 = Math.max(1, ...ga4Rows.map(row => row.eventCount));
   const active = isSnapshotStale(snapshot, Date.now());
   const prValue = isVerified(gh) && gh.openPrCountStatus === 'VERIFIED' ? pretty(gh.openPrCount) : '–';
@@ -164,20 +172,13 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
     <section className="ops-mock-card ops-mock-ga4" aria-labelledby="ops-ga4-analysis-title">
       <h4 id="ops-ga4-analysis-title"><ChartColumnIncreasing aria-hidden="true"/> GA4 · Website und Conversion</h4>
       <p className="ops-mock-subtitle">
-        {isVerified(ga4) ? ga4.property : 'NOT_PROVEN · Serverseitiger Property-Readback fehlt'}
+        {isVerified(ga4) ? ga4?.property : 'NOT_PROVEN · Serverseitiger Property-Readback fehlt'}
         {' · '}7 Kalendertage einschließlich heute · Ereignisse sind keine Zahlungen.
       </p>
       <div className="ops-mock-ga4-grid">
-        {[
-          ['page_view', events.views],
-          ['session_start', events.sessionStarts],
-          ['view_item', events.viewedItems],
-          ['generate_lead', events.leads],
-          ['purchase (Event)', events.purchaseEvents],
-          ['page_view (Echtzeit)', events.realtimeViews],
-        ].map(([label, count]) => <div key={String(label)} className="ops-mock-ga4-metric">
+        {ga4Cards.map(({ label, count }) => <div key={label} className="ops-mock-ga4-metric">
           <span>{label}</span>
-          <strong>{pretty(count as number | null)}</strong>
+          <strong>{pretty(count)}</strong>
           <small>{count === null ? 'NOT_PROVEN' : 'GA4-Provider-Ereignisse'}</small>
         </div>)}
       </div>
