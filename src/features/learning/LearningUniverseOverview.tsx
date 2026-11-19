@@ -173,7 +173,7 @@ export function LearningUniverseOverview({
           </button>
         </div>
         <div className="lhu-article-grid">
-          {LEARNING_ARTICLES.slice(0, 3).map(article => (
+          {LEARNING_ARTICLES.filter(article => article.hub === 'learning' && article.status === 'PUBLISHED').slice(0, 3).map(article => (
             <article key={article.id} className="lhu-article">
               <span className="lhu-article-category"><Newspaper aria-hidden="true" size={16} /> Lernbeitrag</span>
               <h4>{article.title}</h4>
