@@ -5,6 +5,7 @@ import {
   readDashboardSnapshot, visiblePullRequests,
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
+import { OwnerOperationsVisualOverview } from './OwnerOperationsVisualOverview';
 
 const ENDPOINT = '/api/profile/evidence-dashboard-readback';
 const VIEWS: { id: OperationsView; label: string }[] = [
@@ -107,11 +108,12 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   ] : [];
 
   return <section aria-labelledby="agent-ops-title" className="space-y-4 rounded-2xl border border-indigo-400/30 bg-[#070f21] p-3 text-white sm:p-5">
+    {snapshot && <OwnerOperationsVisualOverview snapshot={snapshot} />}
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-300">CAPITAL-AI / Owner Operations</p>
         <h2 id="agent-ops-title" className="mt-1 text-xl font-black">Multi-Agent Operations Center</h2>
-        <p className="mt-1 text-xs text-slate-400">Geschützter Read-only-Snapshot · kein Agenten-Heartbeat, keine Demo-Werte</p>
+        <p className="mt-1 text-xs text-slate-400">Details und Filter · Read-only-Provider-Evidence · keine Demo-Werte</p>
       </div>
       <button type="button" onClick={() => void refresh()} disabled={busy}
         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-indigo-300/30 px-3 text-xs font-bold text-indigo-100 disabled:opacity-50">
