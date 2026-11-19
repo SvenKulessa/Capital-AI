@@ -25,6 +25,13 @@ STOP = False
 
 def check_root(root: Path, *, require_mount: bool) -> None:
     root = Path(root)
+    if not root.is_absolute():
+        raise ValueError("state root must be absolute")
+    # Refuse any symlink in the path ancestry before checking private children.
+    # /var and /var/lib may be public directories, but cannot redirect the root.
+    for ancestor in (root, *root.parents):
+        if ancestor.is_symlink():
+            raise ValueError("symlinked state-root ancestor")
     for name in ("", "checkpoints", "inbox", "approvals"):
         path = root / name
         info = path.lstat()
@@ -42,10 +49,14 @@ def load_task(path: Path, inbox: Path) -> dict:
     if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600
             or info.st_uid != os.geteuid() or info.st_size > MAX_TASK_SIZE):
         raise ValueError("task must be a private regular file")
-    fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    # O_NONBLOCK ensures a task swapped for a FIFO cannot hang the worker.
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_NOFOLLOW", 0))
     try:
-        info = os.fstat(fd)
-        if info.st_size > MAX_TASK_SIZE or info.st_uid != os.geteuid() or stat.S_IMODE(info.st_mode) != 0o600:
+        opened = os.fstat(fd)
+        if (not stat.S_ISREG(opened.st_mode)
+                or opened.st_ino != info.st_ino or opened.st_dev != info.st_dev
+                or opened.st_size > MAX_TASK_SIZE or opened.st_uid != os.geteuid()
+                or stat.S_IMODE(opened.st_mode) != 0o600):
             raise ValueError("task changed during read")
         raw = os.read(fd, MAX_TASK_SIZE + 1)
     finally:
