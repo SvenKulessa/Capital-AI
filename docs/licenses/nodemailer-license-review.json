@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "package": "nodemailer",
-  "version": "10.5.0",
+  "version": "10.6.0",
   "declaredLicense": "MIT-0",
   "licenseFile": "docs/licenses/nodemailer-10.1.0-MIT-0.txt",
   "licenseTextSha256": "4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78",
   "registry": "https://registry.npmjs.org",
-  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.5.0.tgz",
-  "integrity": "sha512-L/w/HH5MqpzMDuZD7fQdt/+KqymuvrpaApaIjAH2XA3ILePwlcvXCVVvP75xVrXCEt2ggK2marrrHHFB5Qu0kA==",
+  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.6.0.tgz",
+  "integrity": "sha512-jWanL7D9GD3jvUDYKmoC5rWTiG8MnBgnN2yV68bgMKip1zUJhiSTyz7Eg+18y8sk5OvdVDzws5nZK5arSI4f5Q==",
   "upstream": "https://github.com/nodemailer/nodemailer",
   "licenseDocumentation": "https://nodemailer.com/license",
   "status": "UPSTREAM_LICENSE_VERIFIED_NPM_LOCK_PIN_PRESENT_INSTALLED_ARTIFACT_CI_REQUIRED",
   "scope": "Exact npm dependency only; no provider data rights or whole-image approval",
   "deployEligible": false,
   "notes": [
-    "Upstream Nodemailer v10.5.0 LICENSE Git blob exactly matches retained MIT-0 text; upstream blob SHA-1 fdfc9676bf9f4363b1292847d61f94a17a47618e.",
-    "Version, registry URL and SHA-512 integrity are recorded from the PR lockfile; independent tarball SHA-256 not obtained. Installed-artifact and license-byte evidence must pass the existing Docker CI.",
-    "Exact npm dependency review only. Deployment eligibility false, no provider data rights or mail activation, no redistribution approval for unrelated packages."
+    "Upstream Nodemailer v10.6.0 LICENSE fetched from GitHub tag v10.6.0 and compared byte-for-byte with retained MIT-0 license text; Git blob fdfc9676bf9f4363b1292847d61f94a17a47618e unchanged.",
+    "Version, npm registry URL and sha512 integrity are pinned to the exact PR lockfile; independent tarball SHA-256 NOT_PROVEN and installed-artifact plus license-byte evidence require existing Docker CI.",
+    "This is package-scoped license metadata evidence only; deployEligible=false. No SMTP activation, provider-data license or GHCR/publication approval."
   ],
-  "upstreamLicense": "https://github.com/nodemailer/nodemailer/blob/v10.5.0/LICENSE",
+  "upstreamLicense": "https://github.com/nodemailer/nodemailer/blob/v10.6.0/LICENSE",
   "upstreamLicenseGitBlobSha": "fdfc9676bf9f4363b1292847d61f94a17a47618e",
-  "observedAt": "2026-11-16",
+  "observedAt": "2026-11-19",
   "tarballSha256": null,
   "priorReviews": [
     {
@@ -40,6 +40,12 @@
       "observedAt": "2026-11-11",
       "integrity": "sha512-fyy6r4Q5euRJ9Qr3Cts9K7SZrfe9zmz9oLOYiAR02MEJRDRci+99y0OoYBYBgpLffOqkkjXrB/d26VfiMje/kA==",
       "tarballSha256": "2db223e7e5af809a440f1d73971ac40c985b2142edaec944899a744dcb9032a8"
+    },
+    {
+      "version": "10.5.0",
+      "observedAt": "2026-11-16",
+      "integrity": "sha512-L/w/HH5MqpzMDuZD7fQdt/+KqymuvrpaApaIjAH2XA3ILePwlcvXCVVvP75xVrXCEt2ggK2marrrHHFB5Qu0kA==",
+      "tarballSha256": null
     }
   ]
 }
