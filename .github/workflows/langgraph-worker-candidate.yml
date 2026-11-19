@@ -21,23 +21,37 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Verify immutable Python glibc base
+      - name: Resolve immutable BellSoft Python 3.14 glibc build/runtime digests
         id: base
         shell: bash
         run: |
           set -euo pipefail
-          ref="python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d"
-          docker pull --platform linux/amd64 "$ref"
-          test "$(docker image inspect --format '{{.Architecture}}' "$ref")" = "amd64"
-          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          build_tag="bellsoft/hardened-python:3.14-glibc"
+          runtime_tag="bellsoft/hardened-python:3.14-distroless-glibc"
+          docker pull --platform linux/amd64 "$build_tag"
+          docker pull --platform linux/amd64 "$runtime_tag"
+          build_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$build_tag")"
+          runtime_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$runtime_tag")"
+          [[ "$build_ref" =~ ^(docker.io/)?bellsoft/hardened-python@sha256:[a-f0-9]{64}$ ]]
+          [[ "$runtime_ref" =~ ^(docker.io/)?bellsoft/hardened-python@sha256:[a-f0-9]{64}$ ]]
+          test "$(docker image inspect --format '{{.Architecture}}' "$build_tag")" = "amd64"
+          test "$(docker image inspect --format '{{.Architecture}}' "$runtime_tag")" = "amd64"
+          build_python="$(docker run --rm --platform linux/amd64 --entrypoint python3 "$build_ref" -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
+          runtime_python="$(docker run --rm --platform linux/amd64 --entrypoint python3 "$runtime_ref" -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
+          test "$build_python" = "3.14"
+          test "$runtime_python" = "$build_python"
+          printf 'build_ref=%s\nref=%s\n' "$build_ref" "$runtime_ref" >> "$GITHUB_OUTPUT"
+          printf 'BASE_PROVENANCE build=%s runtime=%s python=%s\n' "$build_ref" "$runtime_ref" "$runtime_python"
       - name: Build unactivated worker candidate
         shell: bash
         env:
           PYTHON_BASE: ${{ steps.base.outputs.ref }}
+          PYTHON_BUILD_BASE: ${{ steps.base.outputs.build_ref }}
         run: |
           set -euo pipefail
           docker build --platform linux/amd64 \
             --build-arg "PYTHON_BASE=$PYTHON_BASE" \
+            --build-arg "PYTHON_BUILD_BASE=$PYTHON_BUILD_BASE" \
             --file deploy/Dockerfile.langgraph-worker \
             --tag "capital-ai-langgraph-candidate:$GITHUB_SHA" .
       - name: Verify UID and offline default-deny
@@ -49,7 +63,7 @@ jobs:
           docker run --rm --network none --read-only \
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --cap-drop ALL --security-opt no-new-privileges \
-            --entrypoint python "$image" \
+            --entrypoint python3 "$image" \
             -c 'import sys;sys.path.insert(0,"/app/scripts/growth-agent");from agent_platform import build_research_graph;g=build_research_graph("/app");result=g.invoke({"task_id":"smoke","domain":"PLATFORM","query":"LangGraph checkpoint"});assert result["status"]=="RESEARCH_DRAFT",result;assert "trust_reviewer" in result["agent_route"];print("OFFLINE_RAG_PASS")'
           set +e
           output="$(docker run --rm --network none --read-only \
