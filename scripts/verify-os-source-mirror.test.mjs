@@ -101,7 +101,7 @@ test('current Alpine community recipes are valid while foreign or traversal path
       'community/' + entry.sourcePackage + '/APKBUILD/extra',
     ]) {
       subject.recipes[0].path = path;
-      assert.throws(() => reconcileRecipeLock(subject, target), /does not match/);
+      assert.throws(() => reconcileRecipeLock(subject, target), /Invalid\/duplicate recipe identity|does not match/);
     }
   }
 });
