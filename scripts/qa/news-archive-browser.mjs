@@ -122,7 +122,7 @@ try{
       const grouped=await evaluate("(() => {const root=document.querySelector('#analytics-news-archive').closest('section');"+
         "return {categories:[...root.querySelectorAll(':scope > div.mt-5 > details > summary')].map(x=>x.textContent.trim()),"+
         "years:[...root.querySelectorAll('details details > summary')].map(x=>x.textContent.trim()),"+
-        "days:[...root.querySelectorAll('details details details details > summary')].map(x=>x.textContent.trim())};})()");
+        "days:[...root.querySelectorAll('details > summary')].map(x=>x.textContent.trim()).filter(s=>s.length===10&&s.split('.').length===3)};})()");
       assert.deepEqual(grouped.categories.sort(),['blockchain','regulierung','stablecoins']);
       assert.ok(grouped.years.includes('2026'),'Year folder missing');
       assert.equal(grouped.days.length,3,'Date folders missing');
