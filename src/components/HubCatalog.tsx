@@ -66,11 +66,12 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(245, 176, 20, 0.45)',
     accentBg: 'bg-amber-500/15 border-amber-400/50 text-amber-300',
     icon: <LineChart className="w-5 h-5 text-amber-400" />,
-    badge: '7 Module',
+    badge: '8 Module',
     description: 'Cross-Sectional Ranking, Buffett Value Investing, Enterprise Scorer und AI Newsfeed.',
     mainPath: '/marketscreener',
     subpages: [
       { id: 'overview', name: 'Übersicht', icon: <Compass className="h-4 w-4 text-amber-300" />, shortDesc: 'Übersicht', path: '/marketscreener?tab=overview' },
+      { id: 'newsArchive', name: 'News-Archiv', icon: <Newspaper className="h-4 w-4 text-amber-300" />, shortDesc: 'Nachrichten nach Kategorie und Datum mit BI-Metadaten', path: '/marketscreener?tab=newsArchive' },
       { id: 'scorer', name: 'Enterprise Scorer', icon: <Zap className="h-4 w-4 text-amber-300" />, shortDesc: 'Enterprise Scorer', path: '/marketscreener?tab=scorer' },
       { id: 'terminal', name: 'Screener', icon: <LineChart className="h-4 w-4 text-amber-300" />, shortDesc: 'Screener', path: '/marketscreener?tab=terminal' },
       { id: 'binance', name: 'Krypto-Kursverlauf', icon: <LineChart className="h-4 w-4 text-amber-300" />, shortDesc: 'Krypto-Kursverlauf', path: '/marketscreener?tab=binance' },
