@@ -44,7 +44,7 @@ def _pkg_license(value) -> str:
     return value.strip()
 
 
-def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
+def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path, os_inventory: Path,
                     image_id: str, source_sha: str, tested_checkout_sha: str,
                     builder_ref: str, runtime_ref: str) -> dict:
     """Generate digest-bound evidence. Never grant licensing or registry approval."""
@@ -65,6 +65,25 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
     if (not str(sx.get("spdxVersion", "")).startswith("SPDX-")
             or not isinstance(sx.get("packages"), list) or not sx["packages"]):
         raise ValueError("missing SPDX packages")
+
+    apk = _read_sbom(os_inventory)
+    if (apk.get("schema") != "CAPITAL_AI_WORKER_APK_LICENSES@1"
+            or apk.get("status") not in ("APK_METADATA_FOUND", "APK_METADATA_NOT_PROVEN")
+            or not isinstance(apk.get("packages"), list)):
+        raise ValueError("invalid APK license inventory contract")
+    os_packages = apk["packages"]
+    if apk["status"] == "APK_METADATA_NOT_PROVEN":
+        if os_packages:
+            raise ValueError("unproven APK database cannot claim installed packages")
+    elif not os_packages:
+        raise ValueError("empty verified APK database")
+    if len(os_packages) > 20000:
+        raise ValueError("unreasonable installed APK package count")
+    for item in os_packages:
+        if (not isinstance(item, dict) or not isinstance(item.get("name"), str)
+                or not item["name"] or not isinstance(item.get("version"), str)
+                or not item["version"] or not isinstance(item.get("license"), str)):
+            raise ValueError("invalid installed APK package metadata")
 
     packages = []
     seen_ids = set()
@@ -87,6 +106,7 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
             "licenseConcluded": concluded,
             "downloadLocation": package.get("downloadLocation", "NOASSERTION"),
             "copyrightText": package.get("copyrightText", "NOASSERTION"),
+            "isImageArchiveRecord": name == "/candidate.tar",
             "licenseMetadataUnresolved": (
                 declared in ("NOASSERTION", "NONE")
                 and concluded in ("NOASSERTION", "NONE")
@@ -95,7 +115,10 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
     if len(packages) > 20000:
         raise ValueError("unreasonable SBOM package count")
     packages.sort(key=lambda p: (p["name"], p["spdxId"]))
-    unresolved = sum(p["licenseMetadataUnresolved"] for p in packages)
+    unresolved = sum(p["licenseMetadataUnresolved"] and not p["isImageArchiveRecord"]
+                     for p in packages)
+    archive_records = sum(p["isImageArchiveRecord"] for p in packages)
+    os_unresolved = sum(x["license"] in ("NOASSERTION", "NONE") for x in os_packages)
     return {
         "schema": "CAPITAL_AI_WORKER_OCI_LICENSE_EVIDENCE@1",
         "sourceHeadSha": source_sha,
@@ -105,6 +128,7 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
         "sbom": {
             "cyclonedxSha256": _hash(cyclonedx),
             "spdxSha256": _hash(spdx),
+            "apkInventorySha256": _hash(os_inventory),
             "cyclonedxComponents": len(cdx["components"]),
             "spdxPackages": len(packages),
         },
@@ -115,9 +139,15 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
         "licenseSummary": {
             "spdxPackages": len(packages),
             "unresolvedMetadataCount": unresolved,
+            "imageArchiveRecordCount": archive_records,
+            "spdxSoftwareComponents": len(packages) - archive_records,
+            "osPackageCount": len(os_packages),
+            "osPackageMetadataStatus": apk["status"],
+            "unresolvedOsLicenses": os_unresolved,
             "allPackagesRequireRightsAssessment": True,
         },
         "packages": packages,
+        "osPackages": os_packages,
         "derivedRegistryManifestDigest": None,
         "upstreamSignatureVerified": False,
         "upstreamAttestationVerified": False,
@@ -132,13 +162,13 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    for name in ("archive", "cyclonedx", "spdx", "image-id", "source-sha", "tested-checkout-sha",
+    for name in ("archive", "cyclonedx", "spdx", "os-inventory", "image-id", "source-sha", "tested-checkout-sha",
                  "builder-ref", "runtime-ref", "output"):
         parser.add_argument("--" + name, required=True)
     args = parser.parse_args()
     report = build_inventory(
         archive=Path(args.archive), cyclonedx=Path(args.cyclonedx),
-        spdx=Path(args.spdx), image_id=args.image_id,
+        spdx=Path(args.spdx), os_inventory=Path(args.os_inventory), image_id=args.image_id,
         source_sha=args.source_sha, tested_checkout_sha=args.tested_checkout_sha,
         builder_ref=args.builder_ref,
         runtime_ref=args.runtime_ref,
@@ -153,6 +183,8 @@ def main() -> None:
         "imageConfigId": report["imageConfigId"],
         "spdxPackages": report["sbom"]["spdxPackages"],
         "unresolvedMetadata": report["licenseSummary"]["unresolvedMetadataCount"],
+        "apkStatus": report["licenseSummary"]["osPackageMetadataStatus"],
+        "apkPackages": report["licenseSummary"]["osPackageCount"],
         "commercialRedistributionAuthorized": False,
     }, sort_keys=True))
 

@@ -23,12 +23,17 @@ Existing candidate CI already enforces the unmodified Trivy 0.76.2
 vulnerability and secret scan. This change adds, **after that scan**, two
 SBOM documents (CycloneDX JSON and SPDX JSON) from **the same exact local
 candidate tar**, and a read-only, sorted full SPDX package-license inventory.
+Because the SPDX format may include the image archive itself as an entry,
+the inventory distinguishes the root image record from actual software.
+The worker process also reads Alpaquita's installed APK database in the final
+unprivileged image, records its P/V/L/O metadata, and distinguishes an absent
+or stripped database from a genuine zero-package result.
 `worker_oci_evidence.py` cryptographically binds the archive SHA-256, both SBOM
 SHA-256s, candidate image config ID, pull-request head SHA, actual tested checkout SHA and both base digests.
 No unverified signature, copyright clearance or GHCR digest is invented.
 
 The artifact `langgraph-worker-sbom-<PR head SHA>` retains:
-`worker.cdx.json`, `worker.spdx.json`, and
+`worker.cdx.json`, `worker.spdx.json`, `worker-os-packages.json`, and
 `worker-license-inventory.json` for 30 days. It is an internal GitHub Actions
 artifact, not an image release. A missed/invalid SBOM fails the inventory step.
 Existing PR checks are reused; no additional Required Check is introduced.
@@ -37,7 +42,9 @@ Existing PR checks are reused; no additional Required Check is introduced.
 not legal approval. `NOASSERTION`/`NONE` and missing source/copyright information
 remain explicit review items. Trivy enumerates *detected* OS and language
 components; independently compare actual packaged binary/files and installed
-software metadata before claiming completeness. The runtime bootstrap removal
+software metadata before claiming completeness. The final-image APK database may be absent; in that case
+`APK_METADATA_NOT_PROVEN` must remain a release blocker rather than
+inventing an empty OS SBOM. The runtime bootstrap removal
 and `sqlite-vec` must be checked in the **final derived image**, not inferred
 from BellSoft's upstream SBOM. CI artifacts are not a permanent notarized
 license registry: archive signed copies in an owner-authorized evidence store

@@ -32,7 +32,15 @@ class WorkerOCIInventoryTests(unittest.TestCase):
                  "licenseConcluded": "NOASSERTION"},
             ],
         }))
+        os_inventory = root / "os-packages.json"
+        os_inventory.write_text(json.dumps({
+            "schema": "CAPITAL_AI_WORKER_APK_LICENSES@1",
+            "status": "APK_METADATA_FOUND",
+            "packages": [{"name": "python3", "version": "3.14",
+                          "license": "PSF-2.0", "origin": "python3"}],
+        }))
         return {"archive": archive, "cyclonedx": cdx, "spdx": spdx,
+                "os_inventory": os_inventory,
                 "image_id": IMAGE, "source_sha": SHA,
                 "tested_checkout_sha": "e" * 40,
                 "builder_ref": BUILDER, "runtime_ref": RUNTIME}
@@ -43,6 +51,8 @@ class WorkerOCIInventoryTests(unittest.TestCase):
             self.assertEqual(data["sourceHeadSha"], SHA)
             self.assertEqual(data["testedCheckoutSha"], "e" * 40)
             self.assertEqual(data["sbom"]["spdxPackages"], 2)
+            self.assertEqual(data["licenseSummary"]["osPackageCount"], 1)
+            self.assertEqual(data["osPackages"][0]["name"], "python3")
             self.assertEqual(len(data["packages"]), 2)
             self.assertEqual(data["licenseSummary"]["unresolvedMetadataCount"], 1)
             self.assertEqual(data["status"], "INVENTORIED_REVIEW_REQUIRED")
@@ -79,6 +89,19 @@ class WorkerOCIInventoryTests(unittest.TestCase):
             args["spdx"].write_text(json.dumps(obj))
             with self.assertRaises(ValueError):
                 build_inventory(**args)
+
+    def test_stripped_apk_database_is_explicit_not_proven(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.fixture(tmp)
+            args["os_inventory"].write_text(json.dumps({
+                "schema": "CAPITAL_AI_WORKER_APK_LICENSES@1",
+                "status": "APK_METADATA_NOT_PROVEN", "packages": [],
+            }))
+            data = build_inventory(**args)
+            self.assertEqual(data["licenseSummary"]["osPackageMetadataStatus"],
+                             "APK_METADATA_NOT_PROVEN")
+            self.assertEqual(data["licenseSummary"]["osPackageCount"], 0)
+            self.assertFalse(data["commercialRedistributionAuthorized"])
 
     def test_sbom_symlink_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
