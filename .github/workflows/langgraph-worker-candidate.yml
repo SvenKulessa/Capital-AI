@@ -8,6 +8,8 @@ on:
       - 'scripts/growth-agent/agent_platform.py'
       - 'scripts/growth-agent/checkpoint_store.py'
       - 'scripts/growth-agent/worker_service.py'
+      - 'scripts/growth-agent/worker_oci_evidence.py'
+      - 'scripts/growth-agent/test_worker_oci_evidence.py'
       - '.github/workflows/langgraph-worker-candidate.yml'
 
 permissions:
@@ -87,6 +89,38 @@ jobs:
             --ignorefile /dev/null --severity HIGH,CRITICAL \
             --exit-code 1 --no-progress
           echo "CANDIDATE_SCAN_PASS"
+      - name: Inventory exact unactivated candidate image (CycloneDX, SPDX, licensing)
+        shell: bash
+        env:
+          PYTHON_BUILD_BASE: ${{ steps.base.outputs.build_ref }}
+          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          image="capital-ai-langgraph-candidate:$GITHUB_SHA"
+          evidence="$RUNNER_TEMP/langgraph-worker-evidence"
+          mkdir -p "$evidence"
+          trivy="aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb"
+          # Same candidate.tar as the preceding, unchanged vulnerability/secret gate.
+          docker run --rm \
+            -v /tmp/offline-candidate.tar:/candidate.tar:ro \
+            -v "$evidence:/reports" \
+            "$trivy" image --input /candidate.tar --format cyclonedx \
+            --output /reports/worker.cdx.json --no-progress
+          docker run --rm \
+            -v /tmp/offline-candidate.tar:/candidate.tar:ro \
+            -v "$evidence:/reports" \
+            "$trivy" image --input /candidate.tar --format spdx-json \
+            --output /reports/worker.spdx.json --no-progress
+          python3 scripts/growth-agent/worker_oci_evidence.py \
+            --archive /tmp/offline-candidate.tar \
+            --cyclonedx "$evidence/worker.cdx.json" \
+            --spdx "$evidence/worker.spdx.json" \
+            --image-id "$(docker image inspect --format '{{.Id}}' "$image")" \
+            --source-sha "$GITHUB_SHA" \
+            --builder-ref "$PYTHON_BUILD_BASE" --runtime-ref "$PYTHON_BASE" \
+            --output "$evidence/worker-license-inventory.json"
+          echo "SBOM_LICENSE_INVENTORY_REVIEW_REQUIRED"
+
       - name: Prove synthetic SQLite persistence across isolated container restarts
         shell: bash
         run: |
@@ -152,4 +186,14 @@ jobs:
           set -e
           test "$mount_denied" -ne 0
           echo "SYNTHETIC_DOCKER_MOUNT_RESTART_PASS"
-
+      - name: Retain source-bound unactivated worker inventory
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: langgraph-worker-sbom-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/langgraph-worker-evidence/worker.cdx.json
+            ${{ runner.temp }}/langgraph-worker-evidence/worker.spdx.json
+            ${{ runner.temp }}/langgraph-worker-evidence/worker-license-inventory.json
+          if-no-files-found: warn
+          retention-days: 30
