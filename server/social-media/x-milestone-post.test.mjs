@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCipheriv, randomBytes, createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { createXMilestonePost, MILESTONE_CONTENT_KEY, MILESTONE_TEXT,
   LAUNCH_TEXT, LAUNCH_CONTENT_KEY, LAUNCH_MEDIA_SHA256, assertPinnedLaunchMedia } from './x-milestone-post.mjs';
 
@@ -46,7 +47,7 @@ function seal(value,kind='access'){
 function providerResult(status,payload){
   return {ok:status>=200&&status<300,status,text:async()=>JSON.stringify(payload)};
 }
-function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=3600000}={}){
+function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=3600000,launchMediaLoader}={}){
   const receipt=new Map(),calls=[];
   let accessCipher=seal('synthetic-ACCESS-OLD-TOKEN');
   let expiresAt=new Date(Date.now()+expires).toISOString();
@@ -109,7 +110,7 @@ function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=
     }
     throw Error('unexpected provider URI '+path);
   };
-  const handler=createXMilestonePost({env:{...ENV,...flags},auth,fetchImpl,edgeFactory});
+  const handler=createXMilestonePost({env:{...ENV,...flags},auth,fetchImpl,edgeFactory,launchMediaLoader});
   return {handler,calls,receipt,stats:()=>({writeCount,readCount})};
 }
 
@@ -222,11 +223,16 @@ test('X launch copy is source-and-image-bound, short, and avoids financial perfo
   assert.match(LAUNCH_TEXT,/Studio Hub/);
   assert.match(LAUNCH_TEXT,/Content Engine/);
   assert.doesNotMatch(LAUNCH_TEXT,/profitabel|garantiert|live-ki|auto.?publishing/i);
+  // CI verifies that the exact submitted image bytes are checked into the repo.
+  const original=readFileSync(new URL('../../public/branding/social/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg',import.meta.url));
+  assert.equal(createHash('sha256').update(original).digest('hex'),LAUNCH_MEDIA_SHA256);
+  assert.equal(assertPinnedLaunchMedia(original),original);
   assert.throws(()=>assertPinnedLaunchMedia(Buffer.from('fake-image')),
     /x_launch_image_invalid/);
   const mismatched=Buffer.concat([
-    Buffer.from([137,80,78,71,13,10,26,10]),
+    Buffer.from([255,216,255,224]),
     Buffer.alloc(24,1),
+    Buffer.from([255,217]),
   ]);
   assert.throws(()=>assertPinnedLaunchMedia(mismatched),/x_launch_image_sha_mismatch/);
 });
@@ -238,7 +244,7 @@ test('X launch page and status are isolated from original milestone receipt',asy
   assert.equal(resp.code,200);
   assert.match(resp.data,/X-Launch mit Infografik/);
   assert.match(resp.data,/Studio Hub/);
-  assert.match(resp.data,/branding\/social\/CAPITAL-AI-Universe-X-Launch-Final-20261115.png/);
+  assert.match(resp.data,/branding\/social\/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg/);
   assert.match(resp.data,/alt="CAPITAL-AI Universe:/);
   const js=response();
   await f.handler.handle(request('GET'),js,
@@ -267,7 +273,8 @@ test('X launch refuses media writes without scope, approval or exact pinned imag
   }
   const goodFlags={SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',
     SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'true'};
-  const f=fixture({flags:goodFlags}),r=response();
+  const f=fixture({flags:goodFlags,
+    launchMediaLoader:async()=>{throw Error('x_launch_image_not_provisioned');}}),r=response();
   await f.handler.handle(request(),r,new URL(root+'/publish'),json);
   assert.equal(r.code,503); // pinned asset missing from repo; no X usage
   assert.equal(f.receipt.size,0);
