@@ -7,11 +7,13 @@ import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 
 const START_PATH = '/api/social-media/x/auth/start';
 const CALLBACK_PATH = '/api/social-media/auth/callback';
+const PUBLISH_START_PATH = '/api/social-media/x/publish/auth/start';
+const PUBLISH_CALLBACK_PATH = '/api/social-media/x/publish/auth/callback';
 const BASE_SCOPES = 'tweet.read tweet.write users.read offline.access';
-function ownerRequestedScopes(env) {
+function ownerRequestedScopes(env, channel = 'X') {
   // Consent is independent of paid publishing gates and defaults to disabled.
   // This does not start OAuth; only an authenticated IAM owner can initiate it.
-  return env.SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED === 'true'
+  return (channel === 'X_PUBLISH' || env.SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED === 'true')
     ? BASE_SCOPES + ' media.write' : BASE_SCOPES;
 }
  
@@ -51,9 +53,13 @@ function originFromEnv(env) {
 }
 
 export function createSocialXOAuthStart({ env = process.env, auth,
-  store = null, fetchImpl = fetch } = {}) {
+  store = null, fetchImpl = fetch, channel = 'X' } = {}) {
+  if (!['X', 'X_PUBLISH'].includes(channel)) throw Error('SOCIAL_X_OAUTH_CHANNEL_UNSUPPORTED');
+  const publish = channel === 'X_PUBLISH';
+  const startPath = publish ? PUBLISH_START_PATH : START_PATH;
+  const callbackPath = publish ? PUBLISH_CALLBACK_PATH : CALLBACK_PATH;
   async function handle(req, res, url, json) {
-    if (url.pathname !== START_PATH) return false;
+    if (url.pathname !== startPath) return false;
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
@@ -68,9 +74,9 @@ export function createSocialXOAuthStart({ env = process.env, auth,
       return true;
     }
     let origin;
-    const clientId = env.SOCIAL_X_OAUTH_CLIENT_ID;
+    const clientId = publish ? env.SOCIAL_X_PUBLISH_OAUTH_CLIENT_ID : env.SOCIAL_X_OAUTH_CLIENT_ID;
     try {
-      if (!socialXOAuthConfigured(env)
+      if (!socialXOAuthConfigured(env, channel)
         || typeof clientId !== 'string' || clientId.length < 5 || clientId.length > 256
         || /[\s]/.test(clientId)) throw Error();
       origin = originFromEnv(env);
@@ -88,18 +94,18 @@ export function createSocialXOAuthStart({ env = process.env, auth,
       json(res, 403, { error: 'owner_authorization_required' });
       return true;
     }
-    const redirectUri = new URL(CALLBACK_PATH, origin).toString();
+    const redirectUri = new URL(callbackPath, origin).toString();
     // The verifier and state are generated server-side and must be stored for
     // exactly this authenticated user and redirect before sending the 303.
     try {
       const verifier = randomBytes(32).toString('base64url');
       const challenge = createHash('sha256').update(verifier).digest('base64url');
       const activeStore = store ?? (socialXEdgeMode(env)
-        ? createSocialXEdgeClient({ env, fetchImpl,
+        ? createSocialXEdgeClient({ env, fetchImpl, channel,
           userAccessToken: await auth?.internalAccessToken?.(req, res) })
         : createSocialProviderStore({ env, fetchImpl }));
       const issued = await activeStore.beginOAuth({
-        userId: identity.userId, channel: 'X', redirectUri,
+        userId: identity.userId, channel, redirectUri,
         allowedRedirectUris: [redirectUri], codeVerifier: verifier,
       });
       if (!/^[A-Za-z0-9_-]{43}$/.test(issued?.state || '')) {
@@ -109,7 +115,7 @@ export function createSocialXOAuthStart({ env = process.env, auth,
       authorize.searchParams.set('response_type', 'code');
       authorize.searchParams.set('client_id', clientId);
       authorize.searchParams.set('redirect_uri', redirectUri);
-      authorize.searchParams.set('scope', ownerRequestedScopes(env));
+      authorize.searchParams.set('scope', ownerRequestedScopes(env, channel));
       authorize.searchParams.set('state', issued.state);
       authorize.searchParams.set('code_challenge', challenge);
       authorize.searchParams.set('code_challenge_method', 'S256');

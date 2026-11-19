@@ -19,7 +19,7 @@ function namedStep(name) {
   return tail.slice(0, boundaries.length ? Math.min(...boundaries) : undefined);
 }
 
-test('BuildKit cache comes from immutable, pinned Docker actions with local-scanned images', () => {
+test('BuildKit cache import is main-only and PR scanning still builds local images', () => {
   const build = namedStep('Build-Stufe ohne Installationswerkzeug bauen');
   const runtime = namedStep('Image mit Tests und isoliertem Frontend-Build bauen');
   const setup = namedStep('GitHub-gehosteten BuildKit-Layer-Cache vorbereiten');
@@ -30,7 +30,7 @@ test('BuildKit cache comes from immutable, pinned Docker actions with local-scan
     assert.match(step, /pull: true/);
     assert.match(step, /load: true/);
     assert.match(step, /push: false/);
-    assert.match(step, /cache-from: type=gha,scope=capital-ai-verified-build/);
+    assert.match(step, /cache-from: \$\{\{ github\.event_name == 'push' && github\.ref == 'refs\/heads\/main' && 'type=gha,scope=capital-ai-verified-build'/);
   }
   assert.match(build, /target: build/);
   assert.match(build, /tags: capital-ai-build:/);

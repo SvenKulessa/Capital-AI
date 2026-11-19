@@ -102,6 +102,8 @@
 !server/private-provider-query.test.mjs
 !server/render-owner-dashboard.mjs
 !server/render-owner-dashboard.test.mjs
+!server/evidence-dashboard-readback.mjs
+!server/evidence-dashboard-readback.test.mjs
 !server/google-analytics-mcp.mjs
 !server/google-analytics-readback.mjs
 !server/google-analytics-readback.test.mjs
@@ -200,6 +202,7 @@
 !scripts/daily-dependency-watch.test.mjs
 !scripts/independent-review-manifest.mjs
 !scripts/independent-review-manifest.test.mjs
+!scripts/picomatch-runtime-isolation.test.mjs
 !scripts/domain-skills.test.mjs
 !scripts/solo-maintainer-flow.test.mjs
 !scripts/universe-hero.test.mjs
@@ -372,6 +375,7 @@
 !supabase/migrations/20261008181500_private_user_analysis_bindings.sql
 !supabase/migrations/20261008113000_social_provider_store.sql
 !supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
+!supabase/migrations/20261117122000_x_publish_oauth_client_isolation.sql
 !supabase/migrations/20261013153200_x_article_test_once.sql
 !supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql
 !supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql
@@ -400,6 +404,8 @@
 !server/social-media/x-oauth-exchange.test.mjs
 !server/social-media/x-account-status.mjs
 !server/social-media/x-account-status.test.mjs
+!server/social-media/x-publish-account-status.mjs
+!server/social-media/x-publish-isolation.test.mjs
 !server/social-media/x-edge-client.mjs
 !server/social-media/x-edge-client.test.mjs
 !server/social-media/x-edge-vault.test.mjs
@@ -440,6 +446,7 @@
 !server/learning-simulator.mjs
 !server/learning-simulator.test.mjs
 !server/learning-inquiry.test.mjs
+!scripts/write-runtime-identity.mjs
 !scripts/activate-learning-measurement.mjs
 !scripts/activate-learning-measurement.test.mjs
 !scripts/generate-cookie-storage-notice.mjs

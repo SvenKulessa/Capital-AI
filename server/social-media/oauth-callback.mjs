@@ -2,7 +2,7 @@
 // No authorization-start route and no built-in token exchanger are activated.
 import { createSocialProviderStore } from './provider-store.mjs';
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
-import { socialPlatformForChannel } from './provider-adapter.mjs';
+import { socialOAuthPlatformForChannel } from './provider-adapter.mjs';
 
 // Only the authenticated, email-confirmed IAM owner can receive these fixed
 // categories. Never reflect provider bodies, codes, state, tokens or exceptions.
@@ -13,10 +13,16 @@ const OWNER_SAFE_CALLBACK_DIAGNOSTICS = Object.freeze({
   SOCIAL_X_EDGE_CONSUMPTION_INVALID: 'edge_state_not_confirmed',
   SOCIAL_X_EDGE_PERSIST_INVALID: 'vault_persistence_not_confirmed',
   SOCIAL_X_TOKEN_EXCHANGE_REJECTED: 'provider_token_exchange_rejected',
+  SOCIAL_X_PROVIDER_UNAVAILABLE: 'provider_network_unavailable',
+  SOCIAL_X_MEDIA_WRITE_SCOPE_MISSING: 'provider_scopes_missing',
+  SOCIAL_X_OAUTH_EXPIRY_INVALID: 'provider_token_response_invalid',
+  SOCIAL_X_OAUTH_TOKEN_TYPE_INVALID: 'provider_token_response_invalid',
+  SOCIAL_X_OAUTH_TOKENS_MISSING: 'provider_token_response_invalid',
   SOCIAL_X_OAUTH_SCOPES_MISSING: 'provider_scopes_missing',
   SOCIAL_X_ACCOUNT_READBACK_REJECTED: 'provider_identity_readback_rejected',
   SOCIAL_X_ACCOUNT_PERSIST_FAILED: 'vault_persistence_not_confirmed',
   SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED: 'vault_persistence_not_confirmed',
+  SOCIAL_X_PUBLISH_WRONG_ACCOUNT: 'provider_identity_readback_rejected',
   SOCIAL_YOUTUBE_TOKEN_EXCHANGE_REJECTED: 'provider_token_exchange_rejected',
   SOCIAL_YOUTUBE_OAUTH_SCOPES_MISSING: 'provider_scopes_missing',
   SOCIAL_YOUTUBE_ACCOUNT_READBACK_REJECTED: 'provider_identity_readback_rejected',
@@ -41,8 +47,9 @@ function safeOwnerCallbackFailure(error) {
 }
 
 export function createSocialOAuthCallback({ env = process.env, auth, store = null,
-  exchangeCode = null, fetchImpl = fetch } = {}) {
-  const path = '/api/social-media/auth/callback';
+  exchangeCode = null, fetchImpl = fetch, publishOnly = false } = {}) {
+  const path = publishOnly ? '/api/social-media/x/publish/auth/callback'
+    : '/api/social-media/auth/callback';
   const allowed = ['YOUTUBE', 'INSTAGRAM', 'FACEBOOK', 'X'];
 
   async function handle(req, res, url, json) {
@@ -58,6 +65,8 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
     // Do not even consume a state without a configured provider-specific
     // exchanger. The exchanger must persist ciphertext before success.
     if (env.SOCIAL_OAUTH_CALLBACK_ENABLED !== 'true'
+      || (publishOnly && (env.SOCIAL_X_PUBLISH_OAUTH_ENABLED !== 'true'
+        || !socialXEdgeMode(env)))
       || typeof exchangeCode !== 'function') {
       json(res, 503, { error: 'social_oauth_not_configured' });
       return true;
@@ -78,12 +87,14 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       .exec(req.headers?.cookie || '')?.[1];
     const facebookState = /(?:^|;\s*)capital_facebook_oauth_state=([A-Za-z0-9_-]{43})(?:;|$)/
       .exec(req.headers?.cookie || '')?.[1];
-    const channel = url.searchParams.get('channel')
+    const channel = publishOnly ? 'X_PUBLISH' : url.searchParams.get('channel')
       ?? (facebookState && facebookState === state ? 'FACEBOOK'
         : instagramState && instagramState === state ? 'INSTAGRAM'
         : youtubeState && youtubeState === state ? 'YOUTUBE' : 'X');
     const code = url.searchParams.get('code');
-    if (!allowed.includes(channel) || url.searchParams.has('error')
+    if ((!publishOnly && !allowed.includes(channel))
+      || (publishOnly && url.searchParams.has('channel'))
+      || url.searchParams.has('error')
       || url.searchParams.getAll('state').length !== 1
       || url.searchParams.getAll('code').length !== 1
       || url.searchParams.getAll('channel').length > 1
@@ -105,7 +116,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       json(res, 401, { error: 'authentication_required' });
       return true;
     }
-    if (['X', 'YOUTUBE', 'INSTAGRAM', 'FACEBOOK'].includes(channel) && (identity.emailVerified !== true
+    if (['X', 'X_PUBLISH', 'YOUTUBE', 'INSTAGRAM', 'FACEBOOK'].includes(channel) && (identity.emailVerified !== true
       || await auth?.authorizeIamRole?.(req, res, 'owner') !== true)) {
       json(res, 403, { error: 'owner_authorization_required' });
       return true;
@@ -114,7 +125,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
     // accepted as a redirect destination or token endpoint.
     const redirectUri = new URL(path, origin).toString();
     try {
-      const activeStore = store ?? (['X', 'YOUTUBE'].includes(channel) && socialXEdgeMode(env)
+      const activeStore = store ?? (['X', 'X_PUBLISH', 'YOUTUBE'].includes(channel) && socialXEdgeMode(env)
         ? createSocialXEdgeClient({ env, fetchImpl, channel,
           userAccessToken: await auth?.internalAccessToken?.(req, res) })
         : createSocialProviderStore({ env, fetchImpl }));
@@ -123,7 +134,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
         allowedRedirectUris: [redirectUri], state, code,
         exchangeCode: async trusted => {
           if (trusted.userId !== identity.userId || trusted.channel !== channel
-            || socialPlatformForChannel(trusted.channel) !== channel.toLowerCase()) {
+            || socialOAuthPlatformForChannel(trusted.channel) !== channel.toLowerCase()) {
             throw new Error('SOCIAL_OAUTH_EXCHANGE_IDENTITY_MISMATCH');
           }
           // Allow injection only from internal server-side code; never from HTTP.
@@ -162,7 +173,8 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       // The exchanger has confirmed encrypted persistence/readback. Point the
       // authenticated owner to the read-only status instead of a blank 204.
       res.writeHead(303, {
-        Location: '/api/social-media/x/account/status',
+        Location: publishOnly ? '/api/social-media/x/publish/account/status'
+          : '/api/social-media/x/account/status',
         'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer',
       });
       res.end();
@@ -170,7 +182,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       // Identity and IAM owner role have already been checked above.
       // Other social channels have not passed the owner-only authorization
       // boundary; preserve their generic response without diagnostic metadata.
-      json(res, 503, ['X', 'YOUTUBE', 'INSTAGRAM', 'FACEBOOK'].includes(channel)
+      json(res, 503, ['X', 'X_PUBLISH', 'YOUTUBE', 'INSTAGRAM', 'FACEBOOK'].includes(channel)
         ? { error: 'social_oauth_callback_unavailable',
           diagnostic: safeOwnerCallbackFailure(error) }
         : { error: 'social_oauth_callback_unavailable' });

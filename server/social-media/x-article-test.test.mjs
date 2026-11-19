@@ -15,6 +15,10 @@ const ENV={
   SOCIAL_X_PAID_WRITE_APPROVED:'true',
   SOCIAL_X_PAID_READ_APPROVED:'true',
   SOCIAL_X_TOKEN_ENCRYPTION_KEY:KEY,
+  SOCIAL_X_PUBLISH_TOKEN_ENCRYPTION_KEY:KEY,
+  SOCIAL_X_PUBLISH_OAUTH_ENABLED:'true',
+  SOCIAL_X_PUBLISH_OAUTH_CLIENT_ID:'synthetic-publish-client',
+  SOCIAL_X_PUBLISH_OAUTH_CLIENT_SECRET:'synthetic-publish-secret',
   SOCIAL_X_OAUTH_CONNECT_ENABLED:'true',
   SOCIAL_OAUTH_CALLBACK_ENABLED:'true',
   SOCIAL_X_OAUTH_CLIENT_ID:'synthetic-x-client',
@@ -23,7 +27,7 @@ const ENV={
 function cipher(secret,kind='access') {
   const iv=randomBytes(12);
   const c=createCipheriv('aes-256-gcm', Buffer.from(KEY,'hex'), iv);
-  c.setAAD(Buffer.from(JSON.stringify(['capital-social-x-v1',USER,kind])));
+  c.setAAD(Buffer.from(JSON.stringify(['capital-social-x-publish-v1',USER,kind])));
   const ciphertext = Buffer.concat([c.update(secret,'utf8'),c.final()]);
   return 'v1.'+[iv,c.getAuthTag(),ciphertext]
     .map(x=>x.toString('base64url')).join('.');
@@ -40,7 +44,9 @@ function fixture({owner=true, flags={}, provider=null, expires=3600000, revoked=
   let expiresAt=new Date(Date.now()+expires).toISOString();
   const auth={sameOrigin:()=>true, verify:async()=>owner?{userId:USER,emailVerified:true}:null,
     authorizeIamRole:async()=>owner,internalAccessToken:async()=> 'synthetic-jwt-'+'j'.repeat(80)};
-  const edgeFactory=()=>({
+  const edgeFactory=({channel})=>{
+    assert.equal(channel,'X_PUBLISH');
+    return ({
     async invoke(op,data){
       calls.push(op);
       if(op==='x_credentials')return {accountId:ACCOUNT,handle:HANDLE,
@@ -63,19 +69,19 @@ function fixture({owner=true, flags={}, provider=null, expires=3600000, revoked=
     },
     async refreshClaim(userId,leaseId){calls.push('refresh_claim');return {
       leaseId,refreshCipher:cipher('synthetic-REFRESH-OLD-TOKEN','refresh'),
-      accountId:ACCOUNT,scopes:['tweet.read','tweet.write','users.read','offline.access']}},
+      accountId:ACCOUNT,scopes:['tweet.read','tweet.write','users.read','offline.access','media.write']}},
     async refreshFinish(userId,leaseId,prev,access,refresh,expiry) {
       calls.push('refresh_finish');cipherAccess=access;expiresAt=expiry;
-      return {refreshed:true,channel:'X',expiresAt:expiry}},
-    async refreshEnd(){calls.push('refresh_end');return {channel:'X',status:'reconnect_required'}},
-  });
+      return {refreshed:true,channel:'X_PUBLISH',expiresAt:expiry}},
+    async refreshEnd(){calls.push('refresh_end');return {channel:'X_PUBLISH',status:'reconnect_required'}},
+  }); };
   let draftCount=0, publishCount=0, readCount=0;
   const fetchImpl=async(uri,options)=>{
     const path=String(uri);
     if(provider) return provider(uri,options);
     if(path.endsWith('/2/oauth2/token'))return {ok:true,status:200,text:async()=>JSON.stringify({
       access_token:'synthetic-ACCESS-NEW-TOKEN',refresh_token:'synthetic-REFRESH-NEW-TOKEN',
-      token_type:'bearer',expires_in:3600,scope:'tweet.read tweet.write users.read offline.access'})};
+      token_type:'bearer',expires_in:3600,scope:'tweet.read tweet.write users.read offline.access media.write'})};
     if(path.endsWith('/2/users/me'))return {ok:true,status:200,text:async()=>JSON.stringify({data:{id:ACCOUNT}})};
     if(path.endsWith('/2/articles/draft')) {
       draftCount++;

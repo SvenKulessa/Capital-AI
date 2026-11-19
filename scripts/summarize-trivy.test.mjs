@@ -27,3 +27,34 @@ test('scanner-derived values cannot inject Markdown or control characters into l
   assert.ok(!result.vulnerabilities[0].package.includes('\n'));
   assert.ok(!result.vulnerabilities[0].package.includes('`'));
 });
+
+test('diagnostic provenance publishes only known advisory IDs without relaxing HIGH gates', () => {
+  const report = { Results: [{ Vulnerabilities: [{
+    VulnerabilityID: 'CVE-2026-112366', Severity: 'HIGH', PkgName: 'picomatch',
+    InstalledVersion: '4.0.7', FixedVersion: '',
+    DataSource: { ID: 'ghsa', Name: 'Do not publish this metadata', URL: 'https://redacted.example/private' },
+    SeveritySource: 'ghsa',
+  }] }] };
+  const result = summary(report);
+  assert.equal(result.blocking, 1, 'An advisory withdrawal cannot silently waive a real scanner result');
+  assert.equal(result.vulnerabilities[0].dataSourceId, 'ghsa');
+  assert.equal(result.vulnerabilities[0].severitySource, 'ghsa');
+  assert.equal(result.vulnerabilities[0].fixed, null);
+  assert.ok(!JSON.stringify(result).includes('redacted.example'));
+  assert.ok(!JSON.stringify(result).includes('Do not publish'));
+});
+
+test('unknown or attacker-controlled advisory metadata remains redacted and does not change fail-closed status', () => {
+  const report = { Results: [{ Vulnerabilities: [{
+    VulnerabilityID: 'CVE-2026-112366', Severity: 'HIGH', PkgName: 'picomatch',
+    DataSource: { ID: 'private-credential', URL: 'https://secret' },
+    SeveritySource: 'private-credential',
+    Description: 'private-credential',
+  }] }] };
+  const result = summary(report);
+  assert.equal(result.blocking, 1);
+  assert.equal(result.vulnerabilities[0].dataSourceId, null);
+  assert.equal(result.vulnerabilities[0].severitySource, null);
+  assert.ok(!JSON.stringify(result).includes('private-credential'));
+  assert.ok(!JSON.stringify(result).includes('https://secret'));
+});
