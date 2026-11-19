@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Copy, AlertCircle } from 'lucide-react';
 import { buildChatFollowUps, type ChatDomain } from '../contracts/chatNextStepPrompts';
 
@@ -9,17 +9,31 @@ export function ChatNextStepActions({
   const followUps = useMemo(() => buildChatFollowUps(task, domain), [task, domain]);
   const [copied, setCopied] = useState<string | null>(null);
   const [copyFailed, setCopyFailed] = useState<string | null>(null);
-  useEffect(() => { setCopied(null); setCopyFailed(null); }, [task, domain]);
+  // An older clipboard promise must never confirm a different task or newer click.
+  const currentTask = useRef({ task, domain });
+  currentTask.current = { task, domain };
+  const copySequence = useRef(0);
+  useEffect(() => {
+    copySequence.current += 1;
+    setCopied(null);
+    setCopyFailed(null);
+  }, [task, domain]);
 
   async function copyPrompt(id: string, prompt: string): Promise<void> {
+    const sequence = ++copySequence.current;
+    const selection = { task, domain };
+    const stillCurrent = () => copySequence.current === sequence &&
+      currentTask.current.task === selection.task && currentTask.current.domain === selection.domain;
     try {
       if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
         throw new Error('CLIPBOARD_UNAVAILABLE');
       }
       await navigator.clipboard.writeText(prompt);
+      if (!stillCurrent()) return;
       setCopied(id);
       setCopyFailed(null);
     } catch {
+      if (!stillCurrent()) return;
       setCopied(null);
       setCopyFailed(id);
     }
