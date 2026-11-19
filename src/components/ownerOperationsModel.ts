@@ -22,6 +22,7 @@ export type DashboardReadback = {
   };
   ga4: ProviderEvidence & {
     property?: string; period?: string; events?: { eventName: string; eventCount: number }[];
+    realtimeStatus?: string; realtimeEvents?: { eventName: string; eventCount: number }[];
     revenue?: number | null; revenueStatus?: string;
   };
   comparison: { mainVsDeploy: string; runtimeBuildIdentity: string };
@@ -42,6 +43,7 @@ export function readDashboardSnapshot(value: unknown): DashboardReadback | null 
   if (value.github.ci !== undefined && (!isRecord(value.github.ci) || !Array.isArray(value.github.ci.runs))) return null;
   if (value.render.deployments !== undefined && !Array.isArray(value.render.deployments)) return null;
   if (value.ga4.events !== undefined && !Array.isArray(value.ga4.events)) return null;
+  if (value.ga4.realtimeEvents !== undefined && !Array.isArray(value.ga4.realtimeEvents)) return null;
   return value as unknown as DashboardReadback;
 }
 export const isVerified = (value?: { status?: string }): boolean => value?.status === 'VERIFIED_PROVIDER_READ';
@@ -60,6 +62,13 @@ export function visiblePullRequests(snapshot: DashboardReadback, agent: AgentRol
 export function ga4EventCount(snapshot: DashboardReadback, event: string): number | null {
   if (!isVerified(snapshot.ga4) || !Array.isArray(snapshot.ga4.events)) return null;
   const row = snapshot.ga4.events.find(entry => entry.eventName === event);
+  return row && Number.isSafeInteger(row.eventCount) && row.eventCount >= 0 ? row.eventCount : null;
+}
+export function ga4RealtimeEventCount(snapshot: DashboardReadback, event: string): number | null {
+  const source = snapshot.ga4;
+  if (!isVerified(source) || source.realtimeStatus !== 'VERIFIED_PROVIDER_READ' ||
+      !Array.isArray(source.realtimeEvents)) return null;
+  const row = source.realtimeEvents.find(entry => entry.eventName === event);
   return row && Number.isSafeInteger(row.eventCount) && row.eventCount >= 0 ? row.eventCount : null;
 }
 export function evidenceState(snapshot: DashboardReadback, source: 'github' | 'render' | 'ga4' | 'ci' | 'revenue' | 'runtime'): string {
