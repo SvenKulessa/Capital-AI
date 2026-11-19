@@ -57,12 +57,42 @@ async function readGitHub(fetchImpl, env, signal, now) {
   if (!Array.isArray(prs)) throw Error('INVALID_PR_COLLECTION');
   const valid = prs.every(pr => Number.isSafeInteger(pr?.number) && pr.number > 0 && pr?.state === 'open');
   if (!valid) throw Error('INVALID_PR_ENTRY');
+  const prItems = prs.length < 100 ? prs.slice(0, 50).map(pr => ({
+    number: pr.number,
+    title: typeof pr.title === 'string' ? pr.title.slice(0, 160) : 'Unbenannter PR',
+    draft: pr.draft === true,
+    headSha: SHA.test(pr.head?.sha || '') ? pr.head.sha : null,
+    updatedAt: Number.isFinite(Date.parse(pr.updated_at)) ? new Date(pr.updated_at).toISOString() : null,
+  })) : [];
+  let ci = { status: 'NOT_PROVEN', reason: 'CHECK_RUN_READ_UNAVAILABLE', runs: [] };
+  try {
+    const checks = await readJson(fetchImpl, origin + '/commits/' + commit.sha + '/check-runs?per_page=100', token, signal);
+    if (Number.isSafeInteger(checks?.total_count) && checks.total_count <= 100 && Array.isArray(checks.check_runs)) {
+      const matched = checks.check_runs.filter(row => row?.head_sha === commit.sha &&
+        typeof row.name === 'string' && row.name.length < 160 &&
+        ['completed','queued','in_progress','pending','waiting','requested'].includes(row.status));
+      ci = {
+        status: matched.length > 0 ? 'VERIFIED_PROVIDER_READ' : 'NOT_PROVEN',
+        reason: matched.length > 0 ? null : 'NO_MATCHING_MAIN_CHECK_RUNS',
+        scope: 'MAIN_COMMIT_CHECK_RUNS_NOT_PR_MERGE_AUTHORIZATION',
+        runs: matched.slice(0, 30).map(row => ({
+          name: row.name,
+          status: row.status,
+          conclusion: row.status === 'completed' && typeof row.conclusion === 'string' ? row.conclusion.slice(0, 40) : null,
+          requiredByRootPolicy: row.name === 'Docker Security Gate' || row.name === 'Domain Governance',
+        })),
+      };
+    } else ci = { status: 'NOT_PROVEN', reason: 'CHECK_RUNS_TRUNCATED_OR_INVALID', runs: [] };
+  } catch { /* A failed check-run read must not erase independently verified GitHub metadata. */ }
   return {
     status: 'VERIFIED_PROVIDER_READ', observedAt: new Date(now()).toISOString(),
     repository: REPOSITORY, mainSha: commit.sha,
     openPrCount: prs.length < 100 ? prs.length : null,
     openPrCountStatus: prs.length < 100 ? 'VERIFIED' : 'NOT_PROVEN_TRUNCATED',
-    evidence: `https://github.com/${REPOSITORY}/commit/${commit.sha}`,
+    pullRequests: prItems,
+    pullRequestsStatus: prs.length >= 100 ? 'NOT_PROVEN_TRUNCATED' : prs.length > 50 ? 'PARTIAL_FIRST_50' : 'VERIFIED',
+    ci,
+    evidence: 'https://github.com/' + REPOSITORY + '/commit/' + commit.sha,
   };
 }
 
@@ -73,16 +103,24 @@ async function readRender(fetchImpl, env, signal, now) {
   const serviceRaw = await readJson(fetchImpl, origin, token, signal);
   const service = serviceRaw?.service || serviceRaw;
   if (service?.id !== SERVICE_ID || service?.ownerId !== WORKSPACE_ID) throw Error('RENDER_IDENTITY_MISMATCH');
-  const deploys = await readJson(fetchImpl, `${origin}/deploys?limit=1`, token, signal);
-  if (!Array.isArray(deploys) || deploys.length !== 1) throw Error('RENDER_DEPLOY_MISSING');
-  const deploy = deploys[0]?.deploy || deploys[0];
-  const sourceSha = deploy?.commit?.id;
-  if (!SHA.test(sourceSha) || !/^[a-z_]{3,40}$/.test(deploy?.status || '')) throw Error('INVALID_RENDER_DEPLOY');
+  const deploys = await readJson(fetchImpl, origin + '/deploys?limit=5', token, signal);
+  if (!Array.isArray(deploys) || deploys.length === 0 || deploys.length > 5) throw Error('RENDER_DEPLOY_MISSING');
+  const deployments = deploys.map(entry => {
+    const deploy = entry?.deploy || entry;
+    const sourceSha = deploy?.commit?.id;
+    if (!SHA.test(sourceSha) || !/^[a-z_]{3,40}$/.test(deploy?.status || '')) throw Error('INVALID_RENDER_DEPLOY');
+    return {
+      deployId: typeof deploy.id === 'string' ? deploy.id.slice(0, 100) : null,
+      deployStatus: deploy.status, sourceCommitSha: sourceSha,
+      finishedAt: Number.isFinite(Date.parse(deploy.finishedAt)) ? new Date(deploy.finishedAt).toISOString() : null,
+    };
+  });
+  const first = deployments[0];
   return {
     status: 'VERIFIED_PROVIDER_READ', observedAt: new Date(now()).toISOString(),
     serviceId: SERVICE_ID, workspaceId: WORKSPACE_ID,
-    deployId: typeof deploy.id === 'string' ? deploy.id.slice(0, 100) : null,
-    deployStatus: deploy.status, sourceCommitSha: sourceSha,
+    deployId: first.deployId, deployStatus: first.deployStatus, sourceCommitSha: first.sourceCommitSha,
+    deployments,
     deploymentIdentityStatus: 'NOT_PROVEN_INDEPENDENT_HEALTH',
   };
 }
