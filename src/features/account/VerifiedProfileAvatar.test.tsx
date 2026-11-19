@@ -1,6 +1,7 @@
 import React from 'react';
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { safeAccountAvatarUrl } from '../../../shared/account-avatar-policy.mjs';
 import { VerifiedProfileAvatar } from './VerifiedProfileAvatar';
@@ -41,4 +42,30 @@ test('shared policy accepts only verified CDN hosts and same-origin avatar route
     '//pbs.twimg.com/a.png',
     'javascript:alert(1)',
   ]) assert.equal(safeAccountAvatarUrl(url), null);
+});
+
+test('failed CDN avatar remains a safe fallback until the verified URL changes', () => {
+  const source = readFileSync(new URL('./VerifiedProfileAvatar.tsx', import.meta.url), 'utf8');
+  assert.match(source, /failedUrl === verifiedUrl/);
+  assert.match(source, /onError=\{\(\) => setFailedUrl\(verifiedUrl\)\}/);
+  assert.doesNotMatch(source, /useEffect\(\(\) => setFailed\(false\)/);
+  assert.match(source, /<UserRound/);
+});
+
+test('owner account links to existing profile avatar controls without bypassing scan gating', () => {
+  const shell = readFileSync(new URL('./AccountPageShell.tsx', import.meta.url), 'utf8');
+  const upload = readFileSync(new URL('./ProfileAvatarUpload.tsx', import.meta.url), 'utf8');
+  const overview = readFileSync(new URL('../../components/OwnerOperationsVisualOverview.tsx', import.meta.url), 'utf8');
+  const panel = readFileSync(new URL('../../components/OwnerAgentOperationsPanel.tsx', import.meta.url), 'utf8');
+  assert.match(shell, /active === '\/profile\/dashboard'/);
+  assert.match(shell, /onNavigate\('\/profile'\)/);
+  assert.match(shell, /Profilbild verwalten/);
+  assert.match(upload, /r\.status === 404/);
+  assert.match(upload, /disabled=\{busy \|\| !available\}/);
+  assert.match(upload, /Sicherheitsprüfung oder der private Speicher/);
+  assert.match(overview, /Owner-Bereich · angemeldet/);
+  assert.doesNotMatch(overview, /> Nur für Owner</);
+  assert.match(panel, /!isVerified\(snapshot\.github\)/);
+  assert.match(panel, /https:\/\/github\.com\/SvenKulessa\/Capital-AI\/pulls/);
+  assert.doesNotMatch(upload, /PROFILE_AVATAR_UPLOAD_ENABLED\s*=\s*true/);
 });

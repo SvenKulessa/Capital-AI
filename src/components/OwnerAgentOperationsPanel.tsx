@@ -110,6 +110,17 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
 
   return <section aria-labelledby="agent-ops-title" className="space-y-4 rounded-2xl border border-indigo-400/30 bg-[#070f21] p-3 text-white sm:p-5">
     {snapshot && <OwnerOperationsVisualOverview snapshot={snapshot} />}
+    {snapshot && !isVerified(snapshot.github) && (
+      <p role="status" className="rounded-xl border border-amber-300/30 bg-amber-300/5 p-3 text-sm text-amber-100">
+        Owner-Zugriff bestätigt. Die GitHub-PR-Zahlen sind derzeit nicht durch den Server-Provider-Readback nachgewiesen
+        (kein Hinweis auf fehlende Owner-Rechte).{' '}
+        <a href="https://github.com/SvenKulessa/Capital-AI/pulls"
+          target="_blank" rel="noopener noreferrer"
+          className="font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">
+          Offene PRs direkt auf GitHub ansehen
+        </a>.
+      </p>
+    )}
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-300">CAPITAL-AI / Owner Operations</p>
