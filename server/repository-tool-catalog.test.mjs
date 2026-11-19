@@ -184,3 +184,34 @@ test('update endpoint never reads arbitrary origins or exposes unverified versio
   assert.ok(result.findings.every(row => row.state === 'NOT_PROVEN'));
   assert.equal((await catalog.updates()).freshness, 'CACHED');
 });
+
+test('declared ChatGPT automations are source-only and fail closed without their documentation', () => {
+  const docPath = 'docs/platform/CHATGPT-MULTI-AGENT-AUTOMATIONS-20261119.md';
+  const list = JSON.parse(readFileSync(new URL('../config/tool-catalog-integrations.json', import.meta.url), 'utf8'));
+  const names = ['ChatGPT Multi-Agent Delivery Loop', 'ChatGPT Multi-Agent Quality Sentinel'];
+  const declared = list.filter(item => names.includes(item.name));
+  assert.deepEqual(declared.map(item => item.name).sort(), [...names].sort());
+  assert.ok(declared.every(item =>
+    ['PLATFORM', 'TRUST'].includes(item.domain) &&
+    item.path === docPath && item.application.includes('NOT_PROVEN')));
+  const docs = readFileSync(new URL('../' + docPath, import.meta.url), 'utf8');
+  assert.match(docs, /6af29c716e8081918a0f965f3286feb2/);
+  assert.match(docs, /6ad07c8ca64c8191bd60d434371f81f2/);
+  assert.match(docs, /kein Live-Readback/);
+  const withDoc = buildRepositoryToolCatalog({
+    sourceSha: SHA, tree: [...TREE, { type: 'blob', path: docPath }],
+    pkg, lock, cargo, integrations: declared,
+  });
+  const entries = withDoc.filter(item => names.includes(item.name));
+  assert.equal(entries.length, 2);
+  assert.ok(entries.every(item =>
+    item.kind === 'EXTERNER_DIENST' &&
+    item.version === null &&
+    item.application.includes('NOT_PROVEN') &&
+    item.path === docPath &&
+    item.versionBasis.includes('keine Repo-Versionsaussage')));
+  const withoutDoc = buildRepositoryToolCatalog({
+    sourceSha: SHA, tree: TREE, pkg, lock, cargo, integrations: declared,
+  });
+  assert.ok(withoutDoc.every(item => !names.includes(item.name)));
+});
