@@ -183,8 +183,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(249, 191, 33, 0.45)',
     accentBg: 'bg-amber-400/15 border-amber-400/50 text-amber-300',
     icon: <BookOpen className="w-5 h-5 text-[#F9BF21]" />,
-    badge: '5 Lernbereiche',
-    description: 'Umfassendes Finanz- & Krypto-Lexikon, praxiserprobte Faustformeln, Guides und Skill-Check.',
+    badge: '7 Lernbereiche',
+    description: 'Sieben Finanzthemen mit interaktiven Lernangeboten, Glossar, Lernwegen, Quiz und Simulator.',
     mainPath: '/learning',
     subpages: [
       {
