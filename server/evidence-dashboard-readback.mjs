@@ -125,6 +125,37 @@ async function readRender(fetchImpl, env, signal, now) {
   };
 }
 
+// Only allowlisted diagnostic categories may cross the owner-only readback boundary.
+// Never serialize raw provider errors, process stderr, credential paths or token hints.
+const GA4_SAFE_DIAGNOSTICS = Object.freeze({
+  GA4_PROPERTY_NUMBER_NOT_CONFIGURED: 'GA4_PROPERTY_CONFIG_MISSING',
+  GA4_MCP_CLOUD_PROJECT_NOT_CONFIGURED: 'GA4_PROJECT_CONFIG_MISSING',
+  GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED: 'GA4_CREDENTIAL_CONFIG_MISSING',
+  GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON: 'GA4_CREDENTIAL_CONFIG_INVALID',
+  GA4_MCP_SERVICE_ACCOUNT_INVALID: 'GA4_CREDENTIAL_CONFIG_INVALID',
+  GA4_MCP_PROJECT_MISMATCH: 'GA4_PROJECT_BINDING_MISMATCH',
+  GA4_PROPERTY_NOT_ACCESSIBLE: 'GA4_PROPERTY_ACCESS_NOT_PROVEN',
+  GA4_PROPERTY_DETAILS_NOT_BOUND: 'GA4_PROPERTY_BINDING_NOT_PROVEN',
+  GA4_PROPERTY_DETAIL_MISMATCH: 'GA4_PROPERTY_BINDING_NOT_PROVEN',
+  GA4_MCP_PROCESS_START_FAILED: 'GA4_MCP_RUNTIME_UNAVAILABLE',
+  GA4_MCP_PROCESS_EXITED: 'GA4_MCP_RUNTIME_UNAVAILABLE',
+  GA4_MCP_JSONRPC_ERROR: 'GA4_MCP_PROVIDER_REJECTED',
+  GA4_MCP_TOOL_ERROR: 'GA4_MCP_PROVIDER_REJECTED',
+  GA4_MCP_TOOL_ERROR_PAYLOAD: 'GA4_MCP_PROVIDER_REJECTED',
+  GA4_READBACK_TIMEOUT: 'GA4_READBACK_TIMEOUT',
+  GA4_EVENT_COUNT_INVALID: 'GA4_PROVIDER_RESPONSE_INVALID',
+  GA4_INVALID_EVENT_COUNT: 'GA4_PROVIDER_RESPONSE_INVALID',
+  INVALID_GA4_EVENTS: 'GA4_PROVIDER_RESPONSE_INVALID',
+  INVALID_GA4_VALUE: 'GA4_PROVIDER_RESPONSE_INVALID',
+  INVALID_GA4_REALTIME_VALUE: 'GA4_PROVIDER_RESPONSE_INVALID',
+});
+function safeGa4Diagnostic(error) {
+  const code = error instanceof Error ? error.message : '';
+  if (Object.hasOwn(GA4_SAFE_DIAGNOSTICS, code)) return GA4_SAFE_DIAGNOSTICS[code];
+  if (/^GA4_MCP_TIMEOUT_(initialize|tools\\/list|tools\\/call)$/.test(code)) return 'GA4_MCP_RUNTIME_TIMEOUT';
+  return 'PROVIDER_READ_FAILED';
+}
+
 async function readGa4(ga4Readback, now) {
   const source = await ga4Readback.load();
   if (source?.status !== 'PROVIDER_READ_VERIFIED' || !/^properties\/[1-9]\d{0,19}$/.test(source?.property?.resourceName || '')) throw Error('GA4_NOT_VERIFIED');
@@ -167,7 +198,10 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
     inflight = Promise.all([
       attempt(() => readGitHub(fetchImpl, env, controller.signal, now)),
       attempt(() => readRender(fetchImpl, env, controller.signal, now)),
-      attempt(() => readGa4(ga4Readback, now)),
+      (async () => {
+        try { return await readGa4(ga4Readback, now); }
+        catch (error) { return { status: 'NOT_PROVEN', reason: safeGa4Diagnostic(error) }; }
+      })(),
     ]).then(([github, render, ga4]) => {
       const value = Object.freeze({
         schema: 'CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1',
