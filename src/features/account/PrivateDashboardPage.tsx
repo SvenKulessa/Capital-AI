@@ -267,7 +267,7 @@ export function PrivateDashboardPage({ onNavigate }: { onNavigate: (path: string
     <AccountPageShell active="/profile/dashboard" title="Privates Dashboard"
       description="Dein persönliches Lernfeld sowie bearbeitete und gespeicherte Notizen." onNavigate={onNavigate}>
       {session => <PrivateDashboardContent key={session.user!.id} userId={session.user!.id}
-        isOwner={session.account?.iamRole?.toLowerCase() === 'owner'} />}
+        isOwner={session.account?.available === true && session.account.iamRole === 'owner'} />}
     </AccountPageShell>
   );
 }
