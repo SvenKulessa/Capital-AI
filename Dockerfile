@@ -190,7 +190,7 @@ RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' \
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.7-r0' 'freshclam=1.4.7-r0' \
     && mkdir -p /run/clamav /var/lib/clamav \
     && chown -R 1000:1000 /run/clamav /var/lib/clamav \
     && chmod 0700 /run/clamav /var/lib/clamav
