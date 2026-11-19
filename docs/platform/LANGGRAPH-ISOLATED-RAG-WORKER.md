@@ -9,24 +9,47 @@ Weder render.yaml noch das bestehende Produktions-Dockerfile werden verändert.
 Kein Render-Service, keine Disk, keine GitHub-Berechtigung, kein LLM-Abo oder
 Provider-Token wird eingerichtet. Die Rust/NATS-Provider-Bridge bleibt suspendiert.
 
-Der neue `deploy/Dockerfile.langgraph-worker` erzwingt einen zur Buildzeit aufgelösten, unveränderlichen
-glibc-Python-Base-Digest sowie ein aus dem vorhandenen LangGraph-Lock
-abgeleitetes, strikt gepinntes `requirements.offline-worker.lock`. Der Worker führt keine
-GitHub-, Render-, Supabase- oder LLM-Aufrufe aus. Vor produktivem Einsatz
-müssen Image-Scan, Dependency-Evidence und Runtime-Tauglichkeit separat
-bestätigt werden. Ohne die ARG-Eingabe `PYTHON_BASE` kann der
-Docker-Kandidat bewusst nicht gebaut werden.
+Der Worker-Kandidat verwendet nun ein zweistufiges, **glibc-basiertes
+BellSoft Python 3.14**-Build: das Standardimage installiert den vorhandenen
+vollständig versionierten Python-Lock in einem isolierten Installationsziel,
+die distroless-Laufzeit übernimmt nur die benötigten Python-Abhängigkeiten.
+Die beiden Build-Argumente `PYTHON_BUILD_BASE` und `PYTHON_BASE`
+sind verpflichtend. Die bestehende optionale Candidate-CI löst die
+OCI-Digests vor dem Build auf, prüft `linux/amd64` und Python 3.14
+und benutzt ausschließlich Referenzen im Format `@sha256:...`.
+Die zur CI-Zeit festgehaltenen Digests sind **keine dauerhafte
+Repository-Pin-Freigabe**; vor einem Merge müssen sie unveränderlich
+und nach erfolgreichem Scanner-Nachweis festgeschrieben werden.
 
-Beispiel zum ausschließlich lokalen Build mit immutable linux/amd64-Provenance:
+Der finale Worker bleibt default-OFF, UID/GID `10001:10001`, ohne
+Provider-Zugang. Der distroless-Basiskandidat enthielt unnötige
+Paketmanager-/Bootstrap-Artefakte mit gemeldeten verwundbaren
+vendored-Paketen. Ausschließlich diese nicht benötigten Pakete
+(`pip`, `setuptools`, `wheel`, `ensurepip`) werden aus der
+**finalen** Runtime mit einem Python-Exec-Buildschritt entfernt; die
+eigentlichen fixierten Worker-Abhängigkeiten in `/opt/worker-packages`
+bleiben unverändert. Der Scanner selbst wird weder umkonfiguriert
+noch unterdrückt.
+
+Reproduzierbare, unaktivierte Build-Alternative mit exakt aufgelösten
+Basis-Digests auf einem isolierten Docker-Host:
 
 ```bash
-PYTHON_BASE="python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d"
-docker pull --platform linux/amd64 "$PYTHON_BASE"
-docker build --platform linux/amd64 \\
-  --build-arg "PYTHON_BASE=$PYTHON_BASE" \\
-  --file deploy/Dockerfile.langgraph-worker \\
+docker pull --platform linux/amd64 bellsoft/hardened-python:3.14-glibc
+docker pull --platform linux/amd64 bellsoft/hardened-python:3.14-distroless-glibc
+BUILD_BASE="$(docker image inspect --format '{{index .RepoDigests 0}}' bellsoft/hardened-python:3.14-glibc)"
+RUNTIME_BASE="$(docker image inspect --format '{{index .RepoDigests 0}}' bellsoft/hardened-python:3.14-distroless-glibc)"
+docker build --platform linux/amd64 \
+  --build-arg "PYTHON_BUILD_BASE=$BUILD_BASE" \
+  --build-arg "PYTHON_BASE=$RUNTIME_BASE" \
+  --file deploy/Dockerfile.langgraph-worker \
   --tag capital-ai-offline-worker:local .
 ```
+
+Vor vollständiger CI-Evidence ist die BellSoft-Variante ausschließlich
+ein Experiment. Containerlizenzen und kommerzielle Redistributionsrechte
+sind für spätere GHCR-Veröffentlichung gesondert nachzuweisen.
+**Kein Publish oder Deployment aus diesem Dokument ableiten.**
 
 Der zugehörige Dockerfile-spezifische Build-Kontext ist in
 `deploy/Dockerfile.langgraph-worker.dockerignore` eingeschränkt; die
@@ -37,11 +60,16 @@ veröffentlicht nur manylinux/glibc-Wheels, keine musllinux-Wheels. Ein
 Alpine-Versuch ohne sqlite-vec scheiterte korrekt an der Paketauflösung
 (CI 43867219306). Keine Umgehung mit --no-deps und keine inoffizielle
 glibc-Emulation. Der Worker-Pinset bewahrt die Pflichtabhängigkeit und
-erhöht allein certifi von 2026.7.22 auf 2026.10.23. Der vorherige
-glibc-Debian-Kandidat scheiterte am unveränderten Trivy-Scan mit 47 HIGH OS
-und 7 HIGH/CRITICAL Python-Funden (CI 43829291408). Aktuell gibt es
-keine gesicherte Container-Abnahme; neuer Scan bleibt eine echte,
-nicht abschwächbare Sicherheitsbedingung.
+erhöht allein certifi von 2026.7.22 auf 2026.10.23. Der Debian-Trixie-Kandidat scheiterte weiterhin an 47 HIGH
+OS-Befunden ([CI 44475654968](https://github.com/SvenKulessa/Capital-AI/actions/runs/44475654968)).
+Die erste BellSoft-Multistage-Iteration beseitigte diese Debian-Befunde,
+meldete aber weiterhin sechs Python-Funde (5 HIGH, 1 CRITICAL) in
+nicht benötigtem Bootstrap-/Paketmanager-Material
+([CI 44477366852](https://github.com/SvenKulessa/Capital-AI/actions/runs/44477366852)).
+Der nachfolgende Minimalisierungs-Patch muss erneut mit dem **unveränderten**
+Trivy-Command, echtem Exit-Code und allen relevanten CI-Gates geprüft
+werden. Ein grüner regulärer Docker Security Gate allein ersetzt diesen
+Kandidaten-Scan nicht.
 
 ## LangGraph und RAG
 
