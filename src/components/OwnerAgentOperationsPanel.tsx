@@ -120,7 +120,7 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
           Offene PRs direkt auf GitHub ansehen
         </a>.
       </p>
-    )
+    )}
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-300">CAPITAL-AI / Owner Operations</p>
