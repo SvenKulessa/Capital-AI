@@ -162,6 +162,8 @@ async function settle(paths, journal) {
 
 /** Recover PREPARED => old state, COMMITTED => new state; fail closed on foreign edits. */
 export async function recoverNewsLifecycle(root) {
+  const privateDir = join(resolve(root), PRIVATE);
+  if (!await statOrNull(privateDir)) return { recovered: false };
   const paths = await privatePaths(root);
   if (!await statOrNull(paths.pending)) return { recovered: false };
   const journal = await readJournal(paths.pending);
