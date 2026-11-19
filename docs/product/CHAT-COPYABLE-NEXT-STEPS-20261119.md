@@ -30,7 +30,7 @@ npm run lint
 
 Der neue Test läuft zusätzlich als Teil des bestehenden `npm test`, das wiederum im vorhandenen Docker Security Gate ausgeführt wird. Tests prüfen Skill-Registry-Verweise, Domänen-Routing, Social-Grenzen, Secret-Muster, leere Eingaben und semantisches, zugängliches SSR-Markup.
 
-Browser-QA ist für **320, 390 und 1440 CSS-Pixel** vorgesehen (Überlauf, Button-Tap, Tastaturfokus, Touchscreen, echtes Copy-Resolve/-Reject, Screenreader). SSR-Tests allein belegen keine echten Browser-Klicks, Clipboard-Permissions oder die Oberfläche der externen ChatGPT-App.
+Der **bestehende** GitHub-Workflow `.github/workflows/financial-learning-browser.yml` führt zusätzlich `scripts/qa/chat-followup-browser.mjs` mit echtem Chromium bei **320, 390 und 1440 CSS-Pixel** aus: Überlauf, Button-Mindesthöhe, Tastatur-Enter, Clipboard-Readback, verweigerte Clipboard-Berechtigung, Screenreader-Semantik und Screenshots unter `artifacts/chat-followup-browser/`. Das bleibt ein isolierter Client-Komponententest ohne Provider-Zugriff und keine Prüfung des nativen ChatGPT-Renderers. Bis der echte CI-Run vollständig erfolgreich ist, bleibt diese Abnahme PENDING.
 
 ## Nachweise und Rollback
 
