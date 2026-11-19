@@ -60,12 +60,13 @@ function readCell(container, camel, snake) {
 function eventCounts(payload) {
   return findRows(payload).slice(0, 25).map(row => {
     const eventName = String(readCell(row, 'dimensionValues', 'dimension_values') || '').slice(0, 120);
-    const rawCount = String(readCell(row, 'metricValues', 'metric_values') || '0');
-    const parsed = /^\d+$/.test(rawCount) ? Number(rawCount) : NaN;
-    return Object.freeze({
-      eventName,
-      eventCount: Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0,
-    });
+    const value = readCell(row, 'metricValues', 'metric_values');
+    // GA4 represents counts as decimal strings. A malformed or missing metric
+    // is not a measured zero: reject the readback instead of inventing data.
+    if (typeof value !== 'string' || !/^(0|[1-9]\d*)$/.test(value)) throw new Error('GA4_EVENT_COUNT_INVALID');
+    const parsed = Number(value);
+    if (!Number.isSafeInteger(parsed)) throw new Error('GA4_EVENT_COUNT_INVALID');
+    return Object.freeze({ eventName, eventCount: parsed });
   }).filter(row => row.eventName);
 }
 
@@ -121,7 +122,7 @@ export async function buildGoogleAnalyticsReadback({
   });
   const sevenDayRaw = await client.callTool('run_report', {
     property_id: propertyNumber,
-    date_ranges: [{ start_date: '7daysAgo', end_date: 'today' }],
+    date_ranges: [{ start_date: '6daysAgo', end_date: 'today' }],
     dimensions: ['eventName'],
     metrics: ['eventCount'],
     limit: 25,
