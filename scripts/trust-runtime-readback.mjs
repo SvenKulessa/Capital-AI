@@ -51,6 +51,17 @@ export function projectHealth(httpStatus, body, expectedMainSha = null) {
   const builder = body.buildIdentity.builder == null ? null : body.buildIdentity.builder;
   if (bound && (buildSha == null || builder !== BUILDER)) throw new Error('BUILD_IDENTITY_INCONSISTENT');
   if (!bound && (buildSha !== null || builder !== null)) throw new Error('UNBOUND_IDENTITY_INCONSISTENT');
+  // Unattested Render source evidence is separate from GitHub builder proof.
+  const renderBuild = body.renderGitBuildIdentity;
+  let renderBuildSha = null;
+  if (renderBuild !== undefined) {
+    if (!renderBuild || typeof renderBuild !== 'object') throw new Error('RENDER_BUILD_SHAPE_INVALID');
+    renderBuildSha = requireSha(renderBuild.sourceSha, true);
+    const kind = renderBuildSha === null ? 'NOT_PROVEN' : 'RENDER_GIT_BUILD_ARG_UNATTESTED';
+    if (renderBuild.evidence !== kind || (bound && renderBuildSha !== null)) {
+      throw new Error('RENDER_BUILD_PROVENANCE_CONFLICT');
+    }
+  }
   const runtimeSha = requireSha(body.runtimeIdentity.sourceSha, true);
   const expected = expectedMainSha == null ? null : requireSha(expectedMainSha);
   return {
@@ -59,6 +70,11 @@ export function projectHealth(httpStatus, body, expectedMainSha = null) {
     httpStatus,
     status,
     runtimeIdentity: { sourceSha: runtimeSha },
+    ...(renderBuild === undefined ? {} : { renderGitBuildIdentity: {
+      sourceSha: renderBuildSha,
+      evidence: renderBuildSha === null ? 'NOT_PROVEN' : 'RENDER_GIT_BUILD_ARG_UNATTESTED',
+      matchesRuntime: renderBuildSha === null || runtimeSha === null ? null : renderBuildSha === runtimeSha,
+    } }),
     buildIdentity: { bound, sourceSha: buildSha, builder: builder === BUILDER ? BUILDER : null },
     expectedMainSha: expected,
     runtimeMatchesExpectedMain: expected == null ? null : runtimeSha === expected,

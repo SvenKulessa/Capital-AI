@@ -6,6 +6,7 @@ const SHA = /^[0-9a-f]{40}$/;
 const BUILDER = 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml';
 const SOURCE_PLACEHOLDER = '__CAPITAL_AI_SOURCE_SHA_UNBOUND__';
 const BUILDER_PLACEHOLDER = '__CAPITAL_AI_BUILDER_UNBOUND__';
+const RENDER_PLACEHOLDER = '__CAPITAL_AI_RENDER_GIT_SHA_UNBOUND__';
 
 export function runtimeIdentityDocument(sourceSha) {
   if (!SHA.test(sourceSha || '')) throw new Error('Expected lowercase 40-character Git SHA');
@@ -24,6 +25,20 @@ export function bindRuntimeIdentity(source, sourceSha) {
     throw new Error('Runtime identity binding incomplete');
   }
   return bound;
+}
+
+// Render Git Docker may bake its nonsecret source SHA; never impersonate
+// GitHub Actions builder identity or an immutable OCI attestation.
+export function bindRenderGitIdentity(source, renderGitSha) {
+  if (!renderGitSha) return source;
+  if (!SHA.test(renderGitSha)) throw new Error('Invalid Render Git build SHA');
+  if (!source.includes(SOURCE_PLACEHOLDER) || !source.includes(BUILDER_PLACEHOLDER)) {
+    throw new Error('Mixing GitHub and Render Git build identities denied');
+  }
+  if (source.split(RENDER_PLACEHOLDER).length !== 2) {
+    throw new Error('Render Git source placeholder missing or ambiguous');
+  }
+  return source.replace(RENDER_PLACEHOLDER, renderGitSha);
 }
 
 // Verify the source actually shipped in the built runtime image, not the checkout copy.
@@ -53,6 +68,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     console.log('BUILD_IDENTITY_IMAGE_MATCH');
   } else {
     const target = resolve('server/index.mjs');
-    writeFileSync(target, bindRuntimeIdentity(readFileSync(target, 'utf8'), process.argv[2]));
+    const source = readFileSync(target, 'utf8');
+    const bound = process.argv[2] === 'render-git'
+      ? bindRenderGitIdentity(source, process.argv[3])
+      : bindRuntimeIdentity(source, process.argv[2]);
+    if (bound !== source) writeFileSync(target, bound);
   }
 }

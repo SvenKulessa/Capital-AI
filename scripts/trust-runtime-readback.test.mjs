@@ -106,3 +106,31 @@ test('missing flag, unreadable API, and arbitrary provider responses never claim
   const malformed = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => toResponse({ secret: 'other' }) });
   assert.deepEqual(malformed, { status: 'NOT_PROVEN', enabled: null, reason: 'RENDER_READ_FAILED' });
 });
+
+test('Render source SHA is reported separately and never promoted to attestation', () => {
+  const body = { ...health(), renderGitBuildIdentity: {
+    sourceSha: SHA, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED'
+  } };
+  const report = projectHealth(200, body, SHA);
+  assert.deepEqual(report.buildIdentity, { bound: false, sourceSha: null, builder: null });
+  assert.deepEqual(report.renderGitBuildIdentity, {
+    sourceSha: SHA, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED', matchesRuntime: true
+  });
+  assert.equal(report.evidenceType, 'ANONYMOUS_HTTP_CLAIM_NOT_OCI_ATTESTATION');
+  assert.equal('attestationVerified' in report, false);
+});
+
+test('Render source mismatch, invalid SHA, forged evidence or mixed builder fail closed', () => {
+  const render = (sourceSha, evidence) => ({
+    ...health(), renderGitBuildIdentity: { sourceSha, evidence }
+  });
+  const mismatch = projectHealth(200, render('b'.repeat(40), 'RENDER_GIT_BUILD_ARG_UNATTESTED'));
+  assert.equal(mismatch.renderGitBuildIdentity.matchesRuntime, false);
+  for (const bad of [
+    render('x'.repeat(40), 'RENDER_GIT_BUILD_ARG_UNATTESTED'),
+    render(SHA, 'GITHUB_ATTESTED'),
+    render(null, 'RENDER_GIT_BUILD_ARG_UNATTESTED'),
+    { ...render(SHA, 'RENDER_GIT_BUILD_ARG_UNATTESTED'),
+      buildIdentity: { bound: true, sourceSha: SHA, builder: BUILDER } },
+  ]) assert.throws(() => projectHealth(200, bad), Error);
+});
