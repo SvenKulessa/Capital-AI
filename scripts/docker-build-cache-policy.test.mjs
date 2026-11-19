@@ -37,6 +37,19 @@ test('BuildKit cache import is main-only and PR scanning still builds local imag
   assert.match(runtime, /tags: capital-ai:/);
 });
 
+test('Buildx avoids v0.39.0 context/header regression with long Docker allowlist', () => {
+  const setup = namedStep('GitHub-gehosteten BuildKit-Layer-Cache vorbereiten');
+  const patterns = readFileSync(resolve(root, '.dockerignore'), 'utf8')
+    .split(/\r?\n/).map(line => line.trim())
+    .filter(line => line && !line.startsWith('#'));
+  // docker/buildx#4209: v0.39.0 fails above 490 ignore patterns.
+  // Do not change the allowlist or weaken any scan to address a builder transport bug.
+  if (patterns.length > 490) {
+    assert.match(setup, /\n          version: v0\.38\.2\n/);
+  }
+  assert.match(setup, /driver: docker-container/);
+});
+
 test('only trusted main push can export the shared BuildKit cache', () => {
   const build = namedStep('Build-Stufe ohne Installationswerkzeug bauen');
   const runtime = namedStep('Image mit Tests und isoliertem Frontend-Build bauen');
