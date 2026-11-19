@@ -68,7 +68,7 @@ export function RenderOwnerDashboardPage({ onNavigate }: { onNavigate: (path: st
       description="Exklusiver, serverseitig autorisierter Zugriff auf deine Render-Providerkonfiguration."
       onNavigate={onNavigate}
     >
-      {session => (
+      {session => session.account?.available === true && session.account.iamRole === 'owner' && session.mfaRequired !== true ? (
         <div className="space-y-5">
           <OwnerAgentOperationsPanel userId={session.user!.id} />
           <section className="rounded-2xl border border-amber-400/25 bg-[#070b19] p-4 sm:p-5">
@@ -157,6 +157,10 @@ export function RenderOwnerDashboardPage({ onNavigate }: { onNavigate: (path: st
             </>
           )}
         </div>
+      ) : (
+        <section role="status" className="rounded-2xl border border-white/10 bg-[#070b19] p-5 text-sm text-slate-300">
+          Dieser private Bereich ist für die aktuelle Anmeldung nicht verfügbar.
+        </section>
       )}
     </AccountPageShell>
   );
