@@ -1,0 +1,105 @@
+/* CAPITAL-AI owner-only operations. Reference composition: gold frame, 4 KPI tiles,
+   violet trend, evidence ring, source-count bars and 6 agent chips.
+   Brand accents are sourced from src/index.css; no public owner-data rendering. */
+.ops-mock {
+  --ops-gold:var(--color-brand-gold);
+  --ops-violet:var(--color-brand-ai);
+  --ops-ink:var(--color-brand-canvas);
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  display:grid;
+  gap:18px;
+  border:1.5px solid var(--ops-gold);
+  border-radius:24px;
+  padding:clamp(13px,2.7vw,22px);
+  background:
+    radial-gradient(ellipse 55% 55% at 95% 18%,rgb(249 191 33 / .13),transparent 83%),
+    radial-gradient(ellipse 70% 60% at 0% 0%,rgb(141 38 255 / .09),transparent 80%),
+    #070c1c;
+  box-shadow:0 0 0 1px rgb(249 191 33 / .12),0 0 28px rgb(249 191 33 / .13),inset 0 0 32px rgb(14 22 58 / .7);
+}
+.ops-mock::before {
+  content:"";
+  position:absolute;z-index:-1;right:-30px;top:90px;width:220px;height:220px;pointer-events:none;
+  background:radial-gradient(circle,rgb(249 191 33 / .55) 1px,transparent 1.7px);
+  background-size:8px 8px;mask-image:radial-gradient(ellipse at right,black,transparent 76%);
+  opacity:.34;transform:rotate(-16deg);
+}
+.ops-mock-header {display:flex;position:relative;flex-wrap:wrap;align-items:flex-start;gap:8px;min-height:120px;}
+.ops-mock-header-copy {flex:1 1 250px;min-width:0;position:relative;z-index:1;}
+.ops-mock-eyebrow {color:var(--color-decorative-cyan);letter-spacing:.17em;font-weight:800;text-transform:uppercase;font-size:10px;}
+.ops-mock-header h3 {display:flex;align-items:center;gap:10px;font-size:clamp(20px,2.8vw,28px);line-height:1.16;font-weight:800;letter-spacing:-.025em;color:#fff;margin-top:8px;}
+.ops-mock-header h3 svg {flex-shrink:0;width:30px;height:30px;color:var(--ops-gold);}
+.ops-mock-header-copy>p:last-child {max-width:580px;color:#bac6df;font-size:clamp(12px,1.5vw,15px);line-height:1.6;margin-top:10px;}
+.ops-mock-owner-badge {position:relative;z-index:2;display:inline-flex;min-height:39px;align-items:center;gap:7px;padding:6px 12px;border:1px solid rgb(249 191 33 / .7);border-radius:13px;background:rgb(104 75 11 / .3);color:#ffe18a;font-size:12px;font-weight:800;box-shadow:inset 0 0 18px rgb(249 191 33 / .06);}
+.ops-mock-orbit {position:absolute;right:0;top:17px;width:170px;height:155px;opacity:.89;pointer-events:none;filter:drop-shadow(0 8px 18px rgb(249 191 33 / .17));}
+.ops-mock-mascot {width:100%;height:100%;}
+.ops-mock-kpis {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;position:relative;z-index:1;}
+.ops-mock-kpi {min-width:0;display:flex;flex-direction:column;gap:9px;min-height:120px;border:1px solid rgb(150 173 220 / .35);border-radius:17px;padding:14px 12px;background:linear-gradient(145deg,rgb(23 30 58 / .92),rgb(9 17 37 / .91));}
+.ops-mock-kpi--github {border-color:rgb(183 148 244 / .6);box-shadow:inset 0 0 14px rgb(141 38 255 / .11);}
+.ops-mock-kpi--render {border-color:rgb(96 165 250 / .58);}
+.ops-mock-kpi--ga4 {border-color:rgb(249 191 33 / .48);}
+.ops-mock-kpi--evidence {border-color:rgb(74 222 128 / .36);}
+.ops-mock-kpi-head {display:flex;align-items:center;gap:8px;min-width:0;color:#eef4ff;font-size:12px;}
+.ops-mock-kpi-head svg {flex-shrink:0;}
+.ops-mock-kpi--github .ops-mock-kpi-head svg {color:#c4b5fd;}
+.ops-mock-kpi--render .ops-mock-kpi-head svg {color:#93c5fd;}
+.ops-mock-kpi--ga4 .ops-mock-kpi-head svg {color:var(--ops-gold);}
+.ops-mock-kpi--evidence .ops-mock-kpi-head svg {color:#4ade80;}
+.ops-mock-kpi-value {display:block;overflow-wrap:anywhere;font-size:clamp(17px,2.6vw,27px);font-weight:900;line-height:1.15;letter-spacing:-.035em;color:white;font-variant-numeric:tabular-nums;}
+.ops-mock-kpi-foot {font-size:11px;line-height:1.45;}
+.ops-mock-good {color:#86efac;}
+.ops-mock-muted {color:#fcd34d;}
+.ops-mock-panels {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.ops-mock-card {min-width:0;border:1px solid rgb(150 173 220 / .3);border-radius:18px;padding:14px;background:linear-gradient(145deg,rgb(16 25 49 / .88),rgb(6 13 29 / .86));box-shadow:inset 0 1px rgb(255 255 255 / .035);}
+.ops-mock-card h4 {display:flex;align-items:center;gap:8px;font-weight:800;font-size:clamp(13px,1.6vw,16px);color:#f8fafc;}
+.ops-mock-card h4 svg {width:19px;height:19px;flex-shrink:0;color:#b794f4;}
+.ops-mock-subtitle {font-size:11px;color:#a9b7d1;margin:3px 0 13px;line-height:1.5;}
+.ops-mock-chart-area svg {display:block;width:100%;max-height:198px;}
+.ops-mock-empty {display:flex;align-items:center;min-height:180px;padding:8px;border:1px dashed rgb(245 158 11 / .4);border-radius:12px;color:#fcd34d;font-size:12px;}
+.ops-mock-donut-layout {display:flex;align-items:center;gap:clamp(10px,2.2vw,22px);min-height:180px;}
+.ops-mock-donut {width:min(150px,43%);aspect-ratio:1;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;transform:rotate(-90deg);}
+.ops-mock-donut-hole {display:flex;flex-direction:column;align-items:center;justify-content:center;width:69%;height:69%;background:#0b1427;border-radius:50%;transform:rotate(90deg);color:#fff;box-shadow:inset 0 0 15px rgb(0 0 0 / .5);}
+.ops-mock-donut-hole strong {font-size:clamp(18px,2.6vw,26px);font-weight:900;}
+.ops-mock-donut-hole span {font-size:9px;letter-spacing:.08em;}
+.ops-mock-legend {display:grid;gap:11px;min-width:0;flex:1;}
+.ops-mock-legend>div {display:grid;grid-template-columns:10px minmax(0,1fr);gap:3px 6px;font-size:11px;min-width:0;}
+.ops-mock-legend strong {grid-column:2;font-size:12px;color:#f8fafc;font-weight:750;}
+.ops-mock-key {width:10px;height:10px;border-radius:3px;margin-top:2px;}
+.ops-mock-bars {height:210px;display:flex;align-items:stretch;justify-content:space-around;gap:8px;}
+.ops-mock-bar-column {flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;text-align:center;}
+.ops-mock-bar-scale {width:min(56px,80%);height:106px;display:flex;align-items:flex-end;border-bottom:1px solid rgb(174 185 221 / .46);background:repeating-linear-gradient(to top,transparent 0,transparent 25%,rgb(148 163 184 / .11) calc(25% + 1px));}
+.ops-mock-bar-fill {width:100%;border-radius:7px 7px 0 0;background:linear-gradient(0deg,#713bde,#b794f4);box-shadow:0 -1px 8px rgb(141 38 255 / .3);}
+.ops-mock-bar-column:nth-child(2) .ops-mock-bar-fill {background:linear-gradient(0deg,#4965ad,#93c5fd);}
+.ops-mock-bar-column:nth-child(3) .ops-mock-bar-fill {background:linear-gradient(0deg,#8c6617,var(--ops-gold));}
+.ops-mock-bar-column strong {font-weight:800;font-size:13px;color:white;}
+.ops-mock-bar-column span {font-size:11px;color:#f8fafc;}
+.ops-mock-bar-column small {max-width:125px;color:#a9b7d1;line-height:1.3;font-size:9px;}
+.ops-mock-agent-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.ops-mock-agent {display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;min-height:56px;border:1px solid rgb(150 173 220 / .3);border-radius:12px;background:rgb(24 38 64 / .7);padding:9px;}
+.ops-mock-agent strong {font-size:11px;}
+.ops-mock-agent span {font-size:10px;color:#fcd34d;}
+.ops-mock-agent span i {display:inline-block;width:6px;height:6px;border-radius:50%;background:#fcd34d;vertical-align:middle;}
+.ops-mock-agent small {flex-basis:100%;font-size:10px;color:#a9b7d1;}
+.ops-mock-readonly {display:flex;align-items:center;gap:10px;border:1px solid rgb(249 191 33 / .65);border-radius:15px;background:rgb(72 55 21 / .22);box-shadow:inset 0 0 12px rgb(249 191 33 / .06);padding:13px;color:#f5edd7;font-size:12px;line-height:1.5;}
+.ops-mock-readonly svg {color:var(--ops-gold);}
+.ops-mock-readonly b {color:#fcd34d;}
+@media (max-width:900px) {.ops-mock-orbit {opacity:.28}.ops-mock-header-copy {padding-right:25px;}}
+@media (max-width:630px) {
+  .ops-mock-panels{grid-template-columns:minmax(0,1fr);}
+  .ops-mock-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ops-mock-header {min-height:0;}
+  .ops-mock-orbit {width:120px;height:100px;top:16px;opacity:.13;}
+  .ops-mock-header h3 {max-width:340px;}
+  .ops-mock-donut {max-width:150px;}
+}
+@media (max-width:350px) {
+ .ops-mock {padding:10px;}
+ .ops-mock-kpi {padding:10px 8px;gap:7px;}
+ .ops-mock-owner-badge {padding:5px 9px;}
+ .ops-mock-legend>div {font-size:10px;}
+}
+@media (prefers-reduced-motion:reduce) {
+ .ops-mock *, .ops-mock *::before, .ops-mock *::after {animation:none!important;transition:none!important;}
+}
