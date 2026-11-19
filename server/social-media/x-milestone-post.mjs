@@ -20,8 +20,8 @@ const LAUNCH = BASE + '/launch';
 const LAUNCH_POST = LAUNCH + '/publish';
 const LAUNCH_STATUS = LAUNCH + '/status';
 const LAUNCH_SCRIPT = '/x-milestone-launch.js';
-const LAUNCH_MEDIA_PATH = 'public/branding/social/CAPITAL-AI-Universe-X-Launch-Final-20261115.png';
-export const LAUNCH_MEDIA_SHA256 = '08886b933be8a162de0fe678c13fd2e610348ba827aaec25179b623e969809f1';
+const LAUNCH_MEDIA_PATH = 'public/branding/social/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg';
+export const LAUNCH_MEDIA_SHA256 = '802e27775aa484b03ce5ff39e803b9903250ad1bd149c4cc5c5c4af467f9889a';
 export const LAUNCH_TEXT = [
   '🚀 Finanzdaten überall. Aber was bedeuten sie? 🌌', '',
   'Willkommen bei CAPITAL-AI:',
@@ -38,9 +38,12 @@ export const LAUNCH_CONTENT_KEY = createHash('sha256')
 if (LAUNCH_TEXT.length > 280) throw Error('X_LAUNCH_POST_TOO_LONG');
 
 export function assertPinnedLaunchMedia(bytes) {
-  const pngHeader = Buffer.from([137,80,78,71,13,10,26,10]);
-  if (!Buffer.isBuffer(bytes) || bytes.length < 24 || bytes.length > 5*1024*1024
-    || !bytes.subarray(0,8).equals(pngHeader)) throw Error('x_launch_image_invalid');
+  // The owner-supplied final asset is JPEG; never transcode or rewrite its bytes.
+  const validJpeg = Buffer.isBuffer(bytes) && bytes.length >= 24
+    && bytes.length <= 5*1024*1024
+    && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+    && bytes[bytes.length-2] === 0xff && bytes[bytes.length-1] === 0xd9;
+  if (!validJpeg) throw Error('x_launch_image_invalid');
   if (createHash('sha256').update(bytes).digest('hex') !== LAUNCH_MEDIA_SHA256)
     throw Error('x_launch_image_sha_mismatch');
   return bytes;
@@ -240,10 +243,10 @@ padding:16px;border-radius:10px}a:focus-visible,button:focus-visible{outline:3px
 </style></head><body><main><h1>CAPITAL-AI · Erster X-Launch</h1>
 <p>Ein Owner-only-Einmalauftrag mit SHA-256-gebundener Infografik.</p>
 <blockquote>${LAUNCH_TEXT}</blockquote>
-<img src="/branding/social/CAPITAL-AI-Universe-X-Launch-Final-20261115.png"
+<img src="/branding/social/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg"
 alt="CAPITAL-AI Universe: Learning Hub, Analytics Hub, Studio Hub und Content Engine um einen digitalen Globus."
 width="760" height="428" style="display:block;max-width:100%;height:auto">
-<p>Kein Upload ohne <code>media.write</code>, identische PNG-Bytes, Owner-Session,
+<p>Kein Upload ohne <code>media.write</code>, identische JPEG-Bytes, Owner-Session,
 ausdrückliche X-Kostenfreigabe und gültige bestehende One-shot-Receipt-Prüfung.</p>
 <p>Finanzbildung, keine individuelle Anlageberatung, keine Erfolgsgarantie.</p>
 <p><a href="/login">Als Owner anmelden</a></p>
