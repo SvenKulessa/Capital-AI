@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import {
   advanceNewsEdition, retireNews, newsArchivePath, proposeMarketImpact, appendMarketImpactAssessment, newsBiImpactRows, newsBiCsv, publishedNews,
 } from '../../shared/news-lifecycle.mjs';
@@ -113,6 +113,28 @@ test('materializer rejects unapproved news and writes only an empty reviewed man
     assert.deepEqual(stored,empty);
   } finally { rmSync(tmp,{recursive:true,force:true}); }
 });
+test('materializer refuses historical index erasure and partial on-disk state', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'news-history-guard-'));
+  const indexPath = join(dir, 'src/features/analysis/newsLifecycleIndex.json');
+  try {
+    await writeNewsLifecycle({edition:original,index:empty}, dir);
+    const historical = retireNews(original, nextWith(original, 1), empty);
+    await writeFile(indexPath, JSON.stringify(historical));
+    await assert.rejects(
+      () => writeNewsLifecycle({edition:original,index:empty}, dir),
+      /NEWS_LIFECYCLE_STATE_MISMATCH/,
+      'a direct materializer call must not silently replace historical records',
+    );
+    assert.deepEqual(JSON.parse(await readFile(indexPath, 'utf8')), historical);
+    rmSync(indexPath);
+    await assert.rejects(
+      () => writeNewsLifecycle({edition:original,index:empty}, dir),
+      /NEWS_LIFECYCLE_PARTIAL_STATE/,
+      'a half-present pair of manifests must not be overwritten',
+    );
+  } finally { rmSync(dir,{recursive:true,force:true}); }
+});
+
 test('impact observation is fixed to the requested publication-plus-horizon date', () => {
   const story = retireNews(original, nextWith(original, 1), empty).overview[0];
   const input = {asset:'POL',benchmark:'MARKET',provider:'licensed',licenseEvidenceRef:'l',dataEvidenceRef:'d',
