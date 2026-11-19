@@ -77,7 +77,8 @@ export function ownerSourceCounts(snapshot: DashboardReadback): SourceCount[] {
       scope: 'Aktueller Main-Commit · begrenzte Check-Run-Liste' },
     { label: 'Deployments', count: isVerified(snapshot.render) && snapshot.render.deployments ? snapshot.render.deployments.length : null,
       scope: 'Bis zu fünf letzte Render-Deployments' },
-    { label: 'GA4-Events', count: isVerified(snapshot.ga4) && snapshot.ga4.events
+    { label: 'GA4-Events', count: isVerified(snapshot.ga4) && Array.isArray(snapshot.ga4.events) &&
+      snapshot.ga4.events.every(row => Number.isSafeInteger(row.eventCount) && row.eventCount >= 0)
       ? snapshot.ga4.events.reduce((sum, x) => sum + x.eventCount, 0) : null,
       scope: '7 Tage · allowlistierte Eventtypen' },
   ];
