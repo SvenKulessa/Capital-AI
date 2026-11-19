@@ -153,7 +153,7 @@ try{
       const summaryOpen="document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary').parentElement.open";
       for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{
         type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13,
-        ...(type==='keyDown'?{text:'\\r',unmodifiedText:'\\r'}:{})
+        ...(type==='keyDown'?{text:String.fromCharCode(13),unmodifiedText:String.fromCharCode(13)}:{})
       });
       if(await evaluate(summaryOpen)===before.open){
         for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{
