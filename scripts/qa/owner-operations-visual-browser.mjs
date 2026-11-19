@@ -85,6 +85,10 @@ async function visit(role,width,tag,expected=true) {
   if(expected)await awaitPage("!!document.querySelector('.ops-mock')");
   else await awaitPage("!!document.querySelector('[role=status]') || !!document.querySelector('[role=alert]')");
   await wait(550);
+  // The public cookie dialog is unrelated to the private Operations visual layout;
+  // choose necessary-only in the isolated browser, never auto-consent to analytics.
+  const consent=await evaluate("(() => { const button=[...document.querySelectorAll('button')].find(el=>el.textContent.trim()==='Nur notwendige'); if(!button||!button.getClientRects().length)return false; button.click(); return true; })()");
+  if(consent)await wait(350);
   const state=await evaluate(`(() => {
     const root=document.querySelector('.ops-mock');
     const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,right:r.right};};
@@ -114,12 +118,13 @@ async function visit(role,width,tag,expected=true) {
   checks.push(row);
   if(state.scrollWidth>width+2)failures.push(tag+': viewport horizontal overflow');
   if(expected){
-    if(!state.ownerTitle||state.kpis!==4||state.panels!==4||state.agents!==6||!state.donut||!state.lineSvg)
+    if(!state.ownerTitle||state.kpis!==4||state.panels!==4||state.agents!==6||!state.donut||(role!=='missing'&&!state.lineSvg))
       failures.push(tag+': owner operations visual elements missing');
     if(!state.rootBounds||state.rootBounds.right>width+2)failures.push(tag+': owner operations panel exceeds viewport');
     if(state.cardBounds.some(x=>x.right>width+2||x.width<=0))failures.push(tag+': card overflows viewport');
     if(state.controls.some(c=>c.name==='Aktualisieren'&&(c.width<44||c.height<44)))
       failures.push(tag+': refresh target under 44px');
+    if(role==='missing'&&state.lineSvg)failures.push(tag+': unavailable PR history was drawn as real trend');
     if(role==='missing'&&state.labels.some(x=>/37|fake|12345678/.test(x)))
       failures.push(tag+': fallback leaks fixture KPI');
   }else if(state.ownerTitle||!state.unauthorizedMessage)
