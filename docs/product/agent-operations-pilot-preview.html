@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Interner Entwurf · CAPITAL-AI Agent Operations Suite</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#050816;color:#e8f0ff}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#132449,#050816 68%);min-height:100vh}
+    main{max-width:1090px;margin:0 auto;padding:30px 18px 80px}
+    .private{border:1px solid #f5c453;color:#f5c453;display:inline-block;padding:7px 12px;border-radius:999px;font-size:12px;letter-spacing:.06em;font-weight:800}
+    header{display:grid;grid-template-columns:1fr minmax(180px,360px);gap:25px;align-items:center}
+    h1{font-size:clamp(32px,6vw,65px);line-height:1.07;max-width:760px;letter-spacing:-.03em}
+    h2{font-size:clamp(22px,3vw,33px)}p{line-height:1.65;color:#b7c5da}
+    .lead{font-size:clamp(16px,2vw,22px)}.hero{width:100%;height:auto;filter:drop-shadow(0 0 35px #0ddddd30)}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:25px}
+    button,a.cta{border-radius:12px;padding:13px 20px;font-weight:800;cursor:pointer;border:1px solid #f5c453;background:#f5c453;color:#071126;text-decoration:none;font-size:15px}
+    button:focus-visible,a:focus-visible{outline:3px solid #0ddddd;outline-offset:3px}
+    .secondary{color:#e8f0ff!important;background:#17233d!important;border-color:#42618f!important}
+    .notice{font-size:13px;color:#b7c5da}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:20px 0}
+    article{border:1px solid #293d63;border-radius:18px;background:#111c36;padding:23px;min-height:205px}
+    article:nth-child(1){border-top:4px solid #0ddddd}article:nth-child(2){border-top:4px solid #8d26ff}article:nth-child(3){border-top:4px solid #ff2e93}
+    article h3{margin-top:0}.result{background:#070e20;border:1px solid #345078;padding:20px;border-radius:14px;min-height:120px}
+    .swatches{display:grid;grid-template-columns:repeat(7,1fr);height:5px;margin-top:20px}.swatches span:nth-child(1){background:#f5c453}.swatches span:nth-child(2){background:#0ddddd}.swatches span:nth-child(3){background:#8d26ff}.swatches span:nth-child(4){background:#ff2e93}.swatches span:nth-child(5){background:#4ade80}.swatches span:nth-child(6){background:#f87171}.swatches span:nth-child(7){background:#2563eb}
+    @media(max-width:650px){header{grid-template-columns:1fr}header img{max-width:260px;margin:auto}.grid{grid-template-columns:1fr}article{min-height:auto}main{padding-top:18px}}
+  </style>
+</head>
+<body><div class="swatches" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<main>
+  <div class="private" role="status">INTERNE VORSCHAU · NICHT VERÖFFENTLICHT</div>
+  <header>
+    <div>
+      <p style="color:#0ddddd;font-weight:800;letter-spacing:.1em">CAPITAL-AI / AGENT OPERATIONS</p>
+      <h1>KI-Workflows kontrollieren. Ergebnisse nachvollziehbar prüfen.</h1>
+      <p class="lead">Drei konkrete Automatisierungs- und Prüfanwendungen mit serverseitigen Berechtigungen und nachweisbaren Demo-Receipts.</p>
+      <div class="actions"><a class="cta" href="#demo" data-funnel-event="agent_pilot_demo_intent">Demos ansehen</a><a class="cta secondary" href="#pilot" data-funnel-event="agent_pilot_lead_intent">Pilotprogramm prüfen</a></div>
+    </div>
+    <img class="hero" alt="CAPITAL-AI Universe: stilisierter Goldglobus mit sieben farbigen Umlaufbahnen" src="../../public/branding/universe/hero-universe-orbit.svg">
+  </header>
+  <section id="demo" aria-labelledby="demo-title">
+    <h2 id="demo-title">Ein Workflow. Ein nachvollziehbares Ergebnis.</h2>
+    <div class="grid">
+      <article><h3>CI & PR Evidence</h3><p>Vergleichen Sie gemeldete CI-Gates und SHA-Informationen in einer klar gekennzeichneten Simulation.</p><button type="button" data-workflow="ci-evidence">Demo auswählen</button></article>
+      <article><h3>Credential Lifecycle</h3><p>Bewerten Sie synthetische Ablaufmetadaten – ohne echte Secrets oder Providerrechte.</p><button type="button" data-workflow="credential-expiry">Demo auswählen</button></article>
+      <article><h3>Media Rights</h3><p>Prüfen Sie gemeldete Quellen- und kommerzielle Medienrechte, bevor Inhalte veröffentlicht werden.</p><button type="button" data-workflow="media-rights">Demo auswählen</button></article>
+    </div>
+    <div class="result" role="status" aria-live="polite" id="demo-result">Wählen Sie eine Demonstration. Hier wird ausschließlich lokale Vorschaukopie angezeigt; es werden keine echten Agenten oder Netzwerkanfragen gestartet.</div>
+  </section>
+  <section id="pilot"><h2>Pilotprogramm</h2><p>Für IT-Dienstleister, DevSecOps-Teams und Cloud-Beratungen. Vor einem Pilotangebot sind Mandantenisolation, persistente Quoten, externe Providerrechte, Abrechnung und reale Runtime-Evidence noch zu verifizieren.</p><p class="notice">Dieser interne Prototyp versendet keine Lead-Daten. Die spätere öffentliche Anfrage soll die bestehende CAPTCHA-/Spam-geschützte Kontaktstrecke und ausschließlich eingewilligte GA4-Ereignisse verwenden.</p></section>
+  <footer><p class="notice">Keine Anlageberatung · Keine Security-Zertifizierung · Keine automatische Veröffentlichung · DEMO_ONLY</p></footer>
+</main>
+<script>
+  const labels = Object.freeze({
+    'ci-evidence':'CI & PR Evidence: SYNTHETIC_READY_FOR_REVIEW. Provider-Checks sind hier nur Musterangaben, nicht real verifiziert.',
+    'credential-expiry':'Credential Lifecycle: RENEWAL_REVIEW (synthetisches Beispiel mit 14 Tagen Restlaufzeit). Keine Secrets gelesen.',
+    'media-rights':'Media Rights: NOT_PROVEN bis Quelle, Attribution und kommerzielle Rechte durch eine Person geprüft wurden.'
+  });
+  for (const button of document.querySelectorAll('[data-workflow]')) button.addEventListener('click', () => {
+    document.getElementById('demo-result').textContent = labels[button.dataset.workflow];
+  });
+</script></body></html>

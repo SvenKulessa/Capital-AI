@@ -14,6 +14,10 @@ on:
       - 'scripts/platform/youtube-verification-*'
       - 'scripts/google-maintenance-mcp.mjs'
       - 'scripts/growth-agent/**'
+      - 'server/agent-operations-pilot*.mjs'
+      - 'scripts/agent-operations-pilot-migration.test.mjs'
+      - 'scripts/agent-operations-pilot-pg-integration.mjs'
+      - 'supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql'
       - '.ai/prompts/**'
       - 'scripts/agent-prompts.test.mjs'
       - 'scripts/privacy-analytics.test.mjs'
@@ -46,9 +50,43 @@ jobs:
         run: node --test scripts/privacy-analytics.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs
       - name: Verify legacy prompts follow the root contract
         run: node --test scripts/agent-prompts.test.mjs
+      - name: Test durable agent-pilot security and migration contracts
+        run: node --test server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs scripts/agent-operations-pilot-migration.test.mjs
       - name: Install pinned local graph dependencies
         run: python3 -m pip install --disable-pip-version-check -r scripts/growth-agent/requirements.lock
       - name: Test real LangGraph join and zero-paid-provider mode
         run: python3 -m unittest discover -s scripts/growth-agent -p 'test_*.py'
       - name: Run source-only graph without Google or model calls
         run: python3 scripts/growth-agent/graph.py
+
+  pg-ledger:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17.11@sha256:ff87138949ad9a46f32ff23bd6852b52ce024a13dffe9b4087be98292cdd3b4f
+        env:
+          POSTGRES_DB: agent_pilot_ci
+          POSTGRES_PASSWORD: ci-synthetic-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d agent_pilot_ci"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGDATABASE: agent_pilot_ci
+      PGUSER: postgres
+      PGPASSWORD: ci-synthetic-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24.19.0'
+      - name: Verify isolated PostgreSQL 17 roles, SQL transaction and concurrent quotas
+        run: |
+          psql --version
+          node scripts/agent-operations-pilot-pg-integration.mjs

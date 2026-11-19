@@ -516,3 +516,12 @@
 !scripts/growth/news-lifecycle-transaction.test.mjs
 !scripts/growth/news-lifecycle-home-admission.mjs
 !scripts/qa/news-archive-browser.mjs
+
+# Isolated Agent Operations pilot (source-only and default-OFF)
+!server/agent-operations-pilot.mjs
+!server/agent-operations-pilot.test.mjs
+!server/agent-operations-pilot-store.mjs
+!server/agent-operations-pilot-store.test.mjs
+!scripts/agent-operations-pilot-migration.test.mjs
+!supabase/migration-candidates/
+!supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql
