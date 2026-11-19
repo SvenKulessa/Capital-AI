@@ -81,12 +81,14 @@ function verifyRuntimeIsolation(manifest, locked) {
   for (const name of runtime) {
     assert.notEqual(current[name].dev, true,
       'A required production dependency is flagged dev: ' + name);
+    assert.notEqual(current[name].devOptional, true,
+      'A required production dependency is flagged devOptional: ' + name);
   }
   const dev = closure(current, manifest.devDependencies);
   for (const name of dev) {
     if (runtime.has(name)) continue;
-    assert.equal(current[name].dev, true,
-      'A dev-only package is not marked dev: ' + name);
+    assert.ok(current[name].dev === true || current[name].devOptional === true,
+      'A dev-only package is neither dev nor devOptional: ' + name);
   }
   return { runtime, dev };
 }
