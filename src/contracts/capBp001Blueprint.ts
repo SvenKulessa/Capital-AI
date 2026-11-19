@@ -2,8 +2,12 @@ import { z } from 'zod';
 import { CANONICAL_50_COMPONENTS } from './analysisComponentRegistry';
 
 /** CAP-BP-001 is an offline design/fixture contract, never a production component runner. */
-const entry = CANONICAL_50_COMPONENTS.find(c => c.componentId === 'market_integrity_gate');
-if (!entry) throw new Error('CAP_BP_001_CANONICAL_ENTRY_MISSING');
+function requireCanonicalEntry() {
+  const found = CANONICAL_50_COMPONENTS.find(c => c.componentId === 'market_integrity_gate');
+  if (!found) throw new Error('CAP_BP_001_CANONICAL_ENTRY_MISSING');
+  return found;
+}
+const entry = requireCanonicalEntry();
 
 export const CAP_BP_001_MODULE_IDS = [
   '01_component_identity', '02_business_purpose', '03_data_contracts',
