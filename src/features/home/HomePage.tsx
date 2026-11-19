@@ -117,6 +117,23 @@ export function HomePage({
         </div>
       </section>
       <HomeSearchFocus />
+      <section aria-labelledby="governance-sprint-home-heading" className="mx-auto max-w-7xl px-5 py-4">
+        <div className="rounded-3xl border border-amber-300/25 bg-slate-950/80 p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-200">Für IT-Dienstleister &amp; Softwareteams · B2B-Pilot</p>
+          <h2 id="governance-sprint-home-heading" className="mt-2 text-2xl font-bold text-white">Governance &amp; Evidence Sprint</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-200">
+            CI-, Supply-Chain- und Governance-Nachweise strukturiert prüfen und offene Entscheidungen sichtbar machen.
+            Manuelle Bestandsaufnahme mit klarer Leistungsgrenze; kein Penetrationstest und keine Zertifizierung.
+          </p>
+          <a href="/governance-evidence-sprint" onClick={event => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            onNavigate('/governance-evidence-sprint');
+          }} className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-amber-300/50 px-4 py-3 text-sm font-semibold text-amber-200 hover:bg-amber-950/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-200">
+            Pilotangebot und Musterbericht ansehen
+          </a>
+        </div>
+      </section>
       <CommerceEntrySection onNavigate={onNavigate} />
       <HomeLatestLearning onNavigate={onNavigate} />
 
