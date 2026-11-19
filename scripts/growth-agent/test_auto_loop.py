@@ -3,6 +3,9 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+import os
+import tempfile
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location("capital_execution_loop", Path(__file__).with_name("auto_loop.py"))
 loop = importlib.util.module_from_spec(spec)
@@ -148,6 +151,30 @@ class AutoLoopTests(unittest.TestCase):
             loop.Authority(max_repairs=100)
         with self.assertRaises(ValueError):
             loop.execute(Adapter(), loop.Authority(), "token with whitespace")
+
+    def test_durable_completed_thread_is_not_replayed(self):
+        with tempfile.TemporaryDirectory() as d:
+            os.chmod(d, 0o700)
+            path = os.path.join(d, "state.sqlite3")
+            a = Adapter()
+            authority = loop.Authority(allow_changes=True, allow_merge=False)
+            first = loop.execute_durable(a, authority, "durable:test", path)
+            self.assertEqual(first["status"], "MERGE_NOT_PROVEN")
+            count = len(a.calls)
+            second = loop.execute_durable(a, authority, "durable:test", path)
+            self.assertEqual(second, first)
+            self.assertEqual(len(a.calls), count)
+
+    def test_durable_rejects_world_readable_directory_and_symlink(self):
+        with tempfile.TemporaryDirectory() as d:
+            os.chmod(d, 0o755)
+            with self.assertRaises(ValueError):
+                loop.execute_durable(Adapter(), loop.Authority(), "durable:test", os.path.join(d,"state.sqlite3"))
+            os.chmod(d, 0o700)
+            target = os.path.join(d, "target.sqlite3")
+            os.symlink(target, os.path.join(d, "state.sqlite3"))
+            with self.assertRaises(ValueError):
+                loop.execute_durable(Adapter(), loop.Authority(), "durable:test", os.path.join(d,"state.sqlite3"))
 
     def test_secrets_in_exception_never_enter_state(self):
         a = Adapter()

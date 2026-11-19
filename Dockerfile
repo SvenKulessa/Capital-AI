@@ -85,6 +85,7 @@ COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs 
 COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/account-avatar.test.mjs server/profile-avatar-upload.test.mjs server/profile-avatar-clamav.test.mjs server/historical-analytics-demo.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
+COPY server/evidence-dashboard-readback.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
 COPY server/oauth-consent.mjs server/oauth-consent.test.mjs ./server/
@@ -156,7 +157,7 @@ COPY scripts/daily-dependency-watch.test.mjs ./scripts/
 COPY scripts/independent-review-manifest.mjs scripts/independent-review-manifest.test.mjs ./scripts/
 # The root npm test suite includes picomatch runtime isolation checks in this build stage.
 COPY scripts/picomatch-runtime-isolation.test.mjs ./scripts/
-RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
+RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/evidence-dashboard-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
     && node --test scripts/mail-templates.test.mjs server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs server/account-avatar.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
@@ -197,8 +198,14 @@ COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
 COPY --from=build /app/packages/benchmark-core ./packages/benchmark-core
 COPY --from=build /app/contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
 COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+# Render's nonsecret Git commit is a separate, unattested build claim.
+# Never impersonate the GitHub Actions builder or OCI attestation.
+ARG RENDER_GIT_COMMIT
+COPY scripts/write-runtime-identity.mjs /tmp/write-runtime-identity.mjs
+RUN node /tmp/write-runtime-identity.mjs render-git "${RENDER_GIT_COMMIT:-}" \
+    && rm /tmp/write-runtime-identity.mjs
 COPY server/purchase-receipt.mjs ./server/
-COPY server/render-owner-dashboard.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt

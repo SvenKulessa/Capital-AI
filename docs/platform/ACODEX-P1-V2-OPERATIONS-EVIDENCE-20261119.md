@@ -101,6 +101,18 @@ Die **11/11** rekursiven Policy-Tests und **22/22** Monitor-Unittests haben eine
 
 **Governance-Prozess:** Erst die vorliegenden Logs/Dateien lesen und belegen, dann optional sanitisierte Evidence aktualisieren. Bei `BLOCKED` Ursache read-only untersuchen und den kleinsten sicheren Fix gemäß der aktuellen Root-`AGENTS.md` behandeln; **niemals** die Sperre automatisch löschen oder Rechte, OAuth-Scopes, Scheduler oder Pull-Hooks im Rahmen dieses Health-Checks ändern. Keine Kostenaktivierung, neue Freigabestufe oder zusätzliche Required Checks.
 
+## SHA-256-Provenance der archivierten Evidence (2026-11-19)
+
+Die folgenden **Datei-SHA-256** wurden durch unabhängiges Rücklesen der Originaldateien aus dem verbundenen Google Drive und erneutes Hashing der empfangenen Bytes bestätigt. Sie sind keine Git-Blob-SHAs oder GitHub-Commit-SHAs; die Gerätelogs selbst wurden nicht direkt aus Android ausgelesen. **Die historischen Drive-Dateien bleiben unverändert.**
+
+| Archivierte Datei | SHA-256 der heruntergeladenen Datei | Nachweisgrenze |
+|---|---|---|
+| [Abschluss-Evidence v1.0.0](https://drive.google.com/file/d/1x_bhZ_HdgL-OKuHlPgYIk--5DB0KtwOA/view?usp=drivesdk) | `991b97eef4f31a69ece605347d9b6aeebc8405f0fcd30ee7e96d03869c5e5afd` | Historische Evidence, unverändert |
+| [Abschluss-Evidence v1.1.0](https://drive.google.com/file/d/18s5PsFUI2qc-0s58O-f3ECCrYA8bu9T2/view?usp=drivesdk) | `89b2215cf85420928c70271dffa38ee4ad51ccd07d1832b4bb35192e28c892a3` | Ergänzung der Health-Geräteabnahme 2026-11-19T00:43:05Z |
+| [Operations-Governance-Standard v1](https://drive.google.com/file/d/1CZTMusHxrA2ZR6xp-Q-iPVFcNwNTyb_h/view?usp=drivesdk) | `be03a2c479eddc1a40d4bad133e34b41e20039aa27ee5a776b05a24571d9eb17` | Dokumentationsstandard, nicht autorisierend |
+
+Prüfmethode: Google-Drive-Connector-Metadaten und authentifiziertes Materialisieren der drei Dateien, lokale SHA-256-Berechnung der materialisierten Bytes sowie Abgleich mit der zuvor belegten Archiv-Evidence. Die Provenance bestätigt **diese drei Artefakte**, nicht eine dauerhafte OAuth-Gültigkeit, zukünftige Pulls oder einen synchronisierten Live-Datensatz der Evidence Console. Der auf Main gespeicherte Git-Blob bleibt eine eigenständige Repository-Identität.
+
 ## Test- und Archivquellen
 
 - [P1-v2-Abschlussbericht v1.1.0](https://drive.google.com/file/d/18s5PsFUI2qc-0s58O-f3ECCrYA8bu9T2/view?usp=drivesdk)

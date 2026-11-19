@@ -102,6 +102,8 @@
 !server/private-provider-query.test.mjs
 !server/render-owner-dashboard.mjs
 !server/render-owner-dashboard.test.mjs
+!server/evidence-dashboard-readback.mjs
+!server/evidence-dashboard-readback.test.mjs
 !server/google-analytics-mcp.mjs
 !server/google-analytics-readback.mjs
 !server/google-analytics-readback.test.mjs
@@ -444,6 +446,7 @@
 !server/learning-simulator.mjs
 !server/learning-simulator.test.mjs
 !server/learning-inquiry.test.mjs
+!scripts/write-runtime-identity.mjs
 !scripts/activate-learning-measurement.mjs
 !scripts/activate-learning-measurement.test.mjs
 !scripts/generate-cookie-storage-notice.mjs
@@ -503,7 +506,6 @@
 !server/oauth-consent.test.mjs
 !scripts/oauth-client-isolation.test.mjs
 !supabase/migrations/20261113152000_oauth_client_default_deny.sql
-
 # Rights-gated MARKET news lifecycle and isolated QA; retain main account-avatar dependencies
 !shared/news-lifecycle.mjs
 !shared/news-archive-rights.mjs
