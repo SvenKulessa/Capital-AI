@@ -37,3 +37,30 @@ Der **bestehende** GitHub-Workflow `.github/workflows/financial-learning-browser
 `VERIFIED` erfordert den tatsächlichen Test-/CI-Run plus funktionale Browser-QA. Fehlende externe ChatGPT-App-Integrationsrechte und Social-Publisher-Freigaben bleiben `NOT_PROVEN` beziehungsweise `BLOCKED`; dies sind keine durch diese UI neu erzeugten Gates.
 
 Rollback: die beiden importierenden Chat-Oberflächen und die zwei neuen Komponenten-/Contract-Dateien revertieren, den fokussierten Test und Package-Test-Eintrag entfernen. Keine Datenmigration, kein neuer Scheduler, keine Credentials und keine Produktions-Social-Veröffentlichung.
+
+
+## Nachabnahme 19.11.2026: Routing-/Clipboard-Korrekturen
+
+Der bestehende PR #829 wurde samt seinen Required Checks bereits gemergt und über Render/öffentliches \`/healthz\` auf Source-SHA \`12c70f09459f4cb01ff367da7281e8af91f48123\` bestätigt. Der isolierte Chromium-Test lieferte drei erfolgreiche Viewports (320/390/1440 CSS-Pixel), Copy-Resolve und Denied-Permission-Fallback. Laut Browser-Job-Log bleibt \`actualScreenReader: NOT_PROVEN\`; die Headless-Chromium-Prüfung ist keine manuelle TalkBack-/Screenreader-Abnahme beider produktiven Dialoge.
+
+Die Nachprüfung fand folgende reproduzierbare Codepfad-Risiken:
+
+1. Eine beiläufige OAuth-/GitHub-Erwähnung konnte eine Instagram-Kampagne fälschlich in TRUST/PLATFORM statt GROWTH klassifizieren; umgekehrt konnte die Nennung von GitHub CI ein Copy-Button-Problem fachlich in PLATFORM verschieben.
+2. Die Registry enthielt keine expliziten B2B-/Monetarisierungs-Trigger für den bereits dokumentierten \`revenue-engineering\`-Skill.
+3. Der Ausführungs-Trigger für \`implementieren\` konnte einen ausdrücklich lesenden Auftrag zu einer mutierenden Empfehlung machen.
+4. Der bisherige Clipboard-Status meldete nach verspätetem Promise-Resolve möglicherweise \`Kopiert\` für eine inzwischen andere Nutzerfrage; weitere verbreitete Tokenpräfixe fehlten in der rudimentären Clipboard-Redaktion.
+
+Reparatur: aufgabenorientierte Domain-Auswahl mit Vorrang für eindeutig benannte Security-Incidents und UI-Arbeiten; kanonische B2B-Registry-Signale; explizites Read-only-Fail-Closed; mehr bekannte Tokenpräfixe; generation-/task-gebundene Clipboard-Bestätigung; zusätzliche Negativtests und browserseitiger Promise-Race-Test. Pattern-Redaktion ist **keine vollständige DLP- oder personenbezogene-Daten-Erkennung**.
+
+Für Kampagnen wird im kopierbaren Prompt nach Kanal unterschieden:
+
+| Aufgabe | Entwurf-/Freigabekontext |
+| --- | --- |
+| Instagram | Formate, MediaKit-Provenance, Consent/UTM und Account-Rechte |
+| X | URL-Kontext, Owner-OAuth, API-Kosten, Hash/Idempotenz, Publisher-Receipt |
+| YouTube | Scopes, Private-Upload, Video-/Audio-Rechte, separate Public-Freigabe |
+| B2B | Lead-Consent, serverseitige Validierung, Rate-Limits, Tenant-Isolation, SKU-/Attribution-Evidence |
+
+Die Social-Content-Engine-Verträge und bestehende Provider-Autorität bleiben unverändert. Die Formulierung \`Draft → Review → Asset-Provenance → Owner-Approval → Adapter-Readiness → kontrollierte Zustellung → Attribution\` ist **ein fachliches Prompt-Workflowziel**, keine Behauptung ausgeführter LangGraph- oder Publisher-Stages. Es gibt keinen neuen Scheduler, keine App-Verbindung, keine Provideraktion und keine Veröffentlichung.
+
+Nächste Evidence-Bindung: exakte PR-Head-SHA, \`npm run test:chat-followups\`, \`npm run test:domain-skills\`, \`npm run lint\`, vorhandene Docker Security Gate/Domain Governance/CodeQL-Jobs, erweiterter Chromium-Clipboard-Test, danach Main/Render-Live-Readback. Eine echte assistive Screenreader-Abnahme bleibt weiterhin \`NOT_PROVEN\`, solange entsprechende Geräte-Evidence fehlt.
