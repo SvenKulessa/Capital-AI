@@ -18,7 +18,7 @@ The provider is dedicated to this identity and should NOT be reused by arbitrary
 
 ## Workflow, behavior and evidence
 
-1. On GitHub Actions choose "Google Cloud Operator (keyless read-only)" and use Run workflow on **main**.
+1. On GitHub Actions choose **Google Cloud Operator (readback or YouTube demo)**, select **operation=readback**, and use Run workflow on **main**.
 2. The workflow checks local negative tests and GitHub repository ID.
 3. The pinned Google auth action exchanges the short-lived GitHub OIDC token for a **900-second**, read-only-scope Google access token through the isolated pool and service account.
 4. The script fetches the enabled-service catalog via GET only:
@@ -31,7 +31,21 @@ The provider is dedicated to this identity and should NOT be reused by arbitrary
 - GitHub Actions manual dispatch run [38651871102](https://github.com/SvenKulessa/Capital-AI/actions/runs/38651871102) at `main@2a79f77509edd2229501cf3d2544270cb9096d1b` confirmed the real **GitHub OIDC -> isolated WIF provider -> Cloud Operator service account token exchange**: `Federate GitHub OIDC to isolated GCP Cloud Operator` completed successfully. This is not yet a successful API readback.
 - The final readback failed with `CLOUD_OPERATOR_PAGINATION_INVALID` even though the HTTP response was accepted. Root cause: the local parser rejected `nextPageToken == ''` when the current `pageToken` was also empty. This is the normal one-page terminal response; the check unintentionally classified it as a repeated page token.
 - Remediation: permit the empty terminal token; continue to reject non-empty tokens repeated in the current or any previous page. New unit regressions cover a one-page explicit empty token and an omitted terminal token. No changes to IAM permissions, OIDC trust conditions, Google API scopes, or write operations.
-- **Acceptance still pending:** after the code fix is merged, manually dispatch this read-only workflow again from `main`; only `CLOUD_OPERATOR_SERVICE_USAGE_READ_PASS` and a green complete run prove authenticated Service Usage API readback.
+- **Historical acceptance resolved:** Following the code fix, real `workflow_dispatch` runs of the read-only operation completed successfully. This replaces the earlier *pending* statement; the failed first run and its parser root cause above remain as historical evidence.
+
+## Current verified operator acceptance (2026-11-19)
+
+| Date (UTC) | Run | Source SHA | Readback outcome |
+| --- | --- | --- | --- |
+| 2026-11-13 | [43507557045](https://github.com/SvenKulessa/Capital-AI/actions/runs/43507557045) | `ed11b7525eee7a998843313227e59d2e95bc720d` | SUCCESS; 73 enabled APIs; Drive API disabled |
+| 2026-11-16 | [43792259497](https://github.com/SvenKulessa/Capital-AI/actions/runs/43792259497) | `136bfec79d0beedeee71ab25e01c304a2bc7b453` | SUCCESS; 74 enabled APIs; Drive API enabled |
+| 2026-11-19 | [44601352501](https://github.com/SvenKulessa/Capital-AI/actions/runs/44601352501) | `55d90718f973fb2bd9727fd98b08111130b87265` | SUCCESS; 91 enabled APIs |
+| 2026-11-19 | [44622825096](https://github.com/SvenKulessa/Capital-AI/actions/runs/44622825096) | `ece87bead566ab1431567d6794db9debe9bdef07` | SUCCESS; 91 enabled APIs; matched `main` at readback |
+
+In run `44622825096`, the `service-usage-readback` job, repository identity check, GitHub-OIDC federation action, and Google Service Usage GET step were all `SUCCESS`; `youtube-verification-demo` was `SKIPPED`. Its job log shows **10 source/negative tests passed, 0 failed** and `CLOUD_OPERATOR_SERVICE_USAGE_READ_PASS` with `serviceUsageEnabled=true`, `iamEnabled=true`, `iamCredentialsEnabled=true`, `driveApiEnabled=true`, `youtubeDataApiEnabled=true`, `readonly=true`. The run concluded `SUCCESS`; the captured logs do not separately show numerical shell exit codes.
+
+**Evidence boundary:** Successful OIDC exchange and Service Usage GET prove the operator's effective permission for *that read path*, **not** project IAM-policy read permission, unrelated Cloud operations, configuration of Google Auth Platform Data Access, active end-user OAuth client associations, or Google verification approval. `iamEnabled` / `iamCredentialsEnabled` indicate enabled APIs, not IAM grants. Do not broaden service-account roles, request additional OAuth scopes, or dispatch the YouTube upload branch on this evidence.
+
 
 ## Failures and remediation
 
