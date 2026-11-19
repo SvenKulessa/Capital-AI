@@ -227,6 +227,31 @@ test('x image upload is hash-bound and attaches exactly one provider media ID', 
   assert.equal(receipt.providerDeliveryId,'234567890123456789');
 });
 
+test('x jpeg upload preserves owner-supplied bytes and attaches exactly one media ID', async () => {
+  const image=Buffer.concat([Buffer.from([255,216,255,224]),
+    Buffer.from('synthetic-jpeg-image-data'),Buffer.from([255,217])]);
+  const sha=createHash('sha256').update(image).digest('hex');
+  const seen=[];
+  const transport=createSocialProviderPublishTransport({
+    env:{...baseEnv,SOCIAL_X_PUBLISH_ENABLED:'true',
+      SOCIAL_X_PAID_WRITE_APPROVED:'true',SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',
+      SOCIAL_X_PAID_MEDIA_APPROVED:'true'},
+    fetchImpl:async(url,init)=>{
+      seen.push({url:String(url),payload:JSON.parse(init.body)});
+      return seen.length===1 ? response(200,{data:{id:'123456789012345678'}})
+        : response(201,{data:{id:'234567890123456789'}});
+    },
+  });
+  const receipt=await transport.submit({channel:'X',accessToken:'fake-token-only',
+    mediaBytes:image,mediaSha256:sha,metadata:{caption:'CAPITAL-AI JPEG'}});
+  assert.equal(seen.length,2);
+  assert.equal(seen[0].url,'https://api.x.com/2/media/upload');
+  assert.deepEqual(Buffer.from(seen[0].payload.media,'base64'),image);
+  assert.equal(seen[0].payload.media_category,'tweet_image');
+  assert.deepEqual(seen[1].payload.media,{media_ids:['123456789012345678']});
+  assert.equal(receipt.providerDeliveryId,'234567890123456789');
+});
+
 test('x image path fails closed before provider calls for every missing media approval or mismatched bytes', async () => {
   const image=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.from('png')]);
   const sha=createHash('sha256').update(image).digest('hex');
