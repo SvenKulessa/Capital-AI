@@ -59,6 +59,41 @@ test('durable commit marker survives SIGKILL before cleanup and preserves new sn
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('competing writer between snapshot and journal claim cannot erase newer state', async () => {
+  const dir = tempDir();
+  try {
+    await persistNewsFiles(records(0), dir);
+    await assert.rejects(
+      () => persistNewsFiles(records(1), dir, {
+        expected: { [home]: 'HOME 0', [index]: 'INDEX 0' },
+        hooks: {
+          beforeClaim: async () => {
+            // A distinct writer commits while the first has only staged its
+            // journal; neither pending lock nor destination rename exists yet.
+            await persistNewsFiles(records(2), dir);
+          },
+        },
+      }),
+      /NEWS_TX_STALE_BASELINE/,
+    );
+    assert.deepEqual(await current(dir), ['HOME 2', 'INDEX 2', 'ARCHIVE 2']);
+    assert.deepEqual(await recoverNewsLifecycle(dir), { recovered: false });
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('reviewed immutable archive snapshots cannot be modified through the WAL writer', async () => {
+  const dir = tempDir();
+  try {
+    await persistNewsFiles(records(0), dir, { archiveImmutable: true });
+    await assert.rejects(
+      () => persistNewsFiles(records(1), dir, { archiveImmutable: true }),
+      /NEWS_TX_ARCHIVE_IMMUTABLE/,
+    );
+    assert.deepEqual(await current(dir), ['HOME 0', 'INDEX 0', 'ARCHIVE 0']);
+    assert.deepEqual(await recoverNewsLifecycle(dir), { recovered: false });
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('recovery refuses foreign mutation without erasing the transaction journal', async () => {
   const dir = tempDir();
   try {
