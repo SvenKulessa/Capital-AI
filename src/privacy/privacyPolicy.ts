@@ -16,8 +16,8 @@ export interface ProcessingActivity {
 
 export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
   {
-    id: 'learning-inquiry', title: 'Kontakt-, Lern-, Kurs- und B2B-Angebotsanfragen', lifecycle: 'active',
-    purpose: 'Auf ausdrücklich abgesendete Kontakt-, Lern-, Kurs- oder B2B-Governance-Angebotsanfragen antworten. Keine Newsletter- oder Werbeeinwilligung, ohne Analytics-Einwilligung unverändert nutzbar.',
+    id: 'learning-inquiry', title: 'Kontakt-, Lern- und Kursanfragen', lifecycle: 'active',
+    purpose: 'Auf ausdrücklich abgesendete Kontakt-, Lern- oder Kursanfragen antworten. Ohne Analytics-Einwilligung unverändert nutzbar.',
     dataCategories: ['E-Mail-Adresse als Antwortadresse', 'freiwillig eingegebene Anfrage'],
     legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für vorvertragliche Kursanfragen; Art. 6 Abs. 1 lit. f DSGVO für allgemeine angeforderte Auskünfte.',
     recipients: ['Verantwortlicher', 'Render als Anwendungsserver', 'konfigurierter SMTP-/Postfachanbieter'],
