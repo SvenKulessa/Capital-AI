@@ -512,5 +512,7 @@
 !scripts/growth/news-lifecycle-cli.mjs
 !scripts/growth/news-lifecycle.test.mjs
 !scripts/growth/news-lifecycle-materialize.mjs
+!scripts/growth/news-lifecycle-transaction.mjs
+!scripts/growth/news-lifecycle-transaction.test.mjs
 !scripts/growth/news-lifecycle-home-admission.mjs
 !scripts/qa/news-archive-browser.mjs
