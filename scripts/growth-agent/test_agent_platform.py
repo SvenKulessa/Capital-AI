@@ -83,6 +83,25 @@ class PlatformResearchTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 retrieve(root, domain="PLATFORM", query="checkpoint")
 
+    def test_symlinked_state_ancestor_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            actual = Path(tmp) / "real"
+            state_dirs(actual)
+            alias = Path(tmp) / "alias"
+            alias.symlink_to(actual, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "symlinked state-root ancestor"):
+                check_root(alias, require_mount=False)
+
+    def test_nonregular_task_is_rejected_without_blocking(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "state"
+            state_dirs(root)
+            path = root / "inbox" / "fifo.json"
+            os.mkfifo(path, 0o600)
+            with self.assertRaises(ValueError):
+                load_task(path, root / "inbox")
+            self.assertEqual(list((root / "checkpoints").iterdir()), [])
+
     def test_world_readable_dirs_and_tasks_fail_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "state"
