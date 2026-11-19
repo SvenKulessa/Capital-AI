@@ -1,5 +1,7 @@
 import React from 'react';
 import { LearningEntitlementBadge } from '../features/learning/LearningEntitlementBadge';
+import { ProfileAvatarUpload } from '../features/account/ProfileAvatarUpload';
+import { VerifiedProfileAvatar } from '../features/account/VerifiedProfileAvatar';
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
 import { openHeroBuddy } from './HeroBuddy';
@@ -19,10 +21,14 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
               <User className="h-4 w-4" />
               <span className="text-xs font-black uppercase tracking-wider">Konto</span>
             </div>
-            <div className="mt-4 space-y-2 text-sm">
+            <div className="mt-4 flex items-start gap-3 text-sm">
+              <VerifiedProfileAvatar avatarUrl={session.user?.avatarUrl} name={session.user?.name} />
+              <div className="min-w-0 space-y-2">
               <p className="font-bold text-white">{session.user?.name || 'Benutzer'}</p>
               <p className="break-all text-slate-400">{session.user?.email}</p>
+              </div>
             </div>
+            <ProfileAvatarUpload />
             <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-200">
               <ShieldCheck className="mb-2 h-4 w-4" />
               Dein Konto ist sicher angemeldet.

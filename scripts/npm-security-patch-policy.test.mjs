@@ -6,8 +6,8 @@ const packageJson = JSON.parse(readFileSync('deploy/npm-security-patches/package
 const lock = JSON.parse(readFileSync('deploy/npm-security-patches/package-lock.json', 'utf8'));
 const hardener = readFileSync('scripts/harden-npm-toolchain.mjs', 'utf8');
 
-const fixed = '5.0.12';
-const integrity = 'sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==';
+const fixed = '5.0.13';
+const integrity = 'sha512-Vh3dmFbc4wZeox7M9I/0L9GfFd83Su4+yCck/OF9Gi/P/dAHn0RT7X4K9R7gMNMhDck3DvhR6QXsnQdjjgwNvQ==';
 
 test('brace-expansion donor is pinned above CVE-2026-102277 affected range', () => {
   assert.equal(packageJson.dependencies['brace-expansion'], fixed);
@@ -15,14 +15,14 @@ test('brace-expansion donor is pinned above CVE-2026-102277 affected range', () 
 
   const entry = lock.packages['node_modules/brace-expansion'];
   assert.equal(entry.version, fixed);
-  assert.equal(entry.resolved, 'https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.12.tgz');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.13.tgz');
   assert.equal(entry.integrity, integrity);
   assert.equal(entry.license, 'MIT');
   assert.equal(entry.dependencies['balanced-match'], '^4.0.2');
 });
 
 test('npm hardener cannot silently regress brace-expansion to 5.0.11', () => {
-  assert.match(hardener, /\['brace-expansion', '5\.0\.9', '5\.0\.12'\]/);
+  assert.match(hardener, /\['brace-expansion', '5\.0\.9', '5\.0\.13'\]/);
   assert.doesNotMatch(hardener, /\['brace-expansion', '5\.0\.9', '5\.0\.11'\]/);
 });
 

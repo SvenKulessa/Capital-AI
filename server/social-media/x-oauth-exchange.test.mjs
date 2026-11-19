@@ -165,6 +165,22 @@ test('X OAuth rejects malformed profile and storage readback without confirming 
   assert.equal(mismatch.calls.length, 3);
 });
 
+test('X OAuth network failure stops after exactly one attempted token exchange', async () => {
+  let calls = 0;
+  const handler = createSocialXOAuthExchange({ env: ENV, fetchImpl: async (target, options) => {
+    calls++;
+    assert.equal(target, 'https://api.x.com/2/oauth2/token');
+    assert.equal(options.signal instanceof AbortSignal, true);
+    throw new Error('synthetic secret-bearing network failure');
+  } });
+  await assert.rejects(handler(trusted), error => {
+    assert.equal(error.message, 'SOCIAL_X_PROVIDER_UNAVAILABLE');
+    assert.ok(!error.message.includes('secret-bearing'));
+    return true;
+  });
+  assert.equal(calls, 1);
+});
+
 test('X OAuth rejects provider token exchange error without disclosing provider payloads', async () => {
   let calls = 0;
   const handler = createSocialXOAuthExchange({ env: ENV, fetchImpl: async () => {
@@ -207,4 +223,39 @@ test('X OAuth Edge mode performs encrypted persistence without any Render admin 
   assert.equal(requests[2].options.headers.Authorization,
     'Bearer ' + 'synthetic-owner-access-' + 'a'.repeat(75));
   assert.ok(!JSON.stringify(requests[2].options.headers).includes('sb_secret_'));
+});
+
+
+test('X media OAuth grant needs independent opt-in, not paid publishing flags', async () => {
+  const mediaTokens = { ...TOKENS, scope: TOKENS.scope + ' media.write' };
+  const scenarios = [
+    { flags: {}, media: false },
+    { flags: { SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'true',
+      SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'true', SOCIAL_X_PAID_MEDIA_APPROVED: 'true' }, media: false },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'false' }, media: false },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: '1' }, media: false },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'true' }, media: true },
+    { flags: { SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'true',
+      SOCIAL_X_MILESTONE_MEDIA_ENABLED: 'false', SOCIAL_X_MEDIA_UPLOAD_ENABLED: 'false',
+      SOCIAL_X_PAID_MEDIA_APPROVED: 'false', SOCIAL_X_PAID_WRITE_APPROVED: 'false',
+      SOCIAL_X_PAID_READ_APPROVED: 'false' }, media: true },
+  ];
+  for (const { flags, media } of scenarios) {
+    const { fetchImpl, calls } = mockFlow(mediaTokens);
+    await createSocialXOAuthExchange({ env: { ...ENV, ...flags }, fetchImpl })(trusted);
+    assert.equal(calls.length, 3);
+    const saved = JSON.parse(calls[2].options.body);
+    assert.deepEqual(saved.scopes, ['tweet.read', 'tweet.write', 'users.read',
+      'offline.access', ...(media ? ['media.write'] : [])]);
+  }
+  // A provider downgrade must stop before paid profile reads or storage.
+  for (const granted of [TOKENS, { ...TOKENS,
+    scope: 'tweet.read users.read offline.access media.write' }]) {
+    const { fetchImpl, calls } = mockFlow(granted);
+    await assert.rejects(createSocialXOAuthExchange({ env: { ...ENV,
+      SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED: 'true',
+      SOCIAL_X_PAID_MEDIA_APPROVED: 'false' }, fetchImpl })(trusted),
+      /SOCIAL_X_MEDIA_WRITE_SCOPE_MISSING|SOCIAL_X_OAUTH_SCOPES_MISSING/);
+    assert.equal(calls.length, 1, 'missing grant must not fetch profile or write credentials');
+  }
 });

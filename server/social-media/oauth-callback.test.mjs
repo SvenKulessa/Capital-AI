@@ -124,6 +124,11 @@ test('callback fail-closed on exchange/storage failures without reflecting code'
 test('owner-only callback diagnostics classify X provider and Edge errors without leaking credentials', async () => {
   for (const [reason, expected] of [
     ['SOCIAL_X_TOKEN_EXCHANGE_REJECTED', 'provider_token_exchange_rejected'],
+    ['SOCIAL_X_PROVIDER_UNAVAILABLE', 'provider_network_unavailable'],
+    ['SOCIAL_X_MEDIA_WRITE_SCOPE_MISSING', 'provider_scopes_missing'],
+    ['SOCIAL_X_OAUTH_EXPIRY_INVALID', 'provider_token_response_invalid'],
+    ['SOCIAL_X_OAUTH_TOKEN_TYPE_INVALID', 'provider_token_response_invalid'],
+    ['SOCIAL_X_OAUTH_TOKENS_MISSING', 'provider_token_response_invalid'],
     ['SOCIAL_X_EDGE_REJECTED', 'edge_request_rejected'],
     ['SOCIAL_X_EDGE_UNAVAILABLE', 'edge_network_unavailable'],
     ['SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED', 'vault_persistence_not_confirmed'],
