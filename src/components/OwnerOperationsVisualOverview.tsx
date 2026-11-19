@@ -1,4 +1,4 @@
-import { Activity, Bot, ChartColumnIncreasing, Cloud, Crown, Github, Info, Layers3, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { Activity, Bot, ChartColumnIncreasing, Cloud, Crown, GitPullRequest, Info, Layers3, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { isVerified, isSnapshotStale, type DashboardReadback } from './ownerOperationsModel';
 import {
   ownerAgentRows, ownerEvidenceCounts, ownerEvidenceRows, ownerGa4Metrics,
@@ -45,7 +45,7 @@ function OrbitMascot() {
 function OwnerKpi({ type, title, value, detail, verified }: {
   type: 'github' | 'render' | 'ga4' | 'evidence'; title: string; value: string; detail: string; verified: boolean;
 }) {
-  const Icon = type === 'github' ? Github : type === 'render' ? Cloud : type === 'ga4' ? ChartColumnIncreasing : ShieldCheck;
+  const Icon = type === 'github' ? GitPullRequest : type === 'render' ? Cloud : type === 'ga4' ? ChartColumnIncreasing : ShieldCheck;
   return <div className={'ops-mock-kpi ops-mock-kpi--' + type}>
     <div className="ops-mock-kpi-head"><Icon aria-hidden="true" className="h-5 w-5"/><span>{title}</span></div>
     <strong className="ops-mock-kpi-value">{value}</strong>
