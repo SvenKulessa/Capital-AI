@@ -95,6 +95,7 @@ test('synthetic claims with internally consistent PIT and rights remain non-acti
 test('missing provider rights are blocked', () => has('CAP_BP_001_PROVIDER_RIGHTS_EVIDENCE_MISSING', x => { x.rights = null as never; }));
 test('wrong provider feed rights are blocked', () => has('CAP_BP_001_PROVIDER_FEED_RIGHTS_SCOPE_MISMATCH', x => { x.rights.feedsSymbolsAndVenues = ['wrong:BTC:BINANCE']; }));
 test('provider mismatches block admission', () => has('CAP_BP_001_PROVIDER_ID_MISMATCH_OR_UNREGISTERED', x => { x.providerId = 'unknown-provider'; }));
+test('provider dataset identity must match provenance', () => has('CAP_BP_001_PROVIDER_DATASET_MISMATCH', x => { x.providerDataset = 'other'; }));
 test('rights review later than historical decision is rejected', () => has('CAP_BP_001_RIGHTS_NOT_REVIEWED_AT_DECISION', x => { x.rights.reviewedAt = new Date(NOW - 100).toISOString(); }));
 test('expired rights are not valid for replay retention', () => has('CAP_BP_001_RIGHTS_NOT_ADMITTED_FOR_REPLAY', x => { x.rights.validUntil = new Date(NOW - 1).toISOString(); }));
 test('missing cache-retention rights prohibit an evidence replay claim', () => has('CAP_BP_001_RIGHTS_NOT_ADMITTED_FOR_REPLAY', x => { x.rights.permissions.cache_retention.allowed = null as never; }));
