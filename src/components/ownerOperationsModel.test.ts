@@ -30,9 +30,13 @@ test('agent filters use anchored PR labels without inventing runtime statuses', 
   const s = readDashboardSnapshot(base)!;
   assert.deepEqual(AGENT_ROLES, ['TRUST','SECURITY','PLATFORM','PRODUCT','MARKET','GROWTH']);
   assert.equal(agentFromTitle('[CAPITAL-AI-PLATFORM] Evidence'), 'PLATFORM');
+  assert.equal(agentFromTitle('[CAPITAL-AI-SECURITY] CodeQL'), 'SECURITY');
+  assert.equal(agentFromTitle('[CAPITAL-AI-SECURITY] OAuth isolation'), 'SECURITY');
   assert.equal(agentFromTitle('text [CAPITAL-AI-PLATFORM]'), null);
   assert.equal(visiblePullRequests(s, 'PLATFORM').length, 1);
   assert.equal(visiblePullRequests(s, 'SECURITY').length, 0);
+  const securitySnapshot = readDashboardSnapshot({ ...base, github: { ...base.github, pullRequests: [{ number: 802, title: '[CAPITAL-AI-SECURITY] Hardening', draft: false, headSha: sha, updatedAt: null }] } })!;
+  assert.equal(visiblePullRequests(securitySnapshot, 'SECURITY').length, 1);
   assert.equal(visiblePullRequests(s, 'ALL', '801').length, 1);
 });
 test('no inferred revenue, lead, CI success or Render success', () => {
