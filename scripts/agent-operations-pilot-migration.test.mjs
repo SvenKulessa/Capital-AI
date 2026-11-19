@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const sql = readFileSync(new URL('../supabase/migrations/20261118180000_agent_operations_pilot_durable_ledger.sql',
+const sql = readFileSync(new URL('../supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql',
   import.meta.url), 'utf8');
 
 test('durable table denies direct API access and cannot become production eligible', () => {

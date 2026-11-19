@@ -17,7 +17,7 @@ on:
       - 'server/agent-operations-pilot*.mjs'
       - 'scripts/agent-operations-pilot-migration.test.mjs'
       - 'scripts/agent-operations-pilot-pg-integration.mjs'
-      - 'supabase/migrations/20261118180000_agent_operations_pilot_durable_ledger.sql'
+      - 'supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql'
       - '.ai/prompts/**'
       - 'scripts/agent-prompts.test.mjs'
       - 'scripts/privacy-analytics.test.mjs'

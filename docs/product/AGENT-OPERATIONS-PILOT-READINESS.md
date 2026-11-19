@@ -19,7 +19,7 @@ Main at review: c56c91ef5974dbe522e616f26e70be84bab7daad (one commit after origi
 
 ## Persisted usage/evidence design (not applied live)
 
-- SQL migration: supabase/migrations/20261118180000_agent_operations_pilot_durable_ledger.sql.
+- SQL migration: supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql.
 - Table: public.agent_operations_pilot_runs with UUID foreign key to auth.users and on-delete cascade; single durable usage/event row contains one vetted synthetic JSONB receipt, canonical SHA-256, tenant UUID, UTC day, tier and idempotency key.
 - RLS is enabled with explicit deny and revoked table access for anon/authenticated/service_role. SQL SECURITY DEFINER RPCs have empty search_path and execution GRANT **only to service_role**. Verify actual role grants on target project before applying.
 - Atomically inside one PostgreSQL transaction: pg_advisory_xact_lock(hashtextextended(user_uuid::text, 0)), lookup by unique (user_id, idempotency_key), conflict on changed request hash, replay stored original receipt, then count user's UTC-day rows and insert if within tier limit.
@@ -61,3 +61,9 @@ Docker Security Gate source scan identified CVE-2026-112366 HIGH in picomatch 4.
 The default-off flag prevents HTTP execution before migration. Revert pilot module, store adapter, SQL migration, tests, CI wiring and docs on the current feature branch if needed. A database rollback after applying the migration requires an approved recovery plan and awareness that stored receipts would be lost. Never drop a ledger on production as an unreviewed rollback.
 
 After the upstream picomatch fix and isolated PostgreSQL proof, reconcile main and rerun invalidated checks. Assess pilot read-only readiness separately from publication, payment and real agent execution. No manual deployment or OAuth/secret changes are required for this source-only phase.
+
+## 2026-11-19 isolated PostgreSQL 17 verification and non-executing candidate
+
+- The exact SQL candidate has been executed against **disposable PostgreSQL 17.11 CI only**, not against either Supabase project. GitHub Actions `pg-ledger` tests SQL function ACLs, explicit RLS deny with temporary read grants, service-role-only RPC calls, two synthetic tenants, replay/conflict, 18 concurrent requests, FK error rollback, and separate-process persistence.
+- A previous production migration history records automatic execution of a migration after main updates (`20261013110247_youtube_private_deleted_receipt_recovery.sql`). Therefore the pending pilot SQL is kept outside `supabase/migrations/` at `supabase/migration-candidates/`, not eligible for automatic provider migration synchronization. Any future relocation or execution requires a separately authorized cutover and tested backup/restore.
+- Production schema/RPC is absent (read-only readback 2026-11-19). Feature flag remains **OFF**; no new paid services, provider calls or production DB changes. Source-only merge may be evaluated independently of product/runtime admission after the existing GitHub required checks pass.

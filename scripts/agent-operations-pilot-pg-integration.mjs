@@ -48,7 +48,7 @@ async function main() {
   await psql("create role anon nologin; create role authenticated nologin; create role service_role nologin;");
   await psql('create schema auth; create table auth.users(id uuid primary key);');
   await psql("insert into auth.users(id) values ('" + ALICE + "'),('" + BOB + "'),('" + CAROL + "');");
-  const migration = readFileSync(new URL('../supabase/migrations/20261118180000_agent_operations_pilot_durable_ledger.sql', import.meta.url), 'utf8');
+  const migration = readFileSync(new URL('../supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql', import.meta.url), 'utf8');
   await command('psql', ['-X', '-qAt', '-v', 'ON_ERROR_STOP=1'], migration);
 
   for (const role of ['anon', 'authenticated']) {
