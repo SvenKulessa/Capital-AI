@@ -188,6 +188,13 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     mainPath: '/learning',
     subpages: [
       {
+        id: 'overview',
+        name: 'Übersicht',
+        icon: <Compass className="h-4 w-4 text-violet-300" />,
+        shortDesc: 'Sieben Lernbereiche, Suche, Lernwege und veröffentlichte Lernimpulse',
+        path: '/learning?tab=overview',
+      },
+      {
         id: 'glossar',
         name: 'Market Vocabulary & Glossar',
         icon: <BookOpen className="w-4 h-4 text-amber-400" />,
