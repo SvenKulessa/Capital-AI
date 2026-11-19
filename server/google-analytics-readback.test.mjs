@@ -253,8 +253,22 @@ test('GA4 readback does not invent event counts from malformed numeric values', 
     }
     return original(tool, args);
   };
-  const snapshot = await buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' });
-  assert.equal(snapshot.realtime.events[0].eventCount, 0);
-  assert.equal(snapshot.sevenDay.events[0].eventCount, 0);
-  assert.equal(snapshot.eventEvidence.status, 'NO_PAGE_VIEW_OBSERVED');
+  await assert.rejects(
+    () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
+    /GA4_INVALID_EVENT_COUNT/,
+  );
+});
+
+
+test('GA4 readback fails closed when provider omits an event count', async () => {
+  const client = fakeClient();
+  const original = client.callTool;
+  client.callTool = async (tool, args) => {
+    if (tool === 'run_realtime_report') return { rows: [{ dimension_values: [{ value: 'page_view' }], metric_values: [] }] };
+    return original(tool, args);
+  };
+  await assert.rejects(
+    () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
+    /GA4_INVALID_EVENT_COUNT/,
+  );
 });

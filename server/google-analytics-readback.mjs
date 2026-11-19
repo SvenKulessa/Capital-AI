@@ -60,12 +60,10 @@ function readCell(container, camel, snake) {
 function eventCounts(payload) {
   return findRows(payload).slice(0, 25).map(row => {
     const eventName = String(readCell(row, 'dimensionValues', 'dimension_values') || '').slice(0, 120);
-    const rawCount = String(readCell(row, 'metricValues', 'metric_values') || '0');
+    const rawCount = String(readCell(row, 'metricValues', 'metric_values') ?? '');
     const parsed = /^\d+$/.test(rawCount) ? Number(rawCount) : NaN;
-    return Object.freeze({
-      eventName,
-      eventCount: Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0,
-    });
+    if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error('GA4_INVALID_EVENT_COUNT');
+    return Object.freeze({ eventName, eventCount: parsed });
   }).filter(row => row.eventName);
 }
 

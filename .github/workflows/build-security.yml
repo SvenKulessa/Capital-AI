@@ -237,6 +237,9 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           driver: docker-container
+          # Buildx v0.39.0 breaks local BuildKit context transfer for >490 .dockerignore patterns.
+          # Track upstream docker/buildx#4209; keep the full allowlist and all image scans intact.
+          version: v0.38.2
       - name: Build-Stufe ohne Installationswerkzeug bauen
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -310,7 +313,7 @@ jobs:
             -v "$PWD/shared:/app/shared:ro" \
             --entrypoint node capital-ai:${{ github.sha }} --run test:seo:runtime
       - name: Server-Regressionstests
-        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" -v "$PWD/supabase/migrations:/app/supabase/migrations:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/ecb-reference-rates.test.mjs /app/server/uniswap-trading.test.mjs /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/scorer-proxy.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/user-provider-vault.test.mjs /app/server/infrastructure-security.test.mjs /app/server/seo-indexing-policy.test.mjs /app/server/well-known.test.mjs
+        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" -v "$PWD/supabase/migrations:/app/supabase/migrations:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/ecb-reference-rates.test.mjs /app/server/uniswap-trading.test.mjs /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/scorer-proxy.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/user-provider-vault.test.mjs /app/server/infrastructure-security.test.mjs /app/server/seo-indexing-policy.test.mjs /app/server/well-known.test.mjs /app/server/google-analytics-readback.test.mjs
       - name: MARKET-E2E-Contract und npm test:market im isolierten Build-Image
         run: |
           # The build image already contains dev dependencies; do not install another toolchain.
