@@ -148,9 +148,20 @@ try{
       await until(count+'===1','DATE_FILTER');
       await setFilter('date','');
       await until(count+'===3','DATE_RESET');
-      const before=await evaluate("(() => {const s=document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary');s.focus();return s.parentElement.open;})()");
-      for(const type of ['rawKeyDown','keyUp'])await send('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
-      await until("document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary').parentElement.open==="+(!before),'SUMMARY_KEYBOARD');
+      const before=await evaluate("(() => {const s=document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary');s.focus();return {open:s.parentElement.open,focused:document.activeElement===s};})()");
+      assert.ok(before.focused,'Synthetic category folder summary cannot receive keyboard focus');
+      const summaryOpen="document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary').parentElement.open";
+      for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{
+        type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13,
+        ...(type==='keyDown'?{text:'\\r',unmodifiedText:'\\r'}:{})
+      });
+      if(await evaluate(summaryOpen)===before.open){
+        for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{
+          type,key:' ',code:'Space',windowsVirtualKeyCode:32,nativeVirtualKeyCode:32,
+          ...(type==='keyDown'?{text:' ',unmodifiedText:' '}:{}),
+        });
+      }
+      await until(summaryOpen+'==='+(!before.open),'SUMMARY_KEYBOARD');
     }else assert.ok(archive.text.includes('Keine freigegebenen Nachrichten'),'Unreviewed news publicly visible');
     const fields=await evaluate("(() => {const r=document.getElementById('analytics-news-archive').closest('section');"+
       "const all=[...r.querySelectorAll('input')];const search=all.find(e=>e.type==='text');search?.focus();"+
