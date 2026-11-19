@@ -185,3 +185,32 @@ test('bounded PR and deployment projections exclude credentials and user data', 
   assert.equal(body.render.deployments[0].finishedAt, '2026-11-19T03:30:00.000Z');
   assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|owner@example.test/);
 });
+
+test('AcodeX P1-v2 is archived owner-only evidence, never a live device probe', async () => {
+  const h = setup();
+  const denied = setup({ allowed: false });
+  assert.equal((await denied.request()).status, 404);
+  assert.equal(denied.calls.length, 0);
+  const { body } = await h.request();
+  const archive = body.acodex;
+  assert.equal(archive.classification, 'HISTORICAL_REFERENCE_ONLY');
+  assert.equal(archive.provenance, 'OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK');
+  assert.equal(archive.archiveStatus, 'VERIFIED');
+  assert.equal(archive.currentDeviceStatus, 'NOT_PROVEN');
+  assert.equal(archive.baselineUtc, '2026-11-18T23:11:25Z');
+  assert.equal(archive.expectedStartUtc, '2026-11-19T00:41:03Z');
+  assert.equal(archive.latestSuccessUtc, '2026-11-19T00:41:28Z');
+  assert.equal(archive.checkedUtc, '2026-11-19T00:43:05Z');
+  for (const code of ['healthExit', 'outerExit', 'guardAuditExit', 'newOAuthFailures', 'newPullFailures'])
+    assert.equal(archive[code], 0);
+  assert.equal(archive.lockClear, true);
+  assert.equal(archive.evidence.v11.sha256, '89b2215cf85420928c70271dffa38ee4ad51ccd07d1832b4bb35192e28c892a3');
+  assert.equal(archive.evidence.v1.sha256, '991b97eef4f31a69ece605347d9b6aeebc8405f0fcd30ee7e96d03869c5e5afd');
+  assert.equal(archive.evidence.standard.sha256, 'be03a2c479eddc1a40d4bad133e34b41e20039aa27ee5a776b05a24571d9eb17');
+  assert.equal(h.calls.length, 5);
+  assert.ok(h.calls.every(c => {
+    const url = new URL(c.url);
+    return url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname);
+  }));
+  assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|password|secret_value/i);
+});

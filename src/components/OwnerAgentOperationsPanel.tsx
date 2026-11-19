@@ -173,6 +173,33 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
             </div>)}
           </div>
         </Section>}
+        {view === 'evidence' && <Section title="AcodeX P1-v2 · archivierte Geräteabnahme">
+          {snapshot.acodex ? <div className="space-y-3 text-sm">
+            <p className="text-slate-300">Historischer Owner-Terminalnachweis mit unabhängig zurückgelesener Drive-Provenance. Keine Live-Verbindung zum Android-Gerät.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <span>Archiv <strong className="text-emerald-300">{snapshot.acodex.archiveStatus}</strong></span>
+              <span>Aktueller Gerätestatus <strong className="text-amber-200">{snapshot.acodex.currentDeviceStatus}</strong></span>
+            </div>
+            <dl className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+              <div><dt className="text-slate-400">Erwarteter Neustart (UTC)</dt><dd>{snapshot.acodex.expectedStartUtc}</dd></div>
+              <div><dt className="text-slate-400">Bestätigter Pull (UTC)</dt><dd>{snapshot.acodex.latestSuccessUtc}</dd></div>
+              <div><dt className="text-slate-400">Geräteabnahme (UTC)</dt><dd>{snapshot.acodex.checkedUtc}</dd></div>
+              <div><dt className="text-slate-400">Exit / Guard / Sperre</dt>
+                <dd>Health {snapshot.acodex.healthExit} · Guard {snapshot.acodex.guardAuditExit} · {snapshot.acodex.lockClear ? 'LOCK_CLEAR' : 'NOT_PROVEN'}</dd></div>
+            </dl>
+            <p className="text-xs text-slate-400">Keine neuen OAuth- oder Pull-Fehler im archivierten Logfenster. Dies bestätigt keine spätere Geräteverfügbarkeit.</p>
+            <ul className="space-y-2 text-xs">
+              {([
+                ['Abschluss v1.1', snapshot.acodex.evidence.v11],
+                ['Historische v1', snapshot.acodex.evidence.v1],
+                ['Governance-Standard', snapshot.acodex.evidence.standard],
+              ] as const).map(([name, file]) => <li key={name} className="rounded-lg border border-white/10 p-2">
+                <a href={file.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-200 underline underline-offset-2">{name}</a>
+                <p className="mt-1 break-all text-slate-400">SHA-256 {file.sha256}</p>
+              </li>)}
+            </ul>
+          </div> : <p className="text-amber-200">NOT_PROVEN · Keine archivierte AcodeX-Evidence im aktuellen Snapshot.</p>}
+        </Section>}
       </div>}
       {view === 'github' && <div role="tabpanel" className="space-y-3">
         <Section title="GitHub Pull Requests">
