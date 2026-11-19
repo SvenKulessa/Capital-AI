@@ -1,0 +1,28 @@
+name: Evidence Audit Python Tests
+on:
+  pull_request:
+    paths:
+      - 'scripts/evidence-audit/**'
+      - '.github/workflows/evidence-audit-python.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evidence-audit-negative-tests:
+    name: Evidence Audit Python Negative Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python version
+        run: python3 --version
+      - name: Run negative tests
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -m unittest discover -s scripts/evidence-audit -p 'test_*.py' -v 2>&1 | tee /tmp/evidence-audit-test.log
+          result=${PIPESTATUS[0]}
+          echo "PYTHON_TEST_EXIT_CODE=$result" >> "$GITHUB_STEP_SUMMARY"
+          exit "$result"
