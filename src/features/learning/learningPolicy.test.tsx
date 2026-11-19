@@ -202,7 +202,11 @@ test('PR 522: Buddy note text is human-readable, account-scoped via existing API
   const notes = readFileSync(new URL('../../components/BuddyStickyNotes.tsx', import.meta.url), 'utf8');
   const heroSource = readFileSync(new URL('../../components/HeroBuddy.tsx', import.meta.url), 'utf8');
   const learning = readFileSync(new URL('./LearningPortalPage.tsx', import.meta.url), 'utf8');
-  assert.match(buddy, /export function openHeroBuddy\(\)/);
+  // Public HeroBuddy API stays exported; its implementation moves to a tiny lazy-safe event bridge.
+  const buddyEvents = readFileSync(new URL('../../components/heroBuddyEvents.ts', import.meta.url), 'utf8');
+  assert.match(buddy, /export \{ HERO_BUDDY_EVENT, openHeroBuddy \} from '\.\/heroBuddyEvents';/);
+  assert.match(buddyEvents, /export function openHeroBuddy\(\)/);
+  assert.match(buddyEvents, /takePendingHeroBuddyOpen/);
   assert.match(buddy, /Als Notiz übernehmen/);
   const occClient = readFileSync(new URL('../account/privateNotesOcc.ts', import.meta.url), 'utf8');
   // The OCC editor must be absent from the initial home bundle, yet remain accessible on demand.
