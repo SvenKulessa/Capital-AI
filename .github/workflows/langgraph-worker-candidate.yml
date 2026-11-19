@@ -87,3 +87,69 @@ jobs:
             --ignorefile /dev/null --severity HIGH,CRITICAL \
             --exit-code 1 --no-progress
           echo "CANDIDATE_SCAN_PASS"
+      - name: Prove synthetic SQLite persistence across isolated container restarts
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="capital-ai-langgraph-candidate:$GITHUB_SHA"
+          state="$(mktemp -d "$RUNNER_TEMP/capital-ai-checkpoint.XXXXXXXX")"
+          trap 'sudo rm -rf -- "$state"' EXIT
+          mkdir -p "$state/checkpoints" "$state/inbox" "$state/approvals"
+          printf '%s\n' '{"schema":"CAPITAL_AI_OFFLINE_RESEARCH@1","task_id":"ci-restart-001","domain":"PLATFORM","query":"LangGraph checkpoint"}' > "$state/inbox/task.json"
+          chmod 0600 "$state/inbox/task.json"
+          chmod 0700 "$state" "$state/checkpoints" "$state/inbox" "$state/approvals"
+          sudo chown -R 10001:10001 "$state"
+
+          run_research() {
+            docker run --rm --platform linux/amd64 --network none --read-only \
+              --cap-drop ALL --security-opt no-new-privileges \
+              --user 10001:10001 \
+              --mount "type=bind,src=$state,dst=/var/lib/capital-ai-agent" \
+              --entrypoint python3 "$image" \
+              /app/scripts/growth-agent/worker_service.py \
+              --single /var/lib/capital-ai-agent/inbox/task.json
+          }
+          checkpoint_count() {
+            docker run --rm --platform linux/amd64 --network none --read-only \
+              --cap-drop ALL --security-opt no-new-privileges \
+              --user 10001:10001 \
+              --mount "type=bind,src=$state,dst=/var/lib/capital-ai-agent" \
+              --entrypoint python3 "$image" -c \
+              'from pathlib import Path;import sqlite3;p=list(Path("/var/lib/capital-ai-agent/checkpoints").glob("*.sqlite3"));assert len(p)==1;db=sqlite3.connect("file:"+str(p[0])+"?mode=ro",uri=True);print(db.execute("SELECT COUNT(*) FROM checkpoints").fetchone()[0]);db.close()'
+          }
+          # Fresh, separate PID/container each time; no model or provider network.
+          first="$(run_research)"
+          echo "$first" | grep -q '"status": "RESEARCH_DRAFT"'
+          before="$(checkpoint_count)"
+          test "$before" -gt 0
+          second="$(run_research)"
+          third="$(run_research)"
+          test "$first" = "$second"
+          test "$second" = "$third"
+          test "$(checkpoint_count)" = "$before"
+          test "$(sudo stat -c %a "$state/checkpoints")" = "700"
+          test "$(sudo stat -c %u "$state/checkpoints")" = "10001"
+          test "$(sudo stat -c %a "$state/inbox/task.json")" = "600"
+
+          # An exposed approval directory must block execution, not write state.
+          sudo chmod 0755 "$state/approvals"
+          set +e
+          run_research >/dev/null 2>&1
+          rejected=$?
+          set -e
+          test "$rejected" -ne 0
+          sudo chmod 0700 "$state/approvals"
+          test "$(checkpoint_count)" = "$before"
+
+          # No real mount: --serve must fail even if explicitly enabled.
+          set +e
+          docker run --rm --platform linux/amd64 --network none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --user 10001:10001 \
+            --env CAPITAL_AI_OFFLINE_WORKER_ENABLED=true \
+            "$image" >/dev/null 2>&1
+          mount_denied=$?
+          set -e
+          test "$mount_denied" -ne 0
+          echo "SYNTHETIC_DOCKER_MOUNT_RESTART_PASS"
+
