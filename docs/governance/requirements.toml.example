@@ -1,0 +1,13 @@
+# EXAMPLE ONLY. No policy activation by committing this file to Git.
+# Codex managed requirements must be distributed by a supported admin mechanism.
+# Managed permission profiles require Codex >= 0.138.0.
+# Other clients (ChatGPT, Acode, MCP servers) do not inherit these constraints.
+# AGENTS.md stays the only repository-authorizing engineering policy.
+
+allowed_approval_policies = ["on-request"]
+allowed_approvals_reviewers = ["user"]
+default_permissions = ":workspace"
+
+[allowed_permission_profiles]
+":read-only" = true
+":workspace" = true
