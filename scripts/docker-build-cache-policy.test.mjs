@@ -45,7 +45,7 @@ test('Buildx avoids v0.39.0 context/header regression with long Docker allowlist
   // docker/buildx#4209: v0.39.0 fails above 490 ignore patterns.
   // Do not change the allowlist or weaken any scan to address a builder transport bug.
   if (patterns.length > 490) {
-    assert.match(setup, /\n          version: v0\.38\.2\n/);
+    assert.match(setup, /\n          version: v0\.38\.2(?:\n|$)/);
   }
   assert.match(setup, /driver: docker-container/);
 });
