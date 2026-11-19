@@ -26,3 +26,12 @@ Ein unabhängiger, bereits autorisierter Supermetrics-GA4-Connector konnte im Ch
 
 ## Rollback
 Den Feature-Squash auf Main zurücknehmen. Keine persistente Daten- oder Provider-Migration; keine Änderung an OAuth-Scopes oder Public-Messung.
+
+
+## Owner-only Diagnose (ohne Secrets)
+- Unabhängige GA4-Quelle: Der bereits verbundene Supermetrics-Connector bestätigt Property `548187678` als lesbar. **Keine** Übertragung von Supermetrics-Zugangsdaten ins Render-Backend, keine gleichgesetzten Runtime-Rechte.
+- Render-Service-Metadaten belegen lediglich den automatischen `main`-Deploy; sie belegen **nicht** die Existenz von `GOOGLE_ANALYTICS_PROPERTY_NUMBER`, `GOOGLE_ANALYTICS_CLOUD_PROJECT` oder `GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON`. Diese Werte dürfen nicht in Logs, Dashboard oder PR ausgegeben werden.
+- Nur der serverseitig bereits geschützte Owner-Readback erhält nun streng allowlistierte **Fehlerkategorien** statt des bisherigen einheitlichen `PROVIDER_READ_FAILED`. Beispiele: `GA4_PROPERTY_CONFIG_MISSING`, `GA4_CREDENTIAL_CONFIG_MISSING`, `GA4_PROJECT_BINDING_MISMATCH`, `GA4_MCP_RUNTIME_UNAVAILABLE`, `GA4_PROPERTY_ACCESS_NOT_PROVEN`, `GA4_PROPERTY_BINDING_NOT_PROVEN`, `GA4_READBACK_TIMEOUT`.
+- Alle unbekannten Fehler (auch solche mit möglicherweise sensiblen Texten) bleiben `PROVIDER_READ_FAILED`. Die Klassifikation gibt keine Token, Dateien, Identitäten, Key-JSON, Providerantworten oder Rohlogs weiter. Sie ist ein Diagnosesignal, **kein** Nachweis funktionierender Providerzugriffe oder einer berechtigten IAM-Rolle.
+- Bei festgestelltem Property- oder Credential-Problem ausschließlich bestehende autorisierte Betreiberwege nutzen; keine Keys, zusätzlichen Scopes, IAM-Rechte oder kostenpflichtigen Dienste auf Verdacht einschalten.
+- Besitzer-Verifikation über eine bestehende authentifizierte Sitzung und einen wirklich ausgeführten Readback bleibt `NOT_PROVEN`, bis ein solcher Abruf mit passender Berechtigung und sicherem Status beobachtet wurde.
