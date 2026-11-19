@@ -48,3 +48,10 @@ Vollständige Konformität von Gradients, Icons, Fokus und überlagerten Fläche
 - Zusätzlich enthält der neue Main bereits den Avatar-Fallback, den als angemeldet gekennzeichneten Owner-Bereich und den sicheren GitHub-Ausweichlink aus PR #828. Keine Duplikat-Implementierung.
 - Der frühere BuildKit-HTTP2-Fehler wurde auf Main in #823 separat korrigiert; die neue Docker-Security-CI muss den neuen Head erneut prüfen.
 - Die tatsächliche Render-/GitHub-/GA4-Providerberechtigung ist nicht durch synthetische Chromium-Fixtures belegt. Fehlende Readbacks bleiben `NOT_PROVEN`.
+
+## Exakter Screenshot-Pfad und Zeitkorrelation
+
+- Die vier vom Owner bereitgestellten mobilen Screenshots zeigen `/profile/dashboard` mit geöffnetem Tab `Owner Operations`; deshalb testet der Chromium-Runner nun **beide** Wege bei 320, 390 und 1440 CSS-Pixeln: den bestehenden `/profile/render-dashboard`-Pfad und den tatsächlichen privaten Dashboard-Tab. Der Tab wird per Tastatur-/DOM-Interaktion ausgewählt, seine `aria-selected`-Markierung und das reale Owner-Panel geprüft. Zusätzlich werden horizontale Überläufe, Touch-Ziele, 200%-Textzoom, fehlende Quellen und Nicht-Owner-Sessions überprüft.
+- Screenshot-Uhrzeit 18:32–18:34 Uhr Europe/Berlin lag **vor** dem durch Render bestätigten Live-Deploy von #828 um 19:04 Uhr Europe/Berlin (`3fc132cd6ff4a65963d80381b5bfc3330068e4c9`) und vor dem #829-Deploy um 19:33 Uhr Europe/Berlin (`12c70f09459f4cb01ff367da7281e8af91f48123`). Die Screenshots allein beweisen daher keine Regression der bereits in Main korrigierten Avatar-/Owner-UX.
+- Github-PR-Zahlen sind nur bei echtem serverseitigem GitHub-Readback verifiziert; isolierte Chromium-Screenshots mit Fixtures sind niemals Kunden-/Provider-Evidence. Die Render-seitige `GITHUB_TOKEN`-Bindung ist unabhängig vom Chat-GitHub-Connector und derzeit nicht verifiziert; keine Credential-Änderung und kein synthetischer PR-Zähler.
+- Das React-Avatar-Fallback, der neutrale Owner-Badge und der sichere GitHub-Direktlink sind bereits via PR #828 in Main. Vorherige Evidence darf diese Arbeiten nicht erneut als neue Implementierung behaupten.
