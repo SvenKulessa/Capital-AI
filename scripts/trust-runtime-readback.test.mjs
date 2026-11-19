@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { projectHealth, readHealth, readTinyFishConfig } from './trust-runtime-readback.mjs';
+import { projectHealth, readHealth, readTinyFishConfig, healthReadbackSummary } from './trust-runtime-readback.mjs';
 
 const SHA = 'a'.repeat(40);
 const BUILDER = 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml';
@@ -133,4 +133,37 @@ test('Render source mismatch, invalid SHA, forged evidence or mixed builder fail
     { ...render(SHA, 'RENDER_GIT_BUILD_ARG_UNATTESTED'),
       buildIdentity: { bound: true, sourceSha: SHA, builder: BUILDER } },
   ]) assert.throws(() => projectHealth(200, bad), Error);
+});
+
+test('readback summary surfaces pending deploy drift without failing the immutable HTTP projection', () => {
+  const currentMain = 'b'.repeat(40);
+  const observed = projectHealth(200, health(), currentMain);
+  const summary = healthReadbackSummary(observed);
+  assert.match(summary, /NOT_PROVEN_RUNTIME_SHA_DRIFT/);
+  assert.match(summary, /NOT_PROVEN_UNBOUND/);
+  assert.match(summary, /OCI \/ Sigstore attestation: NOT_PROVEN/);
+  assert.ok(summary.includes(currentMain));
+  assert.ok(summary.includes(SHA));
+  assert.equal(summary.includes('should-never-be-projected'), false);
+  assert.equal(observed.runtimeMatchesExpectedMain, false);
+});
+
+test('matching HTTP runtime is only a source claim, never a proven OCI attestation', () => {
+  const observed = projectHealth(200, { ...health(), renderGitBuildIdentity: {
+    sourceSha: SHA, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED'
+  } }, SHA);
+  const summary = healthReadbackSummary(observed);
+  assert.match(summary, /HTTP_SHA_CLAIM_MATCH_ONLY/);
+  assert.match(summary, /RENDER_GIT_SHA_CLAIM_MATCH_ONLY/);
+  assert.match(summary, /NOT_PROVEN_UNBOUND/);
+  assert.match(summary, /OCI \/ Sigstore attestation: NOT_PROVEN/);
+});
+
+test('bound HTTP builder claim does not self-authorize signed image provenance', () => {
+  const bound = health();
+  bound.buildIdentity = { bound: true, sourceSha: SHA, builder: BUILDER };
+  const summary = healthReadbackSummary(projectHealth(200, bound, SHA));
+  assert.match(summary, /HTTP_BOUND_BUILDER_CLAIM_NOT_ATTESTED/);
+  assert.match(summary, /OCI \/ Sigstore attestation: NOT_PROVEN/);
+  assert.throws(() => healthReadbackSummary({ schema: 'FORGED' }), /READBACK_REPORT_INVALID/);
 });

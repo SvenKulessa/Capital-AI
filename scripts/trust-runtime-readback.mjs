@@ -1,6 +1,7 @@
 // Read-only runtime evidence. Never project response bodies, credentials, or unlisted fields.
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { appendFileSync } from 'node:fs';
 
 const SHA = /^[0-9a-f]{40}$/;
 const BUILDER = 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml';
@@ -79,6 +80,36 @@ export function projectHealth(httpStatus, body, expectedMainSha = null) {
     expectedMainSha: expected,
     runtimeMatchesExpectedMain: expected == null ? null : runtimeSha === expected,
   };
+}
+
+// Evidence classification is deliberately non-authorizing: an HTTP response
+// can corroborate a source SHA but cannot attest the OCI image or GitHub builder.
+export function healthReadbackSummary(report) {
+  if (!report || report.schema !== 'CAPITAL_AI_RUNTIME_HTTP_READBACK@1') {
+    throw new Error('READBACK_REPORT_INVALID');
+  }
+  const runtimeState = report.runtimeMatchesExpectedMain === true
+    ? 'HTTP_SHA_CLAIM_MATCH_ONLY'
+    : report.runtimeMatchesExpectedMain === false
+      ? 'NOT_PROVEN_RUNTIME_SHA_DRIFT' : 'NOT_PROVEN_EXPECTED_MAIN_MISSING';
+  const buildState = report.buildIdentity?.bound === true
+    ? 'HTTP_BOUND_BUILDER_CLAIM_NOT_ATTESTED' : 'NOT_PROVEN_UNBOUND';
+  const renderState = report.renderGitBuildIdentity?.matchesRuntime === true
+    ? 'RENDER_GIT_SHA_CLAIM_MATCH_ONLY'
+    : report.renderGitBuildIdentity?.matchesRuntime === false
+      ? 'NOT_PROVEN_RENDER_SHA_DRIFT' : 'NOT_PROVEN_RENDER_GIT_SHA';
+  const value = sha => /^[0-9a-f]{40}$/.test(sha || '') ? sha : 'NOT_PROVEN';
+  return [
+    '### TRUST Runtime Readback – HTTP evidence only',
+    '- Runtime source SHA: ' + value(report.runtimeIdentity?.sourceSha),
+    '- Expected main SHA: ' + value(report.expectedMainSha),
+    '- Runtime/Main: ' + runtimeState,
+    '- Render Git/Runtime: ' + renderState,
+    '- Baked BuildIdentity: ' + buildState,
+    '- OCI / Sigstore attestation: NOT_PROVEN',
+    '- This is a read-only snapshot, not a merge gate or deployment admission.',
+    '',
+  ].join('\n');
 }
 
 function originUrl(origin) {
@@ -183,6 +214,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         expectedMainSha: process.env.CAPITAL_EXPECTED_MAIN_SHA || null,
       });
       console.log('HEALTHZ_IDENTITY_EVIDENCE ' + JSON.stringify(report));
+      if (process.env.GITHUB_STEP_SUMMARY) {
+        appendFileSync(process.env.GITHUB_STEP_SUMMARY, healthReadbackSummary(report));
+      }
     } catch {
       console.error('HEALTHZ_IDENTITY_NOT_PROVEN');
       process.exitCode = 1;
