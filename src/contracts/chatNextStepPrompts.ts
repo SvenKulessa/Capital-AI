@@ -1,5 +1,5 @@
 /** Deterministic, non-authorizing follow-up prompts for CAPITAL-AI's first-party chat windows. */
-import skillRegistry from '../../.agents/skills/registry.json';
+import skillRegistry from '../../.agents/skills/registry.json' with { type: 'json' };
 
 export type ChatDomain = 'PRODUCT' | 'MARKET' | 'PLATFORM' | 'TRUST' | 'GROWTH';
 export type ChatFollowUp = {
