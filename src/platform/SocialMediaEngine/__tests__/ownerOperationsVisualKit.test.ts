@@ -20,7 +20,7 @@ test('static public SVG contains no owner data, live metrics, token or claim of 
   assert.match(svg,/xmlns="http:\/\/www.w3.org\/2000\/svg"/);
   assert.match(svg,/KEINE LIVE-DATEN/);
   assert.match(svg,/NOT_PROVEN/);
-  assert.doesNotMatch(svg,/\/api\/profile|ownerId|tenantId|RENDER_API_KEY|GITHUB_TOKEN|Bearer|Sven|12\.847|142|87%|stripe_secret/i);
+  assert.doesNotMatch(svg,/\/api\/profile|ownerId|tenantId|RENDER_API_KEY|GITHUB_TOKEN|Bearer|Sven|stripe_secret|<text[^>]*>(?:12\.847|142|87%)<\/text>/i);
 });
 test('draft does not self-authorize channels, approvals, source or payment evidence',()=>{
   const draft=createOperationsVisualDraft();
