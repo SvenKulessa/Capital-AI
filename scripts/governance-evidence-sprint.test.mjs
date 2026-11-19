@@ -82,12 +82,12 @@ test('organic campaign contains three qualified human-reviewed draft messages wi
 });
 
 test('B2B conversion attribution is consented and emits only after SMTP receipt', () => {
-  assert.match(measurable, /'\\/governance-evidence-sprint'/);
-  assert.match(page, /trackReceivedGovernanceSprintInquiry\\(result\\.receipt\\)/);
+  assert.ok(measurable.includes("'/governance-evidence-sprint'"));
+  assert.ok(page.includes('trackReceivedGovernanceSprintInquiry(result.receipt)'));
   assert.ok(page.indexOf("result.status !== 'MAIL_SERVER_ACCEPTED'") <
     page.indexOf('trackReceivedGovernanceSprintInquiry(result.receipt)'));
-  assert.match(consented, /window\\.location\\.origin !== 'https:\\/\\/capital-ai\\.online'/);
-  assert.match(consented, /window\\.location\\.pathname !== '\\/governance-evidence-sprint'/);
-  assert.match(consented, /lead_type: 'governance_evidence_sprint_inquiry'/);
-  assert.doesNotMatch(page, /trackEvent\\(|localStorage|sessionStorage|GA4_MEASUREMENT_ID|STRIPE_SECRET_KEY/);
+  assert.ok(consented.includes("window.location.origin !== 'https://capital-ai.online'"));
+  assert.ok(consented.includes("window.location.pathname !== '/governance-evidence-sprint'"));
+  assert.ok(consented.includes("lead_type: 'governance_evidence_sprint_inquiry'"));
+  assert.doesNotMatch(page, /trackEvent\(|localStorage|sessionStorage|GA4_MEASUREMENT_ID|STRIPE_SECRET_KEY/);
 });
