@@ -1,6 +1,7 @@
 // CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1
 // Owner-only, server-side, read-only projections. Historical snapshot is a schema reference,
 // never a fallback for missing live data. No browser credentials or provider URLs.
+import { ACODEX_P1_V2_ARCHIVE } from './acodex-p1-v2-archive.mjs';
 const PATH = '/api/profile/evidence-dashboard-readback';
 const REPOSITORY = 'SvenKulessa/Capital-AI';
 const SERVICE_ID = 'srv-dau1rp893c1s73cdhm1g';
@@ -168,6 +169,8 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
         generatedAt: new Date(ts).toISOString(),
         baseline: { schema: 'CAPITAL_AI_EVIDENCE_SNAPSHOT_V1', date: '2026-11-19', status: 'HISTORICAL_REFERENCE_ONLY', valuesImported: false },
         github, render, ga4,
+        // Historical device evidence only. No live Android/Drive fetch or current health claim.
+        acodex: ACODEX_P1_V2_ARCHIVE,
         comparison: {
           mainVsDeploy: github.status === 'VERIFIED_PROVIDER_READ' && render.status === 'VERIFIED_PROVIDER_READ'
             ? (github.mainSha === render.sourceCommitSha ? 'MATCH_PROVIDER_CLAIMS_ONLY' : 'DRIFT_PROVIDER_CLAIMS')
