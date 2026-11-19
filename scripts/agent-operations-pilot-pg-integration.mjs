@@ -76,6 +76,13 @@ async function main() {
   assert.equal(await create(BOB, 6, 'alpha-key-00001'), 'created');
   assert.equal(await psql('select count(*) from public.agent_operations_pilot_runs where user_id=' +
     "'" + ALICE + "'::uuid;"), '2');
+  // Exercise the RLS policy independently of ACL revocation in this disposable DB.
+  await psql('grant select on table public.agent_operations_pilot_runs to authenticated;');
+  assert.equal(await psql('set role authenticated; select count(*) from public.agent_operations_pilot_runs;'), '0');
+  await psql('revoke select on table public.agent_operations_pilot_runs from authenticated;');
+  // Invalid foreign-key writes must roll back without spending a quota unit.
+  await assert.rejects(create('44444444-4444-4444-8444-444444444444', 9, 'invalid-owner-0001'));
+  assert.equal(await psql('select count(*) from public.agent_operations_pilot_runs;'), '3');
   assert.equal(await psql('set role service_role; select public.capital_ai_get_agent_pilot_run(' +
     "'" + BOB + "'::uuid,'" + RUN(1) + "'::uuid) is null;"), 't');
   const ownHash = payload(RUN(1)).hash;
