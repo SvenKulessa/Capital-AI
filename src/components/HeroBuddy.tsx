@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { Camera, EyeOff, Move, PenLine, Settings, StickyNote, X } from 'lucide-react';
 import { clampHeroBuddyPoint } from './heroBuddyPosition';
-import { ChatNextStepActions } from './ChatNextStepActions';
 import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
 type HeroBuddyProps = {
@@ -17,6 +16,7 @@ type BuddyMessage = { id: string; role: 'buddy' | 'user'; text: string };
 type AssistReason = 'hesitation' | 'repeat' | 'oscillation' | 'dwell';
 
 const JaJa3DAvatar = lazy(() => import('./JaJa3DAvatar'));
+const ChatNextStepActions = lazy(() => import('./ChatNextStepActions').then(module => ({ default: module.ChatNextStepActions })));
 // Private note editor is not part of the initial home bundle. Open it only on demand.
 const BuddyStickyNotes = lazy(() => import('./BuddyStickyNotes').then(module => ({ default: module.BuddyStickyNotes })));
 const DISCLAIMER = 'JaJa erklärt Zusammenhänge. Keine Anlageberatung.';
@@ -391,7 +391,9 @@ export function HeroBuddy(props: HeroBuddyProps) {
                   </div>
                 ))}
               </div>
+              <Suspense fallback={null}>
               <ChatNextStepActions task={[...messages].reverse().find(message => message.role === 'user')?.text ?? ''} compact />
+              </Suspense>
               <div className="mt-2 flex flex-wrap gap-1">
                 {actions.map((action) => (
                   <button key={action.label} type="button" onClick={action.run} className="rounded-full border border-slate-700 px-2 py-1 text-[10px] text-slate-300">{action.label}</button>
