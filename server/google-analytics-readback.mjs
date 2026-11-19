@@ -37,7 +37,7 @@ export function safeGa4FailureReason(error) {
   if (OWNER_SAFE_GA4_FAILURES.has(code)) return code;
   if (/^GA4_MCP_REQUIRED_TOOL_MISSING_(get_account_summaries|get_property_details|run_realtime_report|run_report)$/.test(code))
     return 'GA4_REQUIRED_TOOL_MISSING';
-  if (/^GA4_MCP_TIMEOUT_(initialize|tools\\/list|tools\\/call)$/.test(code))
+  if (/^GA4_MCP_TIMEOUT_(initialize|tools\/list|tools\/call)$/.test(code))
     return 'GA4_MCP_REQUEST_TIMEOUT';
   return 'GA4_READBACK_FAILED';
 }
