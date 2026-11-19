@@ -42,7 +42,8 @@ const dateText = (value?: string | null) =>
 async function verifySession(userId: string, signal: AbortSignal) {
   const response = await fetch('/api/auth/session', { method: 'GET', credentials: 'same-origin', cache: 'no-store', signal });
   const body = response.ok ? await response.json() : null;
-  if (!body || body.authenticated !== true || body.mfaRequired === true || body.user?.id !== userId)
+  if (!body || body.authenticated !== true || body.mfaRequired === true || body.user?.id !== userId ||
+      body.account?.available !== true || body.account?.iamRole !== 'owner')
     throw Error('SESSION_CHANGED');
 }
 
