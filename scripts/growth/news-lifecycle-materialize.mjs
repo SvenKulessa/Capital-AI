@@ -1,10 +1,10 @@
 // Offline writer for a reviewed editorial transaction. No provider, scheduler or deployment action.
-import { lstat, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve, sep } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { publishedNews, newsArchivePath, retireNews } from '../../shared/news-lifecycle.mjs';
 import { assertHomeEditionAdmission } from './news-lifecycle-home-admission.mjs';
+import { persistNewsFiles, recoverNewsLifecycle } from './news-lifecycle-transaction.mjs';
 
 export const DEFAULT_NEWS_REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const editionFile = 'src/features/home/homeEditorialEdition.json';
@@ -37,63 +37,25 @@ export function plannedNewsFiles(result) {
   return files;
 }
 export async function writeNewsLifecycle(result, root = DEFAULT_NEWS_REPO_ROOT) {
-  const files = plannedNewsFiles(result);
   const dir = resolve(root);
-  // Cross-check against the version currently on disk. A forged CLI output or
-  // direct materializer call with an empty index is not publication authority.
+  // Recover a crash-interrupted local transaction BEFORE reading either manifest.
+  // An active writer or a corrupt journal blocks the operation (never fail open).
+  await recoverNewsLifecycle(dir);
+  const files = plannedNewsFiles(result);
+  // Cross-check the existing edition/index pair. This is not publication authority.
   const currentEdition = await existing(resolve(dir, editionFile));
   const currentIndex = await existing(resolve(dir, indexFile));
-  // The two manifests are one logical state: never initialize over a partial
-  // checkout or let a direct --write call silently drop recorded history.
   if ((currentEdition === null) !== (currentIndex === null)) throw Error('NEWS_LIFECYCLE_PARTIAL_STATE');
   if (currentEdition !== null) {
     const previous = JSON.parse(currentEdition);
     const index = JSON.parse(currentIndex);
     await assertHomeEditionAdmission(previous, result.edition);
     const expected = retireNews(previous, result.edition, index, result.edition.date);
-    if (JSON.stringify(expected) !== JSON.stringify(result.index)) {
-      throw Error('NEWS_LIFECYCLE_STATE_MISMATCH');
-    }
+    if (JSON.stringify(expected) !== JSON.stringify(result.index)) throw Error('NEWS_LIFECYCLE_STATE_MISMATCH');
   }
-  const writes = [];
-  const rollback = [];
-  // Never follow an existing symlink to a target outside the project tree.
-  async function rejectSymlinks(pathname) {
-    let cursor = dirname(pathname);
-    while (cursor.startsWith(dir + sep)) {
-      try { if ((await lstat(cursor)).isSymbolicLink()) throw Error('NEWS_ARCHIVE_SYMLINK'); }
-      catch (error) { if (error?.code !== 'ENOENT') throw error; }
-      cursor = dirname(cursor);
-    }
-    try { if ((await lstat(pathname)).isSymbolicLink()) throw Error('NEWS_ARCHIVE_SYMLINK'); }
-    catch (error) { if (error?.code !== 'ENOENT') throw error; }
-  }
-  // Preflight: archive snapshots are immutable, mutable index and edition are versioned in Git.
-  for (const file of files) {
-    const destination = resolve(dir, file.path);
-    if (!destination.startsWith(dir + sep)) throw Error('NEWS_ARCHIVE_TRAVERSAL');
-    await rejectSymlinks(destination);
-    const previous = await existing(destination);
-    const content = JSON.stringify(file.data, null, 2) + '\n';
-    if (file.path.startsWith(archiveRoot + '/') && previous !== null && previous !== content) throw Error('NEWS_ARCHIVE_IMMUTABLE');
-    writes.push({ destination, previous, content });
-  }
-  try {
-    for (const write of writes) {
-      await mkdir(dirname(write.destination), { recursive: true });
-      if (write.previous === write.content) continue;
-      const tmp = write.destination + '.' + randomUUID() + '.tmp';
-      await writeFile(tmp, write.content, { flag: 'wx', mode: 0o600 });
-      try { await rename(tmp, write.destination); }
-      finally { await rm(tmp, { force: true }); }
-      rollback.push(write);
-    }
-  } catch (error) {
-    for (const write of rollback.reverse()) {
-      if (write.previous === null) await rm(write.destination, { force: true });
-      else await writeFile(write.destination, write.previous, { flag: 'w' });
-    }
-    throw error;
-  }
-  return writes.map(item => item.destination);
+  // WAL + directory/file fsync + atomic journal marker. A concurrent writer
+  // cannot commit over the preflight snapshot; a stale baseline fails closed.
+  return persistNewsFiles(files.map(file => ({
+    path: file.path, content: JSON.stringify(file.data, null, 2) + '\n',
+  })), dir, { expected: { [editionFile]: currentEdition, [indexFile]: currentIndex } });
 }
