@@ -17,9 +17,17 @@ Die beiden Build-Argumente `PYTHON_BUILD_BASE` und `PYTHON_BASE`
 sind verpflichtend. Die bestehende optionale Candidate-CI löst die
 OCI-Digests vor dem Build auf, prüft `linux/amd64` und Python 3.14
 und benutzt ausschließlich Referenzen im Format `@sha256:...`.
-Die zur CI-Zeit festgehaltenen Digests sind **keine dauerhafte
-Repository-Pin-Freigabe**; vor einem Merge müssen sie unveränderlich
-und nach erfolgreichem Scanner-Nachweis festgeschrieben werden.
+Nach bestandenem unverändertem Trivy-Scan wurden die im Kandidaten-Job
+nachgewiesenen `linux/amd64`-Referenzen **dauerhaft im bestehenden
+optionalen Candidate-Workflow festgeschrieben**:
+
+- Builder: `bellsoft/hardened-python@sha256:267c24fca93f8882fde084442224fe230231b0c0b095f4b182ecb2d54d6cb72a`
+- Runtime: `bellsoft/hardened-python@sha256:bb03a9fdd7fd8e03b3ac887ca6c480d29aba1a4fe99e1eee6501588042e5f2d9`
+
+Diese Digests und das Python-3.14-Profil werden bei jeder relevanten PR-CI
+erneut geprüft. Neue Vendor-Tags dürfen den getesteten Build nicht
+stillschweigend verändern; künftige Security-Patches erfordern reguläres
+Digest-Update mit gleichem Scan-Gate.
 
 Der finale Worker bleibt default-OFF, UID/GID `10001:10001`, ohne
 Provider-Zugang. Der distroless-Basiskandidat enthielt unnötige
@@ -172,6 +180,28 @@ python3 scripts/growth-agent/worker_service.py \
 
 Es werden lediglich Status, geroutete Agenten und Quellenanzahl ausgegeben.
 Kein Provider-Token, Deployment oder Merge ist für diesen Ablauf nötig.
+
+## Isolierte Candidate-Evidence (19.11.2026)
+
+- Der ursprüngliche Debian-Trixie-Kandidat zeigte 47 HIGH-OS-Befunde.
+- BellSoft-Multistage mit Paketen aus dem alten Python-Bootstrap: 5 HIGH,
+  1 CRITICAL, daher fehlgeschlagen (Run `44477366852`).
+- Minimalisierte BellSoft-Runtime mit den oben festgelegten Digests:
+  Kandidaten-Build, Offline-RAG, UID/default-OFF und der **unveränderte**
+  Trivy-Scanner erfolgreich (Run `44477933980`).
+- Wiederholte Containerabnahme am synchronisierten Branch:
+  [Candidate 44478673551](https://github.com/SvenKulessa/Capital-AI/actions/runs/44478673551)
+  erfolgreich inklusive synthetischem SQLite-Restart-Test. Drei separate,
+  nicht vernetzte Python-Container nutzen denselben bind-gemounteten
+  Zustand. Die Checkpoint-Anzahl darf beim erneuten Öffnen nicht wachsen;
+  unsichere Verzeichnisrechte und Start ohne Mount müssen scheitern.
+- Diese Evidence beweist ausschließlich die **isolierte GitHub-CI**
+  und nicht einen vorhandenen Render-Worker, eine Render-Restart-Policy
+  oder die Provider-Persistenz der zukünftigen Disk.
+- Die Vendor-/Komponentenlizenzen und Redistributierbarkeit sind vor
+  GHCR-Veröffentlichung gesondert anhand einer tatsächlich erzeugten
+  SBOM zu klären. Öffentliche Images allein erlauben keine pauschale
+  kommerzielle Redistributionsfreigabe.
 
 ## Abnahme für spätere Aktivierung
 
