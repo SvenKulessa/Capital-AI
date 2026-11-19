@@ -1,0 +1,361 @@
+{
+  "schema": "CAPITAL_AI_OS_RECIPE_LOCK@1",
+  "evidenceState": "APKBUILD_VERSION_AND_GIT_BLOB_VERIFIED_ARCHIVES_NOT_DOWNLOADED",
+  "sourceRunId": 44601519182,
+  "sourceArtifactId": 14569725774,
+  "sourceSha": "03dcdb6426f30ca0b2b575060773d7ea84480fd0",
+  "testedMergeSha": "03dcdb6426f30ca0b2b575060773d7ea84480fd0",
+  "localImageConfigDigest": "sha256:5e4958217461643deca09a0ea29e28c868b989dc769b3762349bc1d0b64ad259",
+  "publishedOCIManifestDigest": null,
+  "installedApkDbSha256": "sha256:99e107010fa8f9a6928b2de3970eb8a0834e655dc7c534a5e6cfaa26007b7e4f",
+  "alpineRelease": "3.24.4",
+  "binaryPackageCount": 50,
+  "sourceRecipeCount": 34,
+  "upstream": "https://github.com/alpinelinux/aports",
+  "recipes": [
+    {
+      "sourcePackage": "alpine-base",
+      "version": "3.24.4-r0",
+      "aportsCommit": "105b835acd9971b9770fb61f5a1ddcc133c180dc",
+      "apkbuildGitBlob": "0f4cb99560e69e1c60c568a84a4368ac6af362ca",
+      "path": "main/alpine-base/APKBUILD",
+      "declaredSha512Entries": 0,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "alpine-baselayout",
+      "version": "3.7.2-r1",
+      "aportsCommit": "60a7585bbab2fa0f762504eb617dbca90216e31f",
+      "apkbuildGitBlob": "d79c198a0a923f2781242b9553afaecd65d95afc",
+      "path": "main/alpine-baselayout/APKBUILD",
+      "declaredSha512Entries": 14,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "alpine-keys",
+      "version": "2.6-r0",
+      "aportsCommit": "b9f23becced4d7b3ccc0fa0f28530243ccd314a0",
+      "apkbuildGitBlob": "ce73c58e12d1687ca50e27c962c159aaf99e6180",
+      "path": "main/alpine-keys/APKBUILD",
+      "declaredSha512Entries": 18,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "apk-tools",
+      "version": "3.0.9-r0",
+      "aportsCommit": "13685e8f2cf1c103cbba2fb9efcfcf19f4918df0",
+      "apkbuildGitBlob": "72465aaf6f71888d9ce866e1906e1b46838a044c",
+      "path": "main/apk-tools/APKBUILD",
+      "declaredSha512Entries": 2,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "brotli",
+      "version": "1.2.1-r0",
+      "aportsCommit": "8313352127992a9d82e2c2024494f6c38a4dffb4",
+      "apkbuildGitBlob": "fc05f72e7cee892a5696413b25aae0604622e5bc",
+      "path": "main/brotli/APKBUILD",
+      "declaredSha512Entries": 3,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "busybox",
+      "version": "1.37.0-r31",
+      "aportsCommit": "c3ef5d10e6ef6528852c51f0564963e2f8c1be19",
+      "apkbuildGitBlob": "8b0ce27e089dcabb2b16b78c556ecc65a7c292cb",
+      "path": "main/busybox/APKBUILD",
+      "declaredSha512Entries": 75,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "bzip2",
+      "version": "1.0.8-r6",
+      "aportsCommit": "33283848034c9885d984c8e8697c645c57324938",
+      "apkbuildGitBlob": "6e5ba04a7413a8b300d0c40d3528496181c219b6",
+      "path": "main/bzip2/APKBUILD",
+      "declaredSha512Entries": 7,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "c-ares",
+      "version": "1.34.9-r0",
+      "aportsCommit": "50f178d7a4c30ea44b54b7d4731ab58558c38b14",
+      "apkbuildGitBlob": "f3effc25ea65407d517e69bcf6fd835722691425",
+      "path": "main/c-ares/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "ca-certificates",
+      "version": "20261020-r0",
+      "aportsCommit": "e78f5987166c6ffbe23f6472e2e8f040298fe2da",
+      "apkbuildGitBlob": "c76805bafbc2a5867c1fe67aa0437573022a36fd",
+      "path": "main/ca-certificates/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "clamav",
+      "version": "1.4.7-r0",
+      "aportsCommit": "b1b3bfe3756fbac5029deaba411987817c059d89",
+      "apkbuildGitBlob": "59e297594fd1a6aae27f9db9dafd4068ab891588",
+      "path": "community/clamav/APKBUILD",
+      "declaredSha512Entries": 9,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "curl",
+      "version": "8.23.0-r0",
+      "aportsCommit": "c65a7b3f6d6bc4b3c0a8a6fff759d8fd05a167ce",
+      "apkbuildGitBlob": "925998a08d860b6b8e85d568776c5a6ced0754ae",
+      "path": "main/curl/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "expat",
+      "version": "2.10.0-r0",
+      "aportsCommit": "af0fa42036cd6e626768c0d65fddaa1d1b30cf21",
+      "apkbuildGitBlob": "28ae250718b723c4e9a80cd14c947d2c773add9f",
+      "path": "main/expat/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "gcc",
+      "version": "15.2.0-r5",
+      "aportsCommit": "423a8ad043d07f2c7546c8ec3e2b0384cda360ae",
+      "apkbuildGitBlob": "56963453e7d741a190e1c3f249810f1e13959835",
+      "path": "main/gcc/APKBUILD",
+      "declaredSha512Entries": 45,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "gdbm",
+      "version": "1.26-r0",
+      "aportsCommit": "1ea03990396db618edfcc8a9a0bc6b72662bac8f",
+      "apkbuildGitBlob": "8715fab39c216b658ff5f11f38acdeb6b4304ff3",
+      "path": "main/gdbm/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "json-c",
+      "version": "0.18-r1",
+      "aportsCommit": "8e0faa63c91abd41feb359ce5fe4299a88a57ef1",
+      "apkbuildGitBlob": "9958ea80087ce29d74b416cb55e239334a285f7c",
+      "path": "main/json-c/APKBUILD",
+      "declaredSha512Entries": 2,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "libffi",
+      "version": "3.5.2-r1",
+      "aportsCommit": "2c2a7bb4a8b16066834e90402567b2c19403a790",
+      "apkbuildGitBlob": "fca39a678f2d331ce38ef011e8c9ee2252ab39c9",
+      "path": "main/libffi/APKBUILD",
+      "declaredSha512Entries": 2,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "libidn2",
+      "version": "2.3.8-r0",
+      "aportsCommit": "8240e09aa2fdd8f9979b2016be082273965aff0c",
+      "apkbuildGitBlob": "f83f454aa58d2c05fefb0b55f6fe65d5a6765b45",
+      "path": "main/libidn2/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "libmspack",
+      "version": "0.11_alpha-r1",
+      "aportsCommit": "33283848034c9885d984c8e8697c645c57324938",
+      "apkbuildGitBlob": "615ac8e198ade642f07fc5e27fa2a386e9f5d606",
+      "path": "community/libmspack/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "libpsl",
+      "version": "0.21.5-r3",
+      "aportsCommit": "6bd45b53fb316dc01bda59f5feaf1e127eb64f22",
+      "apkbuildGitBlob": "6102c2ba86d7ed7182873631307be5f8501f90ae",
+      "path": "main/libpsl/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "libunistring",
+      "version": "1.4.2-r0",
+      "aportsCommit": "30d9f19340385b2cd16eaf1cc6a9a8b30c4afe1c",
+      "apkbuildGitBlob": "007ad0c05a8c9c7f118f7d4b0dd3797adc5ab452",
+      "path": "main/libunistring/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "libxml2",
+      "version": "2.13.9-r2",
+      "aportsCommit": "f1bd5b6767a0e7fdda380c95138a1c938eb6e102",
+      "apkbuildGitBlob": "c4c3c0319bc17b785bd58a28f0d9c86b7e9256fc",
+      "path": "main/libxml2/APKBUILD",
+      "declaredSha512Entries": 3,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "mpdecimal",
+      "version": "4.0.1-r0",
+      "aportsCommit": "c0519b85456e9b838e3142e1d233aab0b433b476",
+      "apkbuildGitBlob": "b6ccc73cf45463586ec9e1cd63352f50886de1fc",
+      "path": "main/mpdecimal/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "musl",
+      "version": "1.2.6-r3",
+      "aportsCommit": "8f79d39391b46d6dbf1800fb68b8212a21d5ee2e",
+      "apkbuildGitBlob": "b729315a72d9060cc69ba9bddec53c0691c05158",
+      "path": "main/musl/APKBUILD",
+      "declaredSha512Entries": 12,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "ncurses",
+      "version": "6.6_p20260516-r0",
+      "aportsCommit": "2cee8a7328d061418336ad327b512d96bcd7bc5e",
+      "apkbuildGitBlob": "53b403e3af9628225c186eb39f70f5c251c89172",
+      "path": "main/ncurses/APKBUILD",
+      "declaredSha512Entries": 2,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "nghttp2",
+      "version": "1.70.0-r0",
+      "aportsCommit": "d5a34efc88bbe8d18737fda28125071c4aef8517",
+      "apkbuildGitBlob": "7c5cb5f56e4500d8602e6e1fb85510ca214038a9",
+      "path": "main/nghttp2/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "openssl",
+      "version": "3.5.9-r1",
+      "aportsCommit": "0f4c7e8d0f5f7cebbdc2156eca4391080b732bf2",
+      "apkbuildGitBlob": "ef82a74ce77981fb58cd65c438ea6dc428f7010a",
+      "path": "main/openssl/APKBUILD",
+      "declaredSha512Entries": 7,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "pax-utils",
+      "version": "1.3.9-r1",
+      "aportsCommit": "c61801eeacb3ffcd9c2025b09e402153bb93fb39",
+      "apkbuildGitBlob": "5834ca11b5e341ffd4940624e7be1e9e6822ace7",
+      "path": "main/pax-utils/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "pcre2",
+      "version": "10.49-r0",
+      "aportsCommit": "3d497cbb3217749c4fb85f90f3b6f7908b0c1f95",
+      "apkbuildGitBlob": "a6fc029f2fe909470eebfa97a1efe9969b0d4f84",
+      "path": "main/pcre2/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "python3",
+      "version": "3.14.10-r1",
+      "aportsCommit": "831cfeb7301d5010c027905e42958312698f4e4a",
+      "apkbuildGitBlob": "68d0442696e12805680e13671f88af323409ce35",
+      "path": "main/python3/APKBUILD",
+      "declaredSha512Entries": 3,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "readline",
+      "version": "8.3.3-r1",
+      "aportsCommit": "a854c03acdac188901fb012f7acbee70a36e8041",
+      "apkbuildGitBlob": "4e3e8299678264484b5650e7fd2fc18d0f83e2",
+      "path": "main/readline/APKBUILD",
+      "declaredSha512Entries": 6,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "sqlite",
+      "version": "3.53.4-r0",
+      "aportsCommit": "a9c3ba8b9129ec0f294d0a9bf538c2f1632bb016",
+      "apkbuildGitBlob": "715a0c42b11a70c0e9be931482daae8f6debb310",
+      "path": "main/sqlite/APKBUILD",
+      "declaredSha512Entries": 2,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "xz",
+      "version": "5.8.4-r0",
+      "aportsCommit": "0c088d609f9fe69eedd6b4c7f4b99cdad847c20a",
+      "apkbuildGitBlob": "b2d6af2e7b824108755dba06fc4ff1fa47211fa9",
+      "path": "main/xz/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "zlib",
+      "version": "1.4-r0",
+      "aportsCommit": "bdf501c870a92a05c097857401f69c48c4810384",
+      "apkbuildGitBlob": "0a564069962027b16ec48ec2efd4747623be2642",
+      "path": "main/zlib/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    },
+    {
+      "sourcePackage": "zstd",
+      "version": "1.5.7-r2",
+      "aportsCommit": "3c6e2ee2b16f403d53eab39c4426eb61f003c322",
+      "apkbuildGitBlob": "657287adeb5ca5ee98e07728de5ea07020b472fb",
+      "path": "main/zstd/APKBUILD",
+      "declaredSha512Entries": 1,
+      "verifiedSourceBytes": false,
+      "copyrightNoticesReviewed": false
+    }
+  ],
+  "status": {
+    "redistributionApproved": false
+  },
+  "note": "Immutable upstream Alpine APKBUILD versions+Git blobs independently inspected on 2026-11-19. 228 SHA512 entries declared, 0 actual archive/patch payload bytes verified for this image. Historical 21-recipe mirror is inapplicable. No license/redistribution or GHCR approval."
+}
