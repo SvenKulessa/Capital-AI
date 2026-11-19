@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
 # Fail closed if the repository cannot supply the OpenSSL 3.5.9-r1 security revision.
 RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' \
-    && apk info -v libcrypto3 libssl3 zlib
+    && apk info -v zlib libcrypto3 libssl3
 
 FROM crypto-base AS build
 WORKDIR /app
