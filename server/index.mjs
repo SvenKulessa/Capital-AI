@@ -36,6 +36,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
+import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
 import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
@@ -96,11 +97,16 @@ const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
 const embeddedSourceSha = '__CAPITAL_AI_SOURCE_SHA_UNBOUND__';
 const embeddedBuilder = '__CAPITAL_AI_BUILDER_UNBOUND__';
+const embeddedRenderGitSha = '__CAPITAL_AI_RENDER_GIT_SHA_UNBOUND__';
 const buildIdentity =
   /^[0-9a-f]{40}$/.test(embeddedSourceSha) &&
   embeddedBuilder === 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml'
     ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
     : { bound: false, sourceSha: null };
+// A Render build-argument SHA is separate from GitHub Actions builder identity.
+const renderGitBuildIdentity = /^[0-9a-f]{40}$/.test(embeddedRenderGitSha) && !buildIdentity.bound
+  ? { sourceSha: embeddedRenderGitSha, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED' }
+  : { sourceSha: null, evidence: 'NOT_PROVEN' };
 const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = SECURITY_HEADERS;
 const publicVocabularyEntries = vocabularyMetadata;
@@ -452,6 +458,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
+  const evidenceDashboardReadback = createEvidenceDashboardReadback({ env: options.env || process.env, ga4Readback: googleAnalyticsReadback, fetchImpl: options.fetchImpl || fetch });
   const tinyfishOwnerReadback = createTinyfishOwnerReadback({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).MARKET_BROKER_PAUSED === 'false' &&
@@ -562,6 +569,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
   if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
+  if (await evidenceDashboardReadback.handle(req, res, url, json)) return;
   if (await tinyfishOwnerReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
@@ -579,7 +587,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await agentOperationsPilot.handle(req, res, url, json)) return;
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
-  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
+  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, renderGitBuildIdentity, runtimeIdentity });
   if (url.pathname === '/metrics') {
     if (!metricsAuthorized(req)) {
       writeAuditEvent({ eventType: 'observability.metrics.denied', requestId: requestContext.requestId, result: 'DENIED' });

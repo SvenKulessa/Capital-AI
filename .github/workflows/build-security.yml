@@ -246,7 +246,7 @@ jobs:
           load: true
           push: false
           tags: capital-ai-build:${{ github.sha }}
-          cache-from: type=gha,scope=capital-ai-verified-build
+          cache-from: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'type=gha,scope=capital-ai-verified-build' || '' }}
       - name: Build-Stufe als Scan-Artefakt exportieren
         run: |
           mkdir -p security-reports
@@ -287,7 +287,7 @@ jobs:
           load: true
           push: false
           tags: capital-ai:${{ github.sha }}
-          cache-from: type=gha,scope=capital-ai-verified-build
+          cache-from: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'type=gha,scope=capital-ai-verified-build' || '' }}
           # Export only from trusted main pushes; PRs cannot populate the shared cache.
           cache-to: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'type=gha,scope=capital-ai-verified-build,mode=max' || '' }}
       - name: Exakte BuildIdentity in finalem Runtime-Image nachweisen

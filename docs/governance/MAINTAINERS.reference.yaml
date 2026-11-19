@@ -1,0 +1,27 @@
+# REFERENCE ONLY – keine maschinenwirksame Policy, kein CODEOWNERS-Ersatz.
+# Die aktuelle Root-AGENTS.md bleibt allein autorisierend; kein zusätzlicher Review.
+version: 1
+status: NON_AUTHORIZING
+repository: SvenKulessa/Capital-AI
+source_policy: AGENTS.md
+owner:
+  github: SvenKulessa
+  responsibilities:
+    - risk_acceptance
+    - separate_production_authorization_where_required
+    - commercial_cost_approval_where_required
+roles:
+  history_custodian:
+    assigned_identity: null
+    description: Historie und Evidence prüfen, ohne weitere Person zu behaupten
+  technical_verifier:
+    assigned_identity: null
+    description: Tests, CI-Links und Supply-Chain-Evidence verifizieren
+effective_permissions:
+  source: current_AGENTS_and_actual_provider_IAM
+  agent_default: existing_ACTIVE_CONSERVATIVE_with_scope_limits
+  delegated_merge: unchanged
+  production_and_credentials: existing_AGENTS_limits_apply
+enforcement:
+  this_file_changes_rights: false
+  live_enforcement_status: NOT_PROVEN
