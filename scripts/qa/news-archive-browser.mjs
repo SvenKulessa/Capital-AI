@@ -133,7 +133,7 @@ try{
       assert.equal((csv.match(/"NOT_PROVEN"/g)||[]).length,3,'Forged impact status reached BI');
       assert.ok(!csv.includes('synthetic-archive-unreviewed')&&!csv.includes('"95"'),'Unapproved or forged CSV values');
       const setFilter=async(type,value)=>{
-        const expression="(() => {const e=document.querySelector('#analytics-news-archive input[type="+type+"]');"+
+        const expression="(() => {const e=[...document.querySelectorAll('#analytics-news-archive input')].find(x=>x.type==="+type+");"+
           "if(!e)return false;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,"+
           JSON.stringify(value)+");e.dispatchEvent(new Event('input',{bubbles:true}));"+
           "e.dispatchEvent(new Event('change',{bubbles:true}));return true;})()";
