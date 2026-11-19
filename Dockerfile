@@ -87,7 +87,7 @@ COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs 
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
-COPY server/evidence-dashboard-readback.mjs server/evidence-dashboard-readback.test.mjs ./server/
+COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
 COPY server/oauth-consent.mjs server/oauth-consent.test.mjs ./server/
@@ -213,7 +213,7 @@ RUN node /tmp/write-runtime-identity.mjs render-git "${RENDER_GIT_COMMIT:-}" \
 COPY server/purchase-receipt.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
-COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt
