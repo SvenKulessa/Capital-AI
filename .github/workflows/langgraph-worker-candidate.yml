@@ -116,7 +116,8 @@ jobs:
             --cyclonedx "$evidence/worker.cdx.json" \
             --spdx "$evidence/worker.spdx.json" \
             --image-id "$(docker image inspect --format '{{.Id}}' "$image")" \
-            --source-sha "$GITHUB_SHA" \
+            --source-sha "${{ github.event.pull_request.head.sha }}" \
+            --tested-checkout-sha "$GITHUB_SHA" \
             --builder-ref "$PYTHON_BUILD_BASE" --runtime-ref "$PYTHON_BASE" \
             --output "$evidence/worker-license-inventory.json"
           echo "SBOM_LICENSE_INVENTORY_REVIEW_REQUIRED"
@@ -190,7 +191,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: langgraph-worker-sbom-${{ github.sha }}
+          name: langgraph-worker-sbom-${{ github.event.pull_request.head.sha }}
           path: |
             ${{ runner.temp }}/langgraph-worker-evidence/worker.cdx.json
             ${{ runner.temp }}/langgraph-worker-evidence/worker.spdx.json

@@ -34,11 +34,14 @@ class WorkerOCIInventoryTests(unittest.TestCase):
         }))
         return {"archive": archive, "cyclonedx": cdx, "spdx": spdx,
                 "image_id": IMAGE, "source_sha": SHA,
+                "tested_checkout_sha": "e" * 40,
                 "builder_ref": BUILDER, "runtime_ref": RUNTIME}
 
     def test_complete_inventory_is_never_authorization(self):
         with tempfile.TemporaryDirectory() as tmp:
             data = build_inventory(**self.fixture(tmp))
+            self.assertEqual(data["sourceHeadSha"], SHA)
+            self.assertEqual(data["testedCheckoutSha"], "e" * 40)
             self.assertEqual(data["sbom"]["spdxPackages"], 2)
             self.assertEqual(len(data["packages"]), 2)
             self.assertEqual(data["licenseSummary"]["unresolvedMetadataCount"], 1)
@@ -52,7 +55,8 @@ class WorkerOCIInventoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             args = self.fixture(tmp)
             for name, wrong in [
-                ("source_sha", "main"), ("image_id", "sha256:bad"),
+                ("source_sha", "main"), ("tested_checkout_sha", "main"),
+                ("image_id", "sha256:bad"),
                 ("builder_ref", "bellsoft/hardened-python:latest"),
                 ("runtime_ref", "python:3.14-alpine"),
             ]:

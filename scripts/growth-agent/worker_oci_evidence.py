@@ -45,10 +45,10 @@ def _pkg_license(value) -> str:
 
 
 def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
-                    image_id: str, source_sha: str,
+                    image_id: str, source_sha: str, tested_checkout_sha: str,
                     builder_ref: str, runtime_ref: str) -> dict:
     """Generate digest-bound evidence. Never grant licensing or registry approval."""
-    if not HEX40.fullmatch(source_sha):
+    if not HEX40.fullmatch(source_sha) or not HEX40.fullmatch(tested_checkout_sha):
         raise ValueError("expected source SHA-1")
     if not IMAGE.fullmatch(image_id):
         raise ValueError("expected image config sha256 ID")
@@ -98,7 +98,8 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
     unresolved = sum(p["licenseMetadataUnresolved"] for p in packages)
     return {
         "schema": "CAPITAL_AI_WORKER_OCI_LICENSE_EVIDENCE@1",
-        "sourceCommitSha": source_sha,
+        "sourceHeadSha": source_sha,
+        "testedCheckoutSha": tested_checkout_sha,
         "imageConfigId": image_id,
         "imageArchiveSha256": _hash(archive),
         "sbom": {
@@ -131,14 +132,15 @@ def build_inventory(*, archive: Path, cyclonedx: Path, spdx: Path,
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    for name in ("archive", "cyclonedx", "spdx", "image-id", "source-sha",
+    for name in ("archive", "cyclonedx", "spdx", "image-id", "source-sha", "tested-checkout-sha",
                  "builder-ref", "runtime-ref", "output"):
         parser.add_argument("--" + name, required=True)
     args = parser.parse_args()
     report = build_inventory(
         archive=Path(args.archive), cyclonedx=Path(args.cyclonedx),
         spdx=Path(args.spdx), image_id=args.image_id,
-        source_sha=args.source_sha, builder_ref=args.builder_ref,
+        source_sha=args.source_sha, tested_checkout_sha=args.tested_checkout_sha,
+        builder_ref=args.builder_ref,
         runtime_ref=args.runtime_ref,
     )
     output = Path(args.output)

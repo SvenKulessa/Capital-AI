@@ -24,7 +24,7 @@ vulnerability and secret scan. This change adds, **after that scan**, two
 SBOM documents (CycloneDX JSON and SPDX JSON) from **the same exact local
 candidate tar**, and a read-only, sorted full SPDX package-license inventory.
 `worker_oci_evidence.py` cryptographically binds the archive SHA-256, both SBOM
-SHA-256s, candidate image config ID, source commit SHA and both base digests.
+SHA-256s, candidate image config ID, pull-request head SHA, actual tested checkout SHA and both base digests.
 No unverified signature, copyright clearance or GHCR digest is invented.
 
 The artifact `langgraph-worker-sbom-<PR head SHA>` retains:
