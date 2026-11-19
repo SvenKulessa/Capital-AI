@@ -8,6 +8,40 @@ const READBACK_TIMEOUT_MS = 8_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PROPERTY_NUMBER = /^[1-9][0-9]{0,19}$/;
 
+const OWNER_SAFE_GA4_FAILURES = new Set([
+  'GA4_PROPERTY_NUMBER_NOT_CONFIGURED',
+  'GA4_PROPERTY_NUMBER_INVALID',
+  'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED',
+  'GA4_MCP_CLOUD_PROJECT_NOT_CONFIGURED',
+  'GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON',
+  'GA4_MCP_SERVICE_ACCOUNT_INVALID',
+  'GA4_MCP_PROJECT_MISMATCH',
+  'GA4_MCP_PROCESS_START_FAILED',
+  'GA4_MCP_PROCESS_EXITED',
+  'GA4_MCP_NOT_CONNECTED',
+  'GA4_MCP_TOOL_ERROR',
+  'GA4_MCP_TOOL_ERROR_PAYLOAD',
+  'GA4_MCP_JSONRPC_ERROR',
+  'GA4_PROPERTY_NOT_ACCESSIBLE',
+  'GA4_PROPERTY_DETAILS_NOT_BOUND',
+  'GA4_PROPERTY_DETAIL_MISMATCH',
+  'GA4_REQUIRED_TOOL_MISSING',
+  'GA4_READBACK_TIMEOUT',
+  'GA4_INVALID_EVENT_COUNT',
+  'GA4_MCP_WRITE_FAILED',
+]);
+
+/** Only explicit first-party fixed reason codes cross the authenticated owner boundary. */
+export function safeGa4FailureReason(error) {
+  const code = error instanceof Error ? error.message : '';
+  if (OWNER_SAFE_GA4_FAILURES.has(code)) return code;
+  if (/^GA4_MCP_REQUIRED_TOOL_MISSING_(get_account_summaries|get_property_details|run_realtime_report|run_report)$/.test(code))
+    return 'GA4_REQUIRED_TOOL_MISSING';
+  if (/^GA4_MCP_TIMEOUT_(initialize|tools\\/list|tools\\/call)$/.test(code))
+    return 'GA4_MCP_REQUEST_TIMEOUT';
+  return 'GA4_READBACK_FAILED';
+}
+
 function configuredOwner(env) {
   const userId = String(env.CAPITAL_AI_RENDER_OWNER_USER_ID || '').trim();
   const email = String(env.CAPITAL_AI_RENDER_OWNER_EMAIL || '').trim().toLowerCase();
@@ -227,11 +261,12 @@ export function createGoogleAnalyticsReadback({
 
     try {
       json(res, 200, await load());
-    } catch {
+    } catch (error) {
       json(res, 503, {
         schema: 'CAPITAL_AI_GOOGLE_ANALYTICS_RENDER_READBACK@1',
         status: 'EVIDENCE_UNAVAILABLE',
         error: 'google_analytics_readback_unavailable',
+        reason: safeGa4FailureReason(error),
       });
     }
     return true;
