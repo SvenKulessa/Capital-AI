@@ -11,6 +11,8 @@ import { selectHomeEdition } from './home-editorial-edition.mjs';
 import { archiveContentSnapshot, archiveRightsAdmitted, marketImpactAdmitted, NEWS_ARCHIVE_REVIEW_VERSION, NEWS_ARCHIVE_USE_CASES } from '../../shared/news-archive-rights.mjs';
 import { plannedNewsFiles, writeNewsLifecycle } from './news-lifecycle-materialize.mjs';
 import { approvedHomeCandidates, assertHomeEditionAdmission } from './news-lifecycle-home-admission.mjs';
+// Keep SIGKILL/restart and synthetic persistence coverage in the existing npm test path.
+import './news-lifecycle-transaction.test.mjs';
 
 const original = JSON.parse(readFileSync(new URL('../../src/features/home/homeEditorialEdition.json', import.meta.url), 'utf8'));
 const empty = {version: 1, overview: [], archive: []};
