@@ -64,7 +64,7 @@ jobs:
     timeout-minutes: 8
     services:
       postgres:
-        image: postgres:17.11
+        image: postgres:17.11@sha256:ff87138949ad9a46f32ff23bd6852b52ce024a13dffe9b4087be98292cdd3b4f
         env:
           POSTGRES_DB: agent_pilot_ci
           POSTGRES_PASSWORD: ci-synthetic-only
