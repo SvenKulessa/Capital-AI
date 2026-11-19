@@ -142,14 +142,7 @@ async function finishCommitted(paths, journal) {
     if (await statOrNull(dangling)) await unlink(dangling);
   }
 }
-async function settle(paths, journal) {
-  const marker = await statOrNull(join(paths.pending, COMMITTED));
-  if (marker) {
-    if (!marker.isFile() || marker.isSymbolicLink()) throw Error('NEWS_TX_MARKER_INVALID');
-    const commit = JSON.parse(await readFile(join(paths.pending, COMMITTED), 'utf8'));
-    if (commit.journalSha256 !== hash(JSON.stringify(journal))) throw Error('NEWS_TX_MARKER_INVALID');
-    await finishCommitted(paths, journal);
-  } else await rollbackPrepared(paths, journal);
+async function discardUnapplied(paths, journal) {
   // Tombstone the complete journal atomically before removing its directory.
   // A crash during recursive cleanup cannot leave an unreadable 'pending' lock.
   const settled = join(paths.hidden, 'settled-' + journal.id);
@@ -158,6 +151,16 @@ async function settle(paths, journal) {
   await syncDir(paths.hidden);
   await rm(settled, { recursive: true });
   await syncDir(paths.hidden);
+}
+async function settle(paths, journal) {
+  const marker = await statOrNull(join(paths.pending, COMMITTED));
+  if (marker) {
+    if (!marker.isFile() || marker.isSymbolicLink()) throw Error('NEWS_TX_MARKER_INVALID');
+    const commit = JSON.parse(await readFile(join(paths.pending, COMMITTED), 'utf8'));
+    if (commit.journalSha256 !== hash(JSON.stringify(journal))) throw Error('NEWS_TX_MARKER_INVALID');
+    await finishCommitted(paths, journal);
+  } else await rollbackPrepared(paths, journal);
+  await discardUnapplied(paths, journal);
 }
 
 /** Recover PREPARED => old state, COMMITTED => new state; fail closed on foreign edits. */
@@ -176,7 +179,7 @@ export async function recoverNewsLifecycle(root) {
 }
 
 /** Internal filesystem primitive. Only the reviewed writer may call this for real repo files. */
-export async function persistNewsFiles(files, root, { expected = {}, hooks = {} } = {}) {
+export async function persistNewsFiles(files, root, { expected = {}, hooks = {}, archiveImmutable = false } = {}) {
   const paths = await privatePaths(root);
   if (await statOrNull(paths.pending)) throw Error('NEWS_TX_LOCKED_OR_RECOVERY_REQUIRED');
   if (!Array.isArray(files) || !files.length) throw Error('NEWS_TX_EMPTY');
@@ -189,6 +192,8 @@ export async function persistNewsFiles(files, root, { expected = {}, hooks = {} 
     if (typeof item.content !== 'string') throw Error('NEWS_TX_INVALID_DATA');
     const before = await readCurrent(paths.root, relative);
     if (Object.hasOwn(expected, relative) && before !== expected[relative]) throw Error('NEWS_TX_STALE_BASELINE');
+    if (archiveImmutable && relative.startsWith('data/news-archive/') &&
+        before !== null && before !== item.content) throw Error('NEWS_TX_ARCHIVE_IMMUTABLE');
     if (before !== item.content) entries.push({ path: relative, before, beforeHash: before === null ? null : hash(before),
       after: item.content, afterHash: hash(item.content) });
   }
@@ -199,6 +204,7 @@ export async function persistNewsFiles(files, root, { expected = {}, hooks = {} 
   await mkdir(stage, { mode: 0o700 });
   try {
     await durableFile(join(stage, JOURNAL), JSON.stringify(journal));
+    await hooks.beforeClaim?.(); // Test-only scheduling point for a competing, already-committed writer.
     await rename(stage, paths.pending); // atomic ownership claim; journal is already durable
     await syncDir(paths.hidden);
   } catch (error) {
@@ -207,7 +213,23 @@ export async function persistNewsFiles(files, root, { expected = {}, hooks = {} 
     throw error;
   }
   let committed = false;
+  let started = false;
   try {
+    // The initial snapshots were read before claiming the pending journal.
+    // A second writer may have committed meanwhile. Recheck under exclusive
+    // ownership BEFORE the first rename; otherwise a stale writer could erase
+    // newer home, index or immutable archive records.
+    for (const entry of journal.entries) {
+      if ((await readCurrent(paths.root, entry.path)) !== entry.before) {
+        throw Error('NEWS_TX_STALE_BASELINE');
+      }
+    }
+    for (const [relative, value] of Object.entries(expected)) {
+      if ((await readCurrent(paths.root, relative)) !== value) {
+        throw Error('NEWS_TX_STALE_BASELINE');
+      }
+    }
+    started = true;
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       await replaceFile(paths.root, entry.path, entry.after, id);
@@ -218,7 +240,12 @@ export async function persistNewsFiles(files, root, { expected = {}, hooks = {} 
     await hooks.afterCommit?.(); // Tests can terminate after the durable commit marker.
     await settle(paths, journal);
   } catch (error) {
-    if (!committed) {
+    if (!started) {
+      // No destination was touched: release our journal without rolling back
+      // another writer's valid commit (or deleting its newly created files).
+      try { await discardUnapplied(paths, journal); }
+      catch { /* Keep the journal for an explicit recovery if cleanup fails. */ }
+    } else if (!committed) {
       try { await settle(paths, journal); }
       catch { /* Keep the journal for a later explicit recovery; never delete evidence. */ }
     }
