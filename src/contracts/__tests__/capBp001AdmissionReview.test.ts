@@ -18,8 +18,12 @@ function rights() {
     reviewedAt: new Date(NOW - 2500).toISOString(),
     permissions: {
       internal_analysis: { ...permission },
+      scientific_research_tdm: { ...permission },
+      public_display: { ...permission },
+      api_redistribution: { ...permission },
       derived_scoring_research: { ...permission },
       cache_retention: { ...permission },
+      export_resale: { ...permission },
     },
     scientificResearchTdm: null,
   };
