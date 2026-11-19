@@ -21,6 +21,12 @@ RUN python3 -m pip install --no-cache-dir --only-binary=:all: --disable-pip-vers
        /var/lib/capital-ai-agent/inbox /var/lib/capital-ai-agent/approvals
 
 FROM ${PYTHON_BASE}
+# BellSoft's runtime layer still includes pip/setuptools bootstrap with vendored
+# vulnerable libraries. The offline application never needs install/build tools.
+# Remove only those unused bootstrap packages, not Python/SQLite/worker libraries.
+# Use Python exec-form RUN: the distroless image intentionally has no shell.
+USER 0:0
+RUN ["python3","-c","from pathlib import Path\nimport shutil\nimport sysconfig\nroots = [Path(\"/usr/lib/python3.14/site-packages\"), Path(\"/usr/local/lib/python3.14/site-packages\")]\npatterns = (\"pip\", \"pip-*.dist-info\", \"setuptools\", \"setuptools-*.dist-info\", \"wheel\", \"wheel-*.dist-info\", \"pkg_resources\", \"pkg_resources-*.dist-info\")\nfor root in roots:\n    if not root.is_dir() or root.is_symlink():\n        continue\n    for pattern in patterns:\n        for path in root.glob(pattern):\n            if path.is_symlink():\n                raise RuntimeError(\"unexpected runtime bootstrap symlink\")\n            if path.is_dir():\n                shutil.rmtree(path)\n            elif path.is_file():\n                path.unlink()\nstdlib = Path(sysconfig.get_path(\"stdlib\"))\nensurepip = stdlib / \"ensurepip\"\nif ensurepip.is_symlink():\n    raise RuntimeError(\"unexpected ensurepip symlink\")\nif ensurepip.is_dir():\n    shutil.rmtree(ensurepip)\nimport importlib.util\nassert importlib.util.find_spec(\"pip\") is None\nassert importlib.util.find_spec(\"setuptools\") is None\nassert importlib.util.find_spec(\"wheel\") is None\n"]
 LABEL org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI" \
       capital-ai.component="offline-langgraph-worker" \
       capital-ai.activation="disabled-by-default"
