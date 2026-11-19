@@ -12,7 +12,7 @@ assert.ok(chromeBin, 'Chromium binary required; no success from synthetic browse
 const stylesheet = (await readdir('dist/assets')).find(name => /^index-.*\.css$/.test(name));
 assert.ok(stylesheet, 'Actual production CSS required');
 const css = await readFile(join('dist/assets', stylesheet));
-const entry = "import React from 'react'; import {createRoot} from 'react-dom/client'; import {ChatNextStepActions} from './src/components/ChatNextStepActions'; createRoot(document.getElementById('root')).render(<ChatNextStepActions task='GA4 Instagram Social Content Engine Kampagne entwerfen' />);";
+const entry = "import React from 'react'; import {createRoot} from 'react-dom/client'; import {ChatNextStepActions} from './src/components/ChatNextStepActions'; const root=createRoot(document.getElementById('root')); window.updateChatTask=(task)=>root.render(<ChatNextStepActions task={task} />); window.updateChatTask('GA4 Instagram Social Content Engine Kampagne entwerfen');";
 const js = (await build({
   stdin: { contents: entry, resolveDir: process.cwd(), loader: 'tsx' },
   bundle: true,
@@ -118,7 +118,17 @@ try {
   await pressButton(1);
   await until(() => evaluate("!!document.querySelector('textarea[aria-label=\"Vollständigen Prompt manuell kopieren\"]')"), 'manual-copy fallback');
   assert.equal(await evaluate("document.querySelector('textarea[aria-label=\"Vollständigen Prompt manuell kopieren\"]').readOnly"), true);
-  const result = { status: 'PASS', scope: 'ISOLATED_CHAT_COMPONENT_NO_PROVIDER_IO', sourceSha: process.env.GITHUB_SHA ?? null, browser, results, deniedClipboardFallback: true };
+  // A delayed clipboard completion must not confirm a NEW task after re-render.
+  await evaluate("(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => new Promise(resolve => { window.finishStaleCopy = resolve; }) } }); window.updateChatTask('Erstelle eine Instagram Kampagne'); return true; })()");
+  await until(() => evaluate("!document.querySelector('textarea[aria-label=\\\"Vollständigen Prompt manuell kopieren\\\"]')"), 'reset copy failure after task change');
+  await pressButton(0);
+  await until(() => evaluate("typeof window.finishStaleCopy === 'function'"), 'stale clipboard promise pending');
+  await evaluate("window.updateChatTask('Prüfe OAuth tenant isolation')");
+  await until(() => evaluate("!document.querySelector('section [role=status]').textContent.includes('erfolgreich kopiert')"), 'task reset before old copy completion');
+  await evaluate("window.finishStaleCopy()");
+  await new Promise(resolve => setTimeout(resolve, 200));
+  assert.equal(await evaluate("document.querySelector('section [role=status]').textContent.includes('erfolgreich kopiert')"), false);
+  const result = { status: 'PASS', scope: 'ISOLATED_CHAT_COMPONENT_NO_PROVIDER_IO', sourceSha: process.env.GITHUB_SHA ?? null, browser, results, deniedClipboardFallback: true, staleCopyCompletionRejected: true };
   await writeFile(join(output, 'result.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result));
 } finally {
