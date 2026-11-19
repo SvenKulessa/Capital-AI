@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -6,6 +6,30 @@ import { lockInventory } from './license-evidence.mjs';
 import { assessExpression } from '../shared/license-engine.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
+
+// A historical rights review must never masquerade as a current runtime/SBOM scan.
+// Dockerfile may be intentionally absent in the minimized Vite build context.
+export function classifyContainerReviewBaseline(dockerfile, rights) {
+  const historicalBaseImage = typeof rights?.baseImage === 'string' ? rights.baseImage : null;
+  const sourceSha = rights?.applicationSourceSha || null;
+  let currentBaseImage = null;
+  if (dockerfile !== null && dockerfile !== undefined) {
+    const pins = [...String(dockerfile).matchAll(/^FROM (node:\d+\.\d+\.\d+-alpine@sha256:[a-f0-9]{64}) AS crypto-base$/gm)];
+    if (pins.length !== 1) throw new Error('Pinned Node/Alpine image identity missing or ambiguous for license evidence');
+    currentBaseImage = pins[0][1];
+  }
+  return {
+    status: currentBaseImage === null ? 'CURRENT_BASE_UNAVAILABLE_NOT_PROVEN'
+      : historicalBaseImage === currentBaseImage ? 'ARCHIVED_REVIEW_NOT_CURRENT_RUNTIME_PROOF'
+      : 'HISTORICAL_BASE_IMAGE_MISMATCH',
+    currentBaseImage,
+    historicalBaseImage,
+    historicalSourceSha: sourceSha,
+    currentRuntimeSbomStatus: 'NOT_INCLUDED_USE_SHA_BOUND_SECURITY_ARTIFACT',
+    currentOSPackageInventoryStatus: 'NOT_INCLUDED_HISTORICAL_ONLY',
+    redistributionApproved: false,
+  };
+}
 export function buildLicenseReport(root) {
   const evidencePath = 'docs/security/evidence/license-rights-review.json';
   const raw = readFileSync(join(root, evidencePath));
@@ -70,17 +94,24 @@ export function buildLicenseReport(root) {
     hash: '',
     spdxId: '',
     source: evidencePath,
-    usageScope: 'container-distribution',
-    obligations: ['Passende vollständige Quellen, Patches, Buildinputs und Verteilungsweg am Image-Digest nachweisen.'],
+    usageScope: 'archived-container-distribution',
+    historicalBaseImage: rights.baseImage || null,
+    historicalSourceSha: rights.applicationSourceSha || null,
+    currentRuntimeVerified: false,
+    obligations: ['Historischer Image-Stand: nicht als aktuelles OS-Runtime-Inventar verwenden.', 'Passende vollständige Quellen, Patches, Buildinputs und Verteilungsweg am aktuellen Image-Digest nachweisen.'],
     scanTime: rights.reviewDate || null,
     status: p.status,
-    evidenceStatus: 'GEHALTEN',
+    evidenceStatus: 'HISTORICAL_ONLY',
     ownerApproved: false,
-    nextAction: 'Passende vollständige Quellen, Patches, Buildinputs und Verteilungsweg am Image-Digest nachweisen.',
+    nextAction: 'Aktuelles SHA-gebundenes OS-Inventar im Security-Run prüfen; Quellarchive, Patches und Redistributionsrechte separat belegen.',
   }));
+  const dockerfilePath = join(root, 'Dockerfile');
+  const containerReviewBaseline = classifyContainerReviewBaseline(
+    existsSync(dockerfilePath) ? readFileSync(dockerfilePath, 'utf8') : null, rights);
   return {
     schemaVersion: 2,
     scope: 'REPOSITORY_EVIDENCE_SNAPSHOT_NOT_RUNTIME_APPROVAL',
+    containerReviewBaseline,
     deployEligible: false,
     ownerApproved: false,
     evidenceSourceSha: rights.applicationSourceSha,
@@ -138,5 +169,5 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const report = buildLicenseReport(process.cwd());
   mkdirSync('security-reports', { recursive: true });
   writeFileSync('security-reports/license-engine.json', JSON.stringify(report, null, 2) + '\n');
-  console.log(`${report.packages.length} Pakete, ${report.providers.length} Provider und ${report.osPackages.length} OS-Pakete; Freigabe bleibt offen.`);
+  console.log(`${report.packages.length} npm-Lockfile-Pakete, ${report.providers.length} Provider und ${report.osPackages.length} HISTORISCHE OS-Pakete; aktuelles Runtime-SBOM separat prüfen; Freigabe bleibt offen.`);
 }
