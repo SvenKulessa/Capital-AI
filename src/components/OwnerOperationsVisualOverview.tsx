@@ -2,15 +2,12 @@ import { Activity, Bot, ChartColumnIncreasing, Cloud, Crown, Github, Info, Layer
 import { isVerified, isSnapshotStale, type DashboardReadback } from './ownerOperationsModel';
 import {
   ownerAgentRows, ownerEvidenceCounts, ownerEvidenceRows, ownerGa4Metrics,
-  ownerPrTimeline, ownerSourceCounts, type OwnerEvidenceStatus,
+  ownerPrTimeline, ownerSourceCounts,
 } from './ownerOperationsVisualModel';
 import './ownerOperationsVisual.css';
 
 const pretty = (value: number | null | undefined) =>
   value === null || value === undefined ? '–' : new Intl.NumberFormat('de-DE').format(value);
-const statusText = (status: OwnerEvidenceStatus) =>
-  status === 'VERIFIED' ? 'Provider-Evidence' : status === 'BLOCKED' ? 'BLOCKED' : 'NOT_PROVEN';
-
 function OrbitMascot() {
   // Original first-party SVG ornament: no personal images, provider metrics or external fetch.
   return <svg className="ops-mock-mascot" viewBox="0 0 240 200" role="img" aria-label="Goldener CAPITAL-AI-Buddy mit Analyse-Hologramm">
@@ -95,7 +92,7 @@ function MixedBarChart({ snapshot }: { snapshot: DashboardReadback }) {
   const values = ownerSourceCounts(snapshot);
   const max = Math.max(1, ...values.map(row=>row.count ?? 0));
   return <div className="ops-mock-bars" role="group" aria-label="Umfänge der drei verschiedenen Provider-Projektionen">
-    {values.map((row,i)=><div key={row.label} className="ops-mock-bar-column">
+    {values.map((row)=><div key={row.label} className="ops-mock-bar-column">
       <div className="ops-mock-bar-scale">
         {row.count !== null && <div className="ops-mock-bar-fill" style={{height:(Math.max(8, row.count / max * 100))+'%'}}/>}
       </div>
