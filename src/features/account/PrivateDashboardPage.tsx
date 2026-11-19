@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { AccountPageShell } from './AccountPageShell';
+import { OwnerAgentOperationsPanel } from '../../components/OwnerAgentOperationsPanel';
 import { LearningFavoritesPanel } from '../learning/LearningFavorites';
 import { readNotes, saveNotes, NotesClientError, type NotesConflict, type NotesSnapshot } from './privateNotesOcc';
 import { NotesConflictPanel } from './NotesConflictPanel';
@@ -8,12 +9,14 @@ const dashboardTabs = [
   { id: 'learning', label: 'Lernfeld' },
   { id: 'notes', label: 'Notizen' },
   { id: 'saved', label: 'Gespeicherte Notizen' },
+  { id: 'operations', label: 'Owner Operations' },
 ] as const;
 type DashboardTab = (typeof dashboardTabs)[number]['id'];
 const changedSessionMessage = 'Deine Anmeldung hat sich geändert. Lade die Seite erneut, bevor du Notizen bearbeitest.';
 
-function PrivateDashboardContent({ userId }: { userId: string }) {
+function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner: boolean }) {
   const [tab, setTab] = useState<DashboardTab>('learning');
+  const visibleTabs = isOwner ? dashboardTabs : dashboardTabs.filter(item => item.id !== 'operations');
   const [text, setText] = useState('');
   const [savedText, setSavedText] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -195,14 +198,14 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
         onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
           event.preventDefault();
-          const index = dashboardTabs.findIndex(item => item.id === tab);
-          const next = event.key === 'Home' ? dashboardTabs[0].id :
-            event.key === 'End' ? dashboardTabs[dashboardTabs.length - 1].id :
-            dashboardTabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + dashboardTabs.length) % dashboardTabs.length].id;
+          const index = visibleTabs.findIndex(item => item.id === tab);
+          const next = event.key === 'Home' ? visibleTabs[0].id :
+            event.key === 'End' ? visibleTabs[visibleTabs.length - 1].id :
+            visibleTabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + visibleTabs.length) % visibleTabs.length].id;
           setTab(next);
           document.getElementById('dashboard-' + next + '-tab')?.focus();
         }}>
-        {dashboardTabs.map(item => (
+        {visibleTabs.map(item => (
           <button key={item.id} type="button" id={'dashboard-' + item.id + '-tab'}
             role="tab" tabIndex={tab === item.id ? 0 : -1}
             aria-selected={tab === item.id} aria-controls={'dashboard-' + item.id}
@@ -251,6 +254,10 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
           </button>
         </section>
       </div>
+      {isOwner && tab === 'operations' && <div id="dashboard-operations" role="tabpanel" aria-labelledby="dashboard-operations-tab">
+        <OwnerAgentOperationsPanel userId={userId} />
+      </div>}
+
     </div>
   );
 }
@@ -259,7 +266,8 @@ export function PrivateDashboardPage({ onNavigate }: { onNavigate: (path: string
   return (
     <AccountPageShell active="/profile/dashboard" title="Privates Dashboard"
       description="Dein persönliches Lernfeld sowie bearbeitete und gespeicherte Notizen." onNavigate={onNavigate}>
-      {session => <PrivateDashboardContent key={session.user!.id} userId={session.user!.id} />}
+      {session => <PrivateDashboardContent key={session.user!.id} userId={session.user!.id}
+        isOwner={session.account?.iamRole?.toLowerCase() === 'owner'} />}
     </AccountPageShell>
   );
 }
