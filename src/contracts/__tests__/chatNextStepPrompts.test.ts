@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import skillRegistry from '../../../.agents/skills/registry.json';
+import skillRegistry from '../../../.agents/skills/registry.json' with { type: 'json' };
 import { buildChatFollowUps, classifyChatDomain } from '../chatNextStepPrompts';
 import { ChatNextStepActions } from '../../components/ChatNextStepActions';
 
