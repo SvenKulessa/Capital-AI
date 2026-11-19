@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from agent_platform import build_research_graph, retrieve
 from worker_service import check_root, load_task, process
@@ -100,6 +101,30 @@ class PlatformResearchTests(unittest.TestCase):
             os.mkfifo(path, 0o600)
             with self.assertRaises(ValueError):
                 load_task(path, root / "inbox")
+            self.assertEqual(list((root / "checkpoints").iterdir()), [])
+
+    def test_task_replacement_between_lstat_and_open_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "state"
+            state_dirs(root)
+            inbox = root / "inbox"
+            path = inbox / "task.json"
+            replacement = inbox / "replacement.tmp"
+            valid = '{"schema":"CAPITAL_AI_OFFLINE_RESEARCH@1","task_id":"t1","domain":"PLATFORM","query":"checkpoint"}'
+            path.write_text(valid, encoding="utf-8")
+            replacement.write_text(valid, encoding="utf-8")
+            path.chmod(0o600)
+            replacement.chmod(0o600)
+            original_open = os.open
+
+            def swap_then_open(target, flags, *args, **kwargs):
+                if Path(target) == path:
+                    os.replace(replacement, path)
+                return original_open(target, flags, *args, **kwargs)
+
+            with patch("worker_service.os.open", side_effect=swap_then_open):
+                with self.assertRaisesRegex(ValueError, "task changed during read"):
+                    load_task(path, inbox)
             self.assertEqual(list((root / "checkpoints").iterdir()), [])
 
     def test_world_readable_dirs_and_tasks_fail_closed(self):
