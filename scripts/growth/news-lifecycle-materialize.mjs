@@ -3,7 +3,7 @@ import { lstat, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { publishedNews, newsArchivePath } from '../../shared/news-lifecycle.mjs';
+import { publishedNews, newsArchivePath, retireNews } from '../../shared/news-lifecycle.mjs';
 import { assertHomeEditionAdmission } from './news-lifecycle-home-admission.mjs';
 
 export const DEFAULT_NEWS_REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -42,8 +42,18 @@ export async function writeNewsLifecycle(result, root = DEFAULT_NEWS_REPO_ROOT) 
   // Cross-check against the version currently on disk. A forged CLI output or
   // direct materializer call with an empty index is not publication authority.
   const currentEdition = await existing(resolve(dir, editionFile));
+  const currentIndex = await existing(resolve(dir, indexFile));
+  // The two manifests are one logical state: never initialize over a partial
+  // checkout or let a direct --write call silently drop recorded history.
+  if ((currentEdition === null) !== (currentIndex === null)) throw Error('NEWS_LIFECYCLE_PARTIAL_STATE');
   if (currentEdition !== null) {
-    await assertHomeEditionAdmission(JSON.parse(currentEdition), result.edition);
+    const previous = JSON.parse(currentEdition);
+    const index = JSON.parse(currentIndex);
+    await assertHomeEditionAdmission(previous, result.edition);
+    const expected = retireNews(previous, result.edition, index, result.edition.date);
+    if (JSON.stringify(expected) !== JSON.stringify(result.index)) {
+      throw Error('NEWS_LIFECYCLE_STATE_MISMATCH');
+    }
   }
   const writes = [];
   const rollback = [];
