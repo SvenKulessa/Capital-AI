@@ -1,4 +1,5 @@
 import { HistoricalAnalyticsDemo } from './HistoricalAnalyticsDemo';
+import { AnalyticsNewsArchive, AnalyticsNewsOverview } from './AnalyticsNews';
 import { ProductDisclaimer } from '../../components/ProductDisclaimer';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { navigateAppLocation } from '../../utils/appNavigation';
@@ -18,6 +19,7 @@ import { buttonClass } from './AnalysisUi';
 import { BinanceMarketPanel } from './BinanceMarketPanel';
 const TABS = [
   'overview',
+  'newsArchive',
   'scorer',
   'terminal',
   'binance',
@@ -28,6 +30,7 @@ const TABS = [
 ] as const;
 const LABELS = {
   overview: 'Übersicht',
+  newsArchive: 'News-Archiv',
   scorer: 'Enterprise Scorer',
   terminal: 'Screener',
   binance: 'Krypto-Kursverlauf',
@@ -52,6 +55,8 @@ export function EnterpriseAnalysisHub({
     <div className="space-y-6">
       <HubNavigationPanel hubId="marketscreener" onNavigate={navigateAppLocation} />
       {['overview', 'scorer', 'terminal'].includes(active) && <HistoricalAnalyticsDemo showMethodology={active !== 'scorer'} />}
+      {active === 'overview' && <AnalyticsNewsOverview />}
+      {active === 'newsArchive' && <AnalyticsNewsArchive />}
       {active === 'scorer' && (
         <EnterpriseScorerDashboard onSelectAsset={onSelectAsset} />
       )}

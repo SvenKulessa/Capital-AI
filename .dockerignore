@@ -506,3 +506,13 @@
 !server/oauth-consent.test.mjs
 !scripts/oauth-client-isolation.test.mjs
 !supabase/migrations/20261113152000_oauth_client_default_deny.sql
+# Rights-gated MARKET news lifecycle and isolated QA; retain main account-avatar dependencies
+!shared/news-lifecycle.mjs
+!shared/news-archive-rights.mjs
+!scripts/growth/news-lifecycle-cli.mjs
+!scripts/growth/news-lifecycle.test.mjs
+!scripts/growth/news-lifecycle-materialize.mjs
+!scripts/growth/news-lifecycle-transaction.mjs
+!scripts/growth/news-lifecycle-transaction.test.mjs
+!scripts/growth/news-lifecycle-home-admission.mjs
+!scripts/qa/news-archive-browser.mjs

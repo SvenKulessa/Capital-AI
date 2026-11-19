@@ -15,3 +15,6 @@ scripts/upload-drive/state.json.lock
 scripts/upload-drive/state.json.tmp-*
 scripts/upload-drive/private/
 scripts/upload-drive/logs/
+
+# Offline MARKET WAL/Recovery journal: private transaction snapshots, never publish
+.news-lifecycle-private/
