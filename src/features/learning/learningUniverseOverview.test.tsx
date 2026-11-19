@@ -34,7 +34,7 @@ test('every atom routes only to an existing Learning Portal tab and never author
   const source = readFileSync(new URL('./LearningUniverseOverview.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /\/api\/social\/publish|fetch\(|localStorage|checkout|setEntitled/);
   assert.match(source, /BRAND_GLOBE\.asset/);
-  assert.match(source, /LEARNING_ARTICLES\.slice\(0, 3\)/);
+  assert.match(source, /LEARNING_ARTICLES\.filter\(article => article\.hub === 'learning' && article\.status === 'PUBLISHED'\)/);
 });
 
 test('overview SSR provides native controls, public learning links and no synthetic progress', () => {
