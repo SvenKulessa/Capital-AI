@@ -9,7 +9,6 @@ import { LEARNING_ARTICLES } from '../../data/learningArticles';
 import { LEARNING_JOURNEY } from '../../../shared/learning-journey.mjs';
 import { LEARNING_UNIVERSE_ATOMS, filterLearningUniverseAtoms } from './learningUniverseModel.mjs';
 import type { LearningPortalTab } from './LearningPortalPage';
-import './learningUniverseOverview.css';
 
 const ICONS = {
   aktien: TrendingUp, krypto: Bitcoin, makro: Landmark, risiko: ShieldCheck,
