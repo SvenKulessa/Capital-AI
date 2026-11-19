@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { Camera, EyeOff, Move, PenLine, Settings, StickyNote, X } from 'lucide-react';
 import { clampHeroBuddyPoint } from './heroBuddyPosition';
+import { HERO_BUDDY_EVENT, takePendingHeroBuddyOpen } from './heroBuddyEvents';
+export { HERO_BUDDY_EVENT, openHeroBuddy } from './heroBuddyEvents';
 import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
 type HeroBuddyProps = {
@@ -20,14 +22,12 @@ const ChatNextStepActions = lazy(() => import('./ChatNextStepActions').then(modu
 // Private note editor is not part of the initial home bundle. Open it only on demand.
 const BuddyStickyNotes = lazy(() => import('./BuddyStickyNotes').then(module => ({ default: module.BuddyStickyNotes })));
 const DISCLAIMER = 'JaJa erklärt Zusammenhänge. Keine Anlageberatung.';
-export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
 export const HERO_BUDDY_HIDDEN_KEY = 'capital_ai_hero_buddy_hidden_v1';
 const HERO_BUDDY_POSITION_KEY = 'capital_ai_hero_buddy_position_v1';
 const HERO_BUDDY_FLOATING_KEY = 'capital_ai_hero_buddy_floating_v1';
 type BuddyPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 const BUDDY_POSITIONS: BuddyPosition[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 
-export function openHeroBuddy() { window.dispatchEvent(new Event(HERO_BUDDY_EVENT)); }
 const COOLDOWN_MS = 90_000;
 
 type BuddyKeyState = 'missing' | 'blocked' | 'ready' | 'unused';
@@ -163,12 +163,14 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
     const openFromHero = () => {
+      takePendingHeroBuddyOpen();
       window.localStorage.removeItem(HERO_BUDDY_HIDDEN_KEY);
       setHidden(false);
       setOpen(true);
       setSpeech(null);
     };
     window.addEventListener(HERO_BUDDY_EVENT, openFromHero);
+    if (takePendingHeroBuddyOpen()) openFromHero();
     return () => window.removeEventListener(HERO_BUDDY_EVENT, openFromHero);
   }, []);
 
