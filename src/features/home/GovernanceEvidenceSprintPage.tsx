@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { CONTROLLER } from '../../privacy/privacyPolicy';
+import { trackReceivedGovernanceSprintInquiry } from '../../utils/analytics';
 
 const OFFER_PATH = '/governance-evidence-sprint';
 const INQUIRY_PREFIX = '[Governance & Evidence Sprint | B2B-Anfrage]\n';
@@ -43,6 +44,7 @@ export function GovernanceSprintInquiry() {
       if (!response.ok || result.received !== true || result.receipt !== requestId.current ||
           result.status !== 'MAIL_SERVER_ACCEPTED') throw new Error('inquiry_not_accepted');
       setState('received');
+      trackReceivedGovernanceSprintInquiry(result.receipt);
       form.reset();
       setPrivacyAcknowledged(false);
     } catch {
