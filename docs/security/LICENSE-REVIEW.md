@@ -251,3 +251,66 @@ Der ergänzende [Quellen- und Nutzungsrechtsnachweis](LICENSE-RIGHTS.md) und das
 [maschinenlesbare Inventar](evidence/license-rights-review.json) ordnen die
 Basisimage-Pakete den Versionsquellen zu und halten offene Rechte fest.
 Lizenzfreigabe bleibt offen; `deployEligible:false` bleibt bestehen.
+
+---
+
+## Technischer Main-Readback am 19.11.2026 (keine Rechtefreigabe)
+
+Diese ergänzende **technische Momentaufnahme** ist getrennt vom historischen Prüfstand
+vom 30.09.2026 und von einer rechtsverbindlichen Redistributionsentscheidung.
+Main `bd1106b0582f8518a0d730d5db3d01e76c4f11ea`,
+[Docker Security Gate 44458386576](https://github.com/SvenKulessa/Capital-AI/actions/runs/44458386576),
+Artifact `docker-security-bd1106b0582f8518a0d730d5db3d01e76c4f11ea`
+(ID `14499415796`), heruntergeladenes ZIP SHA-256
+`f0832f9e657882f2b3eb4207e4a4b5cc2c9b3793c7fe03ab3c5f0827e0e6550b`.
+
+| Technischer Nachweis | Aus dem Main-Lauf 44458386576 |
+| --- | --- |
+| Docker-Basis | `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5` |
+| Alpine im Runtime-Artefakt | `3.24.4` |
+| Lokale Runtime-Image-Konfigurations-ID | `sha256:0f360a589803edd20be807da86bd400328d23283dda2c6d858dbdbd5464606e3` |
+| Installierte APK-Binärpakete (`os-source-inventory.json`) | **50** |
+| Eindeutige aports-Quellpaket-Locators mit Commit | **34** |
+| Fehlende aports-Quellpaket-Metadaten | **0** |
+| Runtime-CycloneDX-SBOM (`capital-ai.sbom.cdx.json`) | **135 Komponenten** |
+| Trivy-Runtime-Lizenzinventar (`image-licenses.json`) | 50 OS-, 21 Node- und 63 Python-Pakete in den Paket-Sektionen; weitere Lizenz-Fundstellen separat |
+| Node-Runtime-LICENSE (SHA-256) | `8e603aa87c70d36e497004f0dec63111511cb61b7d65ace12e10ea791599286c` |
+| Runtime-Font-OFL (SHA-256) | `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99` |
+| Tatsächlich heruntergeladene, eigenständig geprüfte Source-Archive | **NOT_PROVEN** |
+| Corresponding Source / Patches / Buildinputs auslieferbar | **NOT_PROVEN** |
+| Rechtliche und Owner-Freigabe zur Image-Redistribution | **REVIEW_OPEN** |
+| GHCR-OCI-Index und Render-Runtime-Manifest-Digest | **NOT_PROVEN** |
+
+**Versionsabweichung:** Die archivierte Datei
+`docs/security/evidence/license-rights-review.json` dokumentiert
+`node:24.19.0-alpine` mit **18** OS-Binärpaketen zum älteren
+`applicationSourceSha=ed594ef93f66ee8f13f67d75dde56f46a95b1cd6`.
+Davon stimmen im neuen Runtime-Inventar **9** Paketversionen überein, **9**
+haben eine andere Version; **32** weitere Binärpakete stehen nur im neuen
+Inventar. Beispiele der nachgewiesenen Änderungen sind
+`alpine-release 3.24.1-r0 → 3.24.4-r0`,
+`apk-tools 3.0.6-r0 → 3.0.9-r0`,
+`libcrypto3/libssl3 3.5.8-r0 → 3.5.9-r0`,
+`musl 1.2.6-r2 → 1.2.6-r3`, `zlib 1.3.2-r0 → 1.4-r0`.
+Neu im Runtime-Paketbestand sind unter anderem `clamav-daemon 1.4.6-r0`
+und `python3 3.14.10-r1`.
+
+**Ergebnis der technischen Korrektur:** Der License Engine Report kennzeichnet
+die 18 Alt-Pakete nun ausdrücklich als `HISTORICAL_ONLY` /
+`archived-container-distribution` und weist den abweichenden aktuellen
+Basisimage-Pin gesondert aus. Fehlt `Dockerfile` im minimierten
+Frontend-Buildkontext, lautet der Vergleich `CURRENT_BASE_UNAVAILABLE_NOT_PROVEN`;
+er wird niemals als bestanden fingiert. Die vorhandenen
+SHA-gebundenen Runtime-Scans bleiben die einzige Quelle des aktuell gemessenen
+OS-Paketbestands.
+
+**Rechte- und Owner-Entscheidung (separat):** Das historische
+`status=REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null`
+bleibt unverändert. Die 34 aports-Quellpaket-Locators belegen **nur**
+Quellpaket-/Commit-Metadaten; ihre angegebenen Source-Archive sind
+`NOT_DOWNLOADED_OR_CHECKSUM_VERIFIED`. Unabhängige Archiv-/Patch-Prüfung,
+vollständige Source-/Notice-Auslieferung, abgeleitete Frontend-/Asset-/Font-
+Vertriebsrechte und schriftliche Providerrechte erfordern weiterhin echte
+Nachweise. **Kein GHCR-Publish, kein Release-Gate-PASS und keine
+Lizenzfreigabe** folgt aus diesem technischen Snapshot. Die vorhandene
+`assert-ghcr-publication-rights.mjs` bleibt vor dem Registry-Login wirksam.
