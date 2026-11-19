@@ -639,3 +639,31 @@ test('profile menu shares all five private routes on the right and authenticated
   assert.match(header, /hub-sidebar-card min-h-14/);
   assert.match(header, /drawer-account-toggle/);
 });
+
+test('B2B governance sprint has a canonical public route, homepage entry and a noindex-before-SEO policy', async () => {
+  assert.equal(resolveAppRoute('/governance-evidence-sprint'), '/governance-evidence-sprint');
+  assert.equal(resolveAppRoute('/EVIDENCE-SPRINT/'), '/governance-evidence-sprint');
+  assert.equal(resolveNavigationTarget('/governance-evidence-sprint?ref=homepage#anfrage'), '/governance-evidence-sprint?ref=homepage#anfrage');
+  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  assert.match(routes, /currentRoute === '\/governance-evidence-sprint'/);
+  assert.match(home, /href="\/governance-evidence-sprint"/);
+  const { resolveSeoIndexingPolicy } = await import('../shared/seo-indexing-policy.mjs');
+  assert.equal(resolveSeoIndexingPolicy('/governance-evidence-sprint').classification, 'NOINDEX');
+});
+
+test('B2B sprint offer keeps the request separate from billing, marketing and compliance claims', () => {
+  const landing = readFileSync(new URL('../src/features/home/GovernanceEvidenceSprintPage.tsx', import.meta.url), 'utf8');
+  const sample = readFileSync(new URL('../docs/growth/GOVERNANCE-EVIDENCE-SPRINT-MUSTERBERICHT-20261119.md', import.meta.url), 'utf8');
+  const privacy = readFileSync(new URL('../src/privacy/privacyPolicy.ts', import.meta.url), 'utf8');
+  assert.match(landing, /690 € netto/);
+  assert.match(landing, /unverbindliche Kalkulationshypothese/);
+  assert.match(landing, /kein Penetrationstest/i);
+  assert.match(landing, /\/api\/public\/contact/);
+  assert.match(landing, /Datenschutzhinweise/);
+  assert.match(landing, /MAIL_SERVER_ACCEPTED/);
+  assert.doesNotMatch(landing, /trackReceivedLearningInquiry|trackEvent\(|trackCommerceEvent\(|localStorage|sessionStorage|document\.cookie|stripe\.com\/v1/);
+  assert.match(sample, /MUSTER\s*\/\s*NICHT DURCHGEFÜHRTE PRÜFUNG/);
+  assert.match(sample, /NOT_PROVEN/);
+  assert.match(privacy, /B2B-Governance-Angebotsanfragen/);
+});
