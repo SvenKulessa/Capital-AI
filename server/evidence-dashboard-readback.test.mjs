@@ -11,9 +11,13 @@ const ownerId = 'tea-d90o4rj7uimc739i86ug';
 function fixture(url) {
   const s = String(url);
   if (s.endsWith('/commits/main')) return { sha };
-  if (s.includes('/pulls?')) return [{ number: 7, state: 'open' }];
+  if (s.includes('/pulls?')) return [{ number: 7, state: 'open', title: '[CAPITAL-AI-PLATFORM] Evidence', draft: false, head: { sha }, updated_at: '2026-11-19T03:30:00Z' }];
+  if (s.includes('/check-runs?')) return { total_count: 2, check_runs: [
+    { name: 'Docker Security Gate', head_sha: sha, status: 'completed', conclusion: 'success' },
+    { name: 'Domain Governance', head_sha: sha, status: 'completed', conclusion: 'success' },
+  ] };
   if (s.endsWith(`/services/${serviceId}`)) return { id: serviceId, ownerId };
-  if (s.endsWith('/deploys?limit=1')) return [{ deploy: { id: 'dep-test', status: 'live', commit: { id: sha } } }];
+  if (s.endsWith('/deploys?limit=5')) return [{ deploy: { id: 'dep-test', status: 'live', commit: { id: sha }, finishedAt: '2026-11-19T03:30:00Z' } }];
   throw Error('unexpected path');
 }
 function setup({ allowed = true, role = true, ga4Broken = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
@@ -78,11 +82,14 @@ test('allows only GET without query parameters and sets private no-store respons
 test('binds provider URLs, identity and properties; produces only verified projections', async () => {
   const h = setup();
   const { body } = await h.request();
-  assert.equal(h.calls.length, 4);
+  assert.equal(h.calls.length, 5);
   assert.ok(h.calls.every(c => c.options.method === 'GET' && c.options.redirect === 'error' && c.options.cache === 'no-store'));
   assert.ok(h.calls.every(c => c.url.startsWith('https://api.github.com/repos/SvenKulessa/Capital-AI/') || c.url.startsWith(`https://api.render.com/v1/services/${serviceId}`)));
   assert.equal(body.github.mainSha, sha);
   assert.equal(body.github.openPrCount, 1);
+  assert.equal(body.github.pullRequests[0].headSha, sha);
+  assert.equal(body.github.ci.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.github.ci.runs.length, 2);
   assert.equal(body.render.sourceCommitSha, sha);
   assert.equal(body.comparison.mainVsDeploy, 'MATCH_PROVIDER_CLAIMS_ONLY');
   assert.equal(body.ga4.events.length, 2);
@@ -97,13 +104,13 @@ test('uses five-minute cache and deduplicates concurrent reads', async () => {
   let time = 1800000000000;
   const h = setup({ now: () => time });
   await Promise.all([h.request(), h.request()]);
-  assert.equal(h.calls.length, 4);
+  assert.equal(h.calls.length, 5);
   time += 299_999;
   await h.request();
-  assert.equal(h.calls.length, 4);
+  assert.equal(h.calls.length, 5);
   time += 2;
   await h.request();
-  assert.equal(h.calls.length, 8);
+  assert.equal(h.calls.length, 10);
 });
 
 test('does not let missing Render credential erase independently verified GitHub/GA4 evidence', async () => {
@@ -113,7 +120,7 @@ test('does not let missing Render credential erase independently verified GitHub
   assert.equal(body.ga4.status, 'VERIFIED_PROVIDER_READ');
   assert.deepEqual(body.render, { status: 'NOT_PROVEN', reason: 'RENDER_CREDENTIAL_NOT_CONFIGURED' });
   assert.equal(body.comparison.mainVsDeploy, 'NOT_PROVEN');
-  assert.equal(h.calls.length, 2);
+  assert.equal(h.calls.length, 3);
 });
 
 test('rejects wrong Render workspace and keeps raw errors/secrets private', async () => {
@@ -150,4 +157,31 @@ test('classifies different main and deploy claims as drift, never as independent
   const { body } = await h.request();
   assert.equal(body.comparison.mainVsDeploy, 'DRIFT_PROVIDER_CLAIMS');
   assert.equal(body.comparison.runtimeBuildIdentity, 'NOT_PROVEN_INDEPENDENT_READBACK');
+});
+
+test('missing check-run access cannot invent passing security gates', async () => {
+  const h = setup({ provider: url => String(url).includes('/check-runs?') ?
+    new Response('not authorized', { status: 403 }) : fixture(url) });
+  const { body } = await h.request();
+  assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.github.ci.status, 'NOT_PROVEN');
+  assert.deepEqual(body.github.ci.runs, []);
+});
+
+test('cross-commit check-runs never count as verified CI', async () => {
+  const h = setup({ provider: url => String(url).includes('/check-runs?') ? {
+    total_count: 1, check_runs: [{ name: 'Docker Security Gate', head_sha: other, status: 'completed', conclusion: 'success' }],
+  } : fixture(url) });
+  const { body } = await h.request();
+  assert.equal(body.github.ci.status, 'NOT_PROVEN');
+  assert.equal(body.github.ci.reason, 'NO_MATCHING_MAIN_CHECK_RUNS');
+});
+
+test('bounded PR and deployment projections exclude credentials and user data', async () => {
+  const h = setup();
+  const { body } = await h.request();
+  assert.equal(body.github.pullRequests.length, 1);
+  assert.equal(body.render.deployments.length, 1);
+  assert.equal(body.render.deployments[0].finishedAt, '2026-11-19T03:30:00.000Z');
+  assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|owner@example.test/);
 });
