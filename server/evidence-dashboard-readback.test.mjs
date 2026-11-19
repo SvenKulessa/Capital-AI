@@ -20,7 +20,7 @@ function fixture(url) {
   if (s.endsWith('/deploys?limit=5')) return [{ deploy: { id: 'dep-test', status: 'live', commit: { id: sha }, finishedAt: '2026-11-19T03:30:00Z' } }];
   throw Error('unexpected path');
 }
-function setup({ allowed = true, role = true, ga4Broken = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
+function setup({ allowed = true, role = true, ga4Broken = false, ga4FailureCode = null, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
   const calls = [];
   let ga4Calls = 0;
   const ga4Readback = {
@@ -28,6 +28,7 @@ function setup({ allowed = true, role = true, ga4Broken = false, vars = env, pro
     load: async () => {
       ga4Calls++;
       if (ga4Broken) throw Error('confidential_ga4_password');
+      if (ga4FailureCode) throw Error(ga4FailureCode);
       return { status: 'PROVIDER_READ_VERIFIED', property: { resourceName: 'properties/123456789' }, sevenDay: { events: [
         { eventName: 'page_view', eventCount: 13 },
         { eventName: 'purchase', eventCount: 0 },
@@ -136,7 +137,7 @@ test('rejects unknown GitHub SHA, truncated PR listing, GA4 failure and incomple
   const { body } = await invalid.request();
   assert.equal(body.github.status, 'NOT_PROVEN');
   assert.equal(body.ga4.status, 'NOT_PROVEN');
-  assert.equal(body.ga4.reason, 'PROVIDER_READ_FAILED');
+  assert.equal(body.ga4.reason, 'GA4_READBACK_FAILED');
   const truncated = setup({ provider: url => String(url).includes('/pulls?') ? Array.from({ length: 100 }, (_, i) => ({ number: i + 1, state: 'open' })) : fixture(url) });
   const res = await truncated.request();
   assert.equal(res.body.github.openPrCount, null);
@@ -213,4 +214,20 @@ test('AcodeX P1-v2 is archived owner-only evidence, never a live device probe', 
     return url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname);
   }));
   assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|password|secret_value/i);
+});
+
+test('owner evidence reports an allowlisted GA4 property failure without leaking source data', async () => {
+  const h = setup({ ga4FailureCode: 'GA4_PROPERTY_NOT_ACCESSIBLE' });
+  const { body } = await h.request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_PROPERTY_NOT_ACCESSIBLE' });
+  assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+  assert.doesNotMatch(JSON.stringify(body), /service.account|private.key|owner@example.test/);
+});
+
+test('unknown GA4 error strings remain opaque in owner evidence', async () => {
+  const h = setup({ ga4FailureCode: 'private_key=DO_NOT_EXPOSE' });
+  const { body } = await h.request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_READBACK_FAILED' });
+  assert.doesNotMatch(JSON.stringify(body), /DO_NOT_EXPOSE/);
 });

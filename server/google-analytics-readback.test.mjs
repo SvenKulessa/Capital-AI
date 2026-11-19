@@ -8,6 +8,7 @@ import {
 import {
   buildGoogleAnalyticsReadback,
   createGoogleAnalyticsReadback,
+  safeGa4FailureReason,
 } from './google-analytics-readback.mjs';
 
 const ownerId = '11111111-1111-4111-8111-111111111111';
@@ -271,4 +272,32 @@ test('GA4 readback fails closed when provider omits an event count', async () =>
     () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
     /GA4_INVALID_EVENT_COUNT/,
   );
+});
+
+test('owner-safe GA4 reasons never disclose raw provider errors or user content', async () => {
+  assert.equal(safeGa4FailureReason(new Error('GA4_PROPERTY_NOT_ACCESSIBLE')), 'GA4_PROPERTY_NOT_ACCESSIBLE');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_TIMEOUT_tools/call')), 'GA4_MCP_REQUEST_TIMEOUT');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_REQUIRED_TOOL_MISSING_run_report')), 'GA4_REQUIRED_TOOL_MISSING');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED')), 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_SERVICE_ACCOUNT_JSON_KEY=private')), 'GA4_READBACK_FAILED');
+  assert.equal(safeGa4FailureReason(new Error('contact owner@example.test')), 'GA4_READBACK_FAILED');
+  assert.equal(safeGa4FailureReason({ message:'GA4_PROPERTY_NOT_ACCESSIBLE' }), 'GA4_READBACK_FAILED');
+});
+
+test('authenticated GA4 503 returns only the safe reason code', async () => {
+  const h = harness({ vars: { ...env, GOOGLE_ANALYTICS_PROPERTY_NUMBER: '' } });
+  const result = await h.request();
+  assert.equal(result.status, 503);
+  assert.equal(result.body.reason, 'GA4_PROPERTY_NUMBER_NOT_CONFIGURED');
+  assert.equal(result.body.status, 'EVIDENCE_UNAVAILABLE');
+  assert.doesNotMatch(JSON.stringify(result.body), /owner@example.test|123456789/);
+});
+
+test('unauthorized requests never expose GA4 diagnostics or start the provider', async () => {
+  const calls = [];
+  const h = harness({ identity: null, client: fakeClient(calls), vars: { ...env, GOOGLE_ANALYTICS_PROPERTY_NUMBER: '' } });
+  const result = await h.request();
+  assert.equal(result.status, 404);
+  assert.equal(result.body.reason, undefined);
+  assert.equal(calls.length, 0);
 });
