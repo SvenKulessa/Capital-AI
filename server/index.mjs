@@ -36,6 +36,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
+import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
 import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
@@ -456,6 +457,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
+  const evidenceDashboardReadback = createEvidenceDashboardReadback({ env: options.env || process.env, ga4Readback: googleAnalyticsReadback, fetchImpl: options.fetchImpl || fetch });
   const tinyfishOwnerReadback = createTinyfishOwnerReadback({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).MARKET_BROKER_PAUSED === 'false' &&
@@ -565,6 +567,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
   if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
+  if (await evidenceDashboardReadback.handle(req, res, url, json)) return;
   if (await tinyfishOwnerReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
