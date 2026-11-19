@@ -37,6 +37,7 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react';
+import { ChatNextStepActions } from '../../components/ChatNextStepActions';
 import type { AdvisorResponsePayload } from '../../contracts/advisor';
 import {
   PipelineConfigState,
@@ -549,6 +550,8 @@ export const AdvisorChatbot: React.FC<AdvisorChatbotProps> = ({
                 </div>
               </div>
             ))}
+
+            <ChatNextStepActions task={[...messages].reverse().find(message => message.sender === 'user')?.text ?? ''} />
 
             {isLoading && (
               <div className="flex items-center gap-2 text-xs text-slate-400 p-2 font-mono">
