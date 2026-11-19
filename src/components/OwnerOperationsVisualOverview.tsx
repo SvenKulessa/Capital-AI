@@ -94,7 +94,7 @@ function MixedBarChart({ snapshot }: { snapshot: DashboardReadback }) {
   return <div className="ops-mock-bars" role="group" aria-label="Umfänge der drei verschiedenen Provider-Projektionen">
     {values.map((row)=><div key={row.label} className="ops-mock-bar-column">
       <div className="ops-mock-bar-scale">
-        {row.count !== null && <div className="ops-mock-bar-fill" style={{height:(Math.max(8, row.count / max * 100))+'%'}}/>}
+        {row.count !== null && <div className="ops-mock-bar-fill" style={{height:(row.count === 0 ? 0 : Math.max(8, row.count / max * 100))+'%'}}/>}
       </div>
       <strong>{pretty(row.count)}</strong>
       <span>{row.label}</span>
