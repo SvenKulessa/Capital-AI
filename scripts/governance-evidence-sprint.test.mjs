@@ -75,6 +75,6 @@ test('organic campaign contains three qualified human-reviewed draft messages wi
   assert.match(agentCampaign, /utm_medium=organic/);
   assert.match(agentCampaign, /Mailserver-Receipt/);
   assert.match(agentCampaign, /NOT_PROVEN/);
-  assert.match(agentCampaign, /keine neue Tracker-Initialisierung/);
+  assert.match(agentCampaign, /[Kk]eine neue Tracker-Initialisierung/);
   assert.doesNotMatch(agentCampaign, /STRIPE_SECRET_KEY|OPENAI_API_KEY|<script|AGENT_OPERATIONS_PILOT_ENABLED\s*=\s*true/i);
 });
