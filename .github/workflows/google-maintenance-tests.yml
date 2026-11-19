@@ -24,6 +24,10 @@ on:
       - '.github/workflows/google-maintenance-tests.yml'
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Nur veraltete PR-Läufe abbrechen; Main-/Merge-Queue-/Dispatch-Läufe laufen vollständig durch.
+  cancel-in-progress: ${{ startsWith(github.event_name, 'pull_request') }}
 jobs:
   test:
     runs-on: ubuntu-24.04

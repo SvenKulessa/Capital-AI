@@ -4,7 +4,7 @@ import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { assessExpression, importScannerReport, MAX_REPORT_BYTES } from '../shared/license-engine.mjs';
-import { buildLicenseReport } from './license-engine.mjs';
+import { buildLicenseReport, classifyContainerReviewBaseline } from './license-engine.mjs';
 
 test('recognizes AND/OR and exceptions without granting distribution rights', () => {
   const alternative = assessExpression('MIT OR GPL-2.0-only WITH GCC-exception-2.0');
@@ -64,6 +64,13 @@ test('repository projection verifies original text hashes and exposes missing fi
   assert.ok(!JSON.stringify(report).includes('contractOrPermissionReference":null'));
   assert.match(report.lockfileSha256, /^[a-f0-9]{64}$/);
   assert.equal(report.evidenceSourceSha, rights.applicationSourceSha);
+  assert.equal(report.containerReviewBaseline.status, 'HISTORICAL_BASE_IMAGE_MISMATCH');
+  assert.equal(report.containerReviewBaseline.historicalBaseImage, rights.baseImage);
+  assert.equal(report.containerReviewBaseline.currentRuntimeSbomStatus, 'NOT_INCLUDED_USE_SHA_BOUND_SECURITY_ARTIFACT');
+  assert.equal(report.containerReviewBaseline.redistributionApproved, false);
+  assert.ok(report.osPackages.every(p => p.usageScope === 'archived-container-distribution' &&
+    p.evidenceStatus === 'HISTORICAL_ONLY' && p.currentRuntimeVerified === false &&
+    p.historicalSourceSha === rights.applicationSourceSha && p.historicalBaseImage === rights.baseImage));
 });
 
 test('changed text or stale tool origin stops report generation', t => {
@@ -93,4 +100,29 @@ test('SPDX parser v5 LicenseRef exceptions stay manual-review-only', () => {
   assert.equal(result.status, 'REVIEW_REQUIRED');
   assert.ok(result.obligations.some(x => x.includes('manuell')));
   assert.ok(result.obligations.some(x => x.includes('LLVM-exception')));
+});
+
+test('current pinned base and archived review are never conflated with a runtime scan', () => {
+  const current = 'node:26.13.1-alpine@sha256:' + 'a'.repeat(64);
+  const old = 'node:24.19.0-alpine@sha256:' + 'b'.repeat(64);
+  const dockerfile = 'FROM ' + current + ' AS crypto-base\nFROM crypto-base AS runtime\n';
+  const historical = classifyContainerReviewBaseline(dockerfile, { baseImage: old, applicationSourceSha: 'c'.repeat(40) });
+  assert.equal(historical.status, 'HISTORICAL_BASE_IMAGE_MISMATCH');
+  assert.equal(historical.currentBaseImage, current);
+  assert.equal(historical.historicalBaseImage, old);
+  assert.equal(historical.redistributionApproved, false);
+  assert.equal(historical.currentOSPackageInventoryStatus, 'NOT_INCLUDED_HISTORICAL_ONLY');
+
+  const sameBase = classifyContainerReviewBaseline(dockerfile, { baseImage: current, applicationSourceSha: 'c'.repeat(40) });
+  assert.equal(sameBase.status, 'ARCHIVED_REVIEW_NOT_CURRENT_RUNTIME_PROOF');
+  assert.equal(sameBase.currentRuntimeSbomStatus, 'NOT_INCLUDED_USE_SHA_BOUND_SECURITY_ARTIFACT');
+  assert.equal(sameBase.redistributionApproved, false);
+
+  const omittedInMinimizedContext = classifyContainerReviewBaseline(null, { baseImage: old });
+  assert.equal(omittedInMinimizedContext.status, 'CURRENT_BASE_UNAVAILABLE_NOT_PROVEN');
+  assert.equal(omittedInMinimizedContext.currentBaseImage, null);
+  assert.equal(omittedInMinimizedContext.redistributionApproved, false);
+
+  assert.throws(() => classifyContainerReviewBaseline(dockerfile + 'FROM ' + current + ' AS crypto-base\n', {}), /ambiguous/);
+  assert.throws(() => classifyContainerReviewBaseline('FROM node:26.13.1-alpine AS crypto-base\n', {}), /missing/);
 });

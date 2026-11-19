@@ -11,9 +11,9 @@
     "state": "BLOCKED",
     "classification": "BINARY_AFFECTED",
     "reasonCode": "NATIVE_BUILD_TOOL_BINARY_VULNERABILITY",
-    "reason": "Exact wrapper/native archive integrities and compiler SHA-256 match the previously blocked artifact. Fresh gobinary SCA reports 15 HIGH findings. Keep 7.0.2 BLOCKED and installed 6.0.3; no compiler execution or vulnerability suppression.",
-    "evaluatedAt": "2026-11-05T20:49:50.790299113Z",
-    "reviewOnOrAfter": "2026-11-19",
+    "reason": "SUPPRESS_WITH_EVIDENCE: npm-Registry bestätigt am 2026-11-19 weiterhin 7.0.2 als letzte stabile Version; Wrapper- und Linux-x64-Native-Integrities sind exakt identisch mit der zuvor geprüften und blockierten Artefaktidentität. Binär-SHA-256, Go-Buildinfo, Trivy (15 HIGH) und govulncheck-Reachability werden ausdrücklich nur aus der vorhandenen Evidence übernommen; kein neuer Binary-Scan, kein Compiler-Aufruf und keine Freigabe. Installiert bleibt TypeScript 6.0.3.",
+    "evaluatedAt": "2026-11-19T06:10:46.574Z",
+    "reviewOnOrAfter": "2026-12-03",
     "supersessionScope": "BACKEND",
     "reviewHistory": [
       {
@@ -29,9 +29,16 @@
         "state": "BLOCKED",
         "classification": "BINARY_AFFECTED",
         "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261016.json"
+      },
+      {
+        "evaluatedAt": "2026-11-05T20:49:50.790299113Z",
+        "reviewOnOrAfter": "2026-11-19",
+        "state": "BLOCKED",
+        "classification": "BINARY_AFFECTED",
+        "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261105.json"
       }
     ],
-    "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261105.json"
+    "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261119.json"
   },
   "fingerprint": {
     "package": {
@@ -89,7 +96,8 @@
     "PR #65",
     "PR #109",
     "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261016.json",
-    "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261105.json"
+    "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261105.json",
+    "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261119.json"
   ],
   "safety": {
     "doesNotMarkNotAffected": true,

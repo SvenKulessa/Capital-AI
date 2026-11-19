@@ -2,7 +2,7 @@
 import {
   assertSocialManifestHandoff, publicSocialAccountProjection,
   prepareSocialProviderDelivery, classifySocialProviderReadback,
-  createSocialOAuthState, socialPlatformForChannel, socialOAuthStateDigest,
+  createSocialOAuthState, socialPlatformForChannel, socialOAuthPlatformForChannel, socialOAuthStateDigest,
 } from './provider-adapter.mjs';
 
 const SERVICE_ROLE_KEY_PREFIX = 'sb_secret_';
@@ -69,7 +69,7 @@ export function createSocialProviderStore({ env = process.env, fetchImpl = fetch
     userId, channel, redirectUri, allowedRedirectUris, state, code, exchangeCode,
   }) {
     assert(UUID.test(userId), 'SOCIAL_OAUTH_TRUSTED_USER_REQUIRED');
-    socialPlatformForChannel(channel);
+    socialOAuthPlatformForChannel(channel);
     assert(Array.isArray(allowedRedirectUris) && allowedRedirectUris.includes(redirectUri),
       'SOCIAL_OAUTH_REDIRECT_DENIED');
     assert(typeof state === 'string' && state.length >= 40 && state.length <= 100
@@ -81,14 +81,14 @@ export function createSocialProviderStore({ env = process.env, fetchImpl = fetch
     // and expires_at > now() and matches user/platform/redirect. Replay fails.
     const consumed = await request('/rest/v1/rpc/capital_social_consume_oauth_state', {
       p_state_hash: stateHash, p_user_id: userId,
-      p_platform: socialPlatformForChannel(channel), p_redirect_uri: redirectUri,
+      p_platform: socialOAuthPlatformForChannel(channel), p_redirect_uri: redirectUri,
     });
     assert(consumed?.user_id === userId
-      && consumed?.platform === socialPlatformForChannel(channel)
+      && consumed?.platform === socialOAuthPlatformForChannel(channel)
       && consumed?.redirect_uri === redirectUri
       && consumed?.state_token === stateHash && consumed?.used_at,
       'SOCIAL_OAUTH_CONSUME_NOT_CONFIRMED');
-    if (['X', 'YOUTUBE'].includes(channel)) {
+    if (['X', 'X_PUBLISH', 'YOUTUBE'].includes(channel)) {
       assert(typeof consumed.code_verifier === 'string'
         && consumed.code_verifier.length >= 43, 'SOCIAL_OAUTH_PKCE_MISSING');
     }

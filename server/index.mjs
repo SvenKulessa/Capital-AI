@@ -8,6 +8,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
+import { createProfileAvatarUpload } from './profile-avatar-upload.mjs';
+import { startProfileAvatarClamav } from './profile-avatar-clamav.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
@@ -23,6 +25,7 @@ import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-e
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
 import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
+import { createXPublishAccountStatus } from './social-media/x-publish-account-status.mjs';
 import { createSocialOwnerTokenRefresh } from './social-media/owner-token-refresh.mjs';
 import { createXArticleTest } from './social-media/x-article-test.mjs';
 import { createXMilestonePost } from './social-media/x-milestone-post.mjs';
@@ -33,6 +36,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
+import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
 import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
@@ -92,11 +96,16 @@ const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
 const embeddedSourceSha = '__CAPITAL_AI_SOURCE_SHA_UNBOUND__';
 const embeddedBuilder = '__CAPITAL_AI_BUILDER_UNBOUND__';
+const embeddedRenderGitSha = '__CAPITAL_AI_RENDER_GIT_SHA_UNBOUND__';
 const buildIdentity =
   /^[0-9a-f]{40}$/.test(embeddedSourceSha) &&
   embeddedBuilder === 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml'
     ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
     : { bound: false, sourceSha: null };
+// A Render build-argument SHA is separate from GitHub Actions builder identity.
+const renderGitBuildIdentity = /^[0-9a-f]{40}$/.test(embeddedRenderGitSha) && !buildIdentity.bound
+  ? { sourceSha: embeddedRenderGitSha, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED' }
+  : { sourceSha: null, evidence: 'NOT_PROVEN' };
 const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = SECURITY_HEADERS;
 const publicVocabularyEntries = vocabularyMetadata;
@@ -355,6 +364,7 @@ export function createApp(root = defaultRoot, options = {}) {
     : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
+  const profileAvatarUpload = createProfileAvatarUpload({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth, scan: options.profileAvatarScan, transcode: options.profileAvatarTranscode });
   const oauthConsent = createOAuthConsent({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const learningInquiry = createLearningInquiry({ ...options, auth });
   const learningSimulator = createLearningSimulator({ ...options, auth });
@@ -362,6 +372,11 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, auth,
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
+  });
+  const socialXPublishOAuthStart = createSocialXOAuthStart({
+    env: options.env || process.env, auth, channel: 'X_PUBLISH',
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialPublishOAuthStore || null,
   });
   const youtubePrivateUpload = createYouTubePrivateUpload({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeOAuthStart = createSocialYouTubeOAuthStart({
@@ -389,11 +404,18 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
   });
   const xExchange = createSocialXOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
+  const xPublishExchange = createSocialXOAuthExchange({
+    env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+    channel: 'X_PUBLISH',
+  });
   const youtubeExchange = createSocialYouTubeOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeAccountStatus = createSocialYouTubeAccountStatus({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialXAccountStatus = createSocialXAccountStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const socialXPublishAccountStatus = createXPublishAccountStatus({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialOwnerTokenRefresh = createSocialOwnerTokenRefresh({
@@ -407,6 +429,12 @@ export function createApp(root = defaultRoot, options = {}) {
   });
   const xUrlContext = createXUrlContext({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const socialPublishOAuthCallback = createSocialOAuthCallback({
+    env: options.env || process.env, auth,
+    fetchImpl: options.fetchImpl || fetch, publishOnly: true,
+    store: options.socialPublishOAuthStore || null,
+    exchangeCode: options.socialPublishOAuthCodeExchange || xPublishExchange,
   });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
@@ -429,6 +457,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
+  const evidenceDashboardReadback = createEvidenceDashboardReadback({ env: options.env || process.env, ga4Readback: googleAnalyticsReadback, fetchImpl: options.fetchImpl || fetch });
   const tinyfishOwnerReadback = createTinyfishOwnerReadback({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).MARKET_BROKER_PAUSED === 'false' &&
@@ -513,8 +542,10 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await profileAvatarUpload.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await socialXPublishOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
   if (await socialFacebookOAuthStart.handle(req, res, url, json)) return;
@@ -523,10 +554,12 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
   if (await socialXAccountStatus.handle(req, res, url, json)) return;
+  if (await socialXPublishAccountStatus.handle(req, res, url, json)) return;
   if (await socialOwnerTokenRefresh.handle(req, res, url, json)) return;
   if (await xArticleTest.handle(req, res, url, json)) return;
   if (await xMilestonePost.handle(req, res, url, json)) return;
   if (await xUrlContext.handle(req, res, url, json)) return;
+  if (await socialPublishOAuthCallback.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
@@ -534,6 +567,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
   if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
+  if (await evidenceDashboardReadback.handle(req, res, url, json)) return;
   if (await tinyfishOwnerReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
@@ -550,7 +584,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await cadsCommerce.handle(req, res, url, json)) return;
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
-  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
+  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, renderGitBuildIdentity, runtimeIdentity });
   if (url.pathname === '/metrics') {
     if (!metricsAuthorized(req)) {
       writeAuditEvent({ eventType: 'observability.metrics.denied', requestId: requestContext.requestId, result: 'DENIED' });
@@ -833,6 +867,7 @@ export function createApp(root = defaultRoot, options = {}) {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const server = createApp();
+  const stopProfileAvatarClamav = startProfileAvatarClamav();
   await infrastructure.start();
   let unsubscribePubsubProbe = null;
   try { unsubscribePubsubProbe = await infrastructure.subscribeQuotes(() => {}); } catch { /* health remains fail-closed */ }
@@ -842,7 +877,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   reconnect?.unref();
   server.listen(Number(process.env.PORT || 10000), '0.0.0.0');
   const shutdown = () => {
-    if (reconnect) clearInterval(reconnect); stop(); server.close(() => { void Promise.resolve(unsubscribePubsubProbe?.()).finally(() => infrastructure.close()).finally(() => process.exit(0)); });
+    if (reconnect) clearInterval(reconnect); stopProfileAvatarClamav(); stop(); server.close(() => { void Promise.resolve(unsubscribePubsubProbe?.()).finally(() => infrastructure.close()).finally(() => process.exit(0)); });
     setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000).unref();
   };
   process.once('SIGTERM', shutdown);

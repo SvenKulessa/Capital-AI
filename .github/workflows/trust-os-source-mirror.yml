@@ -11,6 +11,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Nur veraltete PR-Läufe abbrechen; Main-/Merge-Queue-/Dispatch-Läufe laufen vollständig durch.
+  cancel-in-progress: ${{ startsWith(github.event_name, 'pull_request') }}
 jobs:
   isolated-os-source-mirror:
     if: github.event.pull_request.number == 624 && github.event.pull_request.head.repo.full_name == 'SvenKulessa/Capital-AI'

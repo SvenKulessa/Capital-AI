@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { EyeOff, Move, Settings, StickyNote, X } from 'lucide-react';
+import { Camera, EyeOff, Move, PenLine, Settings, StickyNote, X } from 'lucide-react';
 import { clampHeroBuddyPoint } from './heroBuddyPosition';
 import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
@@ -70,6 +70,7 @@ function lineFor(reason: AssistReason) {
 export function HeroBuddy(props: HeroBuddyProps) {
   const [open, setOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [captureRequest, setCaptureRequest] = useState(0);
   const [noteSource, setNoteSource] = useState('');
   const [avatarLoaded, setAvatarLoaded] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
@@ -312,6 +313,16 @@ export function HeroBuddy(props: HeroBuddyProps) {
               <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="font-bold text-amber-300">JaJa · Chat Buddy</p>
                 <div className="flex items-center gap-1">
+                  <button type="button" aria-label="JaJa CAM: Screenshot aufnehmen" title="Screenshot oder Bild wählen"
+                    onClick={()=>{setNotesOpen(true);setCaptureRequest(value=>value+1);}}
+                    className="min-h-10 min-w-10 rounded-md p-2 text-cyan-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan-300">
+                    <Camera className="h-4 w-4" />
+                  </button>
+                  <button type="button" aria-label="JaJa Stift: Bereiche markieren" title="Screenshot markieren"
+                    onClick={()=>{setNotesOpen(true);setCaptureRequest(value=>value+1);}}
+                    className="min-h-10 min-w-10 rounded-md p-2 text-rose-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-rose-300">
+                    <PenLine className="h-4 w-4" />
+                  </button>
                   <button type="button" aria-expanded={settingsOn} aria-label="Einstellungen" title="Einstellungen" onClick={() => setSettingsOn((value) => !value)} className="rounded-md p-1 text-slate-400 hover:text-white">
                     <Settings className="h-4 w-4" />
                   </button>
@@ -337,7 +348,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
                     <button type="button" onClick={() => setNotesOpen(false)} aria-label="Notizen schließen" className="rounded p-2 text-slate-200"><X className="h-4 w-4" /></button>
                   </div>
                   <Suspense fallback={<p role="status" className="py-3 text-sm text-slate-300">Private Notizen werden geladen …</p>}>
-                    <BuddyStickyNotes initialText={noteSource} />
+                    <BuddyStickyNotes initialText={noteSource} captureRequest={captureRequest} />
                   </Suspense>
                 </section>
               )}
