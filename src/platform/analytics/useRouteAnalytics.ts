@@ -33,6 +33,11 @@ const DEFAULT_METADATA: StaticRouteMetadata = {
 };
 
 const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
+  '/governance-evidence-sprint': {
+    title: 'Governance & Evidence Sprint | CAPITAL-AI',
+    description: 'Begrenzter B2B-Review für CI-, Supply-Chain- und Governance-Evidence. Transparentes Muster, klare Grenzen und unverbindliche Kontaktanfrage.',
+    canonicalPath: '/governance-evidence-sprint',
+  },
   '/login': {
     title: 'Capital-AI | Terminal Anmeldung & Login',
     description:
