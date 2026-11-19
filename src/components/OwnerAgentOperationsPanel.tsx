@@ -259,6 +259,7 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
         <Section title="GA4 / 7-Tage-Eventmessung">
           <Source status={ga4?.status}/>
           <p className="my-2 text-xs text-slate-400">{ga4?.period || 'NOT_PROVEN'} · {ga4?.property || 'Keine bestätigte Property'}</p>
+          {!isVerified(ga4) && ga4?.reason && <p role="status" className="my-2 break-all rounded-lg border border-amber-300/25 bg-amber-300/5 p-2 text-xs text-amber-100">Diagnosecode: {ga4.reason}</p>}
           <div className="grid grid-cols-2 gap-2">
             <Metric title="page_view Events" value={views ?? '–'}/>
             <Metric title="generate_lead Events" value={leads ?? '–'}/>
