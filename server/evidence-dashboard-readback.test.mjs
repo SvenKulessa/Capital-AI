@@ -20,7 +20,7 @@ function fixture(url) {
   if (s.endsWith('/deploys?limit=5')) return [{ deploy: { id: 'dep-test', status: 'live', commit: { id: sha }, finishedAt: '2026-11-19T03:30:00Z' } }];
   throw Error('unexpected path');
 }
-function setup({ allowed = true, role = true, ga4Broken = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
+function setup({ allowed = true, role = true, ga4Broken = false, invalidRealtime = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
   const calls = [];
   let ga4Calls = 0;
   const ga4Readback = {
@@ -28,7 +28,10 @@ function setup({ allowed = true, role = true, ga4Broken = false, vars = env, pro
     load: async () => {
       ga4Calls++;
       if (ga4Broken) throw Error('confidential_ga4_password');
-      return { status: 'PROVIDER_READ_VERIFIED', property: { resourceName: 'properties/123456789' }, sevenDay: { events: [
+      return { status: 'PROVIDER_READ_VERIFIED', property: { resourceName: 'properties/123456789' }, realtime: { events: [
+        { eventName: 'page_view', eventCount: invalidRealtime ? 'INVALID' : 2 },
+        { eventName: 'private-user-id', eventCount: 1 },
+      ] }, sevenDay: { events: [
         { eventName: 'page_view', eventCount: 13 },
         { eventName: 'purchase', eventCount: 0 },
         { eventName: 'user@example.test', eventCount: 10 },
@@ -93,11 +96,14 @@ test('binds provider URLs, identity and properties; produces only verified proje
   assert.equal(body.render.sourceCommitSha, sha);
   assert.equal(body.comparison.mainVsDeploy, 'MATCH_PROVIDER_CLAIMS_ONLY');
   assert.equal(body.ga4.events.length, 2);
+  assert.equal(body.ga4.period, 'LAST_7_CALENDAR_DAYS_INCLUDING_TODAY');
+  assert.equal(body.ga4.realtimeStatus, 'VERIFIED_PROVIDER_READ');
+  assert.deepEqual(body.ga4.realtimeEvents, [{ eventName: 'page_view', eventCount: 2 }]);
   assert.equal(body.ga4.revenue, null);
   assert.equal(body.ga4.revenueStatus, 'NOT_PROVEN_NOT_QUERIED');
   assert.equal(body.baseline.status, 'HISTORICAL_REFERENCE_ONLY');
   assert.equal(body.baseline.valuesImported, false);
-  assert.doesNotMatch(JSON.stringify(body), /fixture|user@example.test|github-private|render-private|6998|3525/);
+  assert.doesNotMatch(JSON.stringify(body), /fixture|user@example.test|github-private|render-private|6998|3525|private-user-id/);
 });
 
 test('uses five-minute cache and deduplicates concurrent reads', async () => {
@@ -184,4 +190,14 @@ test('bounded PR and deployment projections exclude credentials and user data', 
   assert.equal(body.render.deployments.length, 1);
   assert.equal(body.render.deployments[0].finishedAt, '2026-11-19T03:30:00.000Z');
   assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|owner@example.test/);
+});
+
+test('rejects malformed realtime counts without inventing GA4 events or breaking other providers', async () => {
+  const h = setup({ invalidRealtime: true });
+  const { body } = await h.request();
+  assert.equal(body.ga4.status, 'NOT_PROVEN');
+  assert.equal(body.ga4.reason, 'PROVIDER_READ_FAILED');
+  assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+  assert.doesNotMatch(JSON.stringify(body), /INVALID|private-user-id/);
 });
