@@ -2,6 +2,7 @@ import { createYouTubeDescription as youtubeDescription } from '../../platform/S
 import React from 'react';
 import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { BrandGlobeStudio } from './BrandGlobeStudio';
+import { OWNER_OPERATIONS_VISUAL_KIT } from '../../platform/SocialMediaEngine/Editing/OwnerOperationsVisualKit';
 import { InstagramLearningPilot } from './InstagramLearningPilot';
 import { ChartLearningAtlas } from '../learning/ChartLearningAtlas';
 import {
@@ -68,6 +69,34 @@ export const ContentStudioPanel: React.FC = () => {
         </div>
         <p className="mt-3 text-[11px] text-slate-400">
           {CONTENT_ENGINE_UNIVERSE.id} · Originale Sci-Fi-Elemente · Keine externen Franchise-Assets · DRAFT_ONLY
+        </p>
+      </section>
+      <section aria-labelledby="studio-owner-ops-kit" className="rounded-2xl border border-amber-400/30 bg-[#070b19] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="studio-owner-ops-kit" className="text-base font-bold text-white">Owner Operations Visual Kit</h2>
+          <span className="rounded-full border border-amber-400/40 px-3 py-1 text-[10px] font-bold text-amber-200">DRAFT_ONLY</span>
+        </div>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-300">
+          Die Owner-Farb- und Diagrammgestaltung ist als eigenständige Social-Media-Entwurfsvorlage
+          verfügbar. Das öffentliche Template enthält weder Owner-Snapshots noch GitHub-/Render-/GA4-Werte.
+          Es erzeugt keine Medienrechtsfreigabe und keinen Social-Publishing-Receipt.
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Übernommene Designmodule">
+          {(['GitHub', 'Render', 'Analytics', 'Evidence'] as const).map((name, index) =>
+            <div key={name} className="min-w-0 rounded-xl border border-white/10 bg-slate-900 p-3">
+              <span className="block h-2 w-9 rounded-full" style={{ background: [
+                OWNER_OPERATIONS_VISUAL_KIT.palette.violet,
+                OWNER_OPERATIONS_VISUAL_KIT.palette.blue,
+                OWNER_OPERATIONS_VISUAL_KIT.palette.gold,
+                OWNER_OPERATIONS_VISUAL_KIT.palette.green,
+              ][index] }} aria-hidden="true" />
+              <strong className="mt-2 block text-xs text-white">{name}</strong>
+              <span className="mt-1 block text-[11px] text-amber-200">KEINE LIVE-DATEN</span>
+            </div>)}
+        </div>
+        <p className="mt-3 break-words text-xs text-slate-400">
+          {OWNER_OPERATIONS_VISUAL_KIT.schema} · {OWNER_OPERATIONS_VISUAL_KIT.width} × {OWNER_OPERATIONS_VISUAL_KIT.height} SVG
+          · vorhandenes resvg-wasm 2.6.2 · Quellen-, Asset- und kommerzielle Rechteprüfung erforderlich.
         </p>
       </section>
       <ChartLearningAtlas studio />
