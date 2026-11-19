@@ -64,7 +64,7 @@ function eventCounts(payload) {
     const parsed = /^\d+$/.test(rawCount) ? Number(rawCount) : NaN;
     return Object.freeze({
       eventName,
-      eventCount: Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0,
+      eventCount: Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : (() => { throw new Error('GA4_INVALID_EVENT_COUNT'); })(),
     });
   }).filter(row => row.eventName);
 }
