@@ -131,11 +131,18 @@ async function readGa4(ga4Readback, now) {
   if (!Array.isArray(source?.sevenDay?.events)) throw Error('INVALID_GA4_EVENTS');
   const filtered = source.sevenDay.events.filter(row => EVENTS.has(row?.eventName));
   if (filtered.some(row => N(row.eventCount) === null)) throw Error('INVALID_GA4_VALUE');
+  // Real-time measurements have their own scope; never replace absent real-time
+  // reads with zero, or mix them into the seven-day event totals.
+  const hasRealtime = Array.isArray(source.realtime?.events);
+  const realtime = hasRealtime ? source.realtime.events.filter(row => EVENTS.has(row?.eventName)) : [];
+  if (realtime.some(row => N(row.eventCount) === null)) throw Error('INVALID_GA4_REALTIME_VALUE');
   return {
     status: 'VERIFIED_PROVIDER_READ', observedAt: new Date(now()).toISOString(),
     property: source.property.resourceName,
-    period: 'LAST_7_DAYS_INCLUDING_TODAY',
+    period: 'LAST_7_CALENDAR_DAYS_INCLUDING_TODAY',
     events: filtered.map(({ eventName, eventCount }) => ({ eventName, eventCount })),
+    realtimeStatus: hasRealtime ? 'VERIFIED_PROVIDER_READ' : 'NOT_PROVEN',
+    realtimeEvents: realtime.map(({ eventName, eventCount }) => ({ eventName, eventCount })),
     eventCoverage: 'ALLOWLIST_ONLY_NOT_ALL_EVENTS',
     revenue: null, revenueStatus: 'NOT_PROVEN_NOT_QUERIED',
     historical30DayValues: null,
