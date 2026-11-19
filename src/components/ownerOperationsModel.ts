@@ -80,3 +80,24 @@ export function isSnapshotStale(snapshot: DashboardReadback, nowMs: number, maxA
   const timestamp = Date.parse(snapshot.generatedAt);
   return !Number.isFinite(timestamp) || timestamp > nowMs + 60_000 || nowMs - timestamp > maxAgeMs;
 }
+
+/** Only approved status categories are rendered; raw provider errors are never echoed. */
+const GA4_DIAGNOSTIC_LABELS = Object.freeze({
+  GA4_PROPERTY_CONFIG_MISSING: 'GA4-Property-Konfiguration fehlt',
+  GA4_PROJECT_CONFIG_MISSING: 'Google-Projektkonfiguration fehlt',
+  GA4_CREDENTIAL_CONFIG_MISSING: 'GA4-Leseidentität nicht konfiguriert',
+  GA4_CREDENTIAL_CONFIG_INVALID: 'GA4-Leseidentität ungültig konfiguriert',
+  GA4_PROJECT_BINDING_MISMATCH: 'Projektbindung stimmt nicht überein',
+  GA4_PROPERTY_ACCESS_NOT_PROVEN: 'GA4-Property-Zugriff nicht bestätigt',
+  GA4_PROPERTY_BINDING_NOT_PROVEN: 'GA4-Property-Bindung nicht bestätigt',
+  GA4_MCP_RUNTIME_UNAVAILABLE: 'GA4-MCP-Prozess nicht verfügbar',
+  GA4_MCP_RUNTIME_TIMEOUT: 'GA4-MCP-Prozess hat Zeitlimit überschritten',
+  GA4_MCP_PROVIDER_REJECTED: 'GA4-MCP-Anfrage nicht bestätigt',
+  GA4_READBACK_TIMEOUT: 'GA4-Readback hat Zeitlimit überschritten',
+  GA4_PROVIDER_RESPONSE_INVALID: 'GA4-Providerantwort ist ungültig',
+});
+export function ga4DiagnosticLabel(reason?: string): string {
+  return typeof reason === 'string' && Object.hasOwn(GA4_DIAGNOSTIC_LABELS, reason)
+    ? GA4_DIAGNOSTIC_LABELS[reason as keyof typeof GA4_DIAGNOSTIC_LABELS]
+    : 'GA4-Readback nicht nachgewiesen';
+}
