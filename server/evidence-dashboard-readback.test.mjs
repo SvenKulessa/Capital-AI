@@ -208,6 +208,9 @@ test('AcodeX P1-v2 is archived owner-only evidence, never a live device probe', 
   assert.equal(archive.evidence.v1.sha256, '991b97eef4f31a69ece605347d9b6aeebc8405f0fcd30ee7e96d03869c5e5afd');
   assert.equal(archive.evidence.standard.sha256, 'be03a2c479eddc1a40d4bad133e34b41e20039aa27ee5a776b05a24571d9eb17');
   assert.equal(h.calls.length, 5);
-  assert.ok(h.calls.every(c => !c.url.includes('drive.google.com') && !c.url.includes('android')));
+  assert.ok(h.calls.every(c => {
+    const url = new URL(c.url);
+    return url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname);
+  }));
   assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|password|secret_value/i);
 });
