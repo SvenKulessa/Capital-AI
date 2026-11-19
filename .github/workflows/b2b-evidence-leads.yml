@@ -1,0 +1,22 @@
+name: B2B Evidence Lead Tests
+on:
+  pull_request:
+    paths:
+      - 'server/b2b-evidence-leads*'
+      - '.github/workflows/b2b-evidence-leads.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  b2b-evidence-lead-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run negative tests
+        shell: bash
+        run: |
+          node --version
+          node --test server/b2b-evidence-leads.test.mjs
