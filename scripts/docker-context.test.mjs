@@ -171,6 +171,9 @@ test('shared stable Alpine crypto-base enforces the fixed CVE-2026-4738 zlib flo
   assert.match(dockerfile, /^FROM node:26\.13\.1-alpine@sha256:[a-f0-9]{64} AS crypto-base$/m);
   assert.match(dockerfile, /'zlib>=1\.4-r0'/);
   assert.doesNotMatch(dockerfile, /'zlib>=1\.3\.2-r1'/);
+  // OpenSSL source/image findings in Run 44514448456 require Alpine 3.24's fixed 3.5.9-r1 revision.
+  assert.match(dockerfile, /'libcrypto3>=3\.5\.9-r1'/);
+  assert.match(dockerfile, /'libssl3>=3\.5\.9-r1'/);
   assert.match(dockerfile, /apk info -v zlib/);
   assert.doesNotMatch(dockerfile, /dl-cdn\.alpinelinux\.org\/alpine\/edge|--repository(?:\s|=)/);
   for (const stage of ['build', 'production-deps', 'runtime']) {
