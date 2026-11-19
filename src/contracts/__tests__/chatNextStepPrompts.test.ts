@@ -65,6 +65,72 @@ test('untrusted credential-shaped text is removed and follow-up copying never pe
   assert.ok(steps.every(step => step.prompt.includes('GitHub-Rulesets')));
 });
 
+
+test('Social channel intent is not hijacked by incidental OAuth or GitHub words', () => {
+  assert.equal(classifyChatDomain('Instagram Kampagne mit OAuth Verbindung und GitHub Evidence'), 'GROWTH');
+  assert.equal(classifyChatDomain('Erstelle Beitrag auf X und prüfe die API Kosten'), 'GROWTH');
+  assert.equal(classifyChatDomain('Repariere Copy Button im Chatfenster und prüfe GitHub CI'), 'PRODUCT');
+  assert.equal(classifyChatDomain('Prüfe OAuth tenant isolation beim Docker Deploy'), 'TRUST');
+});
+
+test('B2B campaigns use canonical revenue skill and platform-specific social safety contract', () => {
+  const scenarios = [
+    {task:'Instagram B2B Lead Funnel mit Consent und OAuth Kampagne', required:['INSTAGRAM:', 'B2B:', 'revenue-engineering/SKILL.md']},
+    {task:'Erstelle Beitrag auf X mit URL und Asset', required:['X:', 'Owner-OAuth', 'Publisher-Receipt']},
+    {task:'Erstelle YouTube Video Kampagne als Entwurf', required:['YOUTUBE:', 'OAuth-Scopes', 'Private-Upload']},
+  ];
+  for (const {task,required} of scenarios) {
+    const steps = buildChatFollowUps(task);
+    assert.equal(steps.length, 3);
+    assert.equal(steps[0].domain, 'GROWTH');
+    for (const term of required) assert.ok(steps[0].prompt.includes(term), task + ' missing ' + term);
+    assert.match(steps[0].prompt, /Draft → Review → Asset-Provenance\/SHA-256/);
+    assert.match(steps[0].prompt, /kein.*Publishing/i);
+    assert.match(steps[0].prompt, /tatsächlich.*Apps/i);
+    assert.match(steps[1].prompt, /ausschließlich read-only/);
+  }
+});
+
+test('pure SEO routing does not invent a social publisher workflow', () => {
+  const steps = buildChatFollowUps('Verbessere canonical URLs und sitemap SEO');
+  assert.equal(steps[0].domain, 'GROWTH');
+  assert.ok(steps[0].skills.includes('seo-engineering'));
+  assert.ok(!steps[0].prompt.includes('Publisher-Receipt'));
+  assert.ok(!steps[0].prompt.includes('Draft → Review → Asset-Provenance'));
+});
+
+test('explicit read-only scope wins over apparent mutating verbs', () => {
+  for (const task of [
+    'Nur prüfen, nicht implementieren: repariere gegebenenfalls später die OAuth-Konfiguration.',
+    'read-only Audit der Social Content Engine, implementiere jetzt nichts.',
+    'Keine Änderungen: Bitte Fix und Deployment evaluieren.',
+  ]) {
+    const steps = buildChatFollowUps(task);
+    assert.equal(steps[0].label, 'Read-only prüfen und belegen');
+    assert.match(steps[0].prompt, /Untersuche ausschließlich read-only/);
+    assert.ok(!steps[0].prompt.includes('Reproduziere den konkreten Fehler, implementiere'));
+    assert.ok(!steps[0].prompt.includes('bei belegter Mergefreigabe regulär squash-mergen'));
+  }
+});
+
+test('recognizable tokens from multiple providers are not repeated into the clipboard prompt', () => {
+  const secrets = [
+    'github_pat_abcdefghijklmnop123456',
+    'ghp_abcdefghijklmnop123456',
+    'sk_live_abcdefghijklmnop123456',
+    'sk-proj-abcdefghijklmnop123456',
+    'AIzaabcdefghijklmnop123456789012345',
+    'xoxb-123456789012-123456789012',
+    'AKIAABCDEFGHIJKLMNOP',
+  ];
+  for (const secret of secrets) {
+    const steps = buildChatFollowUps('Bitte kopiere ' + secret + ' in den Kampagnen-Prompt.');
+    assert.equal(steps.length, 3);
+    assert.ok(steps.every(s => s.prompt.includes('[SECRET_ENTFERNT]')), 'secret prefix ' + secret.slice(0, 5));
+    assert.ok(steps.every(s => !s.prompt.includes(secret)), 'secret leak ' + secret.slice(0, 5));
+  }
+});
+
 test('lazy JaJa open events are replayed once, including a click before module mount', () => {
   assert.equal(takePendingHeroBuddyOpen(), false);
   openHeroBuddy();
