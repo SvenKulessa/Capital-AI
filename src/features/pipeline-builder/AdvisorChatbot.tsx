@@ -37,7 +37,6 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react';
-import { ChatNextStepActions } from '../../components/ChatNextStepActions';
 import type { AdvisorResponsePayload } from '../../contracts/advisor';
 import {
   PipelineConfigState,
@@ -47,6 +46,8 @@ import {
   InventoryBOMSummary,
   CatalogToolEntry,
 } from '../../utils/pipelineToolCatalog';
+
+const ChatNextStepActions = React.lazy(() => import('../../components/ChatNextStepActions').then(module => ({ default: module.ChatNextStepActions })));
 
 export type { PipelineConfigState };
 
@@ -551,7 +552,9 @@ export const AdvisorChatbot: React.FC<AdvisorChatbotProps> = ({
               </div>
             ))}
 
+            <React.Suspense fallback={null}>
             <ChatNextStepActions task={[...messages].reverse().find(message => message.sender === 'user')?.text ?? ''} />
+            </React.Suspense>
 
             {isLoading && (
               <div className="flex items-center gap-2 text-xs text-slate-400 p-2 font-mono">
