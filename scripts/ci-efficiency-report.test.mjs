@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { summarizeCiEfficiency } from './ci-efficiency-report.mjs';
+import { summarizeCiEfficiency, collectJobs } from './ci-efficiency-report.mjs';
 
 test('summarizes workflow runtime, queue delay and observed job walltime without claiming billing', () => {
   const runs = [
@@ -132,4 +132,74 @@ test('keeps pull-request and main-push step timings in separate cohorts', () => 
   const pr = report.topSlowSteps.find(s => s.event === 'pull_request');
   assert.equal(push?.totalObservedSeconds, 120);
   assert.equal(pr?.totalObservedSeconds, 40);
+});
+
+test('counts both attempts of the Docker Gate without claiming billed minutes', () => {
+  const runs = [{
+    id: 44407750370, name: 'Docker Build Sicherheit', event: 'pull_request',
+    conclusion: 'success', run_attempt: 2,
+  }];
+  const jobsByRun = new Map([[44407750370, [
+    { id: 135167397430, name: 'Docker Security Gate', run_attempt: 1,
+      conclusion: 'failure', started_at: '2026-11-18T22:03:00Z',
+      completed_at: '2026-11-18T22:04:00Z' },
+    { id: 135168530469, name: 'Docker Security Gate', run_attempt: 2,
+      conclusion: 'success', started_at: '2026-11-18T22:05:00Z',
+      completed_at: '2026-11-18T22:07:00Z' },
+  ]]]);
+  const report = summarizeCiEfficiency({ runs, jobsByRun });
+  const row = report.workflows[0];
+  assert.equal(row.runs, 1);
+  assert.equal(row.success, 1);
+  assert.equal(row.observedRunnerMinutes, 3);
+  assert.equal(row.rerunRuns, 1);
+  assert.equal(row.observedPriorAttemptRunnerMinutes, 1);
+  assert.equal(row.rerunCoverage, 'ALL_ATTEMPTS_OBSERVED');
+  assert.equal(report.topExpensiveRuns[0].runAttempts, 2);
+  assert.deepEqual(report.topExpensiveRuns[0].observedJobAttempts, [1, 2]);
+  assert.equal(report.topExpensiveRuns[0].attemptCoverage, 'ALL_ATTEMPTS_OBSERVED');
+  assert.equal(report.measurements.billedMinutes, 'NOT_PROVEN');
+  assert.equal(report.measurements.retryOverhead, 'OBSERVED_PRIOR_ATTEMPT_JOB_WALLTIME_NOT_BILLING');
+});
+
+test('does not claim zero retry overhead when an earlier attempt is missing', () => {
+  const runs = [{ id: 79, name: 'Docker Build Sicherheit',
+    conclusion: 'success', run_attempt: 2 }];
+  const jobsByRun = new Map([[79, [{
+    id: 2, run_attempt: 2, name: 'Docker Security Gate',
+    started_at: '2026-11-18T22:05:00Z',
+    completed_at: '2026-11-18T22:07:00Z',
+  }]]]);
+  const report = summarizeCiEfficiency({ runs, jobsByRun });
+  assert.equal(report.workflows[0].rerunCoverage, 'PARTIAL_NOT_PROVEN');
+  assert.equal(report.workflows[0].observedPriorAttemptRunnerMinutes, null);
+  assert.equal(report.topExpensiveRuns[0].attemptCoverage, 'NOT_PROVEN');
+  assert.equal(report.topExpensiveRuns[0].observedPriorAttemptRunnerMinutes, null);
+});
+
+test('collectJobs retrieves all attempts and paginates without a second workflow', async () => {
+  const paths = [];
+  const read = async (route, token) => {
+    assert.equal(token, 'synthetic-token');
+    paths.push(route);
+    const page = new URL('https://api.github.com' + route).searchParams.get('page');
+    const jobs = page === '1'
+      ? Array.from({ length: 100 }, (_, index) => ({ id: index + 1, run_attempt: 1 }))
+      : [{ id: 101, run_attempt: 2 }];
+    return { total_count: 101, jobs };
+  };
+  const jobs = await collectJobs('SvenKulessa/Capital-AI', 'synthetic-token', [{ id: 91 }], read);
+  assert.equal(jobs.get(91).length, 101);
+  assert.equal(paths.length, 2);
+  assert.ok(paths.every(path => path.includes('filter=all')));
+  assert.ok(paths[0].includes('page=1'));
+  assert.ok(paths[1].includes('page=2'));
+});
+
+test('collectJobs fails closed on incomplete API pagination', async () => {
+  await assert.rejects(
+    collectJobs('SvenKulessa/Capital-AI', 'synthetic-token', [{ id: 91 }],
+      async () => ({ total_count: 2, jobs: [{ id: 1 }] })),
+    /CI_JOBS_INCOMPLETE/,
+  );
 });

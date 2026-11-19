@@ -200,6 +200,7 @@
 !scripts/daily-dependency-watch.test.mjs
 !scripts/independent-review-manifest.mjs
 !scripts/independent-review-manifest.test.mjs
+!scripts/picomatch-runtime-isolation.test.mjs
 !scripts/domain-skills.test.mjs
 !scripts/solo-maintainer-flow.test.mjs
 !scripts/universe-hero.test.mjs

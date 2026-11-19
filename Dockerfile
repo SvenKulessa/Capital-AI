@@ -40,6 +40,8 @@ COPY AGENTS.md ./AGENTS.md
 # The offline branding/3D regression tests inspect these two non-secret build contracts.
 # Include them in build only; the final runtime image receives neither file.
 COPY Dockerfile .dockerignore ./
+# Offline isolation tests verify the actual dedicated production manifests, without installing them in build.
+COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runtime/
 COPY .agents/skills ./.agents/skills
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
@@ -152,6 +154,8 @@ COPY .github/workflows/daily-dependency-security-watch.yml .github/workflows/mer
 COPY scripts/daily-dependency-watch.test.mjs ./scripts/
 # Source-only independent review test must exist in the offline build stage.
 COPY scripts/independent-review-manifest.mjs scripts/independent-review-manifest.test.mjs ./scripts/
+# The root npm test suite includes picomatch runtime isolation checks in this build stage.
+COPY scripts/picomatch-runtime-isolation.test.mjs ./scripts/
 RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
     && node --test scripts/mail-templates.test.mjs server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs server/account-avatar.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
