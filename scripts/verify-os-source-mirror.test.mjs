@@ -75,3 +75,33 @@ test('missing archives, invalid image provenance and synthetic publication permi
   const falseLicense = lock(); falseLicense.status.redistributionApproved = true;
   assert.throws(() => reconcileRecipeLock(falseLicense, inventory()), /does not match/);
 });
+
+
+test('current Alpine community recipes are valid while foreign or traversal paths fail closed', () => {
+  const packages = [
+    { sourcePackage: 'clamav', version: '1.4.7-r0', aportsCommit: 'a'.repeat(40) },
+    { sourcePackage: 'libmspack', version: '0.11_alpha-r1', aportsCommit: 'b'.repeat(40) },
+  ];
+  for (const entry of packages) {
+    const subject = lock();
+    const target = inventory();
+    subject.recipes = [{ ...subject.recipes[0],
+      sourcePackage: entry.sourcePackage,
+      version: entry.version,
+      aportsCommit: entry.aportsCommit,
+      path: 'community/' + entry.sourcePackage + '/APKBUILD' }];
+    target.packages = [{ name: entry.sourcePackage, version: entry.version, sourcePackage: entry.sourcePackage }];
+    target.sourceRecipeLocators = [{ package: entry.sourcePackage, aportsCommit: entry.aportsCommit }];
+    assert.deepEqual(reconcileRecipeLock(subject, target), { sourceCount: 1, binaryCount: 1 });
+    for (const path of [
+      'testing/' + entry.sourcePackage + '/APKBUILD',
+      'community/../' + entry.sourcePackage + '/APKBUILD',
+      'community/other/APKBUILD',
+      '/community/' + entry.sourcePackage + '/APKBUILD',
+      'community/' + entry.sourcePackage + '/APKBUILD/extra',
+    ]) {
+      subject.recipes[0].path = path;
+      assert.throws(() => reconcileRecipeLock(subject, target), /does not match/);
+    }
+  }
+});
