@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, rmSync, symlinkSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -24,8 +24,10 @@ function crashInChild(root, event, after = 1) {
   const script = 'import { persistNewsFiles } from ' +
     JSON.stringify(new URL('./news-lifecycle-transaction.mjs', import.meta.url).href) +
     '; await persistNewsFiles(' + JSON.stringify(records(1)) + ',' + JSON.stringify(root) +
-    ', { hooks: { ' + event + ': n => { if(n === ' + after +
-    ') process.kill(process.pid, "SIGKILL"); } } });';
+    ', { hooks: { ' + event + ': ' +
+    (event === 'afterCommit' ? '() => process.kill(process.pid, "SIGKILL")' :
+      'n => { if(n === ' + after + ') process.kill(process.pid, "SIGKILL"); }') +
+    ' } });';
   return spawnSync(process.execPath, ['--input-type=module', '-e', script],
     { encoding: 'utf8', timeout: 15000 });
 }
