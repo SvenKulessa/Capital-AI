@@ -269,8 +269,13 @@ export function createSocialProviderPublishTransport({ env = process.env, fetchI
       assert(Buffer.isBuffer(input.mediaBytes), 'SOCIAL_X_MEDIA_BYTES_REQUIRED');
       const bytes = input.mediaBytes;
       const pngMagic = Buffer.from([137,80,78,71,13,10,26,10]);
-      assert(bytes.length > pngMagic.length && bytes.length <= 5 * 1024 * 1024
-        && bytes.subarray(0,8).equals(pngMagic), 'SOCIAL_X_MEDIA_INVALID');
+      const isPng = bytes.length > pngMagic.length
+        && bytes.subarray(0,8).equals(pngMagic);
+      const isJpeg = bytes.length >= 24
+        && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+        && bytes[bytes.length-2] === 0xff && bytes[bytes.length-1] === 0xd9;
+      assert(bytes.length <= 5 * 1024 * 1024 && (isPng || isJpeg),
+        'SOCIAL_X_MEDIA_INVALID');
       assert(typeof input.mediaSha256 === 'string'
         && /^[a-f0-9]{64}$/.test(input.mediaSha256)
         && createHash('sha256').update(bytes).digest('hex') === input.mediaSha256,
