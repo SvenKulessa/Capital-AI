@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/flat-bull-flag.svg",
-      "sha256": "562fb3ae22b6aa40025d40b9330f02b01c791cbf9dd0940c9e808490d9357d80",
+      "sha256": "23a3f805b492725d8950a314447d088cfc6bdc1f58399a09b192c19978e8fc16",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

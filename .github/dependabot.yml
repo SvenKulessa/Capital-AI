@@ -51,20 +51,32 @@ updates:
     commit-message:
       prefix: "[CAPITAL-AI-TRUST] "
 
+  # Versions-Updates für Actions/Docker wöchentlich und gebündelt: jeder PR löst das
+  # 25-Minuten-Docker-Security-Gate aus. Security-Updates sind vom Intervall unabhängig.
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
       time: "05:35"
       timezone: Europe/Berlin
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
     commit-message:
       prefix: "[CAPITAL-AI-TRUST] "
 
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
       time: "05:45"
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
@@ -74,7 +86,8 @@ updates:
   - package-ecosystem: docker
     directory: /deploy
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
       time: "05:55"
       timezone: Europe/Berlin
     open-pull-requests-limit: 5

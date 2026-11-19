@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/symmetric-triangle.svg",
-      "sha256": "b00f1e0352616548d3d3df5a30def03202c5c178cf5533d2b46ea6bbbdbce077",
+      "sha256": "e089af370b86bf076751429476fcba52252b6982633a0bef4bd60dfb60446a67",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

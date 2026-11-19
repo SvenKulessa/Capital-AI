@@ -90,3 +90,20 @@ test('Founder inquiries reach only the private controller address and leak no co
   assert.equal((await f.run(payload(), { origin: 'https://attacker.example' }, 'POST', '/api/public/founder-inquiry')).status, 403);
   assert.equal(f.mails.length, 1);
 });
+
+test('Governance Sprint B2B form uses only public contact route and refuses spoofed or tracking payloads', async () => {
+  const f = fixture();
+  const msg = '[Governance & Evidence Sprint | B2B-Anfrage]\\nBitte prüfen Sie unsere zwei CI-Workflows anhand der vorhandenen Evidence.';
+  const input = { ...payload(), message: msg };
+  const ok = await f.run(input, {}, 'POST', '/api/public/contact');
+  assert.equal(ok.status, 200);
+  assert.equal(ok.data.status, 'MAIL_SERVER_ACCEPTED');
+  assert.equal(ok.data.receipt, input.requestId);
+  assert.equal(f.mails.length, 1);
+  assert.match(f.mails[0].text, /Governance & Evidence Sprint/);
+  assert.equal(f.mails[0].replyTo, input.email);
+  assert.doesNotMatch(JSON.stringify(ok.data), /Governance|example.test|zwei CI/);
+  assert.equal((await f.run({ ...payload(), message: msg, ga4ClientId: 'PII' }, {}, 'POST', '/api/public/contact')).status, 400);
+  assert.equal((await f.run({ ...payload(), message: msg }, { origin: 'https://other.example.test' }, 'POST', '/api/public/contact')).status, 403);
+  assert.equal(f.mails.length, 1);
+});

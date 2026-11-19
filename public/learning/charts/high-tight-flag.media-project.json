@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/high-tight-flag.svg",
-      "sha256": "d65b4dbfead3236a7eb392188aee3fec8a79289094142766d5ebb260c9e0ca05",
+      "sha256": "c8a19b681b8f44cd14204a1974f731fa0a8a979d01d83062be6dbeba75c018c5",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

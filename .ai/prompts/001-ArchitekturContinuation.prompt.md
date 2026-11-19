@@ -34,7 +34,7 @@ Analysiere zunächst vollständig
 
 Erstelle zunächst eine interne Konsistenzanalyse.
 
-Erzeuge noch keinen Code.
+Bei einem beauftragten Implementierungsauftrag ist dies die interne Analysephase: Danach den kleinsten autorisierten und kompatiblen Code-Slice umsetzen, passende Positiv-/Negativtests und bestehende CI ausführen, Fehler eigenständig beheben und den PR gemäß Root-`AGENTS.md` bis zur zulässigen Mergeentscheidung und Live-Verifikation fortführen. Nur ausdrücklich reine Analyse- oder Read-only-Aufträge enden nach der Analyse.
 
 ---
 

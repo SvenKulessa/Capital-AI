@@ -1,0 +1,39 @@
+# Optionale Evidence-Projektion; kein Required Check, kein zusätzlicher Handoff.
+# Bereits vorhandene PR/CI-Evidence verlinken statt duplizieren.
+# Kein realer Lauf wird durch dieses Template behauptet.
+manifest_version: 1
+state: NOT_PROVEN
+authority: AGENTS.md
+run:
+  id: null
+  started_at_utc: null
+  finished_at_utc: null
+  actor_identity: null
+  agent_name: null
+  skill_name: null
+  skill_version: null
+scope:
+  task_reference: null
+  requested_actions: []
+  data_classification: null
+source:
+  repository: SvenKulessa/Capital-AI
+  base_sha: null
+  head_sha: null
+  artifact_sha256: null
+  dependency_lock_sha256: null
+  sbom_sha256: null
+policy:
+  effective_permissions_readback: NOT_PROVEN
+  cost_metadata_eur: null
+  existing_owner_authorization_reference: null
+verification:
+  tests: []
+  negative_tests: []
+  existing_ci_run_urls: []
+result:
+  status: NOT_PROVEN
+  diff_url: null
+  runtime_digest: null
+  evidence_uri: null
+  unresolved_items: []

@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/bollinger.svg",
-      "sha256": "d04aaa0a92239986421c2635176b2fe26eea0c49cdaccdd2b8b59027e23ab9d9",
+      "sha256": "ddbacc7ecb1781d624021cfe083cdff6222622f168c85d5193a99b6f3d892795",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

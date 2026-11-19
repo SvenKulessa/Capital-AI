@@ -5,6 +5,7 @@
 // Supabase; public visitors and unprivileged users cannot execute any operation.
 // Deploy with verify_jwt=true. No CORS and no public publishing endpoint.
 const CALLBACK = 'https://capital-ai.online/api/social-media/auth/callback';
+const PUBLISH_CALLBACK = 'https://capital-ai.online/api/social-media/x/publish/auth/callback';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SHA256 = /^[a-f0-9]{64}$/;
 const VERIFIER = /^[A-Za-z0-9._~-]{43,128}$/;
@@ -99,12 +100,15 @@ async function execute(fetchImpl, keys, userId, input) {
   const operation = input?.operation;
   bodyValidation(operation, input, userId);
   const channel = input.channel ?? 'X';
-  abortUnless(['X', 'YOUTUBE'].includes(channel));
+  abortUnless(['X', 'X_PUBLISH', 'YOUTUBE'].includes(channel));
   const platform = channel.toLowerCase();
-  const scopes = channel === 'X' ? SCOPES
+  const isX = ['X', 'X_PUBLISH'].includes(channel);
+  const callback = channel === 'X_PUBLISH' ? PUBLISH_CALLBACK : CALLBACK;
+  const scopes = channel === 'X_PUBLISH' ? [...SCOPES, 'media.write']
+    : channel === 'X' ? SCOPES
     : ['https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/youtube.upload'];
-  const validId = value => channel === 'X' ? XID.test(value || '') : /^UC[A-Za-z0-9_-]{22}$/.test(value || '');
-  const validHandle = value => channel === 'X' ? HANDLE.test(value || '')
+  const validId = value => isX ? XID.test(value || '') : /^UC[A-Za-z0-9_-]{22}$/.test(value || '');
+  const validHandle = value => isX ? HANDLE.test(value || '')
     : typeof value === 'string' && value.length > 0 && value.length <= 140;
   if (['privacy_begin','privacy_finish','privacy_reconnect'].includes(operation)) {
     abortUnless(channel === 'YOUTUBE');
@@ -179,10 +183,10 @@ async function execute(fetchImpl, keys, userId, input) {
   // X Articles: sealed access token and durable one-shot receipts remain
   // confined to the verified owner + signed Render workload. No public API.
   if (operation === 'x_credentials') {
-    abortUnless(channel === 'X');
+    abortUnless(channel === 'X_PUBLISH');
     const target = new URL('/rest/v1/social_media_accounts', keys.origin);
     target.searchParams.set('user_id', 'eq.' + userId);
-    target.searchParams.set('platform', 'eq.x');
+    target.searchParams.set('platform', 'eq.x_publish');
     target.searchParams.set('select', 'user_id,status,external_account_id,handle,scopes,access_token_encrypted,token_expires_at,refresh_reconnect_required,refresh_retry_after,refresh_lease_id');
     target.searchParams.set('limit', '1');
     const rows = await jsonFetch(fetchImpl, target,
@@ -199,11 +203,13 @@ async function execute(fetchImpl, keys, userId, input) {
     return { accountId: row.external_account_id, handle: row.handle,
       accessCipher: row.access_token_encrypted, expiresAt: row.token_expires_at,
       leaseActive: row.refresh_lease_id !== null,
-      retryAfter: row.refresh_retry_after };
+      retryAfter: row.refresh_retry_after,
+      // Only a boolean crosses the owner workload boundary; no extra token material.
+      mediaWriteApproved: Array.isArray(row.scopes) && row.scopes.includes('media.write') };
   }
   // One-shot owner-authenticated X milestone receipts; never exposed to browsers.
   if (['milestone_status', 'milestone_claim', 'milestone_record'].includes(operation)) {
-    abortUnless(channel === 'X' && SHA256.test(input.contentKey || '')
+    abortUnless(channel === 'X_PUBLISH' && SHA256.test(input.contentKey || '')
       && XID.test(input.accountId || ''));
     const target = new URL('/rest/v1/capital_x_milestone_posts', keys.origin);
     if (operation === 'milestone_claim') {
@@ -250,7 +256,7 @@ async function execute(fetchImpl, keys, userId, input) {
     return { recorded: true, status: to };
   }
   if (['article_status', 'article_claim', 'article_record'].includes(operation)) {
-    abortUnless(channel === 'X' && /^[a-f0-9]{64}$/.test(input.contentKey || '')
+    abortUnless(channel === 'X_PUBLISH' && /^[a-f0-9]{64}$/.test(input.contentKey || '')
       && XID.test(input.accountId || ''));
     const target = new URL('/rest/v1/capital_x_article_tests', keys.origin);
     if (operation === 'article_claim') {
@@ -306,9 +312,9 @@ async function execute(fetchImpl, keys, userId, input) {
   }
   if (operation === 'begin') {
     abortUnless(SHA256.test(input.stateHash || '')
-      && VERIFIER.test(input.codeVerifier || '') && input.redirectUri === CALLBACK);
+      && VERIFIER.test(input.codeVerifier || '') && input.redirectUri === callback);
     const row = { state_token: input.stateHash, user_id: userId, platform,
-      redirect_uri: CALLBACK, code_verifier: input.codeVerifier,
+      redirect_uri: callback, code_verifier: input.codeVerifier,
       expires_at: new Date(Date.now() + 600000).toISOString() };
     await jsonFetch(fetchImpl, keys.origin + '/rest/v1/social_media_oauth_states',
       { method: 'POST', headers: adminHeaders(keys.admin, { Prefer: 'return=minimal' }),
@@ -316,14 +322,14 @@ async function execute(fetchImpl, keys, userId, input) {
     return { prepared: true };
   }
   if (operation === 'consume') {
-    abortUnless(SHA256.test(input.stateHash || '') && input.redirectUri === CALLBACK);
+    abortUnless(SHA256.test(input.stateHash || '') && input.redirectUri === callback);
     const result = await jsonFetch(fetchImpl,
       keys.origin + '/rest/v1/rpc/capital_social_consume_oauth_state',
       { method: 'POST', headers: adminHeaders(keys.admin),
         body: JSON.stringify({ p_state_hash: input.stateHash, p_user_id: userId,
-          p_platform: platform, p_redirect_uri: CALLBACK }) });
+          p_platform: platform, p_redirect_uri: callback }) });
     abortUnless(result?.user_id === userId && result?.platform === platform
-      && result?.state_token === input.stateHash && result?.redirect_uri === CALLBACK
+      && result?.state_token === input.stateHash && result?.redirect_uri === callback
       && result?.used_at && VERIFIER.test(result?.code_verifier || ''));
     // Verifier is returned only to a freshly reauthenticated owner over TLS,
     // after the state was atomically consumed. It is never logged.
@@ -343,11 +349,17 @@ async function execute(fetchImpl, keys, userId, input) {
       && Date.parse(account.token_expires_at) < Date.now() + 86400000
       && Array.isArray(account.scopes)
       && account.scopes.length === scopes.length
-      && scopes.every(x => account.scopes.includes(x)));
+        + (channel === 'X' && account.scopes.includes('media.write') ? 1 : 0)
+      && scopes.every(x => account.scopes.includes(x))
+       && (channel !== 'X_PUBLISH' || account.handle.toLowerCase() === 'capitalaionline'));
+    // Preserve only the grant explicitly verified by the owner OAuth exchange.
+    // Reject any other or duplicate scope at this signed Edge trust boundary.
+    const persistedScopes = [...scopes,
+      ...(channel === 'X' && account.scopes.includes('media.write') ? ['media.write'] : [])];
     const row = {
       user_id: userId, platform, status: 'connected',
       external_account_id: account.external_account_id, handle: account.handle,
-      account_name: account.account_name, scopes,
+      account_name: account.account_name, scopes: persistedScopes,
       access_token_encrypted: account.access_token_encrypted,
       refresh_token_encrypted: account.refresh_token_encrypted,
       token_expires_at: account.token_expires_at, connected_at: new Date().toISOString(),
@@ -371,7 +383,7 @@ async function execute(fetchImpl, keys, userId, input) {
     return { connected: true, accountId: row.external_account_id, handle: row.handle };
   }
   if (operation === 'refresh_claim') {
-    abortUnless(channel === 'X' && UUID.test(input.leaseId || ''));
+    abortUnless(isX && UUID.test(input.leaseId || ''));
     const row = await jsonFetch(fetchImpl,
       keys.origin + '/rest/v1/rpc/capital_social_claim_token_refresh',
       { method: 'POST', headers: adminHeaders(keys.admin),
@@ -386,10 +398,12 @@ async function execute(fetchImpl, keys, userId, input) {
     // This response must never be forwarded by Render to a browser.
     return { claimed: true, leaseId: input.leaseId,
       refreshCipher: row.refresh_token_encrypted,
-      accountId: row.external_account_id, handle: row.handle, scopes };
+      accountId: row.external_account_id, handle: row.handle,
+      // Preserve the optional grant for the rotating-token downgrade check.
+      scopes: [...scopes, ...(row.scopes.includes('media.write') ? ['media.write'] : [])] };
   }
   if (operation === 'refresh_finish') {
-    abortUnless(channel === 'X' && UUID.test(input.leaseId || '')
+    abortUnless(isX && UUID.test(input.leaseId || '')
       && CIPHER.test(input.previousCipher || '')
       && CIPHER.test(input.accessCipher || '')
       && CIPHER.test(input.refreshCipher || '')
@@ -410,7 +424,7 @@ async function execute(fetchImpl, keys, userId, input) {
     return { refreshed: true, channel, expiresAt: row.token_expires_at };
   }
   if (operation === 'refresh_end') {
-    abortUnless(channel === 'X' && UUID.test(input.leaseId || '')
+    abortUnless(isX && UUID.test(input.leaseId || '')
       && ['reconnect','rate_limited'].includes(input.outcome));
     const row = await jsonFetch(fetchImpl,
       keys.origin + '/rest/v1/rpc/capital_social_end_token_refresh',
@@ -449,7 +463,7 @@ async function execute(fetchImpl, keys, userId, input) {
         : throttled ? 'retry_later' : row?.status === 'connected'
           ? (scopesOk ? 'token_expired' : 'permissions_missing')
           : (row?.status || 'not_connected'),
-      handle: row ? (channel === 'X' ? '@' + row.handle : row.handle) : null,
+      handle: row ? (isX ? '@' + row.handle : row.handle) : null,
       accountId: row?.external_account_id || null,
       scopes: connected ? scopes : [],
       expiresAt: connected ? row.token_expires_at : null };
