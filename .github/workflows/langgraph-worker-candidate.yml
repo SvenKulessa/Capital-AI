@@ -26,16 +26,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          build_tag="bellsoft/hardened-python:3.14-glibc"
-          runtime_tag="bellsoft/hardened-python:3.14-distroless-glibc"
-          docker pull --platform linux/amd64 "$build_tag"
-          docker pull --platform linux/amd64 "$runtime_tag"
-          build_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$build_tag")"
-          runtime_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$runtime_tag")"
+          # Exact immutable digests from successful candidate scan 44477933980.
+          build_ref="bellsoft/hardened-python@sha256:267c24fca93f8882fde084442224fe230231b0c0b095f4b182ecb2d54d6cb72a"
+          runtime_ref="bellsoft/hardened-python@sha256:bb03a9fdd7fd8e03b3ac887ca6c480d29aba1a4fe99e1eee6501588042e5f2d9"
+          docker pull --platform linux/amd64 "$build_ref"
+          docker pull --platform linux/amd64 "$runtime_ref"
           [[ "$build_ref" =~ ^(docker.io/)?bellsoft/hardened-python@sha256:[a-f0-9]{64}$ ]]
           [[ "$runtime_ref" =~ ^(docker.io/)?bellsoft/hardened-python@sha256:[a-f0-9]{64}$ ]]
-          test "$(docker image inspect --format '{{.Architecture}}' "$build_tag")" = "amd64"
-          test "$(docker image inspect --format '{{.Architecture}}' "$runtime_tag")" = "amd64"
+          test "$(docker image inspect --format '{{.Architecture}}' "$build_ref")" = "amd64"
+          test "$(docker image inspect --format '{{.Architecture}}' "$runtime_ref")" = "amd64"
           build_python="$(docker run --rm --platform linux/amd64 --entrypoint python3 "$build_ref" -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
           runtime_python="$(docker run --rm --platform linux/amd64 --entrypoint python3 "$runtime_ref" -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
           test "$build_python" = "3.14"
