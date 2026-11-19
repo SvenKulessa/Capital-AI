@@ -1,0 +1,174 @@
+{
+  "mainSha": "0c67045a31d520ea4dd71b8bbcd7d45505828ccb",
+  "pullRequests": [
+    {
+      "number": 842,
+      "title": "[CAPITAL-AI-PLATFORM] Owner-only GA4 Runtime-Konfigurationsdiagnose ohne Render-API-Key",
+      "headSha": "056c5a36f93bec3ec0aa7b0dc4ffcba627c6b79a",
+      "draft": false,
+      "changedFiles": [
+        ".github/workflows/build-security.yml",
+        "docs/platform/GA4-OWNER-RUNTIME-CONFIG-DIAGNOSTIC.md",
+        "server/google-analytics-readback.mjs",
+        "server/google-analytics-readback.test.mjs",
+        "src/components/OwnerAgentOperationsPanel.tsx",
+        "src/components/OwnerGa4ConfigView.test.tsx",
+        "src/components/OwnerGa4ConfigView.tsx",
+        "src/components/ownerGa4ConfigModel.test.ts",
+        "src/components/ownerGa4ConfigModel.ts"
+      ]
+    },
+    {
+      "number": 841,
+      "title": "[CAPITAL-AI-PLATFORM] Sichere GA4-Render-Konfigurationsdiagnose für Acode/Federation",
+      "headSha": "a6272feacf8b26630d2436deb9397ea654779f66",
+      "draft": false,
+      "changedFiles": [
+        ".github/workflows/build-security.yml",
+        "docs/platform/GA4-RENDER-CONFIG-DIAGNOSTIC.md",
+        "scripts/ga4-render-config-diagnostic.mjs",
+        "scripts/ga4-render-config-diagnostic.test.mjs"
+      ]
+    },
+    {
+      "number": 840,
+      "title": "[CAPITAL-AI-TRUST] roadmap milestone draft from PR #839",
+      "headSha": "47341697c6bb1a0b953bb9d412a24585aae1ba41",
+      "draft": true,
+      "changedFiles": [
+        "docs/product/roadmap-merge-reconciliation-839.json",
+        "src/data/roadmapMergeReconciliation.json"
+      ]
+    },
+    {
+      "number": 838,
+      "title": "[CAPITAL-AI-MARKET] News-Archiv: Synthetic Populated Browser QA (Follow-up #752)",
+      "headSha": "da9576971139c682eb138692f77300dccdc6a02d",
+      "draft": true,
+      "changedFiles": [
+        ".github/workflows/financial-learning-browser.yml",
+        "scripts/qa/news-archive-browser.mjs",
+        "scripts/qa/news-archive-ci-fixture.mjs"
+      ]
+    },
+    {
+      "number": 834,
+      "title": "[CAPITAL-AI-MARKET] Eigenständige Solana Risk Research Contracts und Liquiditätsstress",
+      "headSha": "70d6bfe555aa7b3561e339c105313f31a8186ca9",
+      "draft": false,
+      "changedFiles": [
+        "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+        "docs/market/SOLANA-RISK-RESEARCH-20261119.md",
+        "package.json",
+        "src/contracts/__tests__/solanaRiskResearch.test.ts",
+        "src/contracts/solanaRiskResearch.ts",
+        "src/services/scoringEngine.ts",
+        "src/services/solanaRiskResearch.ts"
+      ]
+    },
+    {
+      "number": 826,
+      "title": "[CAPITAL-AI-TRUST] combined milestone draft from PR #825",
+      "headSha": "9b0f637cca2fba64cc9a34caca9fa1171456a7c7",
+      "draft": true,
+      "changedFiles": [
+        "docs/growth/news-release-pr-825.md",
+        "docs/product/roadmap-merge-reconciliation-825.json",
+        "src/data/controlCenterNews.json",
+        "src/data/roadmapMergeReconciliation.json"
+      ]
+    },
+    {
+      "number": 824,
+      "title": "[CAPITAL-AI-GROWTH] Governance Sprint responsive Chromium QA + consented lead measurement",
+      "headSha": "9d3eca6c6602f4a4c74dfa2081aceb374c8f69f0",
+      "draft": false,
+      "changedFiles": [
+        ".github/workflows/governance-sprint-responsive-qa.yml",
+        "scripts/governance-evidence-sprint.test.mjs",
+        "scripts/qa/governance-sprint-browser.mjs",
+        "shared/analytics-measurement-policy.mjs",
+        "src/features/home/GovernanceEvidenceSprintPage.tsx",
+        "src/utils/analytics.ts",
+        "src/utils/consentedAnalytics.test.ts",
+        "src/utils/consentedAnalytics.ts"
+      ]
+    },
+    {
+      "number": 821,
+      "title": "[CAPITAL-AI-GROWTH] B2B Evidence Audit sales-to-delivery contract",
+      "headSha": "c3cefc788b42e2910a2e4a9a8b9fbfde6316447b",
+      "draft": true,
+      "changedFiles": [
+        ".github/workflows/b2b-evidence-leads.yml",
+        "docs/product/B2B-EVIDENCE-AUDIT-SALES-CONTRACT-20261119.md",
+        "server/b2b-evidence-leads.mjs",
+        "server/b2b-evidence-leads.test.mjs"
+      ]
+    },
+    {
+      "number": 819,
+      "title": "[CAPITAL-AI-GROWTH] GA4-Eventauswertung und Echtzeit-Readback im Owner Operations Center",
+      "headSha": "da5826f57e334292a5ae6b9a15c22844854c8a43",
+      "draft": false,
+      "changedFiles": [
+        "docs/growth/OWNER-OPS-GA4-READBACK-20261119.md",
+        "server/evidence-dashboard-readback.mjs",
+        "server/evidence-dashboard-readback.test.mjs",
+        "server/google-analytics-readback.mjs",
+        "server/google-analytics-readback.test.mjs",
+        "src/components/OwnerAgentOperationsPanel.tsx",
+        "src/components/OwnerOperationsVisualOverview.tsx",
+        "src/components/ownerOperationsModel.test.ts",
+        "src/components/ownerOperationsModel.ts",
+        "src/components/ownerOperationsVisual.css",
+        "src/components/ownerOperationsVisualModel.test.ts",
+        "src/components/ownerOperationsVisualModel.ts"
+      ]
+    },
+    {
+      "number": 815,
+      "title": "[CAPITAL-AI-PRODUCT] Evidence Audit offline JSON/PDF pipeline and negative tests",
+      "headSha": "1de68c037c781a9d08c20c37c90791c0c5f1e2dd",
+      "draft": true,
+      "changedFiles": [
+        ".github/workflows/evidence-audit-python.yml",
+        "docs/product/EVIDENCE-AUDIT-COMMERCIAL-CANDIDATE-20261119.md",
+        "scripts/evidence-audit/README.md",
+        "scripts/evidence-audit/evidence_audit.py",
+        "scripts/evidence-audit/test_evidence_audit.py"
+      ]
+    },
+    {
+      "number": 810,
+      "title": "[CAPITAL-AI-TRUST] roadmap milestone draft from PR #777",
+      "headSha": "7d9f65bd92fc689dd4ffe9b691057932bb96662a",
+      "draft": true,
+      "changedFiles": [
+        "docs/product/roadmap-merge-reconciliation-777.json",
+        "src/data/roadmapMergeReconciliation.json"
+      ]
+    },
+    {
+      "number": 714,
+      "title": "[CAPITAL-AI-GROWTH] Krypto-Marktsignale mit Owner-Freigabe",
+      "headSha": "30769546781bd5102415d985ce7b41f60d592090",
+      "draft": false,
+      "changedFiles": [
+        ".dockerignore",
+        ".env.example",
+        "Dockerfile",
+        "docs/growth/crypto-market-signals.md",
+        "package.json",
+        "server/index.mjs",
+        "server/social-media/crypto-signal-sources.mjs",
+        "server/social-media/crypto-signal-workflow.mjs",
+        "server/social-media/crypto-signal-workflow.test.mjs",
+        "shared/seo-source-provenance.mjs",
+        "src/components/ControlCenterPage.tsx",
+        "src/features/home/CryptoMarketSignals.tsx",
+        "src/features/home/HomePage.tsx"
+      ]
+    }
+  ]
+}
