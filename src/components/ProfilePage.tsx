@@ -61,7 +61,13 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
                     </span>
                   )}
                 </div>
-                {session.account.iamRole === 'owner' && <p className="mt-2 text-xs text-slate-300">OWNER ist die Verwaltungsrolle, kein bezahlter Tarif. Produktrechte werden separat geprüft.</p>}
+                {session.account.iamRole === 'owner' && <>
+                  <p className="mt-2 text-xs text-slate-300">OWNER ist die Verwaltungsrolle, kein bezahlter Tarif. Produktrechte werden separat geprüft.</p>
+                  <button type="button" onClick={() => onNavigate('/profile/render-dashboard')}
+                    className="mt-3 min-h-11 rounded-xl border border-indigo-400/40 bg-indigo-400/10 px-4 text-xs font-bold text-indigo-200 hover:bg-indigo-400/20">
+                    Multi-Agent Operations Center öffnen
+                  </button>
+                </>}
                 <LearningEntitlementBadge />
 
                 {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).length ? (
