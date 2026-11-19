@@ -1,3 +1,4 @@
+import { safeGa4FailureReason } from './google-analytics-readback.mjs';
 // CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1
 // Owner-only, server-side, read-only projections. Historical snapshot is a schema reference,
 // never a fallback for missing live data. No browser credentials or provider URLs.
@@ -151,9 +152,9 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
     const ts = now();
     if (cached && ts < cached.until) return cached.value;
     if (inflight) return inflight;
-    const attempt = async (producer) => {
+    const attempt = async (producer, classify = () => 'PROVIDER_READ_FAILED') => {
       try { return await producer(); }
-      catch { return { status: 'NOT_PROVEN', reason: 'PROVIDER_READ_FAILED' }; }
+      catch (error) { return { status: 'NOT_PROVEN', reason: classify(error) }; }
     };
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -161,7 +162,7 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
     inflight = Promise.all([
       attempt(() => readGitHub(fetchImpl, env, controller.signal, now)),
       attempt(() => readRender(fetchImpl, env, controller.signal, now)),
-      attempt(() => readGa4(ga4Readback, now)),
+      attempt(() => readGa4(ga4Readback, now), safeGa4FailureReason),
     ]).then(([github, render, ga4]) => {
       const value = Object.freeze({
         schema: 'CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1',
