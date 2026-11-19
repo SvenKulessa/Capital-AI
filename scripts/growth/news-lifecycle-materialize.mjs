@@ -57,5 +57,6 @@ export async function writeNewsLifecycle(result, root = DEFAULT_NEWS_REPO_ROOT) 
   // cannot commit over the preflight snapshot; a stale baseline fails closed.
   return persistNewsFiles(files.map(file => ({
     path: file.path, content: JSON.stringify(file.data, null, 2) + '\n',
-  })), dir, { expected: { [editionFile]: currentEdition, [indexFile]: currentIndex } });
+  })), dir, { expected: { [editionFile]: currentEdition, [indexFile]: currentIndex },
+    archiveImmutable: true });
 }
