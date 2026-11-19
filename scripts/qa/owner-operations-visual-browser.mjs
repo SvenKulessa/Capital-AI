@@ -79,8 +79,9 @@ async function visit(role,width,tag,expected=true) {
   mode=role;
   await send('Emulation.setDeviceMetricsOverride',{
     width,height:900,deviceScaleFactor:1,mobile:width<=390});
+  await evaluate('window.__qa_previous_document = true');
   await send('Page.navigate',{url:base+'/profile/render-dashboard'});
-  await awaitPage("document.readyState === 'complete' && !!document.querySelector('h1')");
+  await awaitPage("window.__qa_previous_document === undefined && document.readyState === 'complete' && !!document.querySelector('h1')");
   if(expected)await awaitPage("!!document.querySelector('.ops-mock')");
   else await awaitPage("!!document.querySelector('[role=status]') || !!document.querySelector('[role=alert]')");
   await wait(550);
@@ -126,6 +127,34 @@ async function visit(role,width,tag,expected=true) {
   if(expected){
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
     await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
+    if(role==='owner'&&width===390){
+      const touch=await evaluate(`(() => {
+        const element=[...document.querySelectorAll('[role="tab"]')].find(e=>e.textContent.includes('Evidence'));
+        if(!element)return null;
+        element.scrollIntoView({block:'center'});
+        const r=element.getBoundingClientRect();
+        return {x:r.x+r.width/2,y:r.y+r.height/2};
+      })()`);
+      if(!touch)failures.push(tag+': Evidence tab inaccessible');
+      else{
+        await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+        await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[touch]});
+        await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+        await wait(200);
+        const selected=await evaluate("!![...document.querySelectorAll('[role=tab]')].find(e=>e.textContent.includes('Evidence')&&e.getAttribute('aria-selected')==='true')");
+        if(!selected)failures.push(tag+': native touch did not activate Evidence tab');
+        await send('Emulation.setTouchEmulationEnabled',{enabled:false});
+      }
+    }
+    if(role==='owner'&&width===320){
+      await evaluate("document.documentElement.style.fontSize='200%'");
+      await wait(180);
+      const overflow=await evaluate("document.documentElement.scrollWidth-document.documentElement.clientWidth");
+      checks.push({scenario:'owner-zoom-200',viewport:320,overflow});
+      if(overflow>2)failures.push(tag+': 200 percent text zoom causes overflow');
+      const zoom=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
+      await writeFile(join(output,'owner-operations-owner-320-zoom200.png'),Buffer.from(zoom.data,'base64'));
+    }
   }
 }
 async function run() {
@@ -197,7 +226,7 @@ async function run() {
     widths:[320,390,1440],checks,failures,status:failures.length?'FAIL':'PASS'};
   await writeFile(join(output,'audit.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify({status:report.status,checks:checks.length,failures,
-    screenshots:['owner-operations-owner-320.png','owner-operations-owner-390.png','owner-operations-owner-1440.png','owner-operations-missing-390.png'],
+    screenshots:['owner-operations-owner-320.png','owner-operations-owner-390.png','owner-operations-owner-1440.png','owner-operations-missing-390.png','owner-operations-owner-320-zoom200.png'],
     realOwnerSession:false,productionProviderData:false},null,2));
   if(failures.length)process.exitCode=1;
 }
