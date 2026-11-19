@@ -137,7 +137,7 @@ test('rejects unknown GitHub SHA, truncated PR listing, GA4 failure and incomple
   const { body } = await invalid.request();
   assert.equal(body.github.status, 'NOT_PROVEN');
   assert.equal(body.ga4.status, 'NOT_PROVEN');
-  assert.equal(body.ga4.reason, 'PROVIDER_READ_FAILED');
+  assert.equal(body.ga4.reason, 'GA4_READBACK_FAILED');
   const truncated = setup({ provider: url => String(url).includes('/pulls?') ? Array.from({ length: 100 }, (_, i) => ({ number: i + 1, state: 'open' })) : fixture(url) });
   const res = await truncated.request();
   assert.equal(res.body.github.openPrCount, null);
