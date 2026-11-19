@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolveAppRoute } from '../src/utils/appNavigation.ts';
 import { resolveSeoIndexingPolicy, SEO_INDEXING_STATES } from '../shared/seo-indexing-policy.mjs';
+import { isAnalyticsMeasurable } from '../shared/analytics-measurement-policy.mjs';
 
 const page = readFileSync(new URL('../src/features/home/GovernanceEvidenceSprintPage.tsx', import.meta.url), 'utf8');
 const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
@@ -90,4 +91,13 @@ test('B2B conversion attribution is consented and emits only after SMTP receipt'
   assert.ok(consented.includes("window.location.pathname !== '/governance-evidence-sprint'"));
   assert.ok(consented.includes("lead_type: 'governance_evidence_sprint_inquiry'"));
   assert.doesNotMatch(page, /trackEvent\(|localStorage|sessionStorage|GA4_MEASUREMENT_ID|STRIPE_SECRET_KEY/);
+});
+
+test('B2B pageview allowlist remains separate from SEO and private-surface denial', () => {
+  assert.equal(resolveSeoIndexingPolicy('/governance-evidence-sprint').classification, SEO_INDEXING_STATES.NOINDEX);
+  assert.equal(isAnalyticsMeasurable('/governance-evidence-sprint'), true);
+  for (const path of ['/profile', '/api/public/contact', '/governance-evidence-sprint?email=private@example.invalid',
+    '/governance-evidence-sprint#receipt', 'https://unknown.invalid/governance-evidence-sprint']) {
+    assert.equal(isAnalyticsMeasurable(path), false, path);
+  }
 });
