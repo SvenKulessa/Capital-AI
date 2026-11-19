@@ -46,7 +46,7 @@ export function readDashboardSnapshot(value: unknown): DashboardReadback | null 
 }
 export const isVerified = (value?: { status?: string }): boolean => value?.status === 'VERIFIED_PROVIDER_READ';
 export function agentFromTitle(title: string): AgentRole | null {
-  const match = /^\[CAPITAL-AI-(TRUST|PLATFORM|PRODUCT|MARKET|GROWTH)\]/.exec(title);
+  const match = /^\[CAPITAL-AI-(TRUST|SECURITY|PLATFORM|PRODUCT|MARKET|GROWTH)\]/.exec(title);
   return match ? match[1] as AgentRole : null;
 }
 export function visiblePullRequests(snapshot: DashboardReadback, agent: AgentRole | 'ALL', term = ''): PullRequest[] {
