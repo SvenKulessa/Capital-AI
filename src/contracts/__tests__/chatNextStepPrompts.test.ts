@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import skillRegistry from '../../../.agents/skills/registry.json' with { type: 'json' };
 import { buildChatFollowUps, classifyChatDomain } from '../chatNextStepPrompts';
 import { ChatNextStepActions } from '../../components/ChatNextStepActions';
+import { openHeroBuddy, takePendingHeroBuddyOpen } from '../../components/heroBuddyEvents';
 
 test('the chat windows share three short labelled copy actions with screenreader feedback', () => {
   const html = renderToStaticMarkup(React.createElement(ChatNextStepActions, {
@@ -62,4 +63,11 @@ test('untrusted credential-shaped text is removed and follow-up copying never pe
   assert.ok(steps.every(step => !step.prompt.includes('ghp_abcdefgh1234567890')));
   assert.ok(steps.every(step => step.prompt.includes('Keine neuen Kosten')));
   assert.ok(steps.every(step => step.prompt.includes('GitHub-Rulesets')));
+});
+
+test('lazy JaJa open events are replayed once, including a click before module mount', () => {
+  assert.equal(takePendingHeroBuddyOpen(), false);
+  openHeroBuddy();
+  assert.equal(takePendingHeroBuddyOpen(), true);
+  assert.equal(takePendingHeroBuddyOpen(), false);
 });
