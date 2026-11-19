@@ -50,3 +50,31 @@ test('inquiry uses existing bounded mail endpoint and explicit privacy acknowled
   assert.match(inquiry, /body\.website !== ''/);
   assert.match(inquiry, /receipt: body\.requestId, status: 'MAIL_SERVER_ACCEPTED'/);
 });
+
+const agentPreview = readFileSync(new URL('../docs/product/agent-operations-pilot-preview.html', import.meta.url), 'utf8');
+const agentCampaign = readFileSync(new URL('../docs/growth/AGENT-OPERATIONS-B2B-PILOT-CAMPAIGN-20261119.md', import.meta.url), 'utf8');
+
+test('internal agent preview reuses established B2B contact path, no autonomous lead collection', () => {
+  assert.match(agentPreview, /INTERNE VORSCHAU · NICHT VERÖFFENTLICHT/);
+  assert.match(agentPreview, /noindex,nofollow,noarchive/);
+  assert.match(agentPreview, /DRAFT_ONLY · NO_AUTO_PUBLISH/);
+  assert.match(agentPreview, /https:\/\/capital-ai\.online\/governance-evidence-sprint#anfrage/);
+  for (const id of ['ci-evidence', 'credential-expiry', 'media-rights']) {
+    assert.match(agentPreview, new RegExp('data-workflow="' + id + '"'));
+  }
+  assert.doesNotMatch(agentPreview, /<form\b|\bfetch\s*\(|\bsendBeacon\s*\(|\bgtag\s*\(|\bdataLayer\b|\blocalStorage\b|\bsessionStorage\b/i);
+  assert.match(page, /\/api\/public\/contact/);
+  assert.match(page, /privacyAcknowledged/);
+});
+
+test('organic campaign contains three qualified human-reviewed draft messages without paid activation', () => {
+  assert.match(agentCampaign, /DRAFT_ONLY \/ NO_AUTO_PUBLISH \/ NO_PAID_ADS/);
+  for (const audience of ['IT-Dienstleister', 'DevSecOps', 'Content- und Medienrechte-Operations']) {
+    assert.ok(agentCampaign.includes(audience), audience);
+  }
+  assert.match(agentCampaign, /utm_medium=organic/);
+  assert.match(agentCampaign, /Mailserver-Receipt/);
+  assert.match(agentCampaign, /NOT_PROVEN/);
+  assert.match(agentCampaign, /keine neue Tracker-Initialisierung/);
+  assert.doesNotMatch(agentCampaign, /STRIPE_SECRET_KEY|OPENAI_API_KEY|<script|AGENT_OPERATIONS_PILOT_ENABLED\s*=\s*true/i);
+});
