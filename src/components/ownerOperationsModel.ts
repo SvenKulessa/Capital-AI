@@ -7,6 +7,17 @@ export type ProviderEvidence = { status: string; observedAt?: string; reason?: s
 export type PullRequest = { number: number; title: string; draft: boolean; headSha: string | null; updatedAt: string | null };
 export type CheckRun = { name: string; status: string; conclusion: string | null; requiredByRootPolicy: boolean };
 export type Deployment = { deployId: string | null; deployStatus: string; sourceCommitSha: string; finishedAt: string | null };
+export type AcodeXArchiveFile = { url: string; sha256: string };
+export type AcodeXArchive = {
+  workstream: string; evidenceVersion: string;
+  classification: 'HISTORICAL_REFERENCE_ONLY';
+  provenance: 'OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK';
+  archiveStatus: 'VERIFIED'; currentDeviceStatus: 'NOT_PROVEN';
+  baselineUtc: string; expectedStartUtc: string; latestSuccessUtc: string; checkedUtc: string;
+  healthExit: 0; outerExit: 0; guardAuditExit: 0; lockClear: true;
+  newOAuthFailures: 0; newPullFailures: 0;
+  evidence: { v1: AcodeXArchiveFile; v11: AcodeXArchiveFile; standard: AcodeXArchiveFile };
+};
 export type DashboardReadback = {
   schema: string; private: true; readOnly: true; syntheticDataUsed: false; generatedAt: string;
   github: ProviderEvidence & {
@@ -25,12 +36,28 @@ export type DashboardReadback = {
     revenue?: number | null; revenueStatus?: string;
   };
   comparison: { mainVsDeploy: string; runtimeBuildIdentity: string };
+  acodex?: AcodeXArchive;
   baseline?: { status: string; valuesImported: boolean };
 };
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 const safeDate = (value: unknown): value is string =>
   typeof value === 'string' && Number.isFinite(Date.parse(value));
+const archiveFile = (value: unknown): boolean =>
+  isRecord(value) && typeof value.url === 'string' &&
+  /^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/view\?usp=drivesdk$/.test(value.url) &&
+  typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256);
+const archiveRecord = (value: unknown): boolean => {
+  if (!isRecord(value) || value.classification !== 'HISTORICAL_REFERENCE_ONLY' ||
+      value.provenance !== 'OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK' ||
+      value.archiveStatus !== 'VERIFIED' || value.currentDeviceStatus !== 'NOT_PROVEN' ||
+      value.workstream !== 'PLATFORM / ACODEX_P1_V2' || value.evidenceVersion !== '1.1.0' ||
+      ![value.baselineUtc, value.expectedStartUtc, value.latestSuccessUtc, value.checkedUtc].every(safeDate) ||
+      value.healthExit !== 0 || value.outerExit !== 0 || value.guardAuditExit !== 0 ||
+      value.lockClear !== true || value.newOAuthFailures !== 0 || value.newPullFailures !== 0 ||
+      !isRecord(value.evidence)) return false;
+  return ['v1', 'v11', 'standard'].every(k => archiveFile((value.evidence as Record<string, unknown>)[k]));
+};
 export function readDashboardSnapshot(value: unknown): DashboardReadback | null {
   if (!isRecord(value) || value.schema !== OPERATIONS_SCHEMA || value.private !== true ||
       value.readOnly !== true || value.syntheticDataUsed !== false || !safeDate(value.generatedAt)) return null;
@@ -42,6 +69,7 @@ export function readDashboardSnapshot(value: unknown): DashboardReadback | null 
   if (value.github.ci !== undefined && (!isRecord(value.github.ci) || !Array.isArray(value.github.ci.runs))) return null;
   if (value.render.deployments !== undefined && !Array.isArray(value.render.deployments)) return null;
   if (value.ga4.events !== undefined && !Array.isArray(value.ga4.events)) return null;
+  if (value.acodex !== undefined && !archiveRecord(value.acodex)) return null;
   return value as unknown as DashboardReadback;
 }
 export const isVerified = (value?: { status?: string }): boolean => value?.status === 'VERIFIED_PROVIDER_READ';

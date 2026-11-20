@@ -1,0 +1,31 @@
+name: Unit Economics Tests
+
+on:
+  pull_request:
+    paths:
+      - 'server/unit-economics-readmodel.mjs'
+      - 'server/unit-economics-readmodel.test.mjs'
+      - 'docs/growth/UNIT-ECONOMICS-READMODEL-20261120.md'
+      - '.github/workflows/unit-economics-readmodel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-economics:
+    name: Unit Economics Tests
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate offline accounting and negative scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --check server/unit-economics-readmodel.mjs
+          node --check server/unit-economics-readmodel.test.mjs
+          node --test server/unit-economics-readmodel.test.mjs

@@ -2,7 +2,7 @@ import { ProductDisclaimer } from './ProductDisclaimer';
 import React, { useState } from 'react';
 import { BrandGlobe } from './BrandGlobe';
 import { ArrowRight, BarChart3, BookOpen, Play } from 'lucide-react';
-import { openHeroBuddy } from './HeroBuddy';
+import { openHeroBuddy } from './heroBuddyEvents';
 import { motion, useReducedMotion } from 'motion/react';
 import { useLocale } from '../i18n/LocaleProvider';
 

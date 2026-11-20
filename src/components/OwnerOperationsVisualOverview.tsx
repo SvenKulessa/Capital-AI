@@ -125,7 +125,7 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
         <h3><Crown aria-hidden="true"/> Owner Operations Center</h3>
         <p>Zentrale Übersicht für Provider, Deployments, Evidence und Multi-Agent Operations.</p>
       </div>
-      <span className="ops-mock-owner-badge"><LockKeyhole aria-hidden="true" className="h-4 w-4"/> Nur für Owner</span>
+      <span className="ops-mock-owner-badge"><LockKeyhole aria-hidden="true" className="h-4 w-4"/> Owner-Bereich · angemeldet</span>
       <div className="ops-mock-orbit" aria-hidden="true"><OrbitMascot/></div>
     </header>
     <div className="ops-mock-kpis">

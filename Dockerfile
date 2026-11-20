@@ -53,6 +53,8 @@ COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
 COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
 COPY CAPITAL-AI-GROWTH/badge.svg ./CAPITAL-AI-GROWTH/badge.svg
+# DRAFT_ONLY Growth Intelligence source snapshot; required for offline contract tests.
+COPY CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json ./CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json
 COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY packages/benchmark-core ./packages/benchmark-core
@@ -87,7 +89,7 @@ COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs 
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
-COPY server/evidence-dashboard-readback.mjs server/evidence-dashboard-readback.test.mjs ./server/
+COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
 COPY server/oauth-consent.mjs server/oauth-consent.test.mjs ./server/
@@ -118,6 +120,7 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
+COPY scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs ./scripts/growth/
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs scripts/growth/home-editorial-edition.mjs scripts/growth/home-editorial-edition.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
@@ -190,7 +193,7 @@ RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' \
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.7-r0' 'freshclam=1.4.7-r0' \
     && mkdir -p /run/clamav /var/lib/clamav \
     && chown -R 1000:1000 /run/clamav /var/lib/clamav \
     && chmod 0700 /run/clamav /var/lib/clamav
@@ -213,7 +216,7 @@ RUN node /tmp/write-runtime-identity.mjs render-git "${RENDER_GIT_COMMIT:-}" \
 COPY server/purchase-receipt.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
-COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt

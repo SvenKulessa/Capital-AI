@@ -73,6 +73,7 @@ jobs:
             scripts/npm-security-patch-policy.test.mjs \
             scripts/percentage-parser.test.mjs \
             scripts/growth-google-authority.test.mjs \
+            scripts/ga4-render-config-diagnostic.test.mjs \
             server/security-headers.test.mjs \
             server/api-rate-policy.test.mjs \
             scripts/mcp-isolation.test.mjs \
@@ -98,6 +99,8 @@ jobs:
             scripts/validate-oss-multi-asset-plan.test.mjs \
             scripts/verify-release-readiness.test.mjs \
             scripts/ci-efficiency-report.test.mjs \
+            scripts/architecture/strategy-2026-pr-correlation.test.mjs \
+            scripts/architecture/strategy-2026-source-graph.test.mjs \
             scripts/docker-archive-config.test.mjs
           npm run validate:all
           git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
@@ -349,6 +352,12 @@ jobs:
             -v "$PWD/supabase:/app/supabase:ro" \
             -v "$PWD/render.yaml:/app/render.yaml:ro" \
             --entrypoint node capital-ai-build:${{ github.sha }} --run test:audit-regressions
+      - name: Owner GA4 Konfigurationsansicht und Negativtests
+        run: |
+          docker run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -v "$PWD/src:/app/src:ro" \
+            --entrypoint node capital-ai-build:${{ github.sha }} --import tsx --test /app/src/components/ownerGa4ConfigModel.test.ts /app/src/components/OwnerGa4ConfigView.test.tsx
       - name: 600-Asset-Scoring-Kapazitätsevidence übernehmen
         run: |
           mkdir -p security-reports
