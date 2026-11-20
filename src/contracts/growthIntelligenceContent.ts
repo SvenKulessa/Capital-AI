@@ -242,8 +242,10 @@ export function growthDraftUtmUrl(draft: GrowthIntelligenceDraft): string {
       || draft.socialPackage.contentId !== draft.contentId) {
     throw Error('GROWTH_CANONICAL_IDENTITY_MISMATCH');
   }
+  // Internal URLs must not be tagged as acquisition campaigns in GA4.
+  if (draft.channel === 'WEBSITE') throw Error('GROWTH_INTERNAL_UTM_FORBIDDEN');
   url.searchParams.set('utm_source', draft.channel.toLowerCase());
-  url.searchParams.set('utm_medium', draft.channel === 'WEBSITE' ? 'internal' : 'social');
+  url.searchParams.set('utm_medium', 'social');
   url.searchParams.set('utm_campaign', draft.socialPackage.campaignId);
   url.searchParams.set('utm_content', draft.contentId);
   return url.href;

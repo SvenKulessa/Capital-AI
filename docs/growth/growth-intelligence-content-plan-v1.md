@@ -35,7 +35,7 @@ The bundle's sourceSha256 is the hash of the exact imported JSON. Each draft sou
 
 - No provider OAuth tokens or secrets in the snapshot or generated bundle.
 - No coercion of GA4 events into UMAMI_PRODUCT. This canonical attribution contract has no GA4 source enum; live GA4 ingestion requires a separately approved versioned adapter.
-- growthDraftUtmUrl binds only to https://capital-ai.online or /learning and carries the campaign/content IDs. No measurement requests are dispatched. Actual website measurement remains consent-governed.
+- growthDraftUtmUrl verifies the exact HTTPS origin and manifest identity, rejects embedded credentials and foreign ports, and permits campaign UTMs only for external social channel drafts. Internal WEBSITE navigation fails closed (GROWTH_INTERNAL_UTM_FORBIDDEN) rather than fabricating an internal acquisition campaign. No measurement requests are dispatched. Actual website measurement remains consent-governed.
 - correlateGrowthContentReadback fails closed without consent, matching campaign/content/canonical identity, suitable provider identity and a supported canonical event source. Tests use only synthetic events.
 - The existing Social package approvals and deliveries are both empty. VERIFIED_READ means the historical source query succeeded, never public publication approval.
 - Studio/Podcast remains a text draft until commercial voice/media rights and media QA are proven. No paid service activation.

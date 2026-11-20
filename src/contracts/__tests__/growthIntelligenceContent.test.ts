@@ -138,6 +138,14 @@ test('UTM attribution is deterministic and only targets CAPITAL-AI HTTPS destina
   assert.throws(() => growthDraftUtmUrl(mismatchedCampaign), /GROWTH_CANONICAL_IDENTITY_MISMATCH/);
 });
 
+test('internal website destinations are never tagged as acquisition campaigns', () => {
+  const internal = buildGrowthIntelligenceContentDrafts(fixture).filter((item) => item.channel === 'WEBSITE');
+  assert.equal(internal.length, 3);
+  for (const draft of internal) {
+    assert.throws(() => growthDraftUtmUrl(draft), /GROWTH_INTERNAL_UTM_FORBIDDEN/);
+  }
+});
+
 test('consent, identity and provider negative tests block attribution before correlation', () => {
   const draft = buildGrowthIntelligenceContentDrafts(fixture).find((item) => item.channel === 'X');
   assert.ok(draft);
