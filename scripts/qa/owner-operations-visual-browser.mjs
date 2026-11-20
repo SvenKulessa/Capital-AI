@@ -174,6 +174,14 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           return false;
         })()`);
         if(!settled)failures.push(tag+': mobile Evidence tab layout never settled before native touch');
+        if(settled){
+          // Chrome 157 can dispatch the touchstart against the *previous* compositor
+          // scroll offset even when scrollY/getBoundingClientRect are already stable.
+          // Flush a viewport-only compositor frame before native input; never click
+          // the tab programmatically or accept the screenshot as touch evidence.
+          await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+          await wait(120);
+        }
         const touch=settled?await evaluate(`(() => {
           const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
           if(!element)return null;
@@ -181,7 +189,8 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           const x=r.left+r.width/2, y=r.top+r.height/2;
           const hit=document.elementFromPoint(x,y);
           return {x,y,hit:!!hit && (hit===element || element.contains(hit)),
-            withinViewport:x>=0 && x<innerWidth && y>=0 && y<innerHeight};
+            withinViewport:x>=0 && x<innerWidth && y>=0 && y<innerHeight,
+            scrollY:Math.round(window.scrollY)};
         })()`):null;
         if(!touch?.withinViewport||!touch.hit)failures.push(tag+': Evidence tab native touch target obscured or outside viewport');
         else{
