@@ -216,8 +216,16 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
             }
             return true;
           })()`);
-          // CDP synthesizeTapGesture performs a real touch tap, never DOM .click().
-          await send('Input.synthesizeTapGesture',{x:touch.x,y:touch.y,duration:110,tapCount:1});
+          // Input.dispatchTouchEvent gives Chrome 157 explicit viewport-CSS
+          // touchStart/touchEnd, rather than delegating compositor placement to
+          // synthesizeTapGesture. This is still native CDP touch, never DOM .click().
+          // Local isolated Chrome 144 reproduction: synthesizeTapGesture missed the
+          // button click, while dispatchTouchEvent completed it.
+          await send('Input.dispatchTouchEvent',{
+            type:'touchStart',touchPoints:[{x:touch.x,y:touch.y,radiusX:1,radiusY:1,force:1}],
+          });
+          await wait(110);
+          await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
           let selected=false;
           for(let attempt=0;attempt<20;attempt++){
             selected=await evaluate("!![...document.querySelectorAll('button[role=tab]')].find(e=>e.textContent.trim()==='Evidence'&&e.getAttribute('aria-selected')==='true')");
