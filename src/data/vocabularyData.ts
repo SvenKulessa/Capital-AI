@@ -4,6 +4,7 @@ import researchedVocabulary from '../../shared/researched-vocabulary.json';
 import quantLearningDemo from '../../shared/quant-learning-demo.json';
 import { REPOSITORY_VOCABULARY_TERMS } from './repositoryVocabularyData';
 import { ARCHITECTURE_GOVERNANCE_VOCABULARY } from '../../shared/architecture-governance-vocabulary.mjs';
+import { SECURITY_RESEARCH_VOCABULARY } from '../../shared/security-research-vocabulary.mjs';
 
 export type VocabularyCategory =
   | 'ALL'
@@ -414,6 +415,12 @@ const MERGED_VOCABULARY_TERMS = [
     return {...term,category,level,thesaurus:[term.thesaurus[0],term.thesaurus[1],term.thesaurus[2]]};
   }),
   ...(REPOSITORY_VOCABULARY_TERMS as VocabularyTerm[]),
+  ...SECURITY_RESEARCH_VOCABULARY.map(term => ({
+    ...term,
+    category: term.category as VocabularyCategory,
+    level: term.level as VocabularyLevel,
+    thesaurus: term.thesaurus as [string, string, string],
+  })),
   ...ARCHITECTURE_GOVERNANCE_VOCABULARY.map(term => ({
     ...term,
     category: term.category as VocabularyCategory,
