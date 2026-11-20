@@ -2,6 +2,8 @@ import { randomUUID, createHash, timingSafeEqual } from 'node:crypto';
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[A-Za-z]{2,}$/;
 const REPO = /^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/;
+// A syntactically valid path can still contain dot-segment traversal (e.g. ../private).
+const validRepository = value => REPO.test(value) && value.split('/').every(part => part !== '.' && part !== '..');
 const allowed = new Set(['organization','email','repository','consent','privacyVersion','purpose','tenantId']);
 const hash = x => createHash('sha256').update(x).digest('hex');
 const eq = (a,b) => {
@@ -18,7 +20,7 @@ export function createB2BLeadIntake({resolveTenant, persist, now=()=>Date.now(),
     if (!eq(body.tenantId??'',tenant)) return {status:403,code:'TENANT_MISMATCH'};
     const organization=body.organization, email=body.email, repository=body.repository;
     if (typeof organization!=='string' || organization.length<2 || organization.length>120 ||
-        typeof email!=='string' || !EMAIL.test(email) || typeof repository!=='string' || !REPO.test(repository)) return {status:400,code:'INVALID_INPUT'};
+        typeof email!=='string' || !EMAIL.test(email) || typeof repository!=='string' || !validRepository(repository)) return {status:400,code:'INVALID_INPUT'};
     if (body.consent!==true || body.privacyVersion!==privacyVersion || body.purpose!=='b2b_evidence_audit_contact') return {status:422,code:'CONSENT_REQUIRED'};
     const time=now(), key=hash(tenant+'|'+String(ip??'unknown'));
     for (const [k,v] of buckets) if (time-v.since>=windowMs) buckets.delete(k);
