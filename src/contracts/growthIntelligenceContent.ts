@@ -234,8 +234,13 @@ export type GrowthIntelligenceDraft = ReturnType<typeof buildGrowthIntelligenceC
 /** Generate UTM metadata only; collecting/tracking remains governed by actual consent. */
 export function growthDraftUtmUrl(draft: GrowthIntelligenceDraft): string {
   const url = new URL(draft.contentPlan.campaign.canonicalUrl);
-  if (url.protocol !== 'https:' || url.hostname !== 'capital-ai.online') {
+  if (url.origin !== 'https://capital-ai.online' || url.username || url.password) {
     throw Error('GROWTH_CANONICAL_ORIGIN_INVALID');
+  }
+  if (draft.socialPackage.canonicalUrl !== draft.contentPlan.campaign.canonicalUrl
+      || draft.socialPackage.campaignId !== draft.contentPlan.campaign.campaignId
+      || draft.socialPackage.contentId !== draft.contentId) {
+    throw Error('GROWTH_CANONICAL_IDENTITY_MISMATCH');
   }
   url.searchParams.set('utm_source', draft.channel.toLowerCase());
   url.searchParams.set('utm_medium', draft.channel === 'WEBSITE' ? 'internal' : 'social');
