@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "CAPITAL_AI_MACHINE_PROMPT@1",
+  "authority": {
+    "primary": "AGENTS.md",
+    "flow": "SOLO_MAINTAINER_FLOW@2",
+    "skills": ".agents/skills/registry.json",
+    "note": "This file is routing data, not authorization. Root AGENTS.md and GitHub rulesets override this contract."
+  },
+  "workflow": [
+    "DISCOVER: current main SHA, PR head SHA, issue and roadmap evidence",
+    "CORRELATE: files, contracts, risks, competing PRs",
+    "IMPLEMENT: smallest reversible scope, existing branch when appropriate",
+    "VERIFY: positive and negative tests, relevant CI and security gates",
+    "RELEASE: squash only when every current required gate and review is verified",
+    "OBSERVE: post-merge main, deployment and health readback separately"
+  ],
+  "evidenceStates": [
+    "VERIFIED",
+    "BLOCKED",
+    "NOT_PROVEN"
+  ],
+  "restrictions": [
+    "No bypass of GitHub branch protection or required security gates",
+    "No production database, OAuth, secrets, provider or paid-resource mutation without separate authorization and recovery evidence",
+    "No fabricated CI exit codes, runtime states, revenue or efficiency gains",
+    "No publication of unlicensed data or media"
+  ],
+  "scope": "APP",
+  "domainRouting": {
+    "PRODUCT": {
+      "directory": "CAPITAL-AI-PRODUCT",
+      "engineeringSkill": "product-engineering"
+    },
+    "MARKET": {
+      "directory": "CAPITAL-AI-MARKET",
+      "engineeringSkill": "market-engineering"
+    },
+    "PLATFORM": {
+      "directory": "CAPITAL-AI-PLATFORM",
+      "engineeringSkill": "platform-engineering"
+    },
+    "TRUST": {
+      "directory": "CAPITAL-AI-TRUST",
+      "engineeringSkill": "trust-engineering"
+    },
+    "GROWTH": {
+      "directory": "CAPITAL-AI-GROWTH",
+      "engineeringSkill": "growth-engineering"
+    }
+  },
+  "multiAgentRoles": [
+    "ORCHESTRATOR",
+    "DOMAIN_ENGINEER",
+    "TRUST_REVIEWER",
+    "QUALITY_VERIFIER",
+    "RELEASE_OBSERVER"
+  ],
+  "orchestration": {
+    "parallelReadOnlyAnalysis": true,
+    "writeSerialization": "one active scope branch at a time",
+    "conflictRule": "compare changed filenames and shared contracts before writing",
+    "checkpointing": "persist source-bound evidence and exact commit/run IDs",
+    "maxRepairAttemptsPerCycle": 2
+  },
+  "tenPrEfficiencyMilestone": {
+    "startAfter": "2026-11-20 owner authorization; exclude already merged PR #850",
+    "requiredVerifiedMerges": 10,
+    "metrics": [
+      "PR lead time (created_at to merged_at)",
+      "PR cycle time (first commit to merge, only when timestamps evidenced)",
+      "CI pass ratio with explicit denominator",
+      "regression/rollback count only when evidence exists"
+    ],
+    "groupBy": "domain",
+    "exclude": "draft, unmerged, unverified, or pre-authorization merges",
+    "publication": "create responsive accessible seven-color homepage graphic after 10 verified qualifying merges; preserve Hero/Globe/Hub",
+    "missingData": "NOT_PROVEN"
+  }
+}
