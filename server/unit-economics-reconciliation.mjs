@@ -117,6 +117,7 @@ export function createUnitEconomicsReconciliation({
 
   return Object.freeze({
     async reconcile({principal, product, periodStart, periodEnd, stripeEventIds=[], agentRunIds=[]}={}) {
+      try {
       const tenantId = await resolveTenant(principal);
       if (typeof tenantId !== 'string' || !UUID.test(tenantId)) fail();
       if (typeof product !== 'string' || !/^[a-z][a-z0-9_-]{1,63}$/.test(product) ||
@@ -161,6 +162,11 @@ export function createUnitEconomicsReconciliation({
       // If the charge occurs in this bounded slice, refunds and disputes
       // cannot cumulatively exceed the captured gross amount for it.
       const charges=new Map(uniqueStripe.filter(e=>e.kind==='PAYMENT').map(e=>[e.chargeId,e.grossMinor]));
+      const chargeSources=new Map(uniqueStripe.filter(e=>e.kind==='PAYMENT').map(e=>[e.chargeId,e.sourceId]));
+      for (const event of uniqueStripe) {
+        if (event.kind !== 'PAYMENT' && chargeSources.has(event.chargeId) &&
+            chargeSources.get(event.chargeId) !== event.sourceId) fail();
+      }
       for (const [chargeId, amount] of charges) {
         const reversed=uniqueStripe.filter(e=>e.chargeId===chargeId && e.kind!=='PAYMENT')
           .reduce((s,e)=>s+BigInt(e.grossMinor),0n);
@@ -188,7 +194,7 @@ export function createUnitEconomicsReconciliation({
         netCashExcludingTaxMinor:safe(cash), stripeFeesMinor:safe(fees),
         inferenceCostMinor:safe(inference), toolCostMinor:safe(tools),
         successfulRuns:success, failedRuns:failed,
-        costPerSuccessfulRunMinor:success ? Math.ceil(totalCost/success) : null,
+        costPerSuccessfulRunMinor:success ? safe((BigInt(totalCost)+BigInt(success)-1n)/BigInt(success)) : null,
         stripeBusinessObjects:uniqueStripe.length,
         agentRunCosts:perRun.map(({runId,status,provider,model,inputTokens,outputTokens,
           inferenceMinor,toolsMinor,totalMinor,evidenceHash}) => ({
@@ -202,6 +208,7 @@ export function createUnitEconomicsReconciliation({
           uniqueStripe.map(e=>[e.businessKey,e.grossMinor,e.taxMinor,e.feeMinor,e.evidenceHash]),
           perRun.map(e=>[e.runId,e.billingLineId,e.evidenceHash])]),
       };
+      } catch { fail(); }
     },
   });
 }
