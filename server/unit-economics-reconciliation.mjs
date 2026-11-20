@@ -52,7 +52,7 @@ function checkedStripe(inbox, provider, requestedEventId, tenantId, product, sta
   if (!record(inbox, ['eventId','eventType','status','livemode','payloadSha256']) ||
       !record(provider, ['eventId','eventType','payloadSha256','tenantId','product','occurredAt',
         'currency','livemode','kind','objectId','chargeId','sourceId','grossMinor','taxMinor',
-        'feeMinor','balanceTransactionId','objectReadbackSha256'])) fail();
+        'feeMinor','balanceTransactionId','objectReadbackSha256','settlementStatus','disputeOutcome'])) fail();
   if (inbox.eventId !== requestedEventId || provider.eventId !== requestedEventId ||
       inbox.eventType !== provider.eventType ||
       inbox.status !== 'processed' || inbox.livemode !== true || provider.livemode !== true ||
@@ -62,8 +62,12 @@ function checkedStripe(inbox, provider, requestedEventId, tenantId, product, sta
       provider.eventType !== KINDS[provider.kind][0] ||
       !KINDS[provider.kind][1].test(provider.objectId) ||
       !/^ch_[A-Za-z0-9]{6,100}$/.test(provider.chargeId) ||
-      !SOURCE_ID.test(provider.sourceId) || !/^txn_[A-Za-z0-9]{6,100}$/.test(provider.balanceTransactionId)) fail();
+      !SOURCE_ID.test(provider.sourceId) || provider.sourceId.startsWith('cs_test_') || !/^txn_[A-Za-z0-9]{6,100}$/.test(provider.balanceTransactionId)) fail();
   if (provider.kind === 'PAYMENT' && provider.objectId !== provider.chargeId) fail();
+  // A closed dispute may be WON: never deduct it as a loss. Refunded
+  // amounts can be pending at refund.updated; require settled readback.
+  if (provider.settlementStatus !== 'SETTLED' ||
+      (provider.kind === 'DISPUTE' ? provider.disputeOutcome !== 'LOST' : provider.disputeOutcome !== null)) fail();
   validScope(provider, tenantId, product, 'occurredAt', start, end);
   const gross = cents(provider.grossMinor), tax = cents(provider.taxMinor), fee = cents(provider.feeMinor);
   if (tax > gross || gross === 0) fail();
