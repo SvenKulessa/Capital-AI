@@ -110,6 +110,13 @@ test('negative, NaN, infinite and out-of-range numbers fail closed', () => {
   }
 });
 
+test('unrealistic magnitude fails rather than returning imprecise ROI', () => {
+  const bad = sample();
+  bad.scenarios[0].paidUsers = 10_000_000;
+  bad.scenarios[0].monthlyNetArpuEur = 1_000_000_000;
+  assert.throws(() => evaluateProductOpportunity(bad), /SCENARIO_SCALE_UNSUPPORTED/);
+});
+
 test('malformed user counts and impossible acquisition cohorts fail', () => {
   const bad = sample();
   bad.scenarios[0].newPaidCustomers = 251;
@@ -141,6 +148,7 @@ test('PII, access tokens and false security claims cannot enter draft texts', ()
     'Sende das Ergebnis an test@example.com',
     'token: ghp_abcdefghijklmnop',
     'Garantiert 100% Malware-Schutz',
+    '100% sicher gegen jeden Virus',
     'Echtzeitschutz für jedes Telefon',
     'ROI von 300 Prozent ist sicher',
   ]) {
