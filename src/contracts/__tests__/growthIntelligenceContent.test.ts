@@ -18,7 +18,6 @@ const sourceFile = fileURLToPath(new URL(
 ));
 const fixture = JSON.parse(readFileSync(sourceFile, 'utf8')) as Record<string, unknown>;
 const deepCopy = () => structuredClone(fixture);
-const recommendations = () => (deepCopy().recommendations as Array<Record<string, unknown>>);
 const eventFor = (draft: ReturnType<typeof buildGrowthIntelligenceContentDrafts>[number]) => ({
   policyVersion: 'GROWTH_ATTRIBUTION_POLICY@1',
   source: 'SOCIAL_PROVIDER',
@@ -131,27 +130,29 @@ test('consent, identity and provider negative tests block attribution before cor
   assert.ok(draft);
   const event = eventFor(draft);
   assert.throws(
-    () => correlateGrowthContentReadback({ draft, consentGranted: false, event }),
+    () => correlateGrowthContentReadback({ draft, consentGranted: false, consentEvidenceRef: 'synthetic:test-consent', event }),
     /GROWTH_ATTRIBUTION_CONSENT_REQUIRED/,
   );
   assert.throws(
-    () => correlateGrowthContentReadback({ draft, consentGranted: true, event: {
+    () => correlateGrowthContentReadback({ draft, consentGranted: true, consentEvidenceRef: 'synthetic:test-consent', event: {
       ...event, contentId: 'other-content',
     } }),
     /GROWTH_ATTRIBUTION_IDENTITY_MISMATCH/,
   );
   assert.throws(
-    () => correlateGrowthContentReadback({ draft, consentGranted: true, event: {
+    () => correlateGrowthContentReadback({ draft, consentGranted: true, consentEvidenceRef: 'synthetic:test-consent', event: {
       ...event, providerEntityId: 'INSTAGRAM:fixture-only',
     } }),
     /GROWTH_ATTRIBUTION_PROVIDER_ID_MISMATCH/,
   );
   assert.throws(
-    () => correlateGrowthContentReadback({ draft, consentGranted: true, event: {
+    () => correlateGrowthContentReadback({ draft, consentGranted: true, consentEvidenceRef: 'synthetic:test-consent', event: {
       ...event, source: 'GA4',
     } }),
   );
-  const bundles = correlateGrowthContentReadback({ draft, consentGranted: true, event });
+  assert.throws(() => correlateGrowthContentReadback({ draft, consentGranted: true, consentEvidenceRef: '', event }),
+    /GROWTH_ATTRIBUTION_CONSENT_REQUIRED/);
+  const bundles = correlateGrowthContentReadback({ draft, consentGranted: true, consentEvidenceRef: 'synthetic:test-consent', event });
   assert.equal(bundles.length, 1);
   assert.equal(bundles[0].social.length, 1);
   assert.equal(bundles[0].product.length, 0);
