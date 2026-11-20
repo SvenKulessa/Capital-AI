@@ -28,6 +28,44 @@ python3 -m unittest discover -s scripts/growth-agent -p 'test_*.py'
 python3 -m compileall -q scripts/growth-agent/failure_learning.py scripts/growth-agent/unit_economics.py
 ```
 
+## Phase 2: authenticated learning provenance (opt-in, offline)
+
+The Phase 1 `ReviewedOutcome` boolean structure is **not a provider or reviewer
+attestation**. `RepairKnowledge.learn()` now defaults to **deny** when the
+trusted runtime has not supplied an independent verifier and a matching
+`ReviewProof`; old fixture booleans alone cannot increment success metrics.
+
+`trusted_learning_adapter.py` reuses the existing, host-pinned
+`provider_adapters.SafeHTTP.github` read-only transport. Each learning decision
+checks the exact authorized tenant/repository scope, PR number, base/main/head
+SHAs, mergeability, bounded/unambiguous GitHub check runs, required Docker
+Security Gate and Domain Governance, applicable code scanning and independent
+TRUST/QUALITY HMAC-SHA256 reviewer proofs. Proofs bind all reviewed claims,
+fingerprint, scope, PR and a five-minute timestamp; reviewer keys are distinct
+and at least 256 bits. Secret keys and the tenant-to-repository authorization
+map must be supplied from the **trusted worker runtime**, not a PR, LLM,
+checkpoint, API caller input or repository configuration. No signing endpoint
+or key provisioning is included. Do not co-locate the separate reviewer
+signers with an untrusted agent process.
+
+The verifier refuses missing, stale, duplicated, failed or ambiguous
+readbacks. It cannot initiate an HTTP write, merge, deployment or model
+inference. Its signed decision only allows *local* SQLite learning for an
+already independently reviewed case; it does not authorize patching,
+publishing or a GitHub merge. The runtime must separately authenticate the
+human/agent reviewer identities and prevent signing services from signing
+untrusted PR-body assertions. HMAC provides symmetric integrity, **not
+third-party non-repudiation**. Reviewer compromise, key rotation, provider
+identity, cross-tenant production controls and operational key management
+remain `NOT_PROVEN` until separately implemented and tested.
+
+Existing `auto_loop.py` and `checkpoint_store.py` remain unchanged.
+No new CI required checks, provider credentials, paid resources or live SaaS
+service are introduced. The existing LangGraph graph still outputs only
+non-executable curated candidates. Synthetic tests live in
+`test_trusted_learning_adapter.py`; they use test-only keys and a fake
+provider. They are not live-provider authorization evidence.
+
 ## Competitor facts vs pricing hypothesis
 
 Official price references checked 2026-11-20 (USD, subject to vendor changes):
