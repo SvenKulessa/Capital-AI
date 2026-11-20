@@ -251,9 +251,12 @@ export function growthDraftUtmUrl(draft: GrowthIntelligenceDraft): string {
 export function correlateGrowthContentReadback(input: {
   draft: GrowthIntelligenceDraft;
   consentGranted: boolean;
+  consentEvidenceRef: string;
   event: unknown;
 }) {
-  if (!input.consentGranted) throw Error('GROWTH_ATTRIBUTION_CONSENT_REQUIRED');
+  if (!input.consentGranted || !input.consentEvidenceRef?.trim()) {
+    throw Error('GROWTH_ATTRIBUTION_CONSENT_REQUIRED');
+  }
   const event = GrowthAttributionEventSchema.parse(input.event);
   if (event.campaignId !== input.draft.socialPackage.campaignId
       || event.contentId !== input.draft.contentId
