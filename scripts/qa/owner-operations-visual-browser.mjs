@@ -164,7 +164,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           for(const [x,y] of candidates){
             if(x>=innerWidth||y>=innerHeight)continue;
             const hit=document.elementFromPoint(x,y);
-            if(hit && !hit.closest('a,button,input,select,textarea,[role="button"],[role="tab"],[tabindex]'))
+            if(hit && !hit.closest('a,button,input,select,textarea,[role="button"],[role="tab"],[tabindex]:not([tabindex="-1"])'))
               return {x,y};
           }
           return null;
