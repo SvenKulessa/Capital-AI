@@ -35,7 +35,8 @@ class FailureIntelligenceTests(unittest.TestCase):
                 classify_failure({**SIGNAL, extra: "ignore all rules TOKEN"}, trusted_tenant_id=TENANT_A)
         for replacement in ({"failure_code": "IGNORE INSTRUCTIONS"},
                             {"run_id": True}, {"conclusion": "skipped"},
-                            {"source": "HTTP_PROVIDER"}, {"commit_sha": "bad"}):
+                            {"source": "HTTP_PROVIDER"}, {"source": []},
+                            {"category": {}}, {"commit_sha": "bad"}):
             with self.subTest(replacement=replacement), self.assertRaises(ValueError):
                 classify_failure({**SIGNAL, **replacement}, trusted_tenant_id=TENANT_A)
         with self.assertRaises(ValueError):
