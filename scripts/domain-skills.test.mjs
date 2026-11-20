@@ -136,3 +136,54 @@ test('ten enterprise specialist skills are shared, discoverable and have bounded
   assert.match(read('.github/copilot-instructions.md'), /sharedSkills\.specialists/);
   assert.match(read('AGENTS.md'), /Shared Enterprise Specialist Skills/);
 });
+
+test('machine-readable domain prompts are source-bound, scoped and discoverable', () => {
+  assert.equal(registry.promptContracts.schema, 'CAPITAL_AI_PROMPT_CONTRACT_REFS@1');
+  assert.equal(registry.promptContracts.application, '.agents/app.prompt.json');
+  assert.equal(registry.promptContracts.authority, 'AGENTS.md');
+  assert.deepEqual(Object.keys(registry.promptContracts.domains).sort(), [...expected].sort());
+  const app = JSON.parse(read(registry.promptContracts.application));
+  assert.equal(app.schema, 'CAPITAL_AI_APPLICATION_EXECUTION_PROMPT@1');
+  assert.equal(app.authority.source, 'AGENTS.md');
+  assert.equal(app.authority.contract, 'SOLO_MAINTAINER_FLOW@2');
+  assert.equal(app.authority.permissionExpansion, false);
+  assert.deepEqual(app.domainPrompts, registry.promptContracts.domains);
+  assert.equal(app.multiAgent.singlePermissionContext, true);
+  assert.equal(app.multiAgent.serializedWrites, true);
+  assert.equal(app.metrics.noInventedGains, true);
+  assert.ok(app.constraints.includes('NO_RULESET_BYPASS'));
+  const validate = (candidate, domain) => {
+    assert.equal(candidate.schema, 'CAPITAL_AI_DOMAIN_EXECUTION_PROMPT@1');
+    assert.equal(candidate.domain, domain);
+    assert.equal(candidate.projectFolder, 'CAPITAL-AI-' + domain);
+    assert.equal(candidate.authority.source, 'AGENTS.md');
+    assert.equal(candidate.authority.contract, 'SOLO_MAINTAINER_FLOW@2');
+    assert.equal(candidate.authority.type, 'NON_AUTHORIZING_CONTEXT');
+    assert.equal(candidate.authority.permissionExpansion, false);
+    assert.equal(candidate.skillRegistry, '.agents/skills/registry.json');
+    assert.equal(candidate.engineeringSkill, registry.domains[domain].engineering);
+    assert.equal(candidate.advisorySkill, registry.domains[domain].advisory);
+    assert.equal(candidate.chatAgent, registry.domains[domain].chatAgent);
+    assert.equal(candidate.efficiency.maxDistinctRepairAttempts, 2);
+    assert.equal(candidate.efficiency.oneActiveMutatingScope, true);
+    assert.ok(candidate.prompt.includes('AGENTS.md'));
+    assert.ok(candidate.trustBoundary.rightsCannotBeInferredFromCI);
+    assert.ok(candidate.trustBoundary.productionMutationRequiresScopedEvidence);
+  };
+  for (const domain of expected) {
+    const file = registry.promptContracts.domains[domain];
+    assert.equal(file, 'CAPITAL-AI-' + domain + '/domain.prompt.json');
+    const prompt = JSON.parse(read(file));
+    validate(prompt, domain);
+    const doc = read('CAPITAL-AI-' + domain + '/PROJECT.md');
+    assert.match(doc, /SOLO_MAINTAINER_FLOW@2/);
+    assert.doesNotMatch(doc, /SOLO_MAINTAINER_FLOW@1/);
+    assert.ok(doc.includes(file));
+    for (const [field,value] of [
+      ['authority', { ...prompt.authority, permissionExpansion: true }],
+      ['domain', 'OTHER'],
+      ['engineeringSkill', 'non-existent-engineering'],
+      ['efficiency', { ...prompt.efficiency, maxDistinctRepairAttempts: 99 }],
+    ]) assert.throws(() => validate({ ...prompt, [field]: value }, domain));
+  }
+});

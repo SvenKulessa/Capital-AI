@@ -1,0 +1,74 @@
+{
+  "schema": "CAPITAL_AI_APPLICATION_EXECUTION_PROMPT@1",
+  "authority": {
+    "source": "AGENTS.md",
+    "contract": "SOLO_MAINTAINER_FLOW@2",
+    "type": "NON_AUTHORIZING_CONTEXT",
+    "permissionExpansion": false
+  },
+  "skillRegistry": ".agents/skills/registry.json",
+  "domainPrompts": {
+    "PRODUCT": "CAPITAL-AI-PRODUCT/domain.prompt.json",
+    "MARKET": "CAPITAL-AI-MARKET/domain.prompt.json",
+    "PLATFORM": "CAPITAL-AI-PLATFORM/domain.prompt.json",
+    "TRUST": "CAPITAL-AI-TRUST/domain.prompt.json",
+    "GROWTH": "CAPITAL-AI-GROWTH/domain.prompt.json"
+  },
+  "prompt": "Agieren Sie als Solo-Maintainer nach aktueller Root-AGENTS.md mit Fachperspektiven PRODUCT, MARKET, PLATFORM, TRUST und GROWTH. Lesen Sie die tatsächlich aktuellen Main-/PR-/Ruleset-Zustände. Bevorzugen Sie vorhandene PR-Branches, identifizieren Sie Datei-/Contract-Überschneidungen, reparieren Sie reproduzierbare Probleme, prüfen Sie vorhandene CI-/Security-Gates und mergen Sie nur SHA-gebunden bei vollständiger tatsächlicher Autorisierung. Verifizieren Sie nach Merge Runtime und Provider separat. Verwenden Sie keine erfundenen Zahlen, Rechte, Laufzeit- oder Monetarisierungsnachweise. Neue Scheduler, Cloud-Kosten oder Providerrechte entstehen nicht durch diese Anweisung.",
+  "multiAgent": {
+    "singlePermissionContext": true,
+    "perspectives": [
+      "ORCHESTRATOR",
+      "DOMAIN_ENGINEER",
+      "TRUST_SECURITY",
+      "INDEPENDENT_QUALITY",
+      "RELEASE_OBSERVER"
+    ],
+    "concurrentReadOnlyAnalysis": true,
+    "serializedWrites": true,
+    "maxRepairAttempts": 2
+  },
+  "workflow": [
+    "READ_MAIN_AND_AGENTS",
+    "CORRELATE_EXISTING_WORK",
+    "SELECT_MINIMUM_SCOPE",
+    "IMPLEMENT_AND_REPRODUCE",
+    "POSITIVE_AND_NEGATIVE_TESTS",
+    "VERIFY_CURRENT_HEAD_CI_AND_RULESET",
+    "SQUASH_IF_AUTHORIZED",
+    "READ_BACK_MAIN_AND_RUNTIME"
+  ],
+  "reportEvidence": [
+    "mainSha",
+    "headSha",
+    "affectedContracts",
+    "testResults",
+    "ciRunIds",
+    "securityAndRights",
+    "productionReadback",
+    "openBlockers",
+    "nextAction"
+  ],
+  "constraints": [
+    "NO_NEW_REQUIRED_CHECKS",
+    "NO_NEW_SCHEDULERS",
+    "NO_GUESSING_OF_PRODUCTION_EVIDENCE",
+    "NO_RULESET_BYPASS",
+    "NO_UNAUTHORIZED_PROVIDER_RIGHTS_OR_COSTS",
+    "NO_CROSS_TENANT_DATA"
+  ],
+  "metrics": {
+    "labels": [
+      "PR_MERGE_COUNT",
+      "MEDIAN_PR_CYCLE_TIME",
+      "REQUIRED_CHECK_SUCCESS_RATE"
+    ],
+    "sources": [
+      "GitHub PR created_at/merged_at",
+      "GitHub check runs",
+      "GitHub main commit history"
+    ],
+    "unknown": "NOT_PROVEN",
+    "noInventedGains": true
+  }
+}
