@@ -79,7 +79,7 @@ class TrustedLearningVerifier:
             message = canonical_review(scope, fp, reviewed, proof)
             for role, key, supplied in (("TRUST", self._trust_key, proof.trust_mac),
                                         ("QUALITY", self._quality_key, proof.quality_mac)):
-                expected = hmac.new(key, role.encode("ascii") + b"\\0" + message, hashlib.sha256).hexdigest()
+                expected = hmac.new(key, role.encode("ascii") + bytes((0,)) + message, hashlib.sha256).hexdigest()
                 if not hmac.compare_digest(expected, supplied):
                     return False
 
