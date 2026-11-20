@@ -57,3 +57,14 @@ test('rollback is immutable append-only; test runner checks hard crash and separ
   assert.match(runner,/restoreVerified=true/);
   assert.match(runner,/providerCalls:0,productionMutations:0/);
 });
+
+test('restore validates full-row digests of each ledger table and refuses corrupt archives',()=>{
+  assert.match(runner,/to_jsonb\(t\)::text/);
+  for(const table of ['snapshots','run_allocations','reversals'])
+    assert.match(runner,new RegExp('from capital_ai_ue\\.'+table+' t;'));
+  assert.match(runner,/assert\.deepEqual\(after,before/);
+  assert.match(runner,/ue_ledger_corrupt_ci/);
+  assert.match(runner,/head -c/);
+  assert.match(runner,/pg17_truncated_dump_fails_closed/);
+  assert.match(runner,/pg17_restore_acl_rls_all_tables_and_rpcs/);
+});

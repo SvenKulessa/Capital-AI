@@ -107,8 +107,17 @@ async function isolatedRestore(){
   const sourceTotal=await sql('select count(*) from capital_ai_ue.snapshots;');
   const sourceRuns=await sql('select count(*) from capital_ai_ue.run_allocations;');
   const sourceReverse=await sql('select count(*) from capital_ai_ue.reversals;');
-  const digestSql="select md5(coalesce(string_agg(tenant_id::text||':'||snapshot_id::text||':'||request_sha256||':'||source_snapshot_sha256||':'||net_cash_minor::text||':'||inference_minor::text||':'||tools_minor::text, '|' order by tenant_id,snapshot_id),'')) from capital_ai_ue.snapshots;";
-  const before=await sql(digestSql);
+  // Full-row fingerprints for ALL three immutable tables. Previously the
+  // readback covered only seven snapshot fields and omitted line/reversal data.
+  // jsonb includes every column; deterministic ordering makes CI replayable.
+  const digests=Object.freeze({
+    snapshots:"select md5(coalesce(string_agg(to_jsonb(t)::text,'|' order by tenant_id,snapshot_id),'')) from capital_ai_ue.snapshots t;",
+    run_allocations:"select md5(coalesce(string_agg(to_jsonb(t)::text,'|' order by tenant_id,run_id),'')) from capital_ai_ue.run_allocations t;",
+    reversals:"select md5(coalesce(string_agg(to_jsonb(t)::text,'|' order by tenant_id,snapshot_id),'')) from capital_ai_ue.reversals t;",
+  });
+  const fingerprint=async(db)=>Object.fromEntries(await Promise.all(
+    Object.entries(digests).map(async([name,statement])=>[name,await sql(statement,db)])));
+  const before=await fingerprint(dbName);
   await inside('psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-c',
     'create database ue_ledger_restore_ci;');
   await inside('psql','-U','postgres','-d','ue_ledger_restore_ci','-v','ON_ERROR_STOP=1','-c',
@@ -120,8 +129,34 @@ async function isolatedRestore(){
   // with --no-privileges would leave service_role unable to use private RPCs.
   await inside('pg_restore','-U','postgres','-d','ue_ledger_restore_ci',
     '--no-owner','/tmp/ue-ledger-verified.dump');
+  // Both data and the permission contract must survive an independent restore.
   assert.equal(await sql("select has_schema_privilege('service_role','capital_ai_ue','USAGE');",
     'ue_ledger_restore_ci'),'t');
+  for(const table of ['snapshots','run_allocations','reversals']){
+    assert.equal(await sql("select relrowsecurity from pg_class where oid='capital_ai_ue."+
+      table+"'::regclass;",'ue_ledger_restore_ci'),'t','RLS must survive restore: '+table);
+    assert.equal(await sql("select count(*) from pg_policies where schemaname='capital_ai_ue'"+
+      " and tablename='"+table+"' and qual='false' and with_check='false';",
+      'ue_ledger_restore_ci'),'1','explicit-deny policy must survive restore: '+table);
+    for(const role of ['anon','authenticated','service_role']){
+      assert.equal(await sql("select has_table_privilege('"+role+"','capital_ai_ue."+
+        table+"','SELECT,INSERT,UPDATE,DELETE');",'ue_ledger_restore_ci'),'f',
+        'direct SQL privileges must remain revoked: '+role+'/'+table);
+    }
+  }
+  for(const sig of [
+    'record_snapshot(uuid,uuid,text,text,text,text,timestamptz,timestamptz,bigint,bigint,bigint,bigint,integer,integer,jsonb)',
+    'reverse_snapshot(uuid,uuid,text,text)',
+    'read_snapshot(uuid,uuid)',
+  ]){
+    for(const role of ['anon','authenticated']){
+      assert.equal(await sql("select has_function_privilege('"+role+
+        "','capital_ai_ue."+sig+"','EXECUTE');",'ue_ledger_restore_ci'),'f');
+    }
+    assert.equal(await sql("select has_function_privilege('service_role',"+
+      "'capital_ai_ue."+sig+"','EXECUTE');",'ue_ledger_restore_ci'),'t');
+  }
+  ok('pg17_restore_acl_rls_all_tables_and_rpcs');
   assert.equal(await sql("select has_schema_privilege('anon','capital_ai_ue','USAGE');",
     'ue_ledger_restore_ci'),'f');
   assert.equal(await sql("select has_function_privilege('authenticated',"+
@@ -131,14 +166,28 @@ async function isolatedRestore(){
   assert.equal(await sql('select count(*) from capital_ai_ue.snapshots;','ue_ledger_restore_ci'),sourceTotal);
   assert.equal(await sql('select count(*) from capital_ai_ue.run_allocations;','ue_ledger_restore_ci'),sourceRuns);
   assert.equal(await sql('select count(*) from capital_ai_ue.reversals;','ue_ledger_restore_ci'),sourceReverse);
-  const after=await sql(digestSql,'ue_ledger_restore_ci');
-  assert.equal(after,before);
+  const after=await fingerprint('ue_ledger_restore_ci');
+  assert.deepEqual(after,before,'every column of all three tables must survive restore');
   const restored=await sql(asService(call({tenant:BOB,id:SID(20),key:'bob-key-00000001',
     source:HASH,run:RUN(2)})),'ue_ledger_restore_ci');
   assert.equal(restored,'replayed','restored dedup index and immutable original survive restore');
   assert.equal(await sql(asService(reverse({tenant:BOB,id:SID(1)})),'ue_ledger_restore_ci'),'not_found');
   report.snapshotCount=Number(sourceTotal);report.runCount=Number(sourceRuns);
   report.reversalCount=Number(sourceReverse);report.sourceDigest=before;report.restoreDigest=after;
+  // Corrupted archives must fail a real restore, not merely be listed as a TOC.
+  // This DB is disposable and distinct from the verified recovery target.
+  await inside('psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-c',
+    'create database ue_ledger_corrupt_ci;');
+  await inside('sh','-ec',
+    'size=$(wc -c </tmp/ue-ledger-verified.dump); test "$size" -gt 1024; '+
+    'head -c "$((size/2))" /tmp/ue-ledger-verified.dump >/tmp/ue-ledger-corrupt.dump');
+  await assert.rejects(
+    inside('pg_restore','-U','postgres','-d','ue_ledger_corrupt_ci',
+      '--no-owner','--exit-on-error','/tmp/ue-ledger-corrupt.dump'),
+    'a truncated backup must not be accepted as a successful restore');
+  report.corruptBackupRejected=true;
+  ok('pg17_truncated_dump_fails_closed');
+
   report.restoreVerified=true;
   ok('pg17_custom_dump_separate_db_restore_digest_and_replay');
 }

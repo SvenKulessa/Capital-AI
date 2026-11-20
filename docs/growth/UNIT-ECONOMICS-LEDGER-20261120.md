@@ -87,9 +87,13 @@ no Supabase credentials or network access to a live project. The job verifies:
 - immutable reversal, retry, conflicting reversal and cross-tenant denial
 - real PostgreSQL 17 pg_dump custom-format export and pg_restore into
   a separate fresh ue_ledger_restore_ci database. Restored counts, sorted
-  snapshot digest, restored private schema ACLs, service-only RPC access,
-  idempotency behavior and tenant isolation must match
-  the source; restoreVerified=true only after assertions.
+  full-row SHA references and deterministic content fingerprints for **each** of
+  snapshots, run_allocations and reversals; restored RLS and explicit-deny
+  policies across all three tables; revoked direct privileges for anon,
+  authenticated and service_role; and service-only EXECUTE on all three RPCs.
+  A truncated custom-format backup must fail its own independent restore.
+  Idempotency behavior and tenant isolation must match the source.
+  restoreVerified=true only after every assertion.
 
 The synthetic restore uses a fresh isolated database inside the disposable
 CI PostgreSQL service, not production or customer data. It is evidence of this
@@ -115,3 +119,33 @@ isolated target-environment backup, verified restore including auth/storage
 relevant to real tenancy, RLS/role grant audit, provider-source completeness,
 replay/rollback policy and retention/GDPR review. Current status:
 PRODUCTION_ADMISSION_NOT_PROVEN.
+
+## 2026-11-20 production admission check
+
+The repository and project readback identified the active Supabase production
+project `ryzywoktpmyhwzxmstyu` (PostgreSQL 17.11, eu-west-1). The private
+`capital_ai_ue` schema was absent on the read-only preflight. A separate
+recovery/test project exists, but **no actual production-sourced backup with
+a successful isolated restore of the production database** has been verified
+against the current source SHA and recovery time. Previous disposable CI
+snapshots represent only synthetic data, and the existing backup control
+journal was unavailable at readback. Supabase managed-backup availability,
+PITR retention, original production Auth/Storage/Vault recovery and a
+complete roll-forward/rollback plan are also not proven.
+
+The human owner explicitly authorized a production migration in this new
+request; authorization does not substitute for a verified recoverable backup.
+Production migration remains **BLOCKED** by the technical restore admission
+condition (not by an invented second approval). Never run
+`supabase/migration-candidates/20261120045100_unit_economics_isolated_ledger.sql`
+against production while these facts remain unverified. Its
+`SYNTHETIC_ISOLATED` / `accounting_eligible=false` CHECKs and absent live
+usage/invoice sources additionally prevent accounting promotion.
+
+Next technical requirement: independently read back a current recovery point,
+obtain a protected production-sourced dump or equivalent provider backup,
+restore to a *separate isolated target*, verify auth/ACL/tenancy and full
+schema/record digests without exporting customer PII to GitHub, then
+re-evaluate whether a production-specific migration (rather than this
+synthetic-only candidate) is appropriate. No production DDL or DML is
+initiated by this PR.
