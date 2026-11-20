@@ -1,4 +1,7 @@
 {
+  "snapshotType": "HISTORICAL_REGRESSION_FIXTURE",
+  "authority": "NON_CURRENT",
+  "note": "Captured 2026-11-19; historical regression only, never current GitHub open-PR authority.",
   "mainSha": "0c67045a31d520ea4dd71b8bbcd7d45505828ccb",
   "pullRequests": [
     {
