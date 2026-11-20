@@ -72,7 +72,7 @@ function source(input, productSha, code) {
   if (!['SOURCE_RECORDED', 'NOT_PROVEN'].includes(doc.status)) fail(code + '_STATUS');
   return doc;
 }
-const BLOCKED_CLAIMS = /\b(?:100\s*%|guaranteed|garantiert|echtzeit[- ]?schutz|realtime protection|real.time antivirus|virusfrei|malwarefrei|nachgewiesene erkennung|roi (?:ist|beträgt)|roi von|sichere rendite)\b/iu;
+const BLOCKED_CLAIMS = /(?:\b100\s*%|\b100\s*prozent\b|\b(?:guaranteed|garantiert|echtzeit[- ]?schutz|realtime protection|real.time antivirus|virusfrei|malwarefrei|nachgewiesene erkennung|roi (?:ist|beträgt)|roi von|sichere rendite)\b)/iu;
 function claimText(value, code) {
   const text = safeText(value, code, 360);
   if (BLOCKED_CLAIMS.test(text)) fail(code + '_UNSUPPORTED_PROTECTION_OR_ROI');
@@ -158,6 +158,11 @@ export function calculateOpportunityScenario(scenario) {
   const developmentEur = s.developerHours * s.developerHourlyEur;
   const costsEur = operatingEur + acquisitionEur + developmentEur;
   const profitEur = revenueEur - costsEur;
+  // Large hypothetical amounts exceed useful precision long before JS overflows.
+  if (![revenueEur, operatingEur, acquisitionEur, developmentEur, costsEur, profitEur]
+    .every(value => Number.isFinite(value) && Math.abs(value) <= 1_000_000_000_000)) {
+    fail('SCENARIO_SCALE_UNSUPPORTED');
+  }
   const contributionPerUserEur = s.monthlyNetArpuEur - s.monthlyVariableCostEur;
   const breakEvenPaidUsers = contributionPerUserEur > 0 ?
     Math.ceil((s.monthlyFixedCostEur + (acquisitionEur + developmentEur) / months) /
