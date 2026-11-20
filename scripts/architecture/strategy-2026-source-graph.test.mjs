@@ -11,6 +11,7 @@ const source=(prNumber,headSha,sourcePath,text)=>{
 };
 const pr=(number,headSha,changedFiles)=>({number,headSha,changedFiles});
 const snap=prs=>({snapshotType:'LIVE_GITHUB',inventoryComplete:true,observedAt:'2026-11-20T00:00:00Z',repo:'SvenKulessa/Capital-AI',mainSha:a,pullRequests:prs});
+const testNow=()=>Date.parse('2026-11-20T00:01:00Z');
 const evidence=facts=>({schemaVersion:'CAPITAL_AI_SOURCE_EVIDENCE@1',source:'GITHUB_CONTENTS_GET_BY_HEAD_SHA',observedAt:'2026-11-20T00:00:00Z',coverage:'SELECTED_CHANGED_SOURCE_FILES',facts});
 
 test('validates Git blob SHA-1 and finds explicit relative module import',()=>{
@@ -69,7 +70,7 @@ test('rejects forged PR head SHA and source filename provenance',()=>{
 test('GET-only source adapter fetches immutable ref, verifies blob, no raw content in output',async()=>{
   const x=source(1,a,'src/a.ts',"import './b';"); const requests=[];
   const fetchImpl=async(url,init)=>{requests.push({url,init});return {ok:true,status:200,json:async()=>({type:'file',sha:x.blobSha,size:x.size,encoding:'base64',content:x.base64Content})}};
-  const result=await collectGitHubSourceEvidence({snapshot:snap([pr(1,a,['src/a.ts'])]),fetchImpl,token:'DO_NOT_SHOW'});
+  const result=await collectGitHubSourceEvidence({snapshot:snap([pr(1,a,['src/a.ts'])]),fetchImpl,token:'DO_NOT_SHOW',now:testNow});
   assert.equal(result.coverage,'SELECTED_CHANGED_SOURCE_FILES');
   assert.equal(result.facts[0].target,'src/b');
   assert.ok(requests[0].url.endsWith(`?ref=${a}`));
@@ -80,10 +81,21 @@ test('GET-only source adapter fetches immutable ref, verifies blob, no raw conte
 test('caps source fetch budget and marks evidence incomplete without claiming full coverage',async()=>{
   const files=['src/a.ts','src/b.ts'];
   const fetchImpl=async(url)=>{const file=url.includes('a.ts')?'src/a.ts':'src/b.ts';const x=source(1,a,file,'export const x=1;');return {ok:true,status:200,json:async()=>({type:'file',sha:x.blobSha,size:x.size,encoding:'base64',content:x.base64Content})}};
-  const result=await collectGitHubSourceEvidence({snapshot:snap([pr(1,a,files)]),fetchImpl,maxFiles:1});
+  const result=await collectGitHubSourceEvidence({snapshot:snap([pr(1,a,files)]),fetchImpl,maxFiles:1,now:testNow});
   assert.equal(result.candidateFiles,2);assert.equal(result.examinedFiles,1);assert.equal(result.coverage,'PARTIAL_LIMIT');
 });
 test('HTTP error fails closed without leaking token',async()=>{
   const fetchImpl=async()=>({ok:false,status:403});
-  await assert.rejects(collectGitHubSourceEvidence({snapshot:snap([pr(1,a,['src/a.ts'])]),fetchImpl,token:'SUPERSECRET'}),e=>/403/.test(e.message)&&!e.message.includes('SUPERSECRET'));
+  await assert.rejects(collectGitHubSourceEvidence({snapshot:snap([pr(1,a,['src/a.ts'])]),fetchImpl,token:'SUPERSECRET',now:testNow}),e=>/403/.test(e.message)&&!e.message.includes('SUPERSECRET'));
+});
+
+test('source collector rejects stale snapshots before requesting code bytes',async()=>{
+  const requests=[];
+  const fetchImpl=async url=>{requests.push(url);throw Error('must not fetch stale source')};
+  await assert.rejects(collectGitHubSourceEvidence({snapshot:snap([pr(1,a,['src/a.ts'])]),fetchImpl,now:()=>Date.parse('2026-11-20T02:00:00Z')}),/stale/);
+  assert.equal(requests.length,0);
+});
+test('source graph refuses evidence captured for a different inventory',()=>{
+  const s=snap([pr(1,a,['src/a.ts'])]);
+  assert.throws(()=>buildSourceBoundReviewGraph(s,{...evidence([]),observedAt:'2026-11-19T20:00:00Z'}),/snapshot mismatch/);
 });

@@ -41,9 +41,12 @@ export function factsFromGitBlob({prNumber, headSha, sourcePath, blobSha, base64
   return [...new Map(facts.map(f=>[f.kind+'|'+f.target,f])).values()].sort((a,b)=>(a.kind+a.target).localeCompare(b.kind+b.target));
 }
 
-export async function collectGitHubSourceEvidence({snapshot,token,fetchImpl=fetch,maxFiles=24}={}) {
+export async function collectGitHubSourceEvidence({snapshot,token,fetchImpl=fetch,maxFiles=24,now=Date.now,maxAgeMs=300_000}={}) {
   requireValid(snapshot?.snapshotType==='LIVE_GITHUB'&&snapshot.inventoryComplete===true&&/^[\w.-]+\/[\w.-]+$/.test(snapshot.repo||''), 'requires complete live snapshot');
   requireValid(Array.isArray(snapshot.pullRequests) && snapshot.pullRequests.length<=200 && Number.isSafeInteger(maxFiles)&&maxFiles>0&&maxFiles<=50,'invalid snapshot or source limit');
+  requireValid(typeof snapshot.observedAt==='string' && Number.isFinite(Date.parse(snapshot.observedAt)) && Number.isFinite(maxAgeMs) && maxAgeMs>=0 && typeof now==='function','invalid snapshot freshness');
+  const age=now()-Date.parse(snapshot.observedAt);
+  requireValid(Number.isFinite(age) && age>=-30_000 && age<=maxAgeMs, 'stale or future source snapshot');
   const selections=[];
   for(const pr of snapshot.pullRequests){
     requireValid(Number.isSafeInteger(pr.number)&&SHA.test(pr.headSha)&&Array.isArray(pr.changedFiles),'invalid PR identity');
@@ -61,13 +64,14 @@ export async function collectGitHubSourceEvidence({snapshot,token,fetchImpl=fetc
     requireValid(f?.type==='file'&&f?.encoding==='base64'&&typeof f.content==='string'&&SHA.test(f.sha),'invalid GitHub source blob');
     facts.push(...factsFromGitBlob({prNumber:pr.number,headSha:pr.headSha,sourcePath:filename,blobSha:f.sha,base64Content:f.content,size:f.size}));
   }
+  requireValid(now()-Date.parse(snapshot.observedAt)<=maxAgeMs,'source evidence expired during collection');
   return {schemaVersion:'CAPITAL_AI_SOURCE_EVIDENCE@1',source:'GITHUB_CONTENTS_GET_BY_HEAD_SHA',observedAt:snapshot.observedAt,
     examinedFiles:Math.min(selections.length,maxFiles),candidateFiles:selections.length,coverage:selections.length<=maxFiles?'SELECTED_CHANGED_SOURCE_FILES':'PARTIAL_LIMIT',facts};
 }
 
 export function buildSourceBoundReviewGraph(snapshot,evidence,{maxPaths=500}={}) {
   requireValid(snapshot?.snapshotType==='LIVE_GITHUB'&&Array.isArray(snapshot.pullRequests)&&snapshot.pullRequests.length<=200,'requires live snapshot');
-  requireValid(evidence?.schemaVersion==='CAPITAL_AI_SOURCE_EVIDENCE@1'&&Array.isArray(evidence.facts)&&evidence.facts.length<=10000,'invalid source evidence');
+  requireValid(evidence?.schemaVersion==='CAPITAL_AI_SOURCE_EVIDENCE@1'&&Array.isArray(evidence.facts)&&evidence.facts.length<=10000 && evidence.observedAt===snapshot.observedAt,'invalid source evidence or snapshot mismatch');
   requireValid(Number.isSafeInteger(maxPaths)&&maxPaths>0&&maxPaths<=2000,'invalid path limit');
   const prs=new Map(snapshot.pullRequests.map(p=>[p.number,p]));
   const facts=evidence.facts;
