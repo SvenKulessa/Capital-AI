@@ -187,3 +187,19 @@ test('machine-readable domain prompts are source-bound, scoped and discoverable'
     ]) assert.throws(() => validate({ ...prompt, [field]: value }, domain));
   }
 });
+
+test('Docker build includes only the prompt validation inputs, with no broad context expansion', () => {
+  const docker = read('Dockerfile');
+  const ignore = read('.dockerignore');
+  assert.ok(docker.includes('COPY .agents/app.prompt.json ./.agents/app.prompt.json'));
+  assert.ok(ignore.split('\n').includes('!.agents/app.prompt.json'));
+  for (const domain of expected) {
+    const folder = 'CAPITAL-AI-' + domain;
+    const copy = 'COPY ' + folder + '/domain.prompt.json ' + folder + '/PROJECT.md ./' + folder + '/';
+    assert.ok(docker.includes(copy), 'missing build-only prompt copy: ' + folder);
+    assert.ok(ignore.split('\n').includes('!' + folder + '/domain.prompt.json'));
+    assert.ok(ignore.split('\n').includes('!' + folder + '/PROJECT.md'));
+  }
+  assert.doesNotMatch(docker, /^COPY \.agents\/ \.\/\.agents\/$/m);
+  assert.doesNotMatch(ignore, /^!\.agents\/\*\*$/m);
+});
