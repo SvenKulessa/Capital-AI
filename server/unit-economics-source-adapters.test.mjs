@@ -113,7 +113,7 @@ test('no read executed at adapter construction time; no paid activation or DML',
 });
 test('Supabase REST reader is GET-only, scoped, bounded and verifies returned tenant',async()=>{
  let requests=[];
- const fetchImpl=async (url,opts)=>{requests.push([String(url),opts]);return {ok:true,text:async()=>JSON.stringify([{tenant_id:tenant,run_id:runId}])};};
+ const fetchImpl=async (url,opts)=>{requests.push([String(url),opts]);return new Response(JSON.stringify([{tenant_id:tenant,run_id:runId}]),{status:200});};
  const reader=dbReader({origin:'https://test-123.supabase.co',serviceKey:secret,fetchImpl});
  const row=await reader.read('agent_run_usage_evidence',{tenant_id:tenant,run_id:runId});assert.equal(row.tenant_id,tenant);
  assert.equal(requests.length,1);assert.equal(requests[0][1].method,'GET');
@@ -123,14 +123,14 @@ test('Supabase REST reader is GET-only, scoped, bounded and verifies returned te
 });
 test('Supabase reader rejects duplicate rows, unknown table, forged host and large payload',async()=>{
  assert.throws(()=>dbReader({origin:'https://evil.example',serviceKey:secret,fetchImpl:async()=>{}}),/ADAPTER_UNAVAILABLE/);
- const fetchImpl=async()=>({ok:true,text:async()=>JSON.stringify([{event_id:eventId},{event_id:eventId}])});
+ const fetchImpl=async()=>new Response(JSON.stringify([{event_id:eventId},{event_id:eventId}]),{status:200});
  const reader=dbReader({origin:'https://test-123.supabase.co',serviceKey:secret,fetchImpl});
  await reject(reader.read('stripe_event_inbox',{event_id:eventId}));
  await reject(reader.read('unknown_table',{event_id:eventId}));
 });
 test('Stripe reader refuses test/live mixing and only permits explicit GET path shapes',async()=>{
  assert.throws(()=>stripeReader({secret:'sk_test_abcdef',fetchImpl:async()=>{}}),/ADAPTER_UNAVAILABLE/);
- let calls=[];const r=stripeReader({secret:'sk_live_123456789',fetchImpl:async(u,o)=>{calls.push([u,o]);return {ok:true,text:async()=>'{"id":"evt_payABC123"}'}}});
+ let calls=[];const r=stripeReader({secret:'sk_live_123456789',fetchImpl:async(u,o)=>{calls.push([u,o]);return new Response('{"id":"evt_payABC123"}',{status:200})}});
  const obj=await r('/events/'+eventId);assert.equal(obj.id,eventId);assert.equal(calls[0][1].method,'GET');
  await reject(r('/v1/payment_intents'));await reject(r('/charges/ch_123456789?expand[]=source'));await reject(r('https://evil.example/'));
  assert.equal(calls.length,1);
@@ -164,4 +164,12 @@ test('cross-tenant Stripe attribution halts integrated reconciliation without pa
   stripeEventIds:[eventId],agentRunIds:[runId],
  }),/UNIT_ECONOMICS_RECONCILIATION_UNAVAILABLE/);
  assert.equal(h.calls.filter(x=>x.startsWith('db:agent')).length,0);
+});
+
+test('streaming bounds reject oversized Stripe and Supabase responses before full read',async()=>{
+ const oversized=()=>new Response(JSON.stringify({data:'x'.repeat(70*1024)}),{status:200});
+ const db=dbReader({origin:'https://test-123.supabase.co',serviceKey:secret,fetchImpl:async()=>oversized()});
+ await reject(db.read('stripe_event_inbox',{event_id:eventId}));
+ const stripe=stripeReader({secret:'sk_live_123456789',fetchImpl:async()=>oversized()});
+ await reject(stripe('/events/'+eventId));
 });
