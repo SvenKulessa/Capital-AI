@@ -1,10 +1,10 @@
 FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS crypto-base
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
-# Use patched OpenSSL and zlib packages from the existing stable Alpine 3.24 branch.
+# Use patched OpenSSL, zlib and libxml2 packages from stable Alpine 3.24.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
-# Fail closed if the repository cannot supply the OpenSSL 3.5.9-r1 security revision.
-RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' \
-    && apk info -v zlib libcrypto3 libssl3
+# Fail closed when patched OpenSSL or libxml2 (CVE-2026-86144) is unavailable.
+RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
+    && apk info -v zlib libcrypto3 libssl3 libxml2
 
 FROM crypto-base AS build
 WORKDIR /app
