@@ -177,7 +177,10 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
             for(const type of ['pointerdown','pointerup','touchstart','touchend','click']){
               document.addEventListener(type,event=>{
                 if(window.__qaTouchEvents.length<12)window.__qaTouchEvents.push({
-                  type,role:event.target?.closest?.('[role="tab"]')?.getAttribute('role')||'other'
+                  type,role:event.target?.closest?.('[role="tab"]')?.getAttribute('role')||'other',
+                  targetTag:event.target?.tagName||'unknown',
+                  x:Math.round((event.changedTouches?.[0]?.clientX ?? event.clientX ?? -1)*10)/10,
+                  y:Math.round((event.changedTouches?.[0]?.clientY ?? event.clientY ?? -1)*10)/10
                 });
               },{capture:true});
             }
@@ -193,7 +196,10 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           }
           if(!selected){
             const events=await evaluate("window.__qaTouchEvents||[]");
-            failures.push(tag+': native touch did not activate Evidence tab · event types '+JSON.stringify(events));
+            const metrics=await evaluate(`(() => ({innerWidth,innerHeight,scrollX,scrollY,
+              offsetX:visualViewport?.offsetLeft??null,offsetY:visualViewport?.offsetTop??null,
+              pageTop:visualViewport?.pageTop??null,scale:visualViewport?.scale??null}))()`);
+            failures.push(tag+': native touch did not activate Evidence tab · '+JSON.stringify({events,target:touch,metrics}));
           }
           await send('Emulation.setTouchEmulationEnabled',{enabled:false});
         }
