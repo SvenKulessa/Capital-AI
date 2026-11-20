@@ -6,7 +6,6 @@ import {
 } from './contentEngine.ts';
 import {
   buildDraftContentSocialPackage,
-  type ContentSocialChannel,
 } from './contentSocialPackage.ts';
 import {
   GrowthAttributionEventSchema,
