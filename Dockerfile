@@ -111,6 +111,7 @@ COPY supabase/migrations/20261013042915_learning_simulator_private_scenarios.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs scripts/solo-maintainer-flow.test.mjs ./scripts/
+COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs ./scripts/
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
