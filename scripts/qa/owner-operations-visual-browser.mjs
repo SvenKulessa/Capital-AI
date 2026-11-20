@@ -140,8 +140,6 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
   }else if(state.ownerTitle||!state.unauthorizedMessage)
     failures.push(tag+': owner-only content displayed for non-owner');
   if(expected){
-    const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
-    await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
     if(role==='owner'&&width===390&&route==='/profile/dashboard'){
       // Native touch admission exercises the actual owner navigation route.
       // Standalone provider fixture receives layout QA but its touch remains NOT_PROVEN.
@@ -222,6 +220,11 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
         }
       }
     }
+    // Capture the full-page screenshot after native touch QA: Chrome may change
+    // compositor viewport metrics during captureBeyondViewport, making an
+    // immediately subsequent synthetic tap hit a different composited target.
+    const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
+    await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
     if(role==='owner'&&width===320){
       await evaluate("document.documentElement.style.fontSize='200%'");
       await wait(180);
