@@ -120,9 +120,22 @@ test('UTM attribution is deterministic and only targets CAPITAL-AI HTTPS destina
   assert.equal(url.searchParams.get('utm_medium'), 'social');
   assert.equal(url.searchParams.get('utm_campaign'), draft.socialPackage.campaignId);
   assert.equal(url.searchParams.get('utm_content'), draft.contentId);
-  const altered = structuredClone(draft);
-  altered.contentPlan.campaign.canonicalUrl = 'https://not-capital-ai.example/';
-  assert.throws(() => growthDraftUtmUrl(altered), /GROWTH_CANONICAL_ORIGIN_INVALID/);
+  for (const unsafe of [
+    'https://not-capital-ai.example/',
+    'https://capital-ai.online:8443/',
+    'https://viewer:password@capital-ai.online/',
+  ]) {
+    const altered = structuredClone(draft);
+    altered.contentPlan.campaign.canonicalUrl = unsafe;
+    assert.throws(() => growthDraftUtmUrl(altered), /GROWTH_CANONICAL_ORIGIN_INVALID/);
+  }
+  const mismatched = structuredClone(draft);
+  mismatched.socialPackage.canonicalUrl = 'https://capital-ai.online/learning';
+  assert.throws(() => growthDraftUtmUrl(mismatched), /GROWTH_CANONICAL_IDENTITY_MISMATCH/);
+
+  const mismatchedCampaign = structuredClone(draft);
+  mismatchedCampaign.socialPackage.campaignId = 'other-campaign';
+  assert.throws(() => growthDraftUtmUrl(mismatchedCampaign), /GROWTH_CANONICAL_IDENTITY_MISMATCH/);
 });
 
 test('consent, identity and provider negative tests block attribution before correlation', () => {
