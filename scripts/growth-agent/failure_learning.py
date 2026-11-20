@@ -111,7 +111,11 @@ def outcome_valid(fp: FailureFingerprint, reviewed: ReviewedOutcome) -> bool:
 
 
 class RepairKnowledge:
-    """Private local SQLite index of approved outcomes; not an execution engine."""
+    """Private SQLite index; old unproven outcomes are deliberately not promoted.
+
+    Authenticated outcomes live in a separate v2 table. The legacy v1 table, if
+    present, is left untouched and never counted by retrieval or ranking.
+    """
 
     def __init__(self, path: Path, *, verifier=None):
         # Default-deny: no synthetic ReviewedOutcome may authenticate itself.
@@ -135,7 +139,7 @@ class RepairKnowledge:
             os.close(fd)
         self.path = path
         with self._connect() as db:
-            db.execute("""CREATE TABLE IF NOT EXISTS outcomes (
+            db.execute("""CREATE TABLE IF NOT EXISTS authenticated_outcomes (
                 scope TEXT NOT NULL, fingerprint TEXT NOT NULL, playbook TEXT NOT NULL,
                 head_sha TEXT NOT NULL, PRIMARY KEY(scope, fingerprint, head_sha)
             )""")
@@ -149,7 +153,7 @@ class RepairKnowledge:
         key, guidance = PLAYBOOKS[fp.category]
         with self._connect() as db:
             (count,) = db.execute(
-                "SELECT COUNT(*) FROM outcomes WHERE scope=? AND fingerprint=? AND playbook=?",
+                "SELECT COUNT(*) FROM authenticated_outcomes WHERE scope=? AND fingerprint=? AND playbook=?",
                 (scope, fp.digest, key),
             ).fetchone()
         return [{"playbook": key, "summary": guidance, "verified_count": count,
@@ -173,7 +177,7 @@ class RepairKnowledge:
             return False
         with self._connect() as db:
             cursor = db.execute(
-                "INSERT OR IGNORE INTO outcomes(scope,fingerprint,playbook,head_sha) VALUES(?,?,?,?)",
+                "INSERT OR IGNORE INTO authenticated_outcomes(scope,fingerprint,playbook,head_sha) VALUES(?,?,?,?)",
                 (scope, fp.digest, playbook, reviewed.head_sha),
             )
         return cursor.rowcount == 1
