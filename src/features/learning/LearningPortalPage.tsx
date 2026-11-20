@@ -28,7 +28,6 @@ import { dailyLearningQuestions } from './learningPolicy';
 import { ChartLearningAtlas } from './ChartLearningAtlas';
 import { FinancialLearningSimulator } from './FinancialLearningSimulator';
 import { LearningSimulatorUniverseStage } from './LearningSimulatorUniverseStage';
-import './learningSimulatorUniverse.css';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   Star,
