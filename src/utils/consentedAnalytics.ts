@@ -129,6 +129,27 @@ export function trackReceivedLearningInquiry(receipt: string) {
     lead_type: 'learning_course_inquiry', page_location: 'https://capital-ai.online/learning', page_referrer: '' });
 }
 
+/**
+ * One privacy-minimal GA4 lead event per SMTP-accepted B2B inquiry and document.
+ * The receipt is used only for in-memory deduplication; it never enters analytics.
+ * Consent and the public canonical origin are mandatory; the form itself stays usable
+ * with analytics disabled. This does not assert email delivery or booked revenue.
+ */
+export function trackReceivedGovernanceSprintInquiry(receipt: string) {
+  if (typeof window === 'undefined' || !active || !permitted() ||
+      window.location.origin !== 'https://capital-ai.online' ||
+      window.location.pathname !== '/governance-evidence-sprint' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(receipt) ||
+      leads.has(receipt)) return;
+  leads.add(receipt);
+  (window as TagWindow).gtag?.('event', 'generate_lead', {
+    send_to: EXPECTED_ID,
+    lead_type: 'governance_evidence_sprint_inquiry',
+    page_location: 'https://capital-ai.online/governance-evidence-sprint',
+    page_referrer: '',
+  });
+}
+
 const purchases = new Set<string>();
 export function trackVerifiedLearningPurchase(purchase: { transactionId?: unknown; value?: unknown; currency?: unknown }) {
   if (!active || !permitted() || !cleanPath(window.location.pathname)) return;
