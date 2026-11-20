@@ -113,7 +113,7 @@ test('failed or non-SHA-bound provider evidence stays NOT_PROVEN',async()=>{
   assert.equal(failure.inventoryComplete,false);
   assert.equal(failure.verifiedCount,0);
   const pr=makePr();
-  const bad=await collect(provider([pr],{'/commits/'+pr.head.sha+'/check-runs?per_page=100':makeChecks(pr,{'Docker Security Gate':'failure'})}));
+  const bad=await collect(provider([pr],{['/commits/'+pr.head.sha+'/check-runs?per_page=100']:makeChecks(pr,{'Docker Security Gate':'failure'})}));
   assert.equal(bad.verifiedCount,0);
   assert.equal(bad.status,'NOT_PROVEN_PARTIAL');
   assert.deepEqual(bad.unverifiedCandidates,[{prNumber:901,status:'NOT_PROVEN'}]);
