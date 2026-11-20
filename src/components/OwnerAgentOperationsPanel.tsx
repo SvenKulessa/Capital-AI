@@ -6,8 +6,11 @@ import {
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
 import { OwnerOperationsVisualOverview } from './OwnerOperationsVisualOverview';
+import { readGa4ConfigResult, type Ga4ConfigResult } from './ownerGa4ConfigModel';
+import { OwnerGa4ConfigView } from './OwnerGa4ConfigView';
 
 const ENDPOINT = '/api/profile/evidence-dashboard-readback';
+const GA4_CONFIG_ENDPOINT = '/api/profile/google-analytics-config-diagnostic';
 const VIEWS: { id: OperationsView; label: string }[] = [
   { id: 'overview', label: 'Übersicht' }, { id: 'github', label: 'GitHub & CI' },
   { id: 'render', label: 'Deployments' }, { id: 'analytics', label: 'Analytics' },
@@ -53,6 +56,8 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   const [agent, setAgent] = useState<AgentRole | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const [ga4Config, setGa4Config] = useState<Ga4ConfigResult | null>(null);
+  const [ga4ConfigFailure, setGa4ConfigFailure] = useState(false);
   const [busy, setBusy] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -64,6 +69,8 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
     setError('');
     // Do not retain owner data across session switches or failed revalidation.
     setSnapshot(null);
+    setGa4Config(null);
+    setGa4ConfigFailure(false);
     try {
       await verifySession(userId, controller.signal);
       const response = await fetch(ENDPOINT, {
@@ -74,6 +81,19 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
       const body = readDashboardSnapshot(await response.json());
       if (!body) throw Error('INVALID_READBACK');
       if (!controller.signal.aborted) setSnapshot(body);
+      // A missing or failed diagnostic never invalidates independently verified dashboard evidence.
+      try {
+        const configResponse = await fetch(GA4_CONFIG_ENDPOINT, {
+          method: 'GET', credentials: 'same-origin', cache: 'no-store',
+          signal: controller.signal, headers: { Accept: 'application/json' },
+        });
+        if (!configResponse.ok) throw Error('CONFIG_DIAGNOSTIC_UNAVAILABLE');
+        const result = readGa4ConfigResult(await configResponse.json());
+        if (!result) throw Error('CONFIG_DIAGNOSTIC_INVALID');
+        if (!controller.signal.aborted) setGa4Config(result);
+      } catch {
+        if (!controller.signal.aborted) setGa4ConfigFailure(true);
+      }
     } catch {
       if (!controller.signal.aborted) setError('Owner-Readback nicht verfügbar. Keine Ersatzdaten oder gespeicherten Kennzahlen angezeigt.');
     } finally {
@@ -256,6 +276,7 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
           </li>)}</ul> : <p className="text-sm text-amber-200">Keine verifizierten Deployments.</p>}
       </Section></div>}
       {view === 'analytics' && <div role="tabpanel" className="space-y-3">
+        <OwnerGa4ConfigView config={ga4Config} unavailable={ga4ConfigFailure}/>
         <Section title="GA4 / 7-Tage-Eventmessung">
           <Source status={ga4?.status}/>
           <p className="my-2 text-xs text-slate-400">{ga4?.period || 'NOT_PROVEN'} · {ga4?.property || 'Keine bestätigte Property'}</p>
