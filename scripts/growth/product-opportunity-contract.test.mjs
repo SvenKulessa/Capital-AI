@@ -42,6 +42,10 @@ const sample = () => ({
     developerHourlyEur: 25, horizonMonths: 12, basis: 'ASSUMPTION',
   }],
   scores: { market: 3, product: 4, economics: 2, growth: 3, trust: 3 },
+  marketSizing: {
+    method: 'UNKNOWN', addressableCustomers: null, penetrationPercent: null,
+    period: '12_MONTHS', basis: 'ASSUMPTION', evidenceRef: null,
+  },
   rights: { status: 'NOT_PROVEN', evidenceRef: null },
   estimatedDeliveryHours: 120,
 });
@@ -62,6 +66,8 @@ test('canonical valid opportunity remains a hypothesis with independent QUALITY 
   assert.equal(value.quality.verdict, 'NOT_PROVEN');
   assert.deepEqual(value.supportedDraftClaims, ['manual-scan']);
   assert.equal(value.permissions.publication, false);
+  assert.equal(value.marketSizing.estimatedReachableCustomers, null);
+  assert.ok(value.evidenceGaps.includes('MARKET_SIZING_METHOD_MISSING'));
   assert.ok(value.evidenceGaps.includes('CUSTOMER_DEMAND_NOT_PROVEN'));
 });
 
@@ -76,6 +82,20 @@ test('unit economics include fixed, variable, CAC and development cost', () => {
   assert.equal(result.roiPercent, 4.31);
   assert.equal(result.breakEvenPaidUsers, 239);
   assert.equal(result.evidenceStatus, 'HYPOTHESIS_NOT_VERIFIED');
+});
+
+test('bottom-up market sizing is always a hypothesis, not verified TAM', () => {
+  const p = sample();
+  p.marketSizing = {
+    method: 'BOTTOM_UP', addressableCustomers: 10_000, penetrationPercent: 2.5,
+    period: '12_MONTHS', basis: 'ASSUMPTION', evidenceRef: 'market-research-pending',
+  };
+  const result = evaluateProductOpportunity(p);
+  assert.equal(result.marketSizing.estimatedReachableCustomers, 250);
+  assert.equal(result.marketSizing.evidenceStatus, 'HYPOTHESIS_NOT_VERIFIED');
+  const bad = sample();
+  bad.marketSizing.method = 'TOP_DOWN';
+  assert.throws(() => validateProductOpportunity(bad), /MARKET_ADDRESSABLE_CUSTOMERS_NUMBER/);
 });
 
 test('zero contribution returns no numerical break-even or fake infinite ROI', () => {
