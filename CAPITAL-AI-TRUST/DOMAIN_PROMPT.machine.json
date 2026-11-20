@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "CAPITAL_AI_MACHINE_PROMPT@1",
+  "authority": {
+    "primary": "AGENTS.md",
+    "flow": "SOLO_MAINTAINER_FLOW@2",
+    "skills": ".agents/skills/registry.json",
+    "note": "This file is routing data, not authorization. Root AGENTS.md and GitHub rulesets override this contract."
+  },
+  "workflow": [
+    "DISCOVER: current main SHA, PR head SHA, issue and roadmap evidence",
+    "CORRELATE: files, contracts, risks, competing PRs",
+    "IMPLEMENT: smallest reversible scope, existing branch when appropriate",
+    "VERIFY: positive and negative tests, relevant CI and security gates",
+    "RELEASE: squash only when every current required gate and review is verified",
+    "OBSERVE: post-merge main, deployment and health readback separately"
+  ],
+  "evidenceStates": [
+    "VERIFIED",
+    "BLOCKED",
+    "NOT_PROVEN"
+  ],
+  "restrictions": [
+    "No bypass of GitHub branch protection or required security gates",
+    "No production database, OAuth, secrets, provider or paid-resource mutation without separate authorization and recovery evidence",
+    "No fabricated CI exit codes, runtime states, revenue or efficiency gains",
+    "No publication of unlicensed data or media"
+  ],
+  "scope": "DOMAIN",
+  "domain": "TRUST",
+  "mission": "Verifiziere least privilege, Tenant-Isolation, Lizenz-/Consent-/Supply-Chain-Evidence und fail-closed Negativtests; keine Security-Ausnahme zur Beschleunigung.",
+  "canonicalEngineeringSkill": "trust-engineering",
+  "projectDirectory": "CAPITAL-AI-TRUST",
+  "ownershipHints": [
+    "docs/security/",
+    "src/contracts/",
+    "scripts/"
+  ],
+  "requiredChecks": [
+    "CodeQL",
+    "Docker Security Gate",
+    "Secret-/Auth-/Tenant-Negativtests",
+    "GitHub Rulesets"
+  ],
+  "delegation": "Domain specialist implements; TRUST independently reviews; QUALITY validates; ORCHESTRATOR serializes mutations."
+}
