@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import importlib.util
 import os
+import sqlite3
 from pathlib import Path
 import sys
 import tempfile
@@ -48,6 +49,7 @@ class FakeGithub:
         ]
         self.total_count = None
         self.raise_error = False
+        self.drift_after_checks = False
 
     def github(self, path, *, method="GET"):
         assert method == "GET"
@@ -59,6 +61,8 @@ class FakeGithub:
         if path == "/branches/main":
             return {"commit": {"sha": self.main}}
         if path == f"/commits/{HEAD}/check-runs?per_page=100":
+            if self.drift_after_checks:
+                self.main = "c" * 40
             return {"total_count": len(self.checks) if self.total_count is None else self.total_count,
                     "check_runs": self.checks}
         raise ValueError("unapproved query")
@@ -112,9 +116,24 @@ class AuthenticatedLearningTests(unittest.TestCase):
         self.assertFalse(self.learn())
         self.assertEqual(self.store.retrieve(scope=self.scope, fp=self.fp)[0]["verified_count"], 1)
         self.assertEqual(self.store.path.stat().st_mode & 0o777, 0o600)
-        self.assertEqual(self.github.calls.count("/pulls/42"), 2)
+        self.assertEqual(self.github.calls.count("/pulls/42"), 4)
         self.assertEqual(fl.RepairKnowledge(self.store.path).retrieve(
             scope=self.scope, fp=self.fp)[0]["verified_count"], 1)
+
+    def test_legacy_unverified_rows_never_count_as_authenticated(self):
+        with sqlite3.connect(self.store.path) as db:
+            db.execute("""CREATE TABLE IF NOT EXISTS outcomes(
+                scope TEXT, fingerprint TEXT, playbook TEXT, head_sha TEXT)""")
+            db.execute("INSERT INTO outcomes VALUES (?, ?, ?, ?)",
+                       (self.scope, self.fp.digest, "inspect_ci_transport", HEAD))
+        self.assertEqual(self.store.retrieve(scope=self.scope, fp=self.fp)[0]["verified_count"], 0)
+        self.assertTrue(self.learn())
+        self.assertEqual(self.store.retrieve(scope=self.scope, fp=self.fp)[0]["verified_count"], 1)
+
+    def test_github_head_main_race_after_check_readback_denied(self):
+        self.github.drift_after_checks = True
+        self.assertFalse(self.learn())
+        self.assertEqual(self.store.retrieve(scope=self.scope, fp=self.fp)[0]["verified_count"], 0)
 
     def test_unsigned_boolean_claims_and_fake_signatures_rejected(self):
         self.assertFalse(self.store.learn(scope=self.scope, fp=self.fp,
