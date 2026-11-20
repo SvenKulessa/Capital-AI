@@ -202,6 +202,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
               document.addEventListener(type,event=>{
                 if(window.__qaTouchEvents.length<12)window.__qaTouchEvents.push({
                   type,role:event.target?.closest?.('[role="tab"]')?.getAttribute('role')||'other',
+                  trusted:event.isTrusted===true,
                   targetTag:event.target?.tagName||'unknown',
                   targetClass:typeof event.target?.className==='string'?event.target.className.slice(0,100):null,
                   targetId:typeof event.target?.id==='string'?event.target.id.slice(0,80):null,
@@ -232,7 +233,11 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
             if(selected)break;
             await wait(150);
           }
-          if(!selected){
+          const verifiedNativeTarget=await evaluate(`(() => (
+            (window.__qaTouchEvents||[]).some(e=>e.type==='touchstart' &&
+              e.role==='tab' && e.trusted===true)
+          ))()`);
+          if(!selected||!verifiedNativeTarget){
             const events=await evaluate("window.__qaTouchEvents||[]");
             const metrics=await evaluate(`(() => ({innerWidth,innerHeight,scrollX,scrollY,
               offsetX:visualViewport?.offsetLeft??null,offsetY:visualViewport?.offsetTop??null,
@@ -244,7 +249,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
               pageY:view.pageY,scale:view.scale,clientWidth:view.clientWidth,clientHeight:view.clientHeight},
               layout:{pageX:layout.pageX,pageY:layout.pageY,clientWidth:layout.clientWidth,
                 clientHeight:layout.clientHeight}};
-            failures.push(tag+': native touch did not activate Evidence tab · '+JSON.stringify({events,target:touch,metrics,compositor}));
+            failures.push(tag+': native touch did not activate Evidence tab · '+JSON.stringify({selected,verifiedNativeTarget,events,target:touch,metrics,compositor}));
           }
           await send('Emulation.setTouchEmulationEnabled',{enabled:false});
         }
