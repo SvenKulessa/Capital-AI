@@ -143,6 +143,9 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
     await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
     if(role==='owner'&&width===390){
+      // Enable touch BEFORE measuring coordinates. Enabling it after hit-testing
+      // can invalidate mobile viewport coordinates on standalone Owner route.
+      await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
       // Scroll completion and hit-testing are required before a native tap:
       // querying the rectangle immediately after scrollIntoView races smooth scrolling.
       const found=await evaluate(`(() => {
@@ -178,7 +181,6 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
             }
             return true;
           })()`);
-          await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
           // CDP synthesizeTapGesture performs a real touch tap, never DOM .click().
           await send('Input.synthesizeTapGesture',{x:touch.x,y:touch.y,duration:110,tapCount:1});
           let selected=false;
