@@ -177,6 +177,8 @@
 !scripts/growth/
 !scripts/growth/screener-learning-loop.test.mjs
 !scripts/growth/learning-content-draft.mjs
+!scripts/growth/growth-intelligence-drafts.mjs
+!scripts/growth/growth-intelligence-drafts.test.mjs
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs
@@ -350,6 +352,8 @@
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
 !CAPITAL-AI-GROWTH/badge.svg
+!CAPITAL-AI-GROWTH/growth-intelligence/
+!CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json
 !CAPITAL-AI-PLATFORM/
 !CAPITAL-AI-PLATFORM/badge.svg
 
