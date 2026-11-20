@@ -1,6 +1,7 @@
 // Isolated PostgreSQL 17.11 only; no Supabase/project DB, providers or paid calls.
 // Uses the pinned CI PostgreSQL service and its bundled pg_dump/pg_restore tools.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 
@@ -33,7 +34,8 @@ const quoted=x=>"'"+x.replaceAll("'","''")+"'";
 function call({tenant=ALICE,id=SID(1),key='snapshot-key-000001',req=HASH,
   source=HASH,run=RUN(1),inference=70,tools=30,flags=''}={}) {
   const lines=JSON.stringify([{
-    runId:run,status:'SUCCEEDED',inferenceMinor:inference,toolsMinor:tools,evidenceHash:HASH,
+    runId:run,status:'SUCCEEDED',inferenceMinor:inference,toolsMinor:tools,
+    evidenceHash:createHash('sha256').update('synthetic-bill:'+run).digest('hex'),
   }]);
   return 'select capital_ai_ue.record_snapshot('+
     quoted(id)+'::uuid,'+quoted(tenant)+'::uuid,'+quoted(key)+','+
