@@ -77,6 +77,15 @@ jobs:
           test "$code" -ne 0
           grep -q 'worker disabled by default' <<< "$output"
           echo "DEFAULT_DENY_PASS"
+          # Scope #874: exercise the actual pinned LangGraph StateGraph offline,
+          # without granting additional rights or enabling the candidate worker.
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_product_opportunity_graph.py -v
+          echo "OPPORTUNITY_LANGGRAPH_OFFLINE_TESTED"
       - name: Scan entire candidate for vulnerabilities and secrets
         shell: bash
         run: |
