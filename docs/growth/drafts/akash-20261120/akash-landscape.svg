@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" font-family="Plus Jakarta Sans" role="img" aria-labelledby="title description">
+    <title id="title">Künftige GPU-Rechenstunden</title><desc id="description">Akash Compute Forwards. Ein Entwurf für künftige GPU-Rechenstunden auf Solana ist veröffentlicht. Ein Pilot ist vorgesehen und an offene Voraussetzungen gebunden. Rechenlieferungen sind geplant. Allgemeine Verfügbarkeit ist nicht nachgewiesen.</desc>
+    <metadata>CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1; AI_ASSISTED; LicenseRef-CapitalAI-Owned; graphic license only; publicationAllowed=false</metadata>
+    <defs><linearGradient id="background" x2="1" y2="1"><stop stop-color="#101D37"/><stop offset="1" stop-color="#050B18"/></linearGradient><linearGradient id="panel" x2="1" y2="1"><stop stop-color="#1B2C48"/><stop offset="1" stop-color="#0C1426"/></linearGradient><linearGradient id="spectrum" gradientUnits="userSpaceOnUse" x1="64" x2="1376" y1="105" y2="105"><stop offset="0" stop-color="#67E8F9"/><stop offset="0.16666666666666666" stop-color="#B794F4"/><stop offset="0.3333333333333333" stop-color="#F9BF21"/><stop offset="0.5" stop-color="#F9A8D4"/><stop offset="0.6666666666666666" stop-color="#F87171"/><stop offset="0.8333333333333334" stop-color="#60A5FA"/><stop offset="1" stop-color="#4ADE80"/></linearGradient></defs>
+    <rect width="1440" height="960" rx="32" fill="url(#background)"/>
+    <circle cx="1355" cy="130" r="235" fill="none" stroke="#B794F4" stroke-opacity=".18" stroke-width="2"/>
+    <circle cx="1355" cy="130" r="180" fill="none" stroke="#67E8F9" stroke-opacity=".16"/>
+    <path d="M64 105H1376" stroke="url(#spectrum)" stroke-width="4"/>
+    <text x="64" y="73" font-size="22.00" fill="#BFCBDD" letter-spacing="3">CAPITAL-AI · CONTENT ENGINE</text>
+    <text x="64" y="179" font-size="24.00" fill="#67E8F9" >AKASH COMPUTE FORWARDS</text>
+    <text x="64" y="248" font-size="59.00" fill="#F5F8FF" >Künftige GPU-Rechenstunden</text>
+    <text x="64" y="303" font-size="30.00" fill="#BECDE0" >Akash stellt einen Marktentwurf auf Solana vor.</text>
+    <g transform="translate(64,370)">
+      <rect width="424" height="340" rx="28" fill="url(#panel)" stroke="#344860"/>
+      <path d="M30 1H394" stroke="#67E8F9" stroke-width="3"/>
+      <circle cx="38" cy="49" r="7" fill="#67E8F9"/>
+      <text x="62" y="58" font-size="26.00" fill="#67E8F9" >Entwurf</text>
+      <text x="30" y="138" font-size="29.00" fill="#F5F8FF" >Laut Solana</text><text x="30" y="181" font-size="29.00" fill="#F5F8FF" >veröffentlicht</text>
+    </g><g transform="translate(508,370)">
+      <rect width="424" height="340" rx="28" fill="url(#panel)" stroke="#344860"/>
+      <path d="M30 1H394" stroke="#F9BF21" stroke-width="3"/>
+      <circle cx="38" cy="49" r="7" fill="#F9BF21"/>
+      <text x="62" y="58" font-size="26.00" fill="#F9BF21" >Pilot</text>
+      <text x="30" y="138" font-size="29.00" fill="#F5F8FF" >Vorgesehen,</text><text x="30" y="181" font-size="29.00" fill="#F5F8FF" >Voraussetzungen offen</text>
+    </g><g transform="translate(952,370)">
+      <rect width="424" height="340" rx="28" fill="url(#panel)" stroke="#344860"/>
+      <path d="M30 1H394" stroke="#B794F4" stroke-width="3"/>
+      <circle cx="38" cy="49" r="7" fill="#B794F4"/>
+      <text x="62" y="58" font-size="26.00" fill="#B794F4" >Rechenlieferung</text>
+      <text x="30" y="138" font-size="29.00" fill="#F5F8FF" >Geplant</text><text x="30" y="181" font-size="29.00" fill="#F5F8FF" >Verfügbarkeit offen</text>
+    </g>
+    <path d="M64 750H1376" stroke="#344860"/>
+    <text x="64" y="801" font-size="26.00" fill="#D9E3F1" >Pilotstart abhängig von offenen Prüfungen und Voraussetzungen.</text>
+    <text x="64" y="847" font-size="21.00" fill="#BFCBDD" >Quelle: Solana · 19.11.2026 · Gegenprüfung: Akash</text>
+    <text x="64" y="900" font-size="17.00" fill="#9EADC3" >Eigene Gestaltung · AI-assisted · CAPITAL-AI · 2026</text>
+    <text x="1376" y="900" font-size="17.00" fill="#F9BF21" text-anchor="end">ENTWURF</text>
+  </svg>
