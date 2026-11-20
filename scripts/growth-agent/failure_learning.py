@@ -113,7 +113,11 @@ def outcome_valid(fp: FailureFingerprint, reviewed: ReviewedOutcome) -> bool:
 class RepairKnowledge:
     """Private local SQLite index of approved outcomes; not an execution engine."""
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, *, verifier=None):
+        # Default-deny: no synthetic ReviewedOutcome may authenticate itself.
+        if verifier is not None and not callable(getattr(verifier, "verify", None)):
+            raise TypeError("trusted verifier required")
+        self._verifier = verifier
         path = Path(path)
         if not path.is_absolute() or path.suffix != ".sqlite3" or path.is_symlink():
             raise ValueError("knowledge path must be an absolute non-symlink sqlite3 file")
@@ -152,14 +156,20 @@ class RepairKnowledge:
                  "status": "EVIDENCE_BACKED_CANDIDATE" if count else "UNVERIFIED_CANDIDATE"}]
 
     def learn(self, *, scope: str, fp: FailureFingerprint, playbook: str,
-              reviewed: ReviewedOutcome) -> bool:
-        """Only the host's independent trusted reviewer can supply this evidence.
+              reviewed: ReviewedOutcome, proof=None) -> bool:
+        """Only authenticated independent reviewer evidence can promote learning.
 
         No raw logs, patches, secret strings, token traces, or PR body are written.
         A success here means local learning, never permission to merge/deploy.
         """
         if (not isinstance(scope, str) or not HEX.fullmatch(scope) or not _fp_ok(fp)
-                or playbook != PLAYBOOKS[fp.category][0] or not outcome_valid(fp, reviewed)):
+                or playbook != PLAYBOOKS[fp.category][0] or not outcome_valid(fp, reviewed)
+                or proof is None or self._verifier is None):
+            return False
+        try:
+            if self._verifier.verify(scope=scope, fp=fp, reviewed=reviewed, proof=proof) is not True:
+                return False
+        except Exception:
             return False
         with self._connect() as db:
             cursor = db.execute(
