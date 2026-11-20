@@ -143,22 +143,36 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
     await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
     if(role==='owner'&&width===390){
-      const touch=await evaluate(`(() => {
-        const element=[...document.querySelectorAll('[role="tab"]')].find(e=>e.textContent.includes('Evidence'));
-        if(!element)return null;
-        element.scrollIntoView({block:'center'});
-        const r=element.getBoundingClientRect();
-        return {x:r.x+r.width/2,y:r.y+r.height/2};
+      // Scroll completion and hit-testing are required before a native tap:
+      // querying the rectangle immediately after scrollIntoView races smooth scrolling.
+      const found=await evaluate(`(() => {
+        const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
+        if(!element)return false;
+        element.scrollIntoView({behavior:'instant',block:'center',inline:'nearest'});
+        return true;
       })()`);
-      if(!touch)failures.push(tag+': Evidence tab inaccessible');
+      if(!found)failures.push(tag+': Evidence tab inaccessible');
       else{
-        await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
-        await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[touch]});
-        await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-        await wait(200);
-        const selected=await evaluate("!![...document.querySelectorAll('[role=tab]')].find(e=>e.textContent.includes('Evidence')&&e.getAttribute('aria-selected')==='true')");
-        if(!selected)failures.push(tag+': native touch did not activate Evidence tab');
-        await send('Emulation.setTouchEmulationEnabled',{enabled:false});
+        await wait(180);
+        const touch=await evaluate(`(() => {
+          const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
+          if(!element)return null;
+          const r=element.getBoundingClientRect();
+          const x=r.left+r.width/2, y=r.top+r.height/2;
+          const hit=document.elementFromPoint(x,y);
+          return {x,y,hit:!!hit && (hit===element || element.contains(hit)),
+            withinViewport:x>=0 && x<innerWidth && y>=0 && y<innerHeight};
+        })()`);
+        if(!touch?.withinViewport||!touch.hit)failures.push(tag+': Evidence tab native touch target obscured or outside viewport');
+        else{
+          await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+          // CDP synthesizeTapGesture performs a real touch tap, never DOM .click().
+          await send('Input.synthesizeTapGesture',{x:touch.x,y:touch.y,duration:110,tapCount:1});
+          await wait(220);
+          const selected=await evaluate("!![...document.querySelectorAll('[role=tab]')].find(e=>e.textContent.trim()==='Evidence'&&e.getAttribute('aria-selected')==='true')");
+          if(!selected)failures.push(tag+': native touch did not activate Evidence tab');
+          await send('Emulation.setTouchEmulationEnabled',{enabled:false});
+        }
       }
     }
     if(role==='owner'&&width===320){
