@@ -7,6 +7,9 @@ on:
       - 'server/unit-economics-readmodel.test.mjs'
       - 'server/unit-economics-reconciliation.mjs'
       - 'server/unit-economics-reconciliation.test.mjs'
+      - 'server/unit-economics-source-adapters.mjs'
+      - 'server/unit-economics-source-adapters.test.mjs'
+      - 'docs/growth/UNIT-ECONOMICS-READ-ADAPTERS-20261120.md'
       - 'docs/growth/UNIT-ECONOMICS-RECONCILIATION-20261120.md'
       - 'docs/growth/UNIT-ECONOMICS-READMODEL-20261120.md'
       - '.github/workflows/unit-economics-readmodel.yml'
@@ -33,4 +36,6 @@ jobs:
           node --check server/unit-economics-readmodel.test.mjs
           node --check server/unit-economics-reconciliation.mjs
           node --check server/unit-economics-reconciliation.test.mjs
-          node --test server/unit-economics-readmodel.test.mjs server/unit-economics-reconciliation.test.mjs
+          node --check server/unit-economics-source-adapters.mjs
+          node --check server/unit-economics-source-adapters.test.mjs
+          node --test server/unit-economics-readmodel.test.mjs server/unit-economics-reconciliation.test.mjs server/unit-economics-source-adapters.test.mjs
