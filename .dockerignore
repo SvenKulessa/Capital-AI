@@ -208,6 +208,8 @@
 !scripts/independent-review-manifest.test.mjs
 !scripts/picomatch-runtime-isolation.test.mjs
 !scripts/domain-skills.test.mjs
+!scripts/ten-pr-evidence-counter.mjs
+!scripts/ten-pr-evidence-counter.test.mjs
 !scripts/solo-maintainer-flow.test.mjs
 !scripts/universe-hero.test.mjs
 !scripts/market-blueprint-demo.test.mjs
