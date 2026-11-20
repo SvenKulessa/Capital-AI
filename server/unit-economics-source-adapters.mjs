@@ -5,6 +5,7 @@
  */
 import { createHash } from 'node:crypto';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
+import { boundedJson } from './http-security.mjs';
 
 const UUID=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 const EVT=/^evt_[A-Za-z0-9]{6,100}$/;
@@ -68,9 +69,7 @@ export function createUnitEconomicsSupabaseReader({origin,serviceKey,fetchImpl=f
         if(serviceKey.startsWith('eyJ'))headers.Authorization='Bearer '+serviceKey;
         const res=await fetchImpl(url,{method:'GET',headers,redirect:'error',signal:AbortSignal.timeout(7000)});
         if(!res?.ok)fail();
-        const body=await res.text();
-        if(Buffer.byteLength(body)>16*1024)fail();
-        const row=one(JSON.parse(body));
+        const row=one(await boundedJson(res,16*1024));
         for(const [k,v] of Object.entries(keys))if(row[k]!==v)fail(); // service role bypasses RLS
         return narrowed(row,permitted);
       } catch {fail()}
@@ -86,9 +85,7 @@ export function createUnitEconomicsStripeReader({secret,fetchImpl=fetch}={}) {
       if(typeof path!=='string'||!/^\/(events|charges|refunds|disputes|balance_transactions)\/[A-Za-z0-9_]{8,120}$|^\/checkout\/sessions\?payment_intent=pi_[A-Za-z0-9]{6,100}&limit=2$|^\/checkout\/sessions\/cs_live_[A-Za-z0-9]{8,240}\/line_items\?limit=2$|^\/invoices\/in_[A-Za-z0-9]{6,100}$/.test(path))fail();
       const res=await fetchImpl('https://api.stripe.com/v1'+path,{method:'GET',headers:{Authorization:'Bearer '+secret,'Stripe-Version':'2026-09-30.endive'},redirect:'error',signal:AbortSignal.timeout(7000)});
       if(!res?.ok)fail();
-      const raw=await res.text();
-      if(Buffer.byteLength(raw)>64*1024)fail();
-      const value=JSON.parse(raw);
+      const value=await boundedJson(res,64*1024);
       if(!obj(value)||value.error)fail();
       return value;
     }catch {fail()}
