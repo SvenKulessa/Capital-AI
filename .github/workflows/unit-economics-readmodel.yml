@@ -75,12 +75,13 @@ jobs:
       PGDATABASE: ue_ledger_ci
       PGUSER: postgres
       PGPASSWORD: synthetic-ci-only
-      PG_LEDGER_CONTAINER_ID: ${{ job.services.postgres.id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Verify isolated PostgreSQL17 atomic ledger, crash recovery and pg_dump restore
+        env:
+          PG_LEDGER_CONTAINER_ID: ${{ job.services.postgres.id }}
         shell: bash
         run: |
           set -euo pipefail
