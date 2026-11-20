@@ -2,6 +2,7 @@
 import quantLearningDemo from './quant-learning-demo.json' with { type: 'json' };
 import researchedVocabulary from './researched-vocabulary.json' with { type: 'json' };
 import { ARCHITECTURE_GOVERNANCE_VOCABULARY } from './architecture-governance-vocabulary.mjs';
+import { SECURITY_RESEARCH_VOCABULARY } from './security-research-vocabulary.mjs';
 
 export const vocabularyMetadata = [
   {
@@ -3550,6 +3551,15 @@ vocabularyMetadata.push(...ARCHITECTURE_GOVERNANCE_VOCABULARY.map(term => ({
   detailedExplanation: term.detailedExplanation,
   formulaOrRule: term.formulaOrRule,
   practicalExample: term.practicalExample,
+  keyTakeaway: term.keyTakeaway,
+})));
+// Security research entries share the public glossary and SEO DefinedTerm projection.
+vocabularyMetadata.push(...SECURITY_RESEARCH_VOCABULARY.map(term => ({
+  id: term.id, path: `/vocabulary/${term.id}`, term: term.term,
+  category: term.categoryLabel, description: term.shortDefinition,
+  thesaurus: term.thesaurus, sources: term.sources, searchTags: term.searchTags,
+  level: term.level, detailedExplanation: term.detailedExplanation,
+  formulaOrRule: term.formulaOrRule, practicalExample: term.practicalExample,
   keyTakeaway: term.keyTakeaway,
 })));
 export const VOCABULARY_CANONICAL_COUNT = vocabularyMetadata.length;
