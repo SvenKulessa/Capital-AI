@@ -116,8 +116,18 @@ async function isolatedRestore(){
     "insert into auth.users values('"+ALICE+"'),('"+BOB+"');");
   await inside('pg_dump','-U','postgres','-d',dbName,'-Fc',
     '-n','capital_ai_ue','-f','/tmp/ue-ledger-verified.dump');
+  // ACLs and EXECUTE grants are part of the recovery contract. Restoring
+  // with --no-privileges would leave service_role unable to use private RPCs.
   await inside('pg_restore','-U','postgres','-d','ue_ledger_restore_ci',
-    '--no-owner','--no-privileges','/tmp/ue-ledger-verified.dump');
+    '--no-owner','/tmp/ue-ledger-verified.dump');
+  assert.equal(await sql("select has_schema_privilege('service_role','capital_ai_ue','USAGE');",
+    'ue_ledger_restore_ci'),'t');
+  assert.equal(await sql("select has_schema_privilege('anon','capital_ai_ue','USAGE');",
+    'ue_ledger_restore_ci'),'f');
+  assert.equal(await sql("select has_function_privilege('authenticated',"+
+    "'capital_ai_ue.read_snapshot(uuid,uuid)','EXECUTE');",'ue_ledger_restore_ci'),'f');
+  assert.equal(await sql("select has_table_privilege('service_role','capital_ai_ue.snapshots','SELECT');",
+    'ue_ledger_restore_ci'),'f');
   assert.equal(await sql('select count(*) from capital_ai_ue.snapshots;','ue_ledger_restore_ci'),sourceTotal);
   assert.equal(await sql('select count(*) from capital_ai_ue.run_allocations;','ue_ledger_restore_ci'),sourceRuns);
   assert.equal(await sql('select count(*) from capital_ai_ue.reversals;','ue_ledger_restore_ci'),sourceReverse);
