@@ -157,13 +157,22 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
       if(!found)failures.push(tag+': Evidence tab inaccessible');
       else{
         const neutral=await evaluate(`(() => {
-          const hit=document.elementFromPoint(2,2);
-          return !!hit && !hit.closest('a,button,input,select,textarea,[role="button"],[role="tab"],[tabindex]');
+          // A fixed-position skip-link or overlay can occupy (2,2); resolve
+          // against the actual hit-tested viewport rather than assuming a corner.
+          const candidates=[[8,450],[382,450],[195,16],[195,884],[8,16],[382,884],
+            [20,300],[370,300],[20,650],[370,650]];
+          for(const [x,y] of candidates){
+            if(x>=innerWidth||y>=innerHeight)continue;
+            const hit=document.elementFromPoint(x,y);
+            if(hit && !hit.closest('a,button,input,select,textarea,[role="button"],[role="tab"],[tabindex]'))
+              return {x,y};
+          }
+          return null;
         })()`);
         if(!neutral)failures.push(tag+': safe compositor synchronization point unavailable');
         else{
           await send('Input.dispatchTouchEvent',{
-            type:'touchStart',touchPoints:[{x:2,y:2,radiusX:1,radiusY:1,force:1}],
+            type:'touchStart',touchPoints:[{x:neutral.x,y:neutral.y,radiusX:1,radiusY:1,force:1}],
           });
           await send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
           await wait(180);
