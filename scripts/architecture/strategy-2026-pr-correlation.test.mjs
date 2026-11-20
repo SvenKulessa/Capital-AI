@@ -48,19 +48,21 @@ test('rejects duplicate numbers, dangerous paths and invalid SHAs',()=>{
   assert.throws(()=>report([{...mk(1,[]),headSha:'x'}]),/SHA/);
 });
 test('empty inventory can be current if verified',()=>assert.equal(report([]).totalOpen,0));
-const sourcePR=(number,head=a)=>({number,title:`PR ${number}`,head:{sha:head},base:{sha:b},draft:false});
+const sourcePR=(number,head=a,base=b)=>({number,title:`PR ${number}`,head:{sha:head},base:{sha:base},draft:false});
 const sourceFile=name=>({filename:name,status:'modified'});
-function fetchMock({drift=false,mainDrift=false,incomplete=false,renamed=false}={}) {
+function fetchMock({drift=false,mainDrift=false,incomplete=false,renamed=false,staleBase=false,baseDrift=false,mixed=false}={}) {
   const requests=[];
   const fetchImpl=async (url,init)=>{
     requests.push({url,init});
     const path=new URL(url).pathname.split('/repos/SvenKulessa/Capital-AI/')[1]+new URL(url).search;
     let data;
     if(path==='git/ref/heads/main') data={object:{sha:mainDrift && requests.filter(x=>x.url.endsWith('git/ref/heads/main')).length>1?c:b,type:'commit'}};
-    else if(path.startsWith('pulls?')) data=path.includes('page=1')?[sourcePR(5)]:[];
+    else if(path.startsWith('pulls?')) data=path.includes('page=1')?(mixed?[sourcePR(5),sourcePR(6,a,c)]:[sourcePR(5,a,staleBase?c:b)]):[];
     else if(path.startsWith('pulls/5/files?')) data=path.includes('page=1')?
       (renamed?[{filename:'server/new.mjs',previous_filename:'server/old.mjs',status:'renamed'}]:[sourceFile('server/foo.mjs')]):[];
-    else if(path==='pulls/5') data={...sourcePR(5,drift?c:a),state:'open',changed_files:incomplete?2:1};
+    else if(path.startsWith('pulls/6/files?')) data=path.includes('page=1')?[sourceFile('server/bar.mjs')]:[];
+    else if(path==='pulls/6') data={...sourcePR(6,a,c),state:'open',changed_files:1};
+    else if(path==='pulls/5') data={...sourcePR(5,drift?c:a,baseDrift?c:staleBase?c:b),state:'open',changed_files:incomplete?2:1};
     else throw Error('Unexpected GET '+path);
     return {ok:true,status:200,json:async()=>data};
   };
@@ -95,4 +97,35 @@ test('captured historical fixture keeps regression semantics, never live semanti
   const r=correlatePullRequests(JSON.parse(raw));
   assert.equal(r.observedCount,12);assert.equal(r.overlapEdges.length,6);
   assert.equal(r.current,false);assert.equal(r.totalOpen,null);
+});
+// A base SHA difference is per-PR evidence and must not poison the complete inventory.
+test('mixed current and older PR bases remain fully inventoried',async()=>{
+  const x=fetchMock({mixed:true});
+  const {snapshot,report:r}=await collectLiveInventory({fetchImpl:x.fetchImpl,now:()=>Date.parse('2026-11-20T00:00:00Z')});
+  assert.equal(snapshot.inventoryComplete,true);
+  assert.equal(r.totalOpen,2);
+  assert.equal(r.pullRequests.find(p=>p.number===5).baseStatus,'CURRENT_MAIN');
+  const older=r.pullRequests.find(p=>p.number===6);
+  assert.equal(older.baseStatus,'BEHIND_MAIN');
+  assert.equal(older.baseSha,c);
+  assert.equal(older.mergeEligibility,'NOT_PROVEN');
+  assert.equal(r.current,true);
+});
+test('one older PR base is a finding, not a fatal inventory error',async()=>{
+  const x=fetchMock({staleBase:true});
+  const {report:r}=await collectLiveInventory({fetchImpl:x.fetchImpl});
+  assert.equal(r.totalOpen,1);
+  assert.equal(r.pullRequests[0].baseStatus,'BEHIND_MAIN');
+});
+test('base drift during collection remains fail-closed',async()=>{
+  const x=fetchMock({baseDrift:true});
+  await assert.rejects(collectLiveInventory({fetchImpl:x.fetchImpl}),/changed during inventory/);
+});
+test('forged per-PR base status remains fail-closed',()=>{
+  assert.throws(()=>report([{...mk(1,['server/a.mjs']),baseSha:c,baseStatus:'CURRENT_MAIN'}]),/base status mismatch/);
+});
+test('historical observations cannot assert a live base status',()=>{
+  const r=correlatePullRequests(historical([mk(1,['server/a.mjs'])]));
+  assert.equal(r.pullRequests[0].baseStatus,'NOT_APPLICABLE');
+  assert.equal(r.current,false);
 });
