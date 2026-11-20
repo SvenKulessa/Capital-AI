@@ -92,7 +92,7 @@ export function validateProductOpportunity(input) {
   const data = record(input, [
     'contractVersion', 'productId', 'sourceSha', 'campaignId', 'canonicalUrl',
     'problem', 'valueProposition', 'audience', 'capabilities', 'competitors',
-    'scenarios', 'scores', 'rights', 'estimatedDeliveryHours',
+    'scenarios', 'scores', 'rights', 'estimatedDeliveryHours', 'marketSizing',
   ], 'INPUT');
   if (data.contractVersion !== PRODUCT_OPPORTUNITY_VERSION) fail('VERSION');
   if (typeof data.productId !== 'string' || !/^[a-z][a-z0-9-]{2,80}$/u.test(data.productId)) fail('PRODUCT_ID');
@@ -117,6 +117,24 @@ export function validateProductOpportunity(input) {
     safeText(c.name, 'COMPETITOR_NAME', 100);
     claimText(c.differentiator, 'COMPETITOR_DIFFERENTIATOR');
     source(c.evidence, data.sourceSha, 'COMPETITOR');
+  }
+  const sizing = record(data.marketSizing,
+    ['method', 'addressableCustomers', 'penetrationPercent', 'period', 'basis', 'evidenceRef'],
+    'MARKET_SIZING');
+  if (!['UNKNOWN', 'BOTTOM_UP', 'TOP_DOWN'].includes(sizing.method) ||
+      sizing.period !== '12_MONTHS' || sizing.basis !== 'ASSUMPTION') {
+    fail('MARKET_SIZING_ASSUMPTION_REQUIRED');
+  }
+  if (sizing.method === 'UNKNOWN') {
+    if (sizing.addressableCustomers !== null ||
+        sizing.penetrationPercent !== null || sizing.evidenceRef !== null) {
+      fail('MARKET_SIZING_UNKNOWN_MUST_BE_EMPTY');
+    }
+  } else {
+    integer(sizing.addressableCustomers, 'MARKET_ADDRESSABLE_CUSTOMERS', 100_000_000);
+    if (sizing.addressableCustomers < 1) fail('MARKET_ADDRESSABLE_CUSTOMERS_ZERO');
+    finite(sizing.penetrationPercent, 'MARKET_PENETRATION', 100);
+    safeText(sizing.evidenceRef, 'MARKET_SIZING_EVIDENCE_REF', 160);
   }
   list(data.scenarios, 'SCENARIOS', PRODUCT_OPPORTUNITY_LIMITS.scenarios);
   for (const s of data.scenarios) {
@@ -188,6 +206,7 @@ export function evaluateProductOpportunity(input) {
     ...p.capabilities.filter(c => c.evidence.status !== 'SOURCE_RECORDED').map(c => 'CAPABILITY:' + c.id),
     ...p.competitors.filter(c => c.evidence.status !== 'SOURCE_RECORDED').map(c => 'COMPETITOR:' + c.name),
     ...(p.rights.status !== 'SOURCE_RECORDED' ? ['RIGHTS'] : []),
+    ...(p.marketSizing.method === 'UNKNOWN' ? ['MARKET_SIZING_METHOD_MISSING'] : []),
     'INDEPENDENT_EVIDENCE_REVIEW_REQUIRED',
     'CUSTOMER_DEMAND_NOT_PROVEN',
   ];
@@ -201,6 +220,13 @@ export function evaluateProductOpportunity(input) {
     score, decision, confidence: 'HYPOTHESIS', evidenceGaps,
     scenarioResults: scenarios, competitorCount: p.competitors.length,
     estimatedDeliveryHours: p.estimatedDeliveryHours,
+    marketSizing: {
+      method: p.marketSizing.method,
+      period: p.marketSizing.period,
+      evidenceStatus: 'HYPOTHESIS_NOT_VERIFIED',
+      estimatedReachableCustomers: p.marketSizing.method === 'UNKNOWN'
+        ? null : round2(p.marketSizing.addressableCustomers * p.marketSizing.penetrationPercent / 100),
+    },
     supportedDraftClaims: boundCapabilities.map(c => c.id),
     agents: ['MARKET', 'PRODUCT', 'FINANCE', 'GROWTH', 'TRUST', 'QUALITY'],
     quality: { review: 'INDEPENDENT_REVIEW_REQUIRED', verdict: 'NOT_PROVEN' },
