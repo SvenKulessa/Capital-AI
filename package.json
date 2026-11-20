@@ -114,9 +114,9 @@
     "test:growth-intelligence": "node --import tsx --test src/contracts/__tests__/growthIntelligenceContent.test.ts scripts/growth/growth-intelligence-drafts.test.mjs"
   },
   "dependencies": {
-    "@google/genai": "^3.3.0",
-    "@nats-io/jetstream": "3.4.0",
-    "@nats-io/transport-node": "3.4.0",
+    "@google/genai": "^3.4.0",
+    "@nats-io/jetstream": "3.5.0",
+    "@nats-io/transport-node": "3.5.0",
     "d3-scale": "4.0.3",
     "dotenv": "^18.0.10",
     "express": "^5.3.0",
