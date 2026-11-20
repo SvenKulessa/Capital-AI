@@ -47,13 +47,25 @@ export async function collectGitHubSourceEvidence({snapshot,token,fetchImpl=fetc
   requireValid(typeof snapshot.observedAt==='string' && Number.isFinite(Date.parse(snapshot.observedAt)) && Number.isFinite(maxAgeMs) && maxAgeMs>=0 && typeof now==='function','invalid snapshot freshness');
   const age=now()-Date.parse(snapshot.observedAt);
   requireValid(Number.isFinite(age) && age>=-30_000 && age<=maxAgeMs, 'stale or future source snapshot');
-  const selections=[];
+  // A fixed per-PR first pass avoids starving lower-ranked PRs when the
+  // bounded source budget is consumed by one large PR. Selection remains
+  // deterministic and the report explicitly names unexamined PRs.
+  const groups=[];
   for(const pr of snapshot.pullRequests){
     requireValid(Number.isSafeInteger(pr.number)&&SHA.test(pr.headSha)&&Array.isArray(pr.changedFiles),'invalid PR identity');
-    for(const f of pr.changedFiles.filter(codeFile).sort())if(safePath(f))selections.push({pr,path:f});
+    groups.push({pr,paths:pr.changedFiles.filter(codeFile).sort().filter(safePath)});
   }
+  const selections=[];
+  const maxDepth=Math.max(0,...groups.map(g=>g.paths.length));
+  for(let depth=0;depth<maxDepth;depth++)for(const group of groups){
+    if(depth<group.paths.length)selections.push({pr:group.pr,path:group.paths[depth]});
+  }
+  const selected=selections.slice(0,maxFiles);
+  const eligiblePullRequests=groups.filter(g=>g.paths.length).map(g=>g.pr.number).sort((a,b)=>a-b);
+  const representedPullRequests=[...new Set(selected.map(x=>x.pr.number))].sort((a,b)=>a-b);
+  const omittedPullRequests=eligiblePullRequests.filter(n=>!representedPullRequests.includes(n));
   const facts=[];
-  for(const {pr,path:filename} of selections.slice(0,maxFiles)){
+  for(const {pr,path:filename} of selected){
     const safeName=filename.split('/').map(encodeURIComponent).join('/');
     const url=`https://api.github.com/repos/${snapshot.repo}/contents/${safeName}?ref=${pr.headSha}`;
     const headers={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
@@ -66,7 +78,8 @@ export async function collectGitHubSourceEvidence({snapshot,token,fetchImpl=fetc
   }
   requireValid(now()-Date.parse(snapshot.observedAt)<=maxAgeMs,'source evidence expired during collection');
   return {schemaVersion:'CAPITAL_AI_SOURCE_EVIDENCE@1',source:'GITHUB_CONTENTS_GET_BY_HEAD_SHA',observedAt:snapshot.observedAt,
-    examinedFiles:Math.min(selections.length,maxFiles),candidateFiles:selections.length,coverage:selections.length<=maxFiles?'SELECTED_CHANGED_SOURCE_FILES':'PARTIAL_LIMIT',facts};
+    examinedFiles:selected.length,candidateFiles:selections.length,coverage:selections.length<=maxFiles?'SELECTED_CHANGED_SOURCE_FILES':'PARTIAL_LIMIT',
+    selectionStrategy:'ROUND_ROBIN_BY_PR',eligiblePullRequests,representedPullRequests,omittedPullRequests,facts};
 }
 
 export function buildSourceBoundReviewGraph(snapshot,evidence,{maxPaths=500}={}) {
