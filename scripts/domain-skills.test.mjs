@@ -216,3 +216,73 @@ test('machine-readable prompts are actually referenced by existing chat agents',
     assert.match(agent, /NON_AUTHORIZING_CONTEXT/);
   }
 });
+
+test('canonical skill-registry app preserves source-bound ten-PR efficiency milestone without a second prompt authority', () => {
+  const app = JSON.parse(read(registry.promptContracts.application));
+  const milestone = app.tenPrEfficiencyMilestone;
+  assert.equal(milestone.schema, 'CAPITAL_AI_TEN_PR_EFFICIENCY_MILESTONE@1');
+  assert.equal(milestone.sourcePr, 852);
+  assert.equal(milestone.requiredVerifiedMerges, 10);
+  assert.ok(milestone.appliesAfter.startsWith('2026-11-20 owner authorization'));
+  assert.deepEqual(milestone.excludedPullRequests, [850]);
+  assert.equal(milestone.missingData, 'NOT_PROVEN');
+  assert.equal(milestone.groupBy, 'domain');
+  assert.equal(milestone.permissionExpansion, false);
+  assert.equal(milestone.createsScheduler, false);
+  assert.equal(milestone.createsRequiredChecks, false);
+  assert.equal(milestone.noInventedEfficiencyClaims, true);
+  assert.deepEqual(app.domainPrompts, registry.promptContracts.domains);
+  assert.equal(app.skillRegistry, '.agents/skills/registry.json');
+  assert.equal(app.authority.type, 'NON_AUTHORIZING_CONTEXT');
+  assert.ok(milestone.sources.some(s => s.includes('main merge commit SHA')));
+  assert.ok(milestone.sources.some(s => s.includes('required-check conclusions')));
+  assert.ok(milestone.metrics.some(s => s.includes('explicit denominator')));
+  assert.ok(milestone.metrics.some(s => s.includes('PR lead time')));
+  assert.ok(milestone.publication.includes('only after 10 individually VERIFIED'));
+  assert.ok(milestone.publication.includes('Hero, Globe and Hub'));
+  assert.doesNotMatch(read('.github/copilot-instructions.md'), /DOMAIN_PROMPT\.machine\.json|app-orchestrator\.machine\.json/);
+  assert.ok(!Object.hasOwn(registry.promptContracts, 'legacyApplication'));
+});
+
+test('ten-PR admission refuses absent, stale, draft, excluded or non-SHA-bound evidence', () => {
+  const app = JSON.parse(read(registry.promptContracts.application));
+  const m = app.tenPrEfficiencyMilestone;
+  const required = ['Docker Security Gate', 'Domain Governance'];
+  const valid = {
+    prNumber: 901, domain: 'PLATFORM', createdAt: '2026-11-21T01:00:00Z',
+    mergedAt: '2026-11-21T02:00:00Z', mainMergeSha: 'a'.repeat(40),
+    testedHeadSha: 'b'.repeat(40), requiredCheckRunIds: [1001, 1002],
+    requiredCheckConclusions: Object.fromEntries(required.map(name => [name, 'success'])),
+    githubSourceUrls: ['https://github.com/SvenKulessa/Capital-AI/pull/901'],
+    sourceVerified: true, mainAncestryVerified: true, requiredCheckShaBound: true,
+    isMerged: true, wasDraftAtMerge: false, afterOwnerAuthorizationVerified: true
+  };
+  const admits = p => !!p && p.sourceVerified === true
+    && p.mainAncestryVerified === true && p.requiredCheckShaBound === true
+    && p.afterOwnerAuthorizationVerified === true && p.isMerged === true
+    && p.wasDraftAtMerge === false && !m.excludedPullRequests.includes(p.prNumber)
+    && Number.isSafeInteger(p.prNumber) && p.prNumber > 0
+    && Object.hasOwn(registry.domains, p.domain)
+    && /^[a-f0-9]{40}$/.test(p.mainMergeSha ?? '')
+    && /^[a-f0-9]{40}$/.test(p.testedHeadSha ?? '')
+    && Date.parse(p.createdAt) < Date.parse(p.mergedAt)
+    && p.requiredCheckRunIds?.length >= 2 && p.requiredCheckRunIds.every(Number.isSafeInteger)
+    && required.every(key => p.requiredCheckConclusions?.[key] === 'success')
+    && p.githubSourceUrls?.length > 0 && p.githubSourceUrls.every(
+      url => /^https:\/\/github\.com\/SvenKulessa\/Capital-AI\/pull\/\d+$/.test(url)
+    );
+  assert.equal(admits(valid), true);
+  const negativeCases = [
+    null, {}, { ...valid, prNumber: 850 }, { ...valid, sourceVerified: false },
+    { ...valid, afterOwnerAuthorizationVerified: false }, { ...valid, isMerged: false },
+    { ...valid, wasDraftAtMerge: true }, { ...valid, mainAncestryVerified: false },
+    { ...valid, requiredCheckShaBound: false }, { ...valid, mainMergeSha: null },
+    { ...valid, testedHeadSha: 'unbound' }, { ...valid, domain: 'OTHER' },
+    { ...valid, createdAt: valid.mergedAt }, { ...valid, requiredCheckRunIds: [] },
+    { ...valid, requiredCheckConclusions: { ...valid.requiredCheckConclusions, 'Docker Security Gate': 'failure' } },
+    { ...valid, githubSourceUrls: ['https://example.com/unverified'] }
+  ];
+  for (const candidate of negativeCases) assert.equal(admits(candidate), false);
+  assert.equal(m.requiredVerifiedMerges, 10);
+  assert.equal([valid].filter(admits).length < m.requiredVerifiedMerges, true);
+});
