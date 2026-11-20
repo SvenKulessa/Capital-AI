@@ -260,3 +260,9 @@ test('Stripe reader errors are sanitized rather than propagating credential mess
   await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),
     err=>err?.message==='UNIT_ECONOMICS_RECONCILIATION_UNAVAILABLE');
 });
+
+test('one Stripe balance transaction cannot be deducted or booked twice across objects',async()=>{
+  const overlapping={...refund(),balanceTransactionId:'txn_pay123456'};
+  const s=setup({events:{[REF]:overlapping}});
+  await assert.rejects(s.instance.reconcile(request({agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+});
