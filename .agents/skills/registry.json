@@ -869,5 +869,18 @@
         "campaign roi"
       ]
     }
+  },
+  "promptContracts": {
+    "schema": "CAPITAL_AI_PROMPT_CONTRACT_REFS@1",
+    "application": ".agents/app.prompt.json",
+    "domains": {
+      "PRODUCT": "CAPITAL-AI-PRODUCT/domain.prompt.json",
+      "MARKET": "CAPITAL-AI-MARKET/domain.prompt.json",
+      "PLATFORM": "CAPITAL-AI-PLATFORM/domain.prompt.json",
+      "TRUST": "CAPITAL-AI-TRUST/domain.prompt.json",
+      "GROWTH": "CAPITAL-AI-GROWTH/domain.prompt.json"
+    },
+    "authority": "AGENTS.md",
+    "mode": "NON_AUTHORIZING_CONTEXT"
   }
 }

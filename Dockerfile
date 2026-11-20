@@ -44,6 +44,13 @@ COPY Dockerfile .dockerignore ./
 # Offline isolation tests verify the actual dedicated production manifests, without installing them in build.
 COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runtime/
 COPY .agents/skills ./.agents/skills
+# Scoped build-only machine-readable prompts for the existing offline test suite.
+COPY .agents/app.prompt.json ./.agents/app.prompt.json
+COPY CAPITAL-AI-PRODUCT/domain.prompt.json CAPITAL-AI-PRODUCT/PROJECT.md ./CAPITAL-AI-PRODUCT/
+COPY CAPITAL-AI-MARKET/domain.prompt.json CAPITAL-AI-MARKET/PROJECT.md ./CAPITAL-AI-MARKET/
+COPY CAPITAL-AI-PLATFORM/domain.prompt.json CAPITAL-AI-PLATFORM/PROJECT.md ./CAPITAL-AI-PLATFORM/
+COPY CAPITAL-AI-TRUST/domain.prompt.json CAPITAL-AI-TRUST/PROJECT.md ./CAPITAL-AI-TRUST/
+COPY CAPITAL-AI-GROWTH/domain.prompt.json CAPITAL-AI-GROWTH/PROJECT.md ./CAPITAL-AI-GROWTH/
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
 COPY src ./src
