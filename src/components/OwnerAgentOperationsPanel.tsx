@@ -172,6 +172,11 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
       <div role="tablist" aria-label="Operations-Ansichten" className="flex flex-wrap gap-2">
         {VIEWS.map(item => <button key={item.id} type="button" role="tab" aria-selected={view === item.id}
           onClick={() => setView(item.id)}
+          // Certain mobile Chromium touch streams do not synthesize a click.
+          // Touch-only pointer activation is idempotent with any later click.
+          onPointerUp={event => {
+            if (event.isPrimary && event.pointerType === 'touch') setView(item.id);
+          }}
           className={'min-h-11 rounded-lg border px-3 text-xs font-semibold ' +
             (view === item.id ? 'border-indigo-300 bg-indigo-500/25 text-white' : 'border-white/10 text-slate-300')}>
           {item.label}
