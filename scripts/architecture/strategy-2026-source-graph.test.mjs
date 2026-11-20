@@ -99,3 +99,48 @@ test('source graph refuses evidence captured for a different inventory',()=>{
   const s=snap([pr(1,a,['src/a.ts'])]);
   assert.throws(()=>buildSourceBoundReviewGraph(s,{...evidence([]),observedAt:'2026-11-19T20:00:00Z'}),/snapshot mismatch/);
 });
+
+
+test('round-robin source selection includes smaller PRs under a fixed 24-file equivalent budget',async()=>{
+  const prs=[pr(1,a,['src/a1.ts','src/a2.ts','src/a3.ts','src/a4.ts']),pr(2,b,['src/b1.ts']),pr(3,c,['src/c1.ts'])];
+  const seen=[];
+  const fetchImpl=async url=>{
+    const filename=new URL(url).pathname.split('/contents/')[1];seen.push(filename);
+    const pn=filename.includes('a')?1:filename.includes('b')?2:3;
+    const x=source(pn,pn===1?a:pn===2?b:c,filename,`export const x = ${pn};`);
+    return {ok:true,status:200,json:async()=>({type:'file',sha:x.blobSha,size:x.size,encoding:'base64',content:x.base64Content})};
+  };
+  const r=await collectGitHubSourceEvidence({snapshot:snap(prs),fetchImpl,maxFiles:3,now:testNow});
+  assert.deepEqual(seen,['src/a1.ts','src/b1.ts','src/c1.ts']);
+  assert.deepEqual(r.eligiblePullRequests,[1,2,3]);
+  assert.deepEqual(r.representedPullRequests,[1,2,3]);
+  assert.deepEqual(r.omittedPullRequests,[]);
+  assert.equal(r.selectionStrategy,'ROUND_ROBIN_BY_PR');
+  assert.equal(r.coverage,'PARTIAL_LIMIT');
+  assert.equal(r.candidateFiles,6);
+});
+test('when PR count exceeds budget, excluded PRs are explicitly reported',async()=>{
+  const prs=[pr(1,a,['src/a.ts']),pr(2,b,['src/b.ts']),pr(3,c,['src/c.ts'])];
+  const fetchImpl=async url=>{
+    const filename=new URL(url).pathname.split('/contents/')[1], pn=filename.includes('a')?1:2;
+    const x=source(pn,pn===1?a:b,filename,'export const x=1;');
+    return {ok:true,status:200,json:async()=>({type:'file',sha:x.blobSha,size:x.size,encoding:'base64',content:x.base64Content})};
+  };
+  const r=await collectGitHubSourceEvidence({snapshot:snap(prs),fetchImpl,maxFiles:2,now:testNow});
+  assert.deepEqual(r.representedPullRequests,[1,2]);
+  assert.deepEqual(r.omittedPullRequests,[3]);
+  assert.equal(r.coverage,'PARTIAL_LIMIT');
+  assert.equal(r.examinedFiles,2);
+});
+test('round-robin ordering is repeatable for a fixed snapshot',async()=>{
+  const prs=[pr(4,a,['src/z.ts','src/a.ts']),pr(1,b,['src/y.ts','src/x.ts'])];
+  const seen=[];
+  const fetchImpl=async url=>{
+    const filename=new URL(url).pathname.split('/contents/')[1];seen.push(filename);
+    const pn=filename.includes('src/a')||filename.includes('src/z')?4:1;
+    const x=source(pn,pn===4?a:b,filename,'export const x=1;');
+    return {ok:true,status:200,json:async()=>({type:'file',sha:x.blobSha,size:x.size,encoding:'base64',content:x.base64Content})};
+  };
+  await collectGitHubSourceEvidence({snapshot:snap(prs),fetchImpl,maxFiles:4,now:testNow});
+  assert.deepEqual(seen,['src/a.ts','src/x.ts','src/z.ts','src/y.ts']);
+});
