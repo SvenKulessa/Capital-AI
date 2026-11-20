@@ -70,5 +70,46 @@
     ],
     "unknown": "NOT_PROVEN",
     "noInventedGains": true
+  },
+  "tenPrEfficiencyMilestone": {
+    "schema": "CAPITAL_AI_TEN_PR_EFFICIENCY_MILESTONE@1",
+    "sourcePr": 852,
+    "appliesAfter": "2026-11-20 owner authorization; exact time is NOT_PROVEN",
+    "requiredVerifiedMerges": 10,
+    "excludedPullRequests": [
+      850
+    ],
+    "inclusion": "Only distinct actually merged PRs after owner authorization with verified GitHub main-merge, required-check, SHA and domain evidence; do not count a drafted or merely green PR",
+    "exclude": "Draft, unmerged, superseded, pre-authorization, missing or unverifiable PR/CI evidence",
+    "sources": [
+      "GitHub PR created_at and merged_at",
+      "GitHub main merge commit SHA and ancestry",
+      "GitHub Actions required-check conclusions and run IDs bound to the merge candidate",
+      "Canonical .agents/skills/registry.json domain mapping"
+    ],
+    "evidenceFields": [
+      "prNumber",
+      "domain",
+      "createdAt",
+      "mergedAt",
+      "mainMergeSha",
+      "testedHeadSha",
+      "requiredCheckRunIds",
+      "requiredCheckConclusions",
+      "githubSourceUrls"
+    ],
+    "metrics": [
+      "PR lead time (created_at to merged_at)",
+      "PR cycle time (first commit to merge, only when timestamps evidenced)",
+      "CI pass ratio with explicit denominator",
+      "regression/rollback count only when evidence exists"
+    ],
+    "groupBy": "domain",
+    "missingData": "NOT_PROVEN",
+    "publication": "Create responsive accessible seven-color homepage graphic only after 10 individually VERIFIED qualifying PR merges; preserve existing Hero, Globe and Hub. No automatic publishing.",
+    "permissionExpansion": false,
+    "createsRequiredChecks": false,
+    "createsScheduler": false,
+    "noInventedEfficiencyClaims": true
   }
 }
