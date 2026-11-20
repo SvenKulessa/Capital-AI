@@ -203,3 +203,16 @@ test('Docker build includes only the prompt validation inputs, with no broad con
   assert.doesNotMatch(docker, /^COPY \.agents\/ \.\/\.agents\/$/m);
   assert.doesNotMatch(ignore, /^!\.agents\/\*\*$/m);
 });
+
+test('machine-readable prompts are actually referenced by existing chat agents', () => {
+  const copilot = read('.github/copilot-instructions.md');
+  assert.match(copilot, /promptContracts\.application/);
+  assert.match(copilot, /\.agents\/app\.prompt\.json/);
+  assert.match(copilot, /Root .?AGENTS\.md/);
+  for (const domain of expected) {
+    const agent = read(registry.domains[domain].chatAgent);
+    assert.ok(agent.includes('CAPITAL-AI-' + domain + '/domain.prompt.json'));
+    assert.ok(agent.includes('promptContracts.domains.' + domain));
+    assert.match(agent, /NON_AUTHORIZING_CONTEXT/);
+  }
+});
