@@ -4,6 +4,7 @@ Date: 2026-11-20
 Scope: GROWTH (TRUST review); Root AGENTS.md / SOLO_MAINTAINER_FLOW@2
 Status: SOURCE_IMPLEMENTED / SYNTHETIC_TESTS / LIVE_PROVIDER_NOT_ENABLED / DATABASE_READBACK_NOT_PROVEN
 Code: server/unit-economics-source-adapters.mjs
+Compatibility repair: server/unit-economics-reconciliation.mjs + matching tests
 Tests: server/unit-economics-source-adapters.test.mjs
 Existing downstream contract: server/unit-economics-reconciliation.mjs (#853)
 
@@ -35,7 +36,10 @@ network operations. Missing source configuration returns a redacted error.
    \`server/billing-catalog.mjs\` must match. Amount, tax, invoice, fee, event
    type, live mode and UTC event timestamp are cross-checked. Refunds and lost
    disputes require independent tax-adjustment evidence; WON/PENDING/unknown
-   statuses fail closed. This scope supports **initial subscription checkout**
+   statuses fail closed. Dispute IDs follow Stripe's `du_` prefix and
+   dispute `balance_transactions` are provider objects; this PR corrects the
+   previous #853 `dp_` contract assumption. See
+   https://docs.stripe.com/api/disputes/object. This scope supports **initial subscription checkout**
    only. Ongoing renewals, business orders (#821), invoice credit notes,
    multiple-payment invoices and complex multi-line items remain NOT_PROVEN.
    The stored \`payload_hash\` is a verified-ingress assertion from the inbox,
