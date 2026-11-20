@@ -1,7 +1,7 @@
 """Synthetic positive and negative safety cases: no GitHub access needed."""
 import unittest
 
-from failure_intelligence import SCHEMA, classify_failure, propose_repair, eligible_for_admission
+from failure_intelligence import SCHEMA, classify_failure, propose_repair, inspect_review_claims
 
 TENANT_A = "11111111-1111-4111-8111-111111111111"
 TENANT_B = "22222222-2222-4222-8222-222222222222"
@@ -49,17 +49,20 @@ class FailureIntelligenceTests(unittest.TestCase):
         self.assertEqual(candidate["status"], "HYPOTHESIS_NOT_PROVEN")
         self.assertFalse(candidate["automatic_merge_allowed"])
         self.assertFalse(candidate["production_eligible"])
-        self.assertFalse(eligible_for_admission(candidate, {}))
+        self.assertEqual(inspect_review_claims(candidate, {})["status"], "NOT_PROVEN")
         attestation = {"reproduced": True, "root_cause_confirmed": True,
                        "tests_passed": True, "security_clear": True,
                        "trust_independent": True, "quality_independent": True,
                        "patch_sha": "b"*40}
-        self.assertTrue(eligible_for_admission(candidate, attestation))
+        self.assertEqual(inspect_review_claims(candidate, attestation), {
+            "status": "NOT_PROVEN", "claims_complete": True,
+            "independent_reviews_verified": False, "automatic_merge_allowed": False,
+            "production_eligible": False})
         for changes in ({"trust_independent": False}, {"quality_independent": False},
                         {"tests_passed": False}, {"patch_sha": "c"*40},
                         {"security_clear": "true"}, {"self_approval": True}):
             with self.subTest(changes=changes):
-                self.assertFalse(eligible_for_admission(candidate, {**attestation, **changes}))
+                self.assertFalse(inspect_review_claims(candidate, {**attestation, **changes})["claims_complete"])
 
     def test_free_text_and_forged_candidate_rejected(self):
         observation = classify_failure(SIGNAL, trusted_tenant_id=TENANT_A)
