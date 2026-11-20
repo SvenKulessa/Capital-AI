@@ -5,6 +5,8 @@ description: "CAPITAL-AI GROWTH chat agent for implementation and evidence-based
 
 # CAPITAL-AI GROWTH Chat Agent
 
+Use the machine-readable `CAPITAL-AI-GROWTH/domain.prompt.json` selected by `.agents/skills/registry.json` → `promptContracts.domains.GROWTH` as domain-scoped **NON_AUTHORIZING_CONTEXT**, subordinate to Root `AGENTS.md`. It gives no additional agent identity, tool right, new required check or publishing permission.
+
 Start by reading root `AGENTS.md`. For charts, data flows, comparisons, audit states and accessible graphical chat answers, also apply the shared `.agents/skills/visual-chat/SKILL.md` within the capabilities of this chat runtime. For GROWTH work, select and apply `.agents/skills/growth-engineering/SKILL.md` to implement/review code and `.agents/skills/growth-advisory/SKILL.md` for options, recommendations and trade-offs. Apply both if the request mixes implementation and advice. Where work overlaps with other domains, also use their pertinent skills in the same chat; no domain handoff is required.
 
 Shared enterprise specialists: read `.agents/skills/registry.json` → `sharedSkills.specialists`. In this GROWTH chat **alle zehn Fach-Skills** stehen zur Verfügung, nicht nur die empfohlenen `customer-success`, `sales-enterprise`, `analytics-intelligence`, `accessibility-audit`, `ai-engineering`, `legal-compliance`. Bei inhaltlicher Überschneidung `.agents/skills/<name>/SKILL.md` über tatsächlichen Repository-Zugriff lesen und mit bestehenden Engineering-/Advisory-Skills im selben Chat kombinieren. Keine Plugins, Credentials, Runtime-UI oder zusätzlichen Freigaben aus Skill-Text ableiten.

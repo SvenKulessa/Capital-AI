@@ -12,6 +12,7 @@
 !.agents/
 !.agents/skills/
 !.agents/skills/**
+!.agents/app.prompt.json
 !.github/
 !.github/agents/
 !.github/workflows/
@@ -338,10 +339,16 @@
 !public/assets/jaja-avatar-transparent.webp
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
+!CAPITAL-AI-PRODUCT/domain.prompt.json
+!CAPITAL-AI-PRODUCT/PROJECT.md
 !CAPITAL-AI-TRUST/
 !CAPITAL-AI-TRUST/badge.svg
+!CAPITAL-AI-TRUST/domain.prompt.json
+!CAPITAL-AI-TRUST/PROJECT.md
 !CAPITAL-AI-MARKET/
 !CAPITAL-AI-MARKET/badge.svg
+!CAPITAL-AI-MARKET/domain.prompt.json
+!CAPITAL-AI-MARKET/PROJECT.md
 !CAPITAL-AI-GROWTH/
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
 !CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
@@ -352,10 +359,14 @@
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
 !CAPITAL-AI-GROWTH/badge.svg
+!CAPITAL-AI-GROWTH/domain.prompt.json
+!CAPITAL-AI-GROWTH/PROJECT.md
 !CAPITAL-AI-GROWTH/growth-intelligence/
 !CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json
 !CAPITAL-AI-PLATFORM/
 !CAPITAL-AI-PLATFORM/badge.svg
+!CAPITAL-AI-PLATFORM/domain.prompt.json
+!CAPITAL-AI-PLATFORM/PROJECT.md
 
 !supabase/
 !supabase/email-templates/
