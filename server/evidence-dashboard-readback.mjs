@@ -5,6 +5,7 @@ import { safeGa4FailureReason } from './google-analytics-readback.mjs';
 import { ACODEX_P1_V2_ARCHIVE } from './acodex-p1-v2-archive.mjs';
 const PATH = '/api/profile/evidence-dashboard-readback';
 const REPOSITORY = 'SvenKulessa/Capital-AI';
+const TS7_EVIDENCE = 'docs/security/evidence/dependency-decisions/typescript-7.0.2.json';
 const SERVICE_ID = 'srv-dau1rp893c1s73cdhm1g';
 const WORKSPACE_ID = 'tea-d90o4rj7uimc739i86ug';
 const SHA = /^[a-f0-9]{40}$/;
@@ -50,6 +51,39 @@ async function readJson(fetchImpl, address, token, signal) {
   return JSON.parse(raw);
 }
 
+// Only an immutable main-SHA GitHub contents read can establish the repository
+// decision. The historical scan is NOT a fresh binary scan or an upgrade approval.
+function projectTs7Decision(file, mainSha) {
+  if (file?.type !== 'file' || file?.path !== TS7_EVIDENCE || file?.encoding !== 'base64' ||
+      !SHA.test(file?.sha || '') || typeof file?.content !== 'string' || file.content.length > 60_000)
+    throw Error('TS7_INVALID_SOURCE');
+  const encoded = file.content.replace(/\s/g, '');
+  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded) ||
+      !encoded.length) throw Error('TS7_INVALID_ENCODING');
+  const record = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
+  const dep = record?.dependency, decision = record?.decision, native = record?.fingerprint?.nativeArtifact;
+  const semver = /^[0-9]+\.[0-9]+\.[0-9]+$/;
+  if (record?.schema !== 'CAPITAL_AI_SH_SUPPLY_CHAIN_DEPENDENCY_RECOVERY@1' ||
+      dep?.name !== 'typescript' || dep?.candidateVersion !== '7.0.2' ||
+      !semver.test(dep?.currentVersion || '') || decision?.state !== 'BLOCKED' ||
+      decision?.classification !== 'BINARY_AFFECTED' ||
+      decision?.reasonCode !== 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(decision?.reviewOnOrAfter || '') ||
+      !Number.isFinite(Date.parse(decision?.reviewOnOrAfter + 'T00:00:00Z')) ||
+      typeof decision?.evaluatedAt !== 'string' || !Number.isFinite(Date.parse(decision.evaluatedAt)) ||
+      !/^sha256:[a-f0-9]{64}$/.test(native?.binarySha256 || ''))
+    throw Error('TS7_INVALID_DECISION');
+  return {
+    status: 'VERIFIED_PROVIDER_READ', state: 'BLOCKED', classification: 'BINARY_AFFECTED',
+    dependency: 'typescript', currentVersion: dep.currentVersion, candidateVersion: '7.0.2',
+    evaluatedAt: decision.evaluatedAt, reviewOnOrAfter: decision.reviewOnOrAfter,
+    reasonCode: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY',
+    binarySha256: native.binarySha256,
+    evidenceScope: 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION',
+    evidenceUrl: 'https://github.com/' + REPOSITORY + '/blob/' + mainSha + '/' + TS7_EVIDENCE,
+  };
+}
+
 async function readGitHub(fetchImpl, env, signal, now) {
   const origin = `https://api.github.com/repos/${REPOSITORY}`;
   const token = typeof env.GITHUB_TOKEN === 'string' ? env.GITHUB_TOKEN.trim() : '';
@@ -86,6 +120,11 @@ async function readGitHub(fetchImpl, env, signal, now) {
       };
     } else ci = { status: 'NOT_PROVEN', reason: 'CHECK_RUNS_TRUNCATED_OR_INVALID', runs: [] };
   } catch { /* A failed check-run read must not erase independently verified GitHub metadata. */ }
+  let typescript = { status: 'NOT_PROVEN', reason: 'TS7_EVIDENCE_UNAVAILABLE' };
+  try {
+    const source = await readJson(fetchImpl, origin + '/contents/' + TS7_EVIDENCE + '?ref=' + commit.sha, token, signal);
+    typescript = projectTs7Decision(source, commit.sha);
+  } catch { /* A missing or malformed decision never becomes an approval. */ }
   return {
     status: 'VERIFIED_PROVIDER_READ', observedAt: new Date(now()).toISOString(),
     repository: REPOSITORY, mainSha: commit.sha,
@@ -93,7 +132,7 @@ async function readGitHub(fetchImpl, env, signal, now) {
     openPrCountStatus: prs.length < 100 ? 'VERIFIED' : 'NOT_PROVEN_TRUNCATED',
     pullRequests: prItems,
     pullRequestsStatus: prs.length >= 100 ? 'NOT_PROVEN_TRUNCATED' : prs.length > 50 ? 'PARTIAL_FIRST_50' : 'VERIFIED',
-    ci,
+    ci, typescript,
     evidence: 'https://github.com/' + REPOSITORY + '/commit/' + commit.sha,
   };
 }

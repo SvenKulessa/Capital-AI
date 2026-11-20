@@ -114,6 +114,7 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   }, [refresh]);
 
   const gh = snapshot?.github, render = snapshot?.render, ga4 = snapshot?.ga4;
+  const ts7 = gh?.typescript;
   const prs = snapshot ? visiblePullRequests(snapshot, agent, search) : [];
   const checks = agent === 'ALL' || agent === 'PLATFORM' || agent === 'SECURITY' ? gh?.ci?.runs ?? [] : [];
   const views = snapshot ? ga4EventCount(snapshot, 'page_view') : null;
@@ -211,6 +212,31 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
               <strong className={'text-xs ' + tint(row.state)}>{row.state}</strong>
             </div>)}
           </div>
+        </Section>}
+        {view === 'evidence' && <Section title="TypeScript 7 · Sicherheitsentscheidung">
+          {isVerified(gh) && ts7?.status === 'VERIFIED_PROVIDER_READ' ? <div className="space-y-3 text-sm">
+            <p><strong className="font-bold text-rose-300">{ts7.state}</strong>
+              {' · '}{ts7.classification}{' · '}nur Repository-Entscheidung, kein neuer Binary-Scan.</p>
+            <dl className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
+              <div><dt className="text-slate-400">Installierte / blockierte Version</dt>
+                <dd>{ts7.currentVersion} / {ts7.candidateVersion}</dd></div>
+              <div><dt className="text-slate-400">Nächste Überprüfung (UTC)</dt>
+                <dd>{ts7.reviewOnOrAfter}</dd></div>
+              <div><dt className="text-slate-400">Letzte Evidence-Auswertung</dt>
+                <dd>{dateText(ts7.evaluatedAt)}</dd></div>
+              <div><dt className="text-slate-400">Begründung</dt>
+                <dd>{ts7.reasonCode}</dd></div>
+            </dl>
+            <p className="break-all text-xs text-slate-400">Historischer Binary-Fingerprint: {ts7.binarySha256}</p>
+            <a href={ts7.evidenceUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center font-semibold text-indigo-200 underline underline-offset-2">
+              Evidence auf exakt diesem Main-SHA öffnen
+            </a>
+            <p className="text-xs text-amber-200">Keine TypeScript-7-Freigabe. Die automatische
+              Suppression-Fristdurchsetzung wurde in PR #808 entfernt; diese Ansicht validiert nur
+              den GitHub-Evidence-Eintrag, nicht die aktuelle Registry- oder Scanner-Lage.</p>
+          </div> : <p className="text-sm text-amber-200">NOT_PROVEN · TypeScript-Entscheidung
+            aus der unveränderlichen Main-Evidence nicht nachgewiesen.</p>}
         </Section>}
         {view === 'evidence' && <Section title="AcodeX P1-v2 · archivierte Geräteabnahme">
           {snapshot.acodex ? <div className="space-y-3 text-sm">

@@ -8,10 +8,24 @@ const origin = 'https://capital-ai.online';
 const env = { GITHUB_TOKEN: 'github-private-fixture', RENDER_API_KEY: 'render-private-fixture' };
 const serviceId = 'srv-dau1rp893c1s73cdhm1g';
 const ownerId = 'tea-d90o4rj7uimc739i86ug';
+const ts7Path = 'docs/security/evidence/dependency-decisions/typescript-7.0.2.json';
+const ts7Evidence = {
+  schema: 'CAPITAL_AI_SH_SUPPLY_CHAIN_DEPENDENCY_RECOVERY@1',
+  dependency: { name: 'typescript', currentVersion: '6.0.3', candidateVersion: '7.0.2' },
+  decision: { state: 'BLOCKED', classification: 'BINARY_AFFECTED',
+    reasonCode: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY',
+    evaluatedAt: '2026-11-19T06:10:46.574Z', reviewOnOrAfter: '2026-12-03' },
+  fingerprint: { nativeArtifact: { binarySha256: 'sha256:' + 'f'.repeat(64) } },
+};
+function ts7Fixture(record = ts7Evidence) {
+  return { type: 'file', path: ts7Path, encoding: 'base64', sha: 'c'.repeat(40),
+    content: Buffer.from(JSON.stringify(record)).toString('base64') };
+}
 function fixture(url) {
   const s = String(url);
   if (s.endsWith('/commits/main')) return { sha };
   if (s.includes('/pulls?')) return [{ number: 7, state: 'open', title: '[CAPITAL-AI-PLATFORM] Evidence', draft: false, head: { sha }, updated_at: '2026-11-19T03:30:00Z' }];
+  if (s.includes('/contents/' + ts7Path + '?ref=' + sha)) return ts7Fixture();
   if (s.includes('/check-runs?')) return { total_count: 2, check_runs: [
     { name: 'Docker Security Gate', head_sha: sha, status: 'completed', conclusion: 'success' },
     { name: 'Domain Governance', head_sha: sha, status: 'completed', conclusion: 'success' },
@@ -86,7 +100,7 @@ test('allows only GET without query parameters and sets private no-store respons
 test('binds provider URLs, identity and properties; produces only verified projections', async () => {
   const h = setup();
   const { body } = await h.request();
-  assert.equal(h.calls.length, 5);
+  assert.equal(h.calls.length, 6);
   assert.ok(h.calls.every(c => c.options.method === 'GET' && c.options.redirect === 'error' && c.options.cache === 'no-store'));
   assert.ok(h.calls.every(c => c.url.startsWith('https://api.github.com/repos/SvenKulessa/Capital-AI/') || c.url.startsWith(`https://api.render.com/v1/services/${serviceId}`)));
   assert.equal(body.github.mainSha, sha);
@@ -107,17 +121,53 @@ test('binds provider URLs, identity and properties; produces only verified proje
   assert.doesNotMatch(JSON.stringify(body), /fixture|user@example.test|github-private|render-private|6998|3525|private-user-id/);
 });
 
+test('projects only sha-pinned BLOCKED TypeScript evidence; no live scan assertion', async () => {
+  const h = setup();
+  const { body } = await h.request();
+  const t = body.github.typescript;
+  assert.equal(t.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(t.state, 'BLOCKED');
+  assert.equal(t.classification, 'BINARY_AFFECTED');
+  assert.equal(t.currentVersion, '6.0.3');
+  assert.equal(t.candidateVersion, '7.0.2');
+  assert.equal(t.reviewOnOrAfter, '2026-12-03');
+  assert.equal(t.binarySha256, 'sha256:' + 'f'.repeat(64));
+  assert.equal(t.evidenceScope, 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION');
+  assert.equal(t.evidenceUrl, 'https://github.com/SvenKulessa/Capital-AI/blob/' + sha + '/' + ts7Path);
+  assert.ok(h.calls.some(c => c.url.endsWith('/contents/' + ts7Path + '?ref=' + sha)));
+});
+
+test('TypeScript evidence fails closed on missing, manipulated or cross-path provider data', async () => {
+  const cases = [
+    () => new Response('missing', { status: 404 }),
+    () => ts7Fixture({ ...ts7Evidence, decision: { ...ts7Evidence.decision, state: 'APPROVED' } }),
+    () => ts7Fixture({ ...ts7Evidence, fingerprint: { nativeArtifact: { binarySha256: 'not-a-digest' } } }),
+    () => ({ ...ts7Fixture(), path: 'docs/security/evidence/foreign.json' }),
+    () => ({ ...ts7Fixture(), encoding: 'utf-8' }),
+    () => ({ ...ts7Fixture(), content: '*invalid*' }),
+    () => ({ ...ts7Fixture(), content: 'a'.repeat(100000) }),
+  ];
+  for (const make of cases) {
+    const h = setup({ provider: url => String(url).includes('/contents/' + ts7Path) ? make() : fixture(url) });
+    const { body } = await h.request();
+    assert.deepEqual(body.github.typescript, { status: 'NOT_PROVEN', reason: 'TS7_EVIDENCE_UNAVAILABLE' });
+    assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal(body.github.ci.status, 'VERIFIED_PROVIDER_READ');
+  }
+});
+
 test('uses five-minute cache and deduplicates concurrent reads', async () => {
   let time = 1800000000000;
   const h = setup({ now: () => time });
   await Promise.all([h.request(), h.request()]);
-  assert.equal(h.calls.length, 5);
+  assert.equal(h.calls.length, 6);
   time += 299_999;
   await h.request();
-  assert.equal(h.calls.length, 5);
+  assert.equal(h.calls.length, 6);
   time += 2;
   await h.request();
-  assert.equal(h.calls.length, 10);
+  assert.equal(h.calls.length, 12);
 });
 
 test('does not let missing Render credential erase independently verified GitHub/GA4 evidence', async () => {
@@ -127,7 +177,7 @@ test('does not let missing Render credential erase independently verified GitHub
   assert.equal(body.ga4.status, 'VERIFIED_PROVIDER_READ');
   assert.deepEqual(body.render, { status: 'NOT_PROVEN', reason: 'RENDER_CREDENTIAL_NOT_CONFIGURED' });
   assert.equal(body.comparison.mainVsDeploy, 'NOT_PROVEN');
-  assert.equal(h.calls.length, 3);
+  assert.equal(h.calls.length, 4);
 });
 
 test('rejects wrong Render workspace and keeps raw errors/secrets private', async () => {
@@ -250,7 +300,7 @@ test('AcodeX P1-v2 is archived owner-only evidence, never a live device probe', 
   assert.equal(archive.evidence.v11.sha256, '89b2215cf85420928c70271dffa38ee4ad51ccd07d1832b4bb35192e28c892a3');
   assert.equal(archive.evidence.v1.sha256, '991b97eef4f31a69ece605347d9b6aeebc8405f0fcd30ee7e96d03869c5e5afd');
   assert.equal(archive.evidence.standard.sha256, 'be03a2c479eddc1a40d4bad133e34b41e20039aa27ee5a776b05a24571d9eb17');
-  assert.equal(h.calls.length, 5);
+  assert.equal(h.calls.length, 6);
   assert.ok(h.calls.every(c => {
     const url = new URL(c.url);
     return url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname);

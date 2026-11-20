@@ -7,6 +7,14 @@ export type ProviderEvidence = { status: string; observedAt?: string; reason?: s
 export type PullRequest = { number: number; title: string; draft: boolean; headSha: string | null; updatedAt: string | null };
 export type CheckRun = { name: string; status: string; conclusion: string | null; requiredByRootPolicy: boolean };
 export type Deployment = { deployId: string | null; deployStatus: string; sourceCommitSha: string; finishedAt: string | null };
+export type TypeScriptEvidence = {
+  status: 'VERIFIED_PROVIDER_READ' | 'NOT_PROVEN'; reason?: 'TS7_EVIDENCE_UNAVAILABLE';
+  state?: 'BLOCKED'; classification?: 'BINARY_AFFECTED'; dependency?: 'typescript';
+  currentVersion?: string; candidateVersion?: '7.0.2';
+  evaluatedAt?: string; reviewOnOrAfter?: string; reasonCode?: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY';
+  binarySha256?: string; evidenceScope?: 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION';
+  evidenceUrl?: string;
+};
 export type AcodeXArchiveFile = { url: string; sha256: string };
 export type AcodeXArchive = {
   workstream: string; evidenceVersion: string;
@@ -24,7 +32,7 @@ export type DashboardReadback = {
     repository?: string; mainSha?: string; openPrCount?: number | null;
     openPrCountStatus?: string; pullRequests?: PullRequest[]; pullRequestsStatus?: string;
     ci?: { status: string; reason?: string | null; scope?: string; runs: CheckRun[] };
-    evidence?: string;
+    evidence?: string; typescript?: TypeScriptEvidence;
   };
   render: ProviderEvidence & {
     serviceId?: string; workspaceId?: string; deployId?: string | null;
@@ -66,6 +74,27 @@ export function readDashboardSnapshot(value: unknown): DashboardReadback | null 
   if (typeof value.github.status !== 'string' || typeof value.render.status !== 'string' ||
       typeof value.ga4.status !== 'string' || typeof value.comparison.mainVsDeploy !== 'string' ||
       typeof value.comparison.runtimeBuildIdentity !== 'string') return null;
+  // Reject untrusted HTML URLs, mismatched SHAs and invented approval statuses.
+  if (value.github.typescript !== undefined) {
+    const t = value.github.typescript;
+    if (!isRecord(t) || !['VERIFIED_PROVIDER_READ', 'NOT_PROVEN'].includes(String(t.status))) return null;
+    if (t.status === 'NOT_PROVEN') {
+      if (t.reason !== 'TS7_EVIDENCE_UNAVAILABLE' || Object.keys(t).some(k => !['status','reason'].includes(k))) return null;
+    } else {
+      const sha = value.github.mainSha;
+      const expected = typeof sha === 'string' && /^[a-f0-9]{40}$/.test(sha)
+        ? 'https://github.com/SvenKulessa/Capital-AI/blob/' + sha + '/docs/security/evidence/dependency-decisions/typescript-7.0.2.json' : null;
+      if (t.state !== 'BLOCKED' || t.classification !== 'BINARY_AFFECTED' ||
+          t.dependency !== 'typescript' || t.candidateVersion !== '7.0.2' ||
+          typeof t.currentVersion !== 'string' || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(t.currentVersion) ||
+          typeof t.evaluatedAt !== 'string' || !safeDate(t.evaluatedAt) ||
+          typeof t.reviewOnOrAfter !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(t.reviewOnOrAfter) ||
+          t.reasonCode !== 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY' ||
+          typeof t.binarySha256 !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(t.binarySha256) ||
+          t.evidenceScope !== 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION' ||
+          t.evidenceUrl !== expected) return null;
+    }
+  }
   if (value.github.pullRequests !== undefined && !Array.isArray(value.github.pullRequests)) return null;
   if (value.github.ci !== undefined && (!isRecord(value.github.ci) || !Array.isArray(value.github.ci.runs))) return null;
   if (value.render.deployments !== undefined && !Array.isArray(value.render.deployments)) return null;
