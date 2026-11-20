@@ -142,3 +142,26 @@ test('input ID traversal, missing callbacks and unauthorized principals are deni
  assert.throws(()=>make({}),/ADAPTER_UNAVAILABLE/);
  const h=harness();await reject(h.a.readStripeInbox({tenantId:tenant,eventId:'evt_../../secret'}));await reject(h.a.readAgentRun({tenantId:other,runId:'../../etc'}));
 });
+test('complete composition with existing reconciliation read model keeps accounting incomplete',async()=>{
+ const {createUnitEconomicsReconciliation}=await import('./unit-economics-reconciliation.mjs');
+ const h=harness();const projection=await createUnitEconomicsReconciliation(h.a).reconcile({
+  principal:ctx(),product:'saas-pro-monthly',periodStart:'2026-11-01T00:00:00Z',periodEnd:'2026-12-01T00:00:00Z',
+  stripeEventIds:[eventId,eventId],agentRunIds:[runId,runId],
+ });
+ assert.equal(projection.netCashExcludingTaxMinor,10000);
+ assert.equal(projection.stripeFeesMinor,350);
+ assert.equal(projection.inferenceCostMinor,80);
+ assert.equal(projection.toolCostMinor,20);
+ assert.equal(projection.successfulRuns,1);
+ assert.equal(projection.costPerSuccessfulRunMinor,100);
+ assert.equal(projection.status,'INCOMPLETE_FOR_ACCOUNTING_AND_PRODUCTION');
+});
+test('cross-tenant Stripe attribution halts integrated reconciliation without partial result',async()=>{
+ const {createUnitEconomicsReconciliation}=await import('./unit-economics-reconciliation.mjs');
+ const h=harness({mutate:d=>{d.stripe['/checkout/sessions?payment_intent=pi_123456789&limit=2'].data[0].client_reference_id=other;}});
+ await reject(createUnitEconomicsReconciliation(h.a).reconcile({
+  principal:ctx(),product:'saas-pro-monthly',periodStart:'2026-11-01T00:00:00Z',periodEnd:'2026-12-01T00:00:00Z',
+  stripeEventIds:[eventId],agentRunIds:[runId],
+ }));
+ assert.equal(h.calls.filter(x=>x.startsWith('db:agent')).length,0);
+});
