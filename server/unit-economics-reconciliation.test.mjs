@@ -14,6 +14,7 @@ const payment=(id=PAY)=>({
   livemode:true,kind:'PAYMENT',objectId:'ch_pay123456',chargeId:'ch_pay123456',
   sourceId:'in_invoice123456',grossMinor:11900,taxMinor:1900,feeMinor:400,
   balanceTransactionId:'txn_pay123456',objectReadbackSha256:hash('b'),
+  settlementStatus:'SETTLED',disputeOutcome:null,
 });
 const refund=()=>({
   ...payment(REF),eventType:'refund.updated',kind:'REFUND',objectId:'re_ref123456',
@@ -23,7 +24,7 @@ const refund=()=>({
 const dispute=()=>({
   ...payment(FAIL),eventType:'charge.dispute.closed',kind:'DISPUTE',objectId:'dp_dis123456',
   grossMinor:500,taxMinor:0,feeMinor:0,occurredAt:'2026-11-13T12:00:00Z',
-  balanceTransactionId:'txn_dis123456',payloadSha256:hash('e'),objectReadbackSha256:hash('f'),
+  balanceTransactionId:'txn_dis123456',payloadSha256:hash('e'),objectReadbackSha256:hash('f'),disputeOutcome:'LOST',
 });
 const run=(runId=RUN_A)=>({
   runId,tenantId:T,product:'agent_operations',completedAt:'2026-11-11T12:00:00Z',
@@ -133,14 +134,14 @@ test('an unprocessed or missing Stripe event inbox denies recognition',async()=>
   s=setup({callbacks:{readStripeInbox:async()=>null}});
   await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
 });
-test('rejects mismatched Stripe payload digest, object hash and test mode',async()=>{
-  for (const change of [{payloadSha256:hash('b')},{objectReadbackSha256:'invalid'},{livemode:false},{currency:'usd'}]) {
+test('rejects invalid Stripe payload/object hash, test mode and FX',async()=>{
+  for (const change of [{payloadSha256:'not-a-sha'},{objectReadbackSha256:'invalid'},{livemode:false},{currency:'usd'}]) {
     const s=setup({events:{[PAY]:{...payment(),...change}}});
     await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
   }
 });
 test('rejects unknown business events and untrusted/unsettled business objects',async()=>{
-  for (const change of [{eventType:'invoice.created'},{kind:'TRIAL'},{objectId:'re_bad123456'},{balanceTransactionId:''},{grossMinor:0},{taxMinor:12000}]) {
+  for (const change of [{eventType:'invoice.created'},{kind:'TRIAL'},{objectId:'re_bad123456'},{balanceTransactionId:''},{grossMinor:0},{taxMinor:12000},{settlementStatus:'PENDING'},{sourceId:'cs_test_abc123456'}]) {
     const s=setup({events:{[PAY]:{...payment(),...change}}});
     await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
   }
@@ -235,4 +236,26 @@ test('unbounded or fractional Stripe fees fail closed',async()=>{
 test('constructor refuses absent trusted authentication, receipt or billing adapters',()=>{
   assert.throws(()=>createUnitEconomicsReconciliation(),/trusted server-side readers required/);
   assert.throws(()=>createUnitEconomicsReconciliation({resolveTenant:async()=>T}),/trusted server-side readers required/);
+});
+
+test('denies changed Stripe inbox hash even if provider record is valid',async()=>{
+  const s=setup({callbacks:{readStripeInbox:async({eventId})=>({
+    eventId,eventType:'charge.succeeded',status:'processed',livemode:true,payloadSha256:hash('f')
+  })}});
+  await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+});
+test('won dispute cannot be interpreted as lost cash',async()=>{
+  const won={...dispute(),disputeOutcome:'WON'};
+  const s=setup({events:{[FAIL]:won}});
+  await assert.rejects(s.instance.reconcile(request({stripeEventIds:[FAIL],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+});
+test('payment and refund with different invoice/checkout authority are rejected',async()=>{
+  const refundOther={...refund(),sourceId:'in_unrelated123456'};
+  const s=setup({events:{[REF]:refundOther}});
+  await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY,REF],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+});
+test('Stripe reader errors are sanitized rather than propagating credential messages',async()=>{
+  const s=setup({callbacks:{readStripeEvent:async()=>{throw new Error('secret-token-provider-error')}}});
+  await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),
+    err=>err?.message==='UNIT_ECONOMICS_RECONCILIATION_UNAVAILABLE');
 });
