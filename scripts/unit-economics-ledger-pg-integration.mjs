@@ -77,16 +77,23 @@ async function crashBeforeCommit(){
     env:{...process.env,PGAPPNAME:'ue_crash_ci'},stdio:['ignore','pipe','pipe'],
   });
   child.stdout.resume();child.stderr.resume();
-  let sleeping=false;
+  let backendPid=null;
   for(let n=0;n<150;n++){
-    const v=await sql("select count(*) from pg_stat_activity where application_name='ue_crash_ci'"+
-      " and state='active' and query ilike '%pg_sleep(30)%';");
-    if(Number(v)===1){sleeping=true;break}
+    // Wait for PG's actual sleep wait event, not merely its SQL query text.
+    // A killed psql frontend may leave the backend running until COMMIT.
+    const pid=await sql("select pid from pg_stat_activity where application_name='ue_crash_ci'"+
+      " and wait_event='PgSleep' and state='active' limit 1;");
+    if(/^[0-9]+$/.test(pid)){backendPid=Number(pid);break}
     await new Promise(resolve=>setTimeout(resolve,100));
   }
-  assert.equal(sleeping,true,'test must kill an open, uncommitted write transaction');
+  assert.ok(backendPid,'test requires backend in an open, uncommitted transaction');
+  assert.equal(await sql('select pg_terminate_backend('+backendPid+');'),'t',
+    'backend termination must be acknowledged before readback');
   child.kill('SIGKILL');
-  await new Promise(resolve=>child.once('close',resolve));
+  await new Promise(resolve=>{
+    if(child.exitCode!==null||child.signalCode!==null)resolve();
+    else child.once('close',resolve);
+  });
   assert.equal(await count('snapshots'),'2','killed connection must roll back uncommitted snapshot');
   const result=await sql(asService(call({id:SID(30),key:'crash-key-000000001',
     source:'c'.repeat(64),run:RUN(30)})));
