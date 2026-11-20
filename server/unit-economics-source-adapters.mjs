@@ -18,7 +18,7 @@ const SESSION=/^cs_live_[A-Za-z0-9]{8,240}$/;
 const INVOICE=/^in_[A-Za-z0-9]{6,100}$/;
 const BT=/^txn_[A-Za-z0-9]{6,100}$/;
 const REFUND=/^re_[A-Za-z0-9]{6,100}$/;
-const DISPUTE=/^dp_[A-Za-z0-9]{6,100}$/;
+const DISPUTE=/^du_[A-Za-z0-9]{6,100}$/;
 const TYPE={"charge.succeeded":'PAYMENT',"refund.updated":'REFUND',"charge.dispute.closed":'DISPUTE'};
 const ERROR='UNIT_ECONOMICS_ADAPTER_UNAVAILABLE';
 const fail=()=>{throw new Error(ERROR)};
@@ -187,8 +187,11 @@ export function createUnitEconomicsSourceAdapters({auth,db,stripeGet,readTaxAdju
         balanceId=adjustment.balance_transaction;
       } else {
         if(adjustment.status!=='lost'||!Array.isArray(adjustment.balance_transactions)||
-           adjustment.balance_transactions.length!==1||!str(adjustment.balance_transactions[0],BT))fail();
-        balanceId=adjustment.balance_transactions[0];outcome='LOST';
+           adjustment.balance_transactions.length!==1||
+           !str(adjustment.balance_transactions[0]?.id,BT)||
+           adjustment.balance_transactions[0].currency!=='eur'||
+           adjustment.balance_transactions[0].amount!==-adjustment.amount)fail();
+        balanceId=adjustment.balance_transactions[0].id;outcome='LOST';
       }
       amount=adjustment.amount;
       if(!money(amount)||amount===0||amount>charge.amount)fail();
