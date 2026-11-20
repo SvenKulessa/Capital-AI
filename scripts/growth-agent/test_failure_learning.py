@@ -44,6 +44,14 @@ class LearningTests(unittest.TestCase):
         self.assertNotIn(b"confidential_user", saved)
         self.assertEqual(self.store.path.stat().st_mode & 0o777, 0o600)
 
+    def test_utf8_encoded_log_limit(self):
+        # Fewer than 32K characters, but more than 32 KiB in UTF-8.
+        oversized = "HTTP 431 " + ("\U0001f6d1" * 8192)
+        self.assertLess(len(oversized), 32_768)
+        self.assertGreater(len(oversized.encode("utf-8")), 32_768)
+        with self.assertRaises(ValueError):
+            fl.fingerprint(oversized)
+
     def test_unknown_failure_never_recommends_action(self):
         self.assertEqual(self.store.retrieve(scope=self.scope, fp=fl.fingerprint("just some other output")), [])
 
