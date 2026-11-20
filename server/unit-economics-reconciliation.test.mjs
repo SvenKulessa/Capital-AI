@@ -22,7 +22,7 @@ const refund=()=>({
   balanceTransactionId:'txn_ref123456',payloadSha256:hash('c'),objectReadbackSha256:hash('d'),
 });
 const dispute=()=>({
-  ...payment(FAIL),eventType:'charge.dispute.closed',kind:'DISPUTE',objectId:'dp_dis123456',
+  ...payment(FAIL),eventType:'charge.dispute.closed',kind:'DISPUTE',objectId:'du_dis123456',
   grossMinor:500,taxMinor:0,feeMinor:0,occurredAt:'2026-11-13T12:00:00Z',
   balanceTransactionId:'txn_dis123456',payloadSha256:hash('e'),objectReadbackSha256:hash('f'),disputeOutcome:'LOST',
 });
