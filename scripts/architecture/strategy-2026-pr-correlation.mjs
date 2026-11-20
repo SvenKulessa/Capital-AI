@@ -62,7 +62,11 @@ export function correlatePullRequests(input, options = {}) {
     check(Array.isArray(p.changedFiles) && p.changedFiles.length <= 1000, 'invalid changedFiles');
     check(p.changedFiles.every(pathOk), 'invalid changed file path');
     if (live) check(p.state === 'open' && p.changedFilesComplete === true && validSha(p.baseSha), 'live PR incomplete or closed');
-    return {number:p.number,title:p.title,headSha:p.headSha.toLowerCase(),draft:p.draft,changedFiles:unique(p.changedFiles)};
+    const baseSha = live ? p.baseSha.toLowerCase() : null;
+    // SHA mismatch is not proof of ancestry, actual mergeability, or permission.
+    const baseStatus = live ? (baseSha === input.mainSha.toLowerCase() ? 'CURRENT_MAIN' : 'BEHIND_MAIN') : 'NOT_APPLICABLE';
+    if (live && p.baseStatus !== undefined) check(p.baseStatus === baseStatus, 'live PR base status mismatch');
+    return {number:p.number,title:p.title,headSha:p.headSha.toLowerCase(),baseSha,baseStatus,draft:p.draft,changedFiles:unique(p.changedFiles)};
   }).sort((a,b)=>a.number-b.number);
   const overlapEdges = [], dependencyEdges = [];
   for (let i=0;i<prs.length;i++) for (let j=i+1;j<prs.length;j++) {
@@ -81,7 +85,7 @@ export function correlatePullRequests(input, options = {}) {
     current:live, observedAt:input.observedAt ?? null, mainSha:input.mainSha.toLowerCase(),
     repo:input.repo ?? null, observedCount:prs.length, totalOpen:live?prs.length:null,
     overlapEdges, dependencyEdges,
-    pullRequests:prs.map(p=>({number:p.number,title:p.title,headSha:p.headSha,draft:p.draft,
+    pullRequests:prs.map(p=>({number:p.number,title:p.title,headSha:p.headSha,baseSha:p.baseSha,baseStatus:p.baseStatus,draft:p.draft,
       changedFileCount:p.changedFiles.length,overlapsWith:[...neighbors.get(p.number)].sort((a,b)=>a-b),mergeEligibility:'NOT_PROVEN'})),
     decision:'READ_ONLY_CORRELATION_NOT_MERGE_AUTHORIZATION'
   };
