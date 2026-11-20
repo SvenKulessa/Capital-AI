@@ -27,6 +27,8 @@ import { useLearningFavorites } from './LearningFavorites';
 import { dailyLearningQuestions } from './learningPolicy';
 import { ChartLearningAtlas } from './ChartLearningAtlas';
 import { FinancialLearningSimulator } from './FinancialLearningSimulator';
+import { LearningSimulatorUniverseStage } from './LearningSimulatorUniverseStage';
+import './learningSimulatorUniverse.css';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   Star,
@@ -625,7 +627,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
       {/* ========================================================================= */}
-      {activeTab === 'simulator' && <FinancialLearningSimulator />}
+      {activeTab === 'simulator' && <div className="min-w-0 space-y-5"><LearningSimulatorUniverseStage /><FinancialLearningSimulator /></div>}
        {activeTab === 'quizzes' && <QuizzesTab onOpenQuant={() => setActiveTab('quiz')} />}
       {activeTab === 'quiz' && (
         <div className="space-y-6">

@@ -100,6 +100,12 @@ async function checkPage(path, viewport) {
     tabularRows: document.querySelectorAll('table tbody tr').length,
     horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
     privateEditorVisible: !!document.querySelector('#sim-name'),
+    universeStage: !!document.querySelector('[data-learning-universe-simulator="v1"]'),
+    universeAtoms: document.querySelectorAll('[data-learning-universe-simulator="v1"] [data-universe-atom]').length,
+    universePoster: !!document.querySelector('[data-learning-universe-simulator="v1"] img[alt="Stilisierte CAPITAL-AI-Erde mit umlaufenden Lichtbahnen"]'),
+    universeCanvasInitiallyLoaded: !!document.querySelector('[data-learning-universe-simulator="v1"] canvas'),
+    universeBuddyButton: !![...document.querySelectorAll('[data-learning-universe-simulator="v1"] button')].find(button => button.textContent?.includes('JaJa Universe Buddy öffnen')),
+    universeMotionToggle: !![...document.querySelectorAll('[data-learning-universe-simulator="v1"] button')].find(button => button.textContent?.includes('3D-Erde einschalten')),
   }))()` ) : null;
   const record = { path, viewport, dom, simulator, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
   pages.push(record);
@@ -137,6 +143,9 @@ async function checkPage(path, viewport) {
     if (simulator?.tasks !== 3 || simulator?.rangeFields < 3 || simulator?.tabularRows < 3) failures.push(path + ': learning controls or accessible data table missing');
     if (simulator?.horizontalOverflow > 2) failures.push(path + ': page horizontal overflow (' + simulator.horizontalOverflow + 'px)');
     if (simulator?.privateEditorVisible) failures.push(path + ': private Pro controls visible without verified session');
+    if (!simulator?.universeStage || simulator?.universeAtoms !== 7 || !simulator?.universePoster) failures.push(path + ': Universe Earth stage or seven atoms missing');
+    if (simulator?.universeCanvasInitiallyLoaded) failures.push(path + ': 3D Earth initialized before explicit opt-in');
+    if (!simulator?.universeBuddyButton || !simulator?.universeMotionToggle) failures.push(path + ': accessible JaJa/3D controls missing');
   }
   if (path === '/learning') {
     const overview = await evaluate(`(() => {
