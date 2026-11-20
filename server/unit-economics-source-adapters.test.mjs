@@ -13,12 +13,12 @@ const sha=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
 function records(){
  const event={id:eventId,type:'charge.succeeded',livemode:true,created:1794211200,data:{object:{id:chargeId}}};
  const revent={...event,id:rEvent,type:'refund.updated',created:1794297600,data:{object:{id:'re_123456789'}}};
- const devent={...event,id:dEvent,type:'charge.dispute.closed',created:1794384000,data:{object:{id:'dp_123456789'}}};
+ const devent={...event,id:dEvent,type:'charge.dispute.closed',created:1794384000,data:{object:{id:'du_123456789'}}};
  const charge={id:chargeId,currency:'eur',paid:true,status:'succeeded',livemode:true,payment_intent:'pi_123456789',amount:11900,balance_transaction:'txn_123456789'};
  const session={id:sourceId,mode:'subscription',metadata:{user_id:tenant,plan_id:'PRO',billing_cycle:'monthly'},livemode:true,status:'complete',payment_status:'paid',currency:'eur',client_reference_id:tenant,payment_intent:'pi_123456789',amount_total:11900,amount_subtotal:10000,invoice:invoiceId,customer:'cus_123456789',total_details:{amount_tax:1900}};
  const price={id:'price_1UMA4yPKr4joNbEckWSj3cJE',product:'prod_VMtsNeuSad0Dvx',currency:'eur',unit_amount:10000};
  const refund={id:'re_123456789',charge:chargeId,amount:1190,status:'succeeded',balance_transaction:'txn_ref123456'};
- const dispute={id:'dp_123456789',charge:chargeId,amount:500,status:'lost',balance_transactions:['txn_dis123456']};
+ const dispute={id:'du_123456789',charge:chargeId,amount:500,status:'lost',balance_transactions:[{id:'txn_dis123456',object:'balance_transaction',amount:-500,currency:'eur',fee:0}]};
  const inbox={event_id:eventId,event_type:'charge.succeeded',status:'processed',livemode:true,payload_hash:proof,ingress_source:'stripe_webhook'};
  const usage={tenant_id:tenant,run_id:runId,product:'saas-pro-monthly',completed_at:'2026-11-09T12:00:00Z',execution_status:'SUCCEEDED',provider:'openai',model:'gpt-6',input_tokens:100,output_tokens:50,billing_line_id:'usage.line:abc123',source_kind:'PROVIDER_METERED',run_evidence_sha256:proof};
  const billing={tenant_id:tenant,run_id:runId,billing_line_id:'usage.line:abc123',product:'saas-pro-monthly',provider:'openai',model:'gpt-6',currency:'EUR',billing_state:'SETTLED',inference_minor:80,tools_minor:20,source_kind:'PROVIDER_SETTLED_INVOICE',billing_evidence_sha256:'b'.repeat(64)};
@@ -28,7 +28,7 @@ usage.run_evidence_sha256=sha(['CAPITAL_AI_REAL_AGENT_RUN@1',
   ...['billing_line_id','run_id','tenant_id','product','provider','model','currency','billing_state','inference_minor','tools_minor','source_kind'].map(k=>billing[k])]);
  return {stripe:{['/events/'+eventId]:event,['/events/'+rEvent]:revent,['/events/'+dEvent]:devent,
  ['/charges/'+chargeId]:charge,
- ['/refunds/re_123456789']:refund,['/disputes/dp_123456789']:dispute,
+ ['/refunds/re_123456789']:refund,['/disputes/du_123456789']:dispute,
  ['/checkout/sessions?payment_intent=pi_123456789&limit=2']:{data:[session],has_more:false},
  ['/checkout/sessions/'+sourceId+'/line_items?limit=2']:{data:[{quantity:1,price,amount_subtotal:10000}],has_more:false},
  ['/invoices/'+invoiceId]:{id:invoiceId,livemode:true,currency:'eur',status:'paid',customer:'cus_123456789',amount_paid:11900},
@@ -88,7 +88,7 @@ test('settled refund requires separate tax evidence, never proportional guess',a
  const missing=harness({taxProof:false});await reject(missing.a.readStripeEvent({tenantId:tenant,eventId:rEvent}));
 });
 test('a won dispute is not an incurred loss',async()=>{
- const h=harness({mutate:d=>{d.stripe['/disputes/dp_123456789'].status='won';}});await reject(h.a.readStripeEvent({tenantId:tenant,eventId:dEvent}));
+ const h=harness({mutate:d=>{d.stripe['/disputes/du_123456789'].status='won';}});await reject(h.a.readStripeEvent({tenantId:tenant,eventId:dEvent}));
 });
 test('lost dispute uses independent tax readback and exact lost balance',async()=>{
  const h=harness();const v=await h.a.readStripeEvent({tenantId:tenant,eventId:dEvent});assert.equal(v.kind,'DISPUTE');assert.equal(v.disputeOutcome,'LOST');assert.equal(v.grossMinor,500);
