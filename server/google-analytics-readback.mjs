@@ -186,7 +186,7 @@ export async function buildGoogleAnalyticsReadback({
   });
   const sevenDayRaw = await client.callTool('run_report', {
     property_id: propertyNumber,
-    date_ranges: [{ start_date: '7daysAgo', end_date: 'today' }],
+    date_ranges: [{ start_date: '6daysAgo', end_date: 'today' }],
     dimensions: ['eventName'],
     metrics: ['eventCount'],
     limit: 25,
