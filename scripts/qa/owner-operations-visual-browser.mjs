@@ -143,9 +143,10 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
     if(role==='owner'&&width===390&&route==='/profile/dashboard'){
       // Native touch admission exercises the actual owner navigation route.
       // Standalone provider fixture receives layout QA but its touch remains NOT_PROVEN.
-      // Enable touch BEFORE measuring coordinates. Enabling it after hit-testing
-      // can invalidate mobile viewport coordinates on standalone Owner route.
-      await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+      // CDP wheel must scroll as a wheel pointer before touch emulation is
+      // enabled: mobile touch emulation can swallow the synthetic mouse wheel.
+      // Enable native touch *after* compositor scroll acknowledgement, but
+      // before touch hit-testing/coordinate measurement.
       // Chrome 157 log: native touchstart observed scrollY=478 while the renderer
       // had scrolled to 2725; touchend subsequently observed 2725. JS
       // scrollIntoView did not synchronize the compositor's input hit-test.
@@ -174,6 +175,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           await wait(120);
         }
         if(!wheelSettled)failures.push(tag+': compositor wheel scroll was not acknowledged before native Evidence touch');
+        if(wheelSettled)await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
         // On long mobile dashboards the document may continue moving after
         // scrollIntoView. Admit touch only after both viewport and target box
         // remain stable across repeated animation frames; never DOM-click.
