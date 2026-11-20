@@ -14,6 +14,8 @@ test('offline Social Content Engine CLI projects the imported source snapshot', 
   assert.equal(bundle.sourcePath, GROWTH_INTELLIGENCE_PLAN_PATH);
   const bytes = readFileSync(fileURLToPath(new URL('../../' + GROWTH_INTELLIGENCE_PLAN_PATH, import.meta.url)));
   assert.equal(bundle.sourceSha256, createHash('sha256').update(bytes).digest('hex'));
+  // Immutable snapshot: exact SHA-256 of the original 2026-11-20 exported JSON.
+  assert.equal(bundle.sourceSha256, 'd08aa8e7f831dea7cb15010f46374f8fbdecaee1408619af1a4fb857460c1234');
   assert.equal(bundle.drafts.length, 7);
   assert.equal(bundle.publicPublishAllowed, false);
   assert.equal(bundle.publicationState, 'DRAFT_ONLY');
