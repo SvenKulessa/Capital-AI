@@ -159,9 +159,9 @@ test('complete composition with existing reconciliation read model keeps account
 test('cross-tenant Stripe attribution halts integrated reconciliation without partial result',async()=>{
  const {createUnitEconomicsReconciliation}=await import('./unit-economics-reconciliation.mjs');
  const h=harness({mutate:d=>{d.stripe['/checkout/sessions?payment_intent=pi_123456789&limit=2'].data[0].client_reference_id=other;}});
- await reject(createUnitEconomicsReconciliation(h.a).reconcile({
+ await assert.rejects(createUnitEconomicsReconciliation(h.a).reconcile({
   principal:ctx(),product:'saas-pro-monthly',periodStart:'2026-11-01T00:00:00Z',periodEnd:'2026-12-01T00:00:00Z',
   stripeEventIds:[eventId],agentRunIds:[runId],
- }));
+ }),/UNIT_ECONOMICS_RECONCILIATION_UNAVAILABLE/);
  assert.equal(h.calls.filter(x=>x.startsWith('db:agent')).length,0);
 });
