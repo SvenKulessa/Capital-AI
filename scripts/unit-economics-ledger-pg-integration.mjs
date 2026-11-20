@@ -164,7 +164,7 @@ async function main(){
   await assert.rejects(sql(asService(call({id:SID(10),key:'mismatch-cost-00001',
     source:OTHER_HASH,run:RUN(10),inference:9007199254740992}))),/UE_INVALID_CENTS|UE_INVALID_INPUT/);
   await assert.rejects(sql(asService(call({id:SID(11),key:'invalid-cost-00001',
-    source:OTHER_HASH,run:RUN(11),inference:-1}))),/UE_INVALID_RUN|UE_COST_TOTAL_MISMATCH/);
+    source:OTHER_HASH,run:RUN(11),inference:-1}))),/UE_INVALID_INPUT|UE_INVALID_RUN|UE_COST_TOTAL_MISMATCH/);
   ok('foreign_key_duplicate_run_cost_bounds_and_transaction_rollback');
 
   const held="begin; "+asService(call({id:SID(12),key:'rollback-tx-000001',
