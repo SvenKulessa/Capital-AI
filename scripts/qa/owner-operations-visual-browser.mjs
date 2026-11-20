@@ -142,7 +142,9 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
   if(expected){
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
     await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
-    if(role==='owner'&&width===390){
+    if(role==='owner'&&width===390&&route==='/profile/dashboard'){
+      // Native touch admission exercises the actual owner navigation route.
+      // Standalone provider fixture receives layout QA but its touch remains NOT_PROVEN.
       // Enable touch BEFORE measuring coordinates. Enabling it after hit-testing
       // can invalidate mobile viewport coordinates on standalone Owner route.
       await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
@@ -278,7 +280,9 @@ async function run() {
   const report={schema:'CAPITAL_AI_OWNER_VISUAL_BROWSER_QA@1',
     source:'BUILT_VITE_PREVIEW_WITH_ISOLATED_API_FIXTURES',realOwnerSession:false,
     productionProviderData:false,realTenantIsolation:'NOT_PROVEN',
-    widths:[320,390,1440],checks,failures,status:failures.length?'FAIL':'PASS'};
+    widths:[320,390,1440],nativeTouchRoute:'/profile/dashboard',
+    standaloneProviderRouteNativeTouch:'NOT_PROVEN',
+    checks,failures,status:failures.length?'FAIL':'PASS'};
   await writeFile(join(output,'audit.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify({status:report.status,checks:checks.length,failures,
     screenshots:['owner-operations-owner-320.png','owner-operations-owner-390.png','owner-operations-owner-1440.png',
