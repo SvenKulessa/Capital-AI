@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { CONTROLLER } from '../../privacy/privacyPolicy';
+import { trackReceivedGovernanceSprintInquiry } from '../../utils/analytics';
 
 const OFFER_PATH = '/governance-evidence-sprint';
 const INQUIRY_PREFIX = '[Governance & Evidence Sprint | B2B-Anfrage]\n';
@@ -43,6 +44,7 @@ export function GovernanceSprintInquiry() {
       if (!response.ok || result.received !== true || result.receipt !== requestId.current ||
           result.status !== 'MAIL_SERVER_ACCEPTED') throw new Error('inquiry_not_accepted');
       setState('received');
+      trackReceivedGovernanceSprintInquiry(result.receipt);
       form.reset();
       setPrivacyAcknowledged(false);
     } catch {
@@ -76,7 +78,7 @@ export function GovernanceSprintInquiry() {
         <label className="flex items-start gap-3 text-sm leading-6 text-slate-200">
           <input type="checkbox" required checked={privacyAcknowledged} onChange={event => setPrivacyAcknowledged(event.target.checked)}
             disabled={state === 'sending' || state === 'received'} className="mt-1 h-5 w-5 shrink-0 accent-amber-300" />
-          <span>Ich habe die <a className="font-semibold text-amber-200 underline underline-offset-4" href="/datenschutz">Datenschutzhinweise zu Kontaktanfragen</a> gelesen
+          <span>Ich habe die <a className="inline-block min-h-11 max-w-full align-middle py-3 font-semibold text-amber-200 underline underline-offset-4" href="/datenschutz">Datenschutzhinweise zu Kontaktanfragen</a> gelesen
             und bitte um Rückmeldung zu meiner Anfrage. Das ist keine Einwilligung in Newsletter oder Werbemails.</span>
         </label>
         <p className="text-xs leading-5 text-slate-300">
