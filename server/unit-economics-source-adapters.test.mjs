@@ -173,3 +173,18 @@ test('streaming bounds reject oversized Stripe and Supabase responses before ful
  const stripe=stripeReader({secret:'sk_live_123456789',fetchImpl:async()=>oversized()});
  await reject(stripe('/events/'+eventId));
 });
+
+test('Stripe dispute requires official du_ identifier and transaction objects',async()=>{
+ const wrongId=harness({mutate:d=>{
+   d.stripe['/events/'+dEvent].data.object.id='dp_123456789';
+ }});
+ await reject(wrongId.a.readStripeEvent({tenantId:tenant,eventId:dEvent}));
+ const oldShape=harness({mutate:d=>{
+   d.stripe['/disputes/du_123456789'].balance_transactions=['txn_dis123456'];
+ }});
+ await reject(oldShape.a.readStripeEvent({tenantId:tenant,eventId:dEvent}));
+ const ambiguous=harness({mutate:d=>{
+   d.stripe['/disputes/du_123456789'].balance_transactions.push({id:'txn_other12345',currency:'eur',amount:500});
+ }});
+ await reject(ambiguous.a.readStripeEvent({tenantId:tenant,eventId:dEvent}));
+});
