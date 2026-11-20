@@ -165,12 +165,32 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
         })()`);
         if(!touch?.withinViewport||!touch.hit)failures.push(tag+': Evidence tab native touch target obscured or outside viewport');
         else{
+          // Record event *types only*, never session data, to distinguish real
+          // touch-delivery failures from delayed click activation or rerenders.
+          await evaluate(`(() => {
+            window.__qaTouchEvents=[];
+            for(const type of ['pointerdown','pointerup','touchstart','touchend','click']){
+              document.addEventListener(type,event=>{
+                if(window.__qaTouchEvents.length<12)window.__qaTouchEvents.push({
+                  type,role:event.target?.closest?.('[role="tab"]')?.getAttribute('role')||'other'
+                });
+              },{capture:true});
+            }
+            return true;
+          })()`);
           await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
           // CDP synthesizeTapGesture performs a real touch tap, never DOM .click().
           await send('Input.synthesizeTapGesture',{x:touch.x,y:touch.y,duration:110,tapCount:1});
-          await wait(220);
-          const selected=await evaluate("!![...document.querySelectorAll('[role=tab]')].find(e=>e.textContent.trim()==='Evidence'&&e.getAttribute('aria-selected')==='true')");
-          if(!selected)failures.push(tag+': native touch did not activate Evidence tab');
+          let selected=false;
+          for(let attempt=0;attempt<20;attempt++){
+            selected=await evaluate("!![...document.querySelectorAll('button[role=tab]')].find(e=>e.textContent.trim()==='Evidence'&&e.getAttribute('aria-selected')==='true')");
+            if(selected)break;
+            await wait(150);
+          }
+          if(!selected){
+            const events=await evaluate("window.__qaTouchEvents||[]");
+            failures.push(tag+': native touch did not activate Evidence tab · event types '+JSON.stringify(events));
+          }
           await send('Emulation.setTouchEmulationEnabled',{enabled:false});
         }
       }
