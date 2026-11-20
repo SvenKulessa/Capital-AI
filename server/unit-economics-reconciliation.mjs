@@ -18,7 +18,7 @@ const MODEL_ID = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,99}$/;
 const KINDS = Object.freeze({
   PAYMENT: ['charge.succeeded', /^ch_[A-Za-z0-9]{6,100}$/],
   REFUND: ['refund.updated', /^re_[A-Za-z0-9]{6,100}$/],
-  DISPUTE: ['charge.dispute.closed', /^dp_[A-Za-z0-9]{6,100}$/],
+  DISPUTE: ['charge.dispute.closed', /^du_[A-Za-z0-9]{6,100}$/],
 });
 
 function fail() { throw new Error('UNIT_ECONOMICS_RECONCILIATION_UNAVAILABLE'); }
