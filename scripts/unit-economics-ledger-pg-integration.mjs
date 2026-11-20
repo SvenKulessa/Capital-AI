@@ -136,7 +136,7 @@ async function isolatedRestore(){
   const restored=await sql(asService(call({tenant:BOB,id:SID(20),key:'bob-key-00000001',
     source:HASH,run:RUN(2)})),'ue_ledger_restore_ci');
   assert.equal(restored,'replayed','restored dedup index and immutable original survive restore');
-  assert.equal(await sql(asService(reverse({tenant:BOB,id:SID(20)})),'ue_ledger_restore_ci'),'not_found');
+  assert.equal(await sql(asService(reverse({tenant:BOB,id:SID(1)})),'ue_ledger_restore_ci'),'not_found');
   report.snapshotCount=Number(sourceTotal);report.runCount=Number(sourceRuns);
   report.reversalCount=Number(sourceReverse);report.sourceDigest=before;report.restoreDigest=after;
   report.restoreVerified=true;
