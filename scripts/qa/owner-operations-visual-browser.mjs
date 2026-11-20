@@ -194,8 +194,14 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
                 if(window.__qaTouchEvents.length<12)window.__qaTouchEvents.push({
                   type,role:event.target?.closest?.('[role="tab"]')?.getAttribute('role')||'other',
                   targetTag:event.target?.tagName||'unknown',
+                  targetClass:typeof event.target?.className==='string'?event.target.className.slice(0,100):null,
+                  targetId:typeof event.target?.id==='string'?event.target.id.slice(0,80):null,
                   x:Math.round((event.changedTouches?.[0]?.clientX ?? event.clientX ?? -1)*10)/10,
-                  y:Math.round((event.changedTouches?.[0]?.clientY ?? event.clientY ?? -1)*10)/10
+                  y:Math.round((event.changedTouches?.[0]?.clientY ?? event.clientY ?? -1)*10)/10,
+                  scrollY:Math.round(window.scrollY),
+                  targetTop:Math.round(event.target?.getBoundingClientRect?.().top??-1),
+                  hitRole:document.elementFromPoint(event.changedTouches?.[0]?.clientX ?? event.clientX ?? -1,
+                    event.changedTouches?.[0]?.clientY ?? event.clientY ?? -1)?.closest?.('[role="tab"]')?.getAttribute('role')||'other'
                 });
               },{capture:true});
             }
@@ -214,7 +220,14 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
             const metrics=await evaluate(`(() => ({innerWidth,innerHeight,scrollX,scrollY,
               offsetX:visualViewport?.offsetLeft??null,offsetY:visualViewport?.offsetTop??null,
               pageTop:visualViewport?.pageTop??null,scale:visualViewport?.scale??null}))()`);
-            failures.push(tag+': native touch did not activate Evidence tab · '+JSON.stringify({events,target:touch,metrics}));
+            const cdp=await send('Page.getLayoutMetrics');
+            const view=cdp.cssVisualViewport||{};
+            const layout=cdp.cssLayoutViewport||{};
+            const compositor={visual:{offsetX:view.offsetX,offsetY:view.offsetY,pageX:view.pageX,
+              pageY:view.pageY,scale:view.scale,clientWidth:view.clientWidth,clientHeight:view.clientHeight},
+              layout:{pageX:layout.pageX,pageY:layout.pageY,clientWidth:layout.clientWidth,
+                clientHeight:layout.clientHeight}};
+            failures.push(tag+': native touch did not activate Evidence tab · '+JSON.stringify({events,target:touch,metrics,compositor}));
           }
           await send('Emulation.setTouchEmulationEnabled',{enabled:false});
         }
