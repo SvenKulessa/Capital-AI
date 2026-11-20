@@ -107,6 +107,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
       ownerTitle:!!root,headline:document.querySelector('h1')?.textContent,
       kpis:root?.querySelectorAll('.ops-mock-kpi').length||0,
       panels:root?.querySelectorAll('.ops-mock-card').length||0,
+      ga4Cards:root?.querySelectorAll('.ops-mock-ga4-metric').length||0,
       agents:root?.querySelectorAll('.ops-mock-agent').length||0,
       donut:!!root?.querySelector('.ops-mock-donut'),
       lineSvg:!!root?.querySelector('.ops-mock-chart-area svg'),
@@ -125,7 +126,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
   checks.push(row);
   if(state.scrollWidth>width+2)failures.push(tag+': viewport horizontal overflow');
   if(expected){
-    if(!state.ownerTitle||state.kpis!==4||state.panels!==4||state.agents!==6||!state.donut||(role!=='missing'&&!state.lineSvg))
+    if(!state.ownerTitle||state.kpis!==4||state.panels!==5||state.ga4Cards!==6||state.agents!==6||!state.donut||(role!=='missing'&&!state.lineSvg))
       failures.push(tag+': owner operations visual elements missing');
     if(!state.rootBounds||state.rootBounds.right>width+2)failures.push(tag+': owner operations panel exceeds viewport');
     if(route==='/profile/dashboard' && (!state.ownerTabSelected || state.path!=='/profile/dashboard'))
