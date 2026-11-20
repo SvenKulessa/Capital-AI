@@ -67,14 +67,15 @@ test('negative cases deny forged PR title, wrong base, draft or invalid SHA',()=
   }
 });
 
-test('negative cases deny neutral CodeQL, missing Docker gate and non-matching checked head',()=>{
+test('negative cases deny neutral CodeQL, missing Docker gate and non-matching checked head',async()=>{
   for(const bad of [
     {...checks(),check_runs:checks().check_runs.slice(1)},
     {...checks(),check_runs:checks().check_runs.map(c=>c.name==='CodeQL'?{...c,conclusion:'neutral'}:c)},
     {...checks(),check_runs:checks().check_runs.map(c=>c.name==='Domain Governance'?{...c,head_sha:main}:c)}]){
     const mock=mocked({checks:bad});
-    const r=readTenPrGitHubCounter({fetchImpl:mock.fetchImpl,now:observed});
-    return r.then(data=>{assert.equal(data.verifiedCount,0);assert.equal(data.rejected[0].reason,'REQUIRED_CHECKS_NOT_SUCCESS');});
+    const data=await readTenPrGitHubCounter({fetchImpl:mock.fetchImpl,now:observed});
+    assert.equal(data.verifiedCount,0);
+    assert.equal(data.rejected[0].reason,'REQUIRED_CHECKS_NOT_SUCCESS');
   }
 });
 
