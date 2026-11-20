@@ -143,39 +143,31 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
     if(role==='owner'&&width===390&&route==='/profile/dashboard'){
       // Native touch admission exercises the actual owner navigation route.
       // Standalone provider fixture receives layout QA but its touch remains NOT_PROVEN.
-      // CDP wheel must scroll as a wheel pointer before touch emulation is
-      // enabled: mobile touch emulation can swallow the synthetic mouse wheel.
-      // Enable native touch *after* compositor scroll acknowledgement, but
-      // before touch hit-testing/coordinate measurement.
-      // Chrome 157 log: native touchstart observed scrollY=478 while the renderer
-      // had scrolled to 2725; touchend subsequently observed 2725. JS
-      // scrollIntoView did not synchronize the compositor's input hit-test.
-      // Use a browser-driven CDP wheel scroll, then verify both scroll views.
-      const destination=await evaluate(`(() => {
+      // Chrome 157 evidence: JS scrollY was 2725 but the first real
+      // touchStart hit-tested at 478; touchEnd then observed scrollY 2725.
+      // Flush the compositor input state with a CANCELLED native touch on a
+      // verified non-interactive viewport corner. No click or tab selection.
+      await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+      const found=await evaluate(`(() => {
         const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
-        if(!element)return null;
-        const r=element.getBoundingClientRect();
-        const maxScroll=Math.max(0,document.documentElement.scrollHeight-innerHeight);
-        return {from:scrollY,to:Math.min(maxScroll,Math.max(0,scrollY+r.top+r.height/2-innerHeight/2))};
+        if(!element)return false;
+        element.scrollIntoView({behavior:'instant',block:'center',inline:'nearest'});
+        return true;
       })()`);
-      if(!destination)failures.push(tag+': Evidence tab inaccessible');
+      if(!found)failures.push(tag+': Evidence tab inaccessible');
       else{
-        const delta=destination.to-destination.from;
-        if(Math.abs(delta)>1)await send('Input.dispatchMouseEvent',{
-          type:'mouseWheel',x:195,y:450,deltaX:0,deltaY:delta});
-        let wheelSettled=false;
-        for(let attempt=0;attempt<40;attempt++){
-          const domPosition=await evaluate('window.scrollY');
-          const layout=await send('Page.getLayoutMetrics');
-          const compositorPosition=layout.cssLayoutViewport?.pageY;
-          if(Math.abs(domPosition-destination.to)<=2 &&
-              Math.abs(compositorPosition-destination.to)<=2){
-            wheelSettled=true;break;
-          }
-          await wait(120);
+        const neutral=await evaluate(`(() => {
+          const hit=document.elementFromPoint(2,2);
+          return !!hit && !hit.closest('a,button,input,select,textarea,[role="button"],[role="tab"],[tabindex]');
+        })()`);
+        if(!neutral)failures.push(tag+': safe compositor synchronization point unavailable');
+        else{
+          await send('Input.dispatchTouchEvent',{
+            type:'touchStart',touchPoints:[{x:2,y:2,radiusX:1,radiusY:1,force:1}],
+          });
+          await send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+          await wait(180);
         }
-        if(!wheelSettled)failures.push(tag+': compositor wheel scroll was not acknowledged before native Evidence touch');
-        if(wheelSettled)await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
         // On long mobile dashboards the document may continue moving after
         // scrollIntoView. Admit touch only after both viewport and target box
         // remain stable across repeated animation frames; never DOM-click.
@@ -202,7 +194,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
           await wait(120);
         }
-        const touch=settled&&wheelSettled?await evaluate(`(() => {
+        const touch=settled&&neutral?await evaluate(`(() => {
           const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
           if(!element)return null;
           const r=element.getBoundingClientRect();
