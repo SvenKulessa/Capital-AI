@@ -49,7 +49,11 @@ or key provisioning is included. Do not co-locate the separate reviewer
 signers with an untrusted agent process.
 
 The verifier refuses missing, stale, duplicated, failed or ambiguous
-readbacks. It cannot initiate an HTTP write, merge, deployment or model
+readbacks and re-checks main/head after the CI readback to catch mid-review
+races. New verified rows are written only to `authenticated_outcomes`; any
+older `outcomes` table remains untouched and untrusted, and its counts never
+promote a candidate. This is a fail-closed, non-destructive schema separation.
+It cannot initiate an HTTP write, merge, deployment or model
 inference. Its signed decision only allows *local* SQLite learning for an
 already independently reviewed case; it does not authorize patching,
 publishing or a GitHub merge. The runtime must separately authenticate the
