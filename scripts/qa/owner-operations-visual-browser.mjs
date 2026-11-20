@@ -158,8 +158,25 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
       })()`);
       if(!found)failures.push(tag+': Evidence tab inaccessible');
       else{
-        await wait(180);
-        const touch=await evaluate(`(() => {
+        // On long mobile dashboards the document may continue moving after
+        // scrollIntoView. Admit touch only after both viewport and target box
+        // remain stable across repeated animation frames; never DOM-click.
+        const settled=await evaluate(`(async () => {
+          const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
+          if(!element)return false;
+          let previous='',stableFrames=0;
+          for(let i=0;i<90;i++){
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+            const r=element.getBoundingClientRect();
+            const signature=[scrollX,scrollY,r.left,r.top,r.width,r.height].map(v=>Math.round(v*2)/2).join(':');
+            stableFrames=signature===previous?stableFrames+1:0;
+            if(stableFrames>=12)return true;
+            previous=signature;
+          }
+          return false;
+        })()`);
+        if(!settled)failures.push(tag+': mobile Evidence tab layout never settled before native touch');
+        const touch=settled?await evaluate(`(() => {
           const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
           if(!element)return null;
           const r=element.getBoundingClientRect();
@@ -167,7 +184,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           const hit=document.elementFromPoint(x,y);
           return {x,y,hit:!!hit && (hit===element || element.contains(hit)),
             withinViewport:x>=0 && x<innerWidth && y>=0 && y<innerHeight};
-        })()`);
+        })()`):null;
         if(!touch?.withinViewport||!touch.hit)failures.push(tag+': Evidence tab native touch target obscured or outside viewport');
         else{
           // Record event *types only*, never session data, to distinguish real
