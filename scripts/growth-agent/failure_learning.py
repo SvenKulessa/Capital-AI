@@ -111,9 +111,17 @@ def outcome_valid(fp: FailureFingerprint, reviewed: ReviewedOutcome) -> bool:
 
 
 class RepairKnowledge:
-    """Private local SQLite index of approved outcomes; not an execution engine."""
+    """Private SQLite index; old unproven outcomes are deliberately not promoted.
 
-    def __init__(self, path: Path):
+    Authenticated outcomes live in a separate v2 table. The legacy v1 table, if
+    present, is left untouched and never counted by retrieval or ranking.
+    """
+
+    def __init__(self, path: Path, *, verifier=None):
+        # Default-deny: no synthetic ReviewedOutcome may authenticate itself.
+        if verifier is not None and not callable(getattr(verifier, "verify", None)):
+            raise TypeError("trusted verifier required")
+        self._verifier = verifier
         path = Path(path)
         if not path.is_absolute() or path.suffix != ".sqlite3" or path.is_symlink():
             raise ValueError("knowledge path must be an absolute non-symlink sqlite3 file")
@@ -131,7 +139,7 @@ class RepairKnowledge:
             os.close(fd)
         self.path = path
         with self._connect() as db:
-            db.execute("""CREATE TABLE IF NOT EXISTS outcomes (
+            db.execute("""CREATE TABLE IF NOT EXISTS authenticated_outcomes (
                 scope TEXT NOT NULL, fingerprint TEXT NOT NULL, playbook TEXT NOT NULL,
                 head_sha TEXT NOT NULL, PRIMARY KEY(scope, fingerprint, head_sha)
             )""")
@@ -145,25 +153,31 @@ class RepairKnowledge:
         key, guidance = PLAYBOOKS[fp.category]
         with self._connect() as db:
             (count,) = db.execute(
-                "SELECT COUNT(*) FROM outcomes WHERE scope=? AND fingerprint=? AND playbook=?",
+                "SELECT COUNT(*) FROM authenticated_outcomes WHERE scope=? AND fingerprint=? AND playbook=?",
                 (scope, fp.digest, key),
             ).fetchone()
         return [{"playbook": key, "summary": guidance, "verified_count": count,
                  "status": "EVIDENCE_BACKED_CANDIDATE" if count else "UNVERIFIED_CANDIDATE"}]
 
     def learn(self, *, scope: str, fp: FailureFingerprint, playbook: str,
-              reviewed: ReviewedOutcome) -> bool:
-        """Only the host's independent trusted reviewer can supply this evidence.
+              reviewed: ReviewedOutcome, proof=None) -> bool:
+        """Only authenticated independent reviewer evidence can promote learning.
 
         No raw logs, patches, secret strings, token traces, or PR body are written.
         A success here means local learning, never permission to merge/deploy.
         """
         if (not isinstance(scope, str) or not HEX.fullmatch(scope) or not _fp_ok(fp)
-                or playbook != PLAYBOOKS[fp.category][0] or not outcome_valid(fp, reviewed)):
+                or playbook != PLAYBOOKS[fp.category][0] or not outcome_valid(fp, reviewed)
+                or proof is None or self._verifier is None):
+            return False
+        try:
+            if self._verifier.verify(scope=scope, fp=fp, reviewed=reviewed, proof=proof) is not True:
+                return False
+        except Exception:
             return False
         with self._connect() as db:
             cursor = db.execute(
-                "INSERT OR IGNORE INTO outcomes(scope,fingerprint,playbook,head_sha) VALUES(?,?,?,?)",
+                "INSERT OR IGNORE INTO authenticated_outcomes(scope,fingerprint,playbook,head_sha) VALUES(?,?,?,?)",
                 (scope, fp.digest, playbook, reviewed.head_sha),
             )
         return cursor.rowcount == 1
