@@ -35,7 +35,7 @@ export async function collectLiveInventory({repo=REPO, token, fetchImpl=fetch, n
   const out = [];
   for (const p of prs) {
     check(Number.isSafeInteger(p?.number) && sha(p?.head?.sha) && sha(p?.base?.sha), 'invalid PR metadata');
-    check(p.base.sha.toLowerCase()===firstMain,'PR base SHA differs from current main');
+    // Base-SHA freshness is a per-PR observation, not an inventory-wide failure.
     const files=[];
     for(let page=1;page<=11;page++) {
       const rows=await get(`pulls/${p.number}/files?per_page=100&page=${page}`);
@@ -63,6 +63,7 @@ export async function collectLiveInventory({repo=REPO, token, fetchImpl=fetch, n
     check(fileNames.size>=actualFiles.changed_files && fileNames.size<=actualFiles.changed_files*2,
       'file list incomplete');
     out.push({number:p.number,title:p.title,headSha:p.head.sha,baseSha:p.base.sha,
+      baseStatus:p.base.sha.toLowerCase() === firstMain ? 'CURRENT_MAIN' : 'BEHIND_MAIN',
       state:'open',draft:p.draft,changedFiles:[...fileNames].sort(),changedFilesComplete:true});
   }
   const finalMain=await readMain();
