@@ -131,6 +131,7 @@ test('an unprocessed or missing Stripe event inbox denies recognition',async()=>
   let s=setup({callbacks:{readStripeInbox:async({eventId})=>({
     eventId,eventType:'charge.succeeded',status:'processing',livemode:true,payloadSha256:hash('a')})}});
   await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+  assert.equal(s.calls.filter(c=>c.startsWith('stripe:')).length,0,'no provider read on pending inbox');
   s=setup({callbacks:{readStripeInbox:async()=>null}});
   await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
 });
