@@ -54,6 +54,9 @@ def fingerprint(raw_log: str, *, source: str = "github-actions") -> FailureFinge
         raise ValueError("unsupported source")
     if not isinstance(raw_log, str) or not 1 <= len(raw_log) <= 32_768:
         raise ValueError("invalid log size")
+    # Restrict UTF-8 *bytes* too: a 32K-character Unicode log can far exceed 32 KiB.
+    if len(raw_log.encode("utf-8")) > 32_768:
+        raise ValueError("invalid log byte size")
     category = next((name for name, pattern in CATEGORIES if pattern.search(raw_log)), "UNKNOWN")
     canonical = json.dumps([SCHEMA, source, category], separators=(",", ":"))
     return FailureFingerprint(hashlib.sha256(canonical.encode()).hexdigest(), category, source)
