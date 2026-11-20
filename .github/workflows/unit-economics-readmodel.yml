@@ -43,12 +43,12 @@ jobs:
           node --check server/unit-economics-reconciliation.mjs
           node --check server/unit-economics-reconciliation.test.mjs
           node --check server/unit-economics-source-adapters.mjs
-          node --check server/unit-economics-source-adapters.test.mjs server/unit-economics-ledger-staging.test.mjs scripts/unit-economics-ledger-migration.test.mjs
+          node --check server/unit-economics-source-adapters.test.mjs
           node --check server/unit-economics-ledger-staging.mjs
           node --check server/unit-economics-ledger-staging.test.mjs
           node --check scripts/unit-economics-ledger-migration.test.mjs
           node --check scripts/unit-economics-ledger-pg-integration.mjs
-          node --test server/unit-economics-readmodel.test.mjs server/unit-economics-reconciliation.test.mjs server/unit-economics-source-adapters.test.mjs
+          node --test server/unit-economics-readmodel.test.mjs server/unit-economics-reconciliation.test.mjs server/unit-economics-source-adapters.test.mjs server/unit-economics-ledger-staging.test.mjs scripts/unit-economics-ledger-migration.test.mjs
 
   isolated-postgres-ledger:
     name: Unit Economics PostgreSQL 17
