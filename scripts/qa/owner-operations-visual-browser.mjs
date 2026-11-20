@@ -146,16 +146,34 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
       // Enable touch BEFORE measuring coordinates. Enabling it after hit-testing
       // can invalidate mobile viewport coordinates on standalone Owner route.
       await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
-      // Scroll completion and hit-testing are required before a native tap:
-      // querying the rectangle immediately after scrollIntoView races smooth scrolling.
-      const found=await evaluate(`(() => {
+      // Chrome 157 log: native touchstart observed scrollY=478 while the renderer
+      // had scrolled to 2725; touchend subsequently observed 2725. JS
+      // scrollIntoView did not synchronize the compositor's input hit-test.
+      // Use a browser-driven CDP wheel scroll, then verify both scroll views.
+      const destination=await evaluate(`(() => {
         const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
-        if(!element)return false;
-        element.scrollIntoView({behavior:'instant',block:'center',inline:'nearest'});
-        return true;
+        if(!element)return null;
+        const r=element.getBoundingClientRect();
+        const maxScroll=Math.max(0,document.documentElement.scrollHeight-innerHeight);
+        return {from:scrollY,to:Math.min(maxScroll,Math.max(0,scrollY+r.top+r.height/2-innerHeight/2))};
       })()`);
-      if(!found)failures.push(tag+': Evidence tab inaccessible');
+      if(!destination)failures.push(tag+': Evidence tab inaccessible');
       else{
+        const delta=destination.to-destination.from;
+        if(Math.abs(delta)>1)await send('Input.dispatchMouseEvent',{
+          type:'mouseWheel',x:195,y:450,deltaX:0,deltaY:delta});
+        let wheelSettled=false;
+        for(let attempt=0;attempt<40;attempt++){
+          const domPosition=await evaluate('window.scrollY');
+          const layout=await send('Page.getLayoutMetrics');
+          const compositorPosition=layout.cssLayoutViewport?.pageY;
+          if(Math.abs(domPosition-destination.to)<=2 &&
+              Math.abs(compositorPosition-destination.to)<=2){
+            wheelSettled=true;break;
+          }
+          await wait(120);
+        }
+        if(!wheelSettled)failures.push(tag+': compositor wheel scroll was not acknowledged before native Evidence touch');
         // On long mobile dashboards the document may continue moving after
         // scrollIntoView. Admit touch only after both viewport and target box
         // remain stable across repeated animation frames; never DOM-click.
@@ -182,7 +200,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
           await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
           await wait(120);
         }
-        const touch=settled?await evaluate(`(() => {
+        const touch=settled&&wheelSettled?await evaluate(`(() => {
           const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
           if(!element)return null;
           const r=element.getBoundingClientRect();
