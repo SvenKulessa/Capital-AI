@@ -98,18 +98,21 @@ def propose_repair(observation: dict, *, root_cause_code: str, strategy_code: st
             "automatic_merge_allowed": False, "production_eligible": False}
 
 
-def eligible_for_admission(candidate: dict, evidence: dict) -> bool:
-    """Advisory precondition, not a security approval or authority grant.
+def inspect_review_claims(candidate: dict, evidence: dict) -> dict:
+    """Inspect untrusted claims only; cannot grant or certify approval.
 
-    An external trusted host must verify the evidence, real independent
-    reviewer identities, permissions, test logs, and commit binding.
+    Provenance of tests, security reports and independent reviewer identities
+    must be established by a trusted external verification adapter.
     """
     required = {"reproduced", "root_cause_confirmed", "tests_passed",
                 "security_clear", "trust_independent", "quality_independent",
                 "patch_sha"}
-    return bool(isinstance(candidate, dict) and isinstance(evidence, dict)
-                and candidate.get("status") == "HYPOTHESIS_NOT_PROVEN"
-                and set(evidence) == required
-                and all(evidence[x] is True for x in required - {"patch_sha"})
-                and _sha(candidate.get("patch_sha"))
-                and evidence["patch_sha"] == candidate["patch_sha"])
+    complete = bool(isinstance(candidate, dict) and isinstance(evidence, dict)
+                    and candidate.get("status") == "HYPOTHESIS_NOT_PROVEN"
+                    and set(evidence) == required
+                    and all(evidence[x] is True for x in required - {"patch_sha"})
+                    and _sha(candidate.get("patch_sha"))
+                    and evidence["patch_sha"] == candidate["patch_sha"])
+    return {"status": "NOT_PROVEN", "claims_complete": complete,
+            "independent_reviews_verified": False,
+            "automatic_merge_allowed": False, "production_eligible": False}
