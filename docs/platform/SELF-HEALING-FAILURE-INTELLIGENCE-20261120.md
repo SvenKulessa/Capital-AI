@@ -10,7 +10,7 @@ Contract: \`CAPITAL_AI_FAILURE_INTELLIGENCE@1\`. Status: **SOURCE_ONLY / OFFLINE
 - \`classify_failure\` accepts an exact metadata-only schema, a separately authenticated tenant UUID, one known GitHub CI source, a failed result, a compact allowlisted failure code, run ID and immutable commit SHA. Arbitrary logs, PR instructions, secrets and additional claims fail closed.
 - Recurring error fingerprints include tenant, repository, source, check, category and failure code. Run and commit are intentionally excluded from the stable fingerprint but preserved in the observation's Evidence URL and source SHA.
 - \`propose_repair\` produces only \`HYPOTHESIS_NOT_PROVEN\`. It has no patch executor, privileged tool, persistence side effect, provider request, approval or merge permission.
-- \`eligible_for_admission\` is **only a structural precondition**. Booleans from untrusted logs or chat cannot satisfy the underlying independently verified TRUST/QUALITY review; the future trusted host must bind actual reviewers, relevant test logs and GitHub SHA evidence. It is not an authorization decision.
+- `inspect_review_claims` checks only structural completeness and **always returns NOT_PROVEN, independent_reviews_verified=false and automatic_merge_allowed=false**. Untrusted review flags never authorize a patch or merge. A future trusted host must independently verify reviewer identities, test logs, GitHub SHA and permissions.
 - Persistence and replay must reuse existing private worker mount and \`checkpoint_store.py\` / \`auto_loop.py\` once an authenticated source adapter and durable knowledge projection are validated. This first slice does not store repair patterns persistently and does not activate background monitoring.
 
 ## Automated quality cases
