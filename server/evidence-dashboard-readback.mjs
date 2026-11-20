@@ -152,6 +152,9 @@ const GA4_SAFE_DIAGNOSTICS = Object.freeze({
   INVALID_GA4_REALTIME_VALUE: 'GA4_PROVIDER_RESPONSE_INVALID',
 });
 function safeGa4Diagnostic(error) {
+  // Preserve the existing owner-only public reason contract before adding new safe categories.
+  const existing = safeGa4FailureReason(error);
+  if (existing !== 'GA4_READBACK_FAILED') return existing;
   const code = error instanceof Error ? error.message : '';
   if (Object.hasOwn(GA4_SAFE_DIAGNOSTICS, code)) return GA4_SAFE_DIAGNOSTICS[code];
   if (['GA4_MCP_TIMEOUT_initialize', 'GA4_MCP_TIMEOUT_tools/list', 'GA4_MCP_TIMEOUT_tools/call'].includes(code)) return 'GA4_MCP_RUNTIME_TIMEOUT';

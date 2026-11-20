@@ -112,6 +112,13 @@ export function isSnapshotStale(snapshot: DashboardReadback, nowMs: number, maxA
 /** Only approved status categories are rendered; raw provider errors are never echoed. */
 const GA4_DIAGNOSTIC_LABELS = Object.freeze({
   GA4_PROPERTY_CONFIG_MISSING: 'GA4-Property-Konfiguration fehlt',
+  GA4_PROPERTY_NUMBER_NOT_CONFIGURED: 'GA4-Property-Konfiguration fehlt',
+  GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED: 'GA4-Leseidentität nicht konfiguriert',
+  GA4_MCP_PROJECT_MISMATCH: 'Projektbindung stimmt nicht überein',
+  GA4_MCP_PROCESS_START_FAILED: 'GA4-MCP-Prozess nicht verfügbar',
+  GA4_MCP_REQUEST_TIMEOUT: 'GA4-MCP-Prozess hat Zeitlimit überschritten',
+  GA4_PROPERTY_NOT_ACCESSIBLE: 'GA4-Property-Zugriff nicht bestätigt',
+  GA4_PROPERTY_DETAILS_NOT_BOUND: 'GA4-Property-Bindung nicht bestätigt',
   GA4_PROJECT_CONFIG_MISSING: 'Google-Projektkonfiguration fehlt',
   GA4_CREDENTIAL_CONFIG_MISSING: 'GA4-Leseidentität nicht konfiguriert',
   GA4_CREDENTIAL_CONFIG_INVALID: 'GA4-Leseidentität ungültig konfiguriert',
