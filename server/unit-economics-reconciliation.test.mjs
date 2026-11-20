@@ -47,7 +47,7 @@ function setup(options={}) {
   const runs={...{[RUN_A]:run(),[RUN_B]:run(RUN_B)},...(options.runs||{})};
   const calls=[];
   const callbacks={
-    resolveTenant:async p=>{calls.push('auth');return options.tenant??T;},
+    resolveTenant:async p=>{calls.push('auth');return Object.hasOwn(options,'tenant')?options.tenant:T;},
     readStripeInbox:async ({tenantId,eventId})=>{
       calls.push('inbox:'+eventId);
       const rec=records[eventId];
@@ -152,5 +152,87 @@ test('rejects cross-period or wrong-product records',async()=>{
   }
 });
 test('rejects invalid event IDs, run IDs and unbounded scans before provider access',async()=>{
-  for (const bad of [{stripeEventIds:['evt_'];},{},]) {}
+  for (const changes of [
+    {stripeEventIds:['evt_']},
+    {agentRunIds:['../secrets']},
+    {stripeEventIds:Array.from({length:101},(_,i)=>'evt_test'+String(i).padStart(6,'0'))},
+    {agentRunIds:Array.from({length:101},()=>RUN_A)},
+    {periodStart:'2026-12-01T00:00:00Z'},
+    {periodEnd:'not-a-date'},
+    {product:'../wrong'},
+  ]) {
+    const s=setup();
+    await assert.rejects(s.instance.reconcile(request(changes)),/RECONCILIATION_UNAVAILABLE/);
+    assert.deepEqual(s.calls,['auth']);
+  }
+});
+test('rejects unbilled or synthetic pilot agent runs; no estimated AI cost',async()=>{
+  for (const change of [
+    {executionStatus:'SYNTHETIC_LOCAL_COMPLETED'},
+    {billingLineId:''},
+    {runEvidenceSha256:'not-a-digest'},
+    {inputTokens:-1},
+    {outputTokens:1.1},
+    {completedAt:'2027-01-01T00:00:00Z'},
+  ]) {
+    const s=setup({runs:{[RUN_A]:{...run(),...change}}});
+    await assert.rejects(s.instance.reconcile(request({stripeEventIds:[],agentRunIds:[RUN_A]})),/RECONCILIATION_UNAVAILABLE/);
+  }
+});
+test('rejects unproven, mismatched and non-EUR provider costs',async()=>{
+  const r=run();
+  for (const change of [
+    {billingState:'ESTIMATED'}, {currency:'USD'}, {billingEvidenceSha256:'bad'},
+    {billingLineId:'wrong_bill_id'}, {runId:RUN_B}, {model:'unrelated'},
+    {inferenceMinor:-1}, {toolsMinor:0.25}, {toolsMinor:Number.MAX_SAFE_INTEGER},
+  ]) {
+    const s=setup({callbacks:{readProviderCost:async()=>({...bill(r),...change})}});
+    await assert.rejects(s.instance.reconcile(request({stripeEventIds:[],agentRunIds:[RUN_A]})),/RECONCILIATION_UNAVAILABLE/);
+  }
+});
+test('two runs may not allocate the same provider billing line twice',async()=>{
+  const duplicated={...run(RUN_B),billingLineId:run().billingLineId};
+  const s=setup({runs:{[RUN_B]:duplicated}});
+  await assert.rejects(s.instance.reconcile(request({stripeEventIds:[],agentRunIds:[RUN_A,RUN_B]})),/RECONCILIATION_UNAVAILABLE/);
+});
+test('empty request is zero observed cash but still INCOMPLETE, not proof of zero bills',async()=>{
+  const s=setup();
+  const v=await s.instance.reconcile(request({stripeEventIds:[],agentRunIds:[]}));
+  assert.equal(v.netCashExcludingTaxMinor,0);
+  assert.equal(v.inferenceCostMinor,0);
+  assert.equal(v.costPerSuccessfulRunMinor,null);
+  assert.equal(v.status,'INCOMPLETE_FOR_ACCOUNTING_AND_PRODUCTION');
+  assert.deepEqual(s.calls,['auth']);
+});
+test('output contains no principal, tenant ID, Stripe event IDs or raw charge receipts',async()=>{
+  const s=setup();
+  const result=JSON.stringify(await s.instance.reconcile(request()));
+  assert.doesNotMatch(result,/trusted-test-user|11111111-1111|evt_paymentA12|in_invoice123456|ch_pay123456|balanceTransactionId/);
+  assert.match(result,/snapshotSha256/);
+});
+test('reordered unique identifiers yield deterministic snapshots',async()=>{
+  const s=setup();
+  const a=await s.instance.reconcile(request());
+  const b=await s.instance.reconcile(request({stripeEventIds:[REF,PAY],agentRunIds:[RUN_B,RUN_A]}));
+  assert.deepEqual(b,a);
+});
+test('read failures must not emit a success projection',async()=>{
+  const s=setup({callbacks:{readStripeEvent:async()=>{throw new Error('sensitive-provider-error');}}});
+  await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+});
+test('unbounded or fractional Stripe fees fail closed',async()=>{
+  for (const change of [{feeMinor:-1},{grossMinor:1.5},{feeMinor:0.9},{feeMinor:Number.MAX_SAFE_INTEGER}]) {
+    const s=setup({events:{[PAY]:{...payment(),...change}}});
+    // MAX_SAFE_INTEGER is a valid single fee, but two such fees or a combined
+    // net/cost sum must not silently overflow.
+    if (change.feeMinor===Number.MAX_SAFE_INTEGER) {
+      const other={...refund(),feeMinor:10};
+      const t=setup({events:{[PAY]:{...payment(),...change},[REF]:other}});
+      await assert.rejects(t.instance.reconcile(request({agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+    } else await assert.rejects(s.instance.reconcile(request({stripeEventIds:[PAY],agentRunIds:[]})),/RECONCILIATION_UNAVAILABLE/);
+  }
+});
+test('constructor refuses absent trusted authentication, receipt or billing adapters',()=>{
+  assert.throws(()=>createUnitEconomicsReconciliation(),/trusted server-side readers required/);
+  assert.throws(()=>createUnitEconomicsReconciliation({resolveTenant:async()=>T}),/trusted server-side readers required/);
 });
