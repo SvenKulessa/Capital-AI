@@ -77,6 +77,7 @@ function checkedStripe(inbox, provider, requestedEventId, tenantId, product, sta
     businessKey: provider.kind + ':' + provider.objectId,
     chargeId: provider.chargeId,
     kind: provider.kind, sourceId: provider.sourceId,
+    balanceTransactionId:provider.balanceTransactionId,
     grossMinor: gross, taxMinor: tax, feeMinor: fee,
     evidenceHash: hash([inbox.payloadSha256, provider.objectReadbackSha256]),
   };
@@ -161,6 +162,13 @@ export function createUnitEconomicsReconciliation({
         } else stripeByObject.set(event.businessKey,event);
       }
       const uniqueStripe=[...stripeByObject.values()].sort((a,b)=>a.businessKey.localeCompare(b.businessKey));
+      // A Stripe balance transaction may be observed through multiple events,
+      // but its cash movement/fee must never be booked twice.
+      const balanceTransactions=new Set();
+      for (const event of uniqueStripe) {
+        if (balanceTransactions.has(event.balanceTransactionId)) fail();
+        balanceTransactions.add(event.balanceTransactionId);
+      }
       const uniqueRuns=new Map(), allocatedBilling=new Set();
       for (const run of runs) {
         if (uniqueRuns.has(run.runId) || allocatedBilling.has(run.billingLineId)) fail();
