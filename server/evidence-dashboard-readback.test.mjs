@@ -27,8 +27,8 @@ function setup({ allowed = true, role = true, ga4Broken = false, ga4FailureCode 
     authorized: async () => allowed && role,
     load: async () => {
       ga4Calls++;
-      if (ga4FailureCode) throw Error(ga4FailureCode);
       if (ga4Broken) throw Error('confidential_ga4_password');
+      if (ga4FailureCode) throw Error(ga4FailureCode);
       return { status: 'PROVIDER_READ_VERIFIED', property: { resourceName: 'properties/123456789' }, realtime: { events: [
         { eventName: 'page_view', eventCount: invalidRealtime ? 'INVALID' : 2 },
         { eventName: 'private-user-id', eventCount: 1 },
@@ -143,7 +143,7 @@ test('rejects unknown GitHub SHA, truncated PR listing, GA4 failure and incomple
   const { body } = await invalid.request();
   assert.equal(body.github.status, 'NOT_PROVEN');
   assert.equal(body.ga4.status, 'NOT_PROVEN');
-  assert.equal(body.ga4.reason, 'PROVIDER_READ_FAILED');
+  assert.equal(body.ga4.reason, 'GA4_READBACK_FAILED');
   const truncated = setup({ provider: url => String(url).includes('/pulls?') ? Array.from({ length: 100 }, (_, i) => ({ number: i + 1, state: 'open' })) : fixture(url) });
   const res = await truncated.request();
   assert.equal(res.body.github.openPrCount, null);
@@ -197,10 +197,10 @@ test('rejects malformed realtime counts without inventing GA4 events or breaking
   const h = setup({ invalidRealtime: true });
   const { body } = await h.request();
   assert.equal(body.ga4.status, 'NOT_PROVEN');
-  assert.equal(body.ga4.reason, 'PROVIDER_READ_FAILED');
+  assert.equal(body.ga4.reason, 'GA4_PROVIDER_RESPONSE_INVALID');
   assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
   assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
-  assert.doesNotMatch(JSON.stringify(body), /INVALID|private-user-id/);
+  assert.doesNotMatch(JSON.stringify(body), /private-user-id/);
 });
 
 test('owner-only GA4 diagnostics identify known boundary failures without exposing raw errors', async () => {
@@ -225,6 +225,51 @@ test('owner-only GA4 diagnostics identify known boundary failures without exposi
   }
   const secret = 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED token=confidential-live-token';
   const { body } = await setup({ ga4FailureCode: secret }).request();
-  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'PROVIDER_READ_FAILED' });
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_READBACK_FAILED' });
   assert.doesNotMatch(JSON.stringify(body), /confidential-live-token|SERVICE_ACCOUNT_NOT_CONFIGURED/);
+});
+
+test('AcodeX P1-v2 is archived owner-only evidence, never a live device probe', async () => {
+  const h = setup();
+  const denied = setup({ allowed: false });
+  assert.equal((await denied.request()).status, 404);
+  assert.equal(denied.calls.length, 0);
+  const { body } = await h.request();
+  const archive = body.acodex;
+  assert.equal(archive.classification, 'HISTORICAL_REFERENCE_ONLY');
+  assert.equal(archive.provenance, 'OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK');
+  assert.equal(archive.archiveStatus, 'VERIFIED');
+  assert.equal(archive.currentDeviceStatus, 'NOT_PROVEN');
+  assert.equal(archive.baselineUtc, '2026-11-18T23:11:25Z');
+  assert.equal(archive.expectedStartUtc, '2026-11-19T00:41:03Z');
+  assert.equal(archive.latestSuccessUtc, '2026-11-19T00:41:28Z');
+  assert.equal(archive.checkedUtc, '2026-11-19T00:43:05Z');
+  for (const code of ['healthExit', 'outerExit', 'guardAuditExit', 'newOAuthFailures', 'newPullFailures'])
+    assert.equal(archive[code], 0);
+  assert.equal(archive.lockClear, true);
+  assert.equal(archive.evidence.v11.sha256, '89b2215cf85420928c70271dffa38ee4ad51ccd07d1832b4bb35192e28c892a3');
+  assert.equal(archive.evidence.v1.sha256, '991b97eef4f31a69ece605347d9b6aeebc8405f0fcd30ee7e96d03869c5e5afd');
+  assert.equal(archive.evidence.standard.sha256, 'be03a2c479eddc1a40d4bad133e34b41e20039aa27ee5a776b05a24571d9eb17');
+  assert.equal(h.calls.length, 5);
+  assert.ok(h.calls.every(c => {
+    const url = new URL(c.url);
+    return url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname);
+  }));
+  assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|password|secret_value/i);
+});
+
+test('owner evidence reports an allowlisted GA4 property failure without leaking source data', async () => {
+  const h = setup({ ga4FailureCode: 'GA4_PROPERTY_NOT_ACCESSIBLE' });
+  const { body } = await h.request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_PROPERTY_NOT_ACCESSIBLE' });
+  assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+  assert.doesNotMatch(JSON.stringify(body), /service.account|private.key|owner@example.test/);
+});
+
+test('unknown GA4 error strings remain opaque in owner evidence', async () => {
+  const h = setup({ ga4FailureCode: 'private_key=DO_NOT_EXPOSE' });
+  const { body } = await h.request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_READBACK_FAILED' });
+  assert.doesNotMatch(JSON.stringify(body), /DO_NOT_EXPOSE/);
 });

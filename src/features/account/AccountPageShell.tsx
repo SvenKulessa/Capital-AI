@@ -66,6 +66,7 @@ async function readSession(signal?: AbortSignal): Promise<AccountSession> {
 }
 
 export function AccountPageShell({
+  active,
   title,
   description,
   onNavigate,
@@ -167,6 +168,12 @@ export function AccountPageShell({
               >
                 <ArrowLeft className="h-4 w-4" /> {tr.accountLanding}
               </button>
+              {active === '/profile/dashboard' && (
+                <button type="button" onClick={() => onNavigate('/profile')}
+                  className="inline-flex min-h-11 items-center rounded-xl border border-violet-400/40 px-4 text-xs font-bold text-violet-100 hover:bg-violet-500/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-200">
+                  Profilbild verwalten
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => void logout()}

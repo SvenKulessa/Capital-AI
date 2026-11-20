@@ -1,9 +1,10 @@
 FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS crypto-base
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
-# Use the patched zlib from the base image's existing stable Alpine 3.24 branch.
+# Use patched OpenSSL and zlib packages from the existing stable Alpine 3.24 branch.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
-RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' 'zlib>=1.4-r0' \
-    && apk info -v zlib
+# Fail closed if the repository cannot supply the OpenSSL 3.5.9-r1 security revision.
+RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' \
+    && apk info -v zlib libcrypto3 libssl3
 
 FROM crypto-base AS build
 WORKDIR /app
@@ -86,7 +87,7 @@ COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs 
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
-COPY server/evidence-dashboard-readback.mjs server/evidence-dashboard-readback.test.mjs ./server/
+COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
 COPY server/oauth-consent.mjs server/oauth-consent.test.mjs ./server/
@@ -189,7 +190,7 @@ RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.6-r0' 'freshclam=1.4.6-r0' \
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.7-r0' 'freshclam=1.4.7-r0' \
     && mkdir -p /run/clamav /var/lib/clamav \
     && chown -R 1000:1000 /run/clamav /var/lib/clamav \
     && chmod 0700 /run/clamav /var/lib/clamav
@@ -212,7 +213,7 @@ RUN node /tmp/write-runtime-identity.mjs render-git "${RENDER_GIT_COMMIT:-}" \
 COPY server/purchase-receipt.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
-COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt

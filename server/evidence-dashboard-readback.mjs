@@ -1,6 +1,8 @@
+import { safeGa4FailureReason } from './google-analytics-readback.mjs';
 // CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1
 // Owner-only, server-side, read-only projections. Historical snapshot is a schema reference,
 // never a fallback for missing live data. No browser credentials or provider URLs.
+import { ACODEX_P1_V2_ARCHIVE } from './acodex-p1-v2-archive.mjs';
 const PATH = '/api/profile/evidence-dashboard-readback';
 const REPOSITORY = 'SvenKulessa/Capital-AI';
 const SERVICE_ID = 'srv-dau1rp893c1s73cdhm1g';
@@ -153,7 +155,7 @@ function safeGa4Diagnostic(error) {
   const code = error instanceof Error ? error.message : '';
   if (Object.hasOwn(GA4_SAFE_DIAGNOSTICS, code)) return GA4_SAFE_DIAGNOSTICS[code];
   if (['GA4_MCP_TIMEOUT_initialize', 'GA4_MCP_TIMEOUT_tools/list', 'GA4_MCP_TIMEOUT_tools/call'].includes(code)) return 'GA4_MCP_RUNTIME_TIMEOUT';
-  return 'PROVIDER_READ_FAILED';
+  return safeGa4FailureReason(error);
 }
 
 async function readGa4(ga4Readback, now) {
@@ -188,9 +190,9 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
     const ts = now();
     if (cached && ts < cached.until) return cached.value;
     if (inflight) return inflight;
-    const attempt = async (producer) => {
+    const attempt = async (producer, classify = () => 'PROVIDER_READ_FAILED') => {
       try { return await producer(); }
-      catch { return { status: 'NOT_PROVEN', reason: 'PROVIDER_READ_FAILED' }; }
+      catch (error) { return { status: 'NOT_PROVEN', reason: classify(error) }; }
     };
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -198,10 +200,7 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
     inflight = Promise.all([
       attempt(() => readGitHub(fetchImpl, env, controller.signal, now)),
       attempt(() => readRender(fetchImpl, env, controller.signal, now)),
-      (async () => {
-        try { return await readGa4(ga4Readback, now); }
-        catch (error) { return { status: 'NOT_PROVEN', reason: safeGa4Diagnostic(error) }; }
-      })(),
+      attempt(() => readGa4(ga4Readback, now), safeGa4Diagnostic),
     ]).then(([github, render, ga4]) => {
       const value = Object.freeze({
         schema: 'CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1',
@@ -209,6 +208,8 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
         generatedAt: new Date(ts).toISOString(),
         baseline: { schema: 'CAPITAL_AI_EVIDENCE_SNAPSHOT_V1', date: '2026-11-19', status: 'HISTORICAL_REFERENCE_ONLY', valuesImported: false },
         github, render, ga4,
+        // Historical device evidence only. No live Android/Drive fetch or current health claim.
+        acodex: ACODEX_P1_V2_ARCHIVE,
         comparison: {
           mainVsDeploy: github.status === 'VERIFIED_PROVIDER_READ' && render.status === 'VERIFIED_PROVIDER_READ'
             ? (github.mainSha === render.sourceCommitSha ? 'MATCH_PROVIDER_CLAIMS_ONLY' : 'DRIFT_PROVIDER_CLAIMS')
