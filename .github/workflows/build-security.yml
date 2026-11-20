@@ -73,6 +73,7 @@ jobs:
             scripts/npm-security-patch-policy.test.mjs \
             scripts/percentage-parser.test.mjs \
             scripts/growth-google-authority.test.mjs \
+            scripts/ga4-render-config-diagnostic.test.mjs \
             server/security-headers.test.mjs \
             server/api-rate-policy.test.mjs \
             scripts/mcp-isolation.test.mjs \
@@ -98,6 +99,8 @@ jobs:
             scripts/validate-oss-multi-asset-plan.test.mjs \
             scripts/verify-release-readiness.test.mjs \
             scripts/ci-efficiency-report.test.mjs \
+            scripts/architecture/strategy-2026-pr-correlation.test.mjs \
+            scripts/architecture/strategy-2026-source-graph.test.mjs \
             scripts/docker-archive-config.test.mjs
           npm run validate:all
           git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
@@ -237,6 +240,9 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           driver: docker-container
+          # Buildx v0.39.0 breaks local BuildKit context transfer for >490 .dockerignore patterns.
+          # Track upstream docker/buildx#4209; keep the full allowlist and all image scans intact.
+          version: v0.38.2
       - name: Build-Stufe ohne Installationswerkzeug bauen
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -310,7 +316,7 @@ jobs:
             -v "$PWD/shared:/app/shared:ro" \
             --entrypoint node capital-ai:${{ github.sha }} --run test:seo:runtime
       - name: Server-Regressionstests
-        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" -v "$PWD/supabase/migrations:/app/supabase/migrations:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/ecb-reference-rates.test.mjs /app/server/uniswap-trading.test.mjs /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/scorer-proxy.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/user-provider-vault.test.mjs /app/server/infrastructure-security.test.mjs /app/server/seo-indexing-policy.test.mjs /app/server/well-known.test.mjs
+        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" -v "$PWD/supabase/migrations:/app/supabase/migrations:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/ecb-reference-rates.test.mjs /app/server/uniswap-trading.test.mjs /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/scorer-proxy.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/user-provider-vault.test.mjs /app/server/infrastructure-security.test.mjs /app/server/seo-indexing-policy.test.mjs /app/server/well-known.test.mjs /app/server/google-analytics-readback.test.mjs
       - name: MARKET-E2E-Contract und npm test:market im isolierten Build-Image
         run: |
           # The build image already contains dev dependencies; do not install another toolchain.
@@ -346,6 +352,12 @@ jobs:
             -v "$PWD/supabase:/app/supabase:ro" \
             -v "$PWD/render.yaml:/app/render.yaml:ro" \
             --entrypoint node capital-ai-build:${{ github.sha }} --run test:audit-regressions
+      - name: Owner GA4 Konfigurationsansicht und Negativtests
+        run: |
+          docker run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -v "$PWD/src:/app/src:ro" \
+            --entrypoint node capital-ai-build:${{ github.sha }} --import tsx --test /app/src/components/ownerGa4ConfigModel.test.ts /app/src/components/OwnerGa4ConfigView.test.tsx
       - name: 600-Asset-Scoring-Kapazitätsevidence übernehmen
         run: |
           mkdir -p security-reports

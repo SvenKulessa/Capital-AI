@@ -8,6 +8,73 @@ const READBACK_TIMEOUT_MS = 8_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PROPERTY_NUMBER = /^[1-9][0-9]{0,19}$/;
 
+const OWNER_SAFE_GA4_FAILURES = new Set([
+  'GA4_PROPERTY_NUMBER_NOT_CONFIGURED',
+  'GA4_PROPERTY_NUMBER_INVALID',
+  'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED',
+  'GA4_MCP_CLOUD_PROJECT_NOT_CONFIGURED',
+  'GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON',
+  'GA4_MCP_SERVICE_ACCOUNT_INVALID',
+  'GA4_MCP_PROJECT_MISMATCH',
+  'GA4_MCP_PROCESS_START_FAILED',
+  'GA4_MCP_PROCESS_EXITED',
+  'GA4_MCP_NOT_CONNECTED',
+  'GA4_MCP_TOOL_ERROR',
+  'GA4_MCP_TOOL_ERROR_PAYLOAD',
+  'GA4_MCP_JSONRPC_ERROR',
+  'GA4_PROPERTY_NOT_ACCESSIBLE',
+  'GA4_PROPERTY_DETAILS_NOT_BOUND',
+  'GA4_PROPERTY_DETAIL_MISMATCH',
+  'GA4_REQUIRED_TOOL_MISSING',
+  'GA4_READBACK_TIMEOUT',
+  'GA4_INVALID_EVENT_COUNT',
+  'GA4_MCP_WRITE_FAILED',
+]);
+
+/** Only explicit first-party fixed reason codes cross the authenticated owner boundary. */
+export function safeGa4FailureReason(error) {
+  const code = error instanceof Error ? error.message : '';
+  if (OWNER_SAFE_GA4_FAILURES.has(code)) return code;
+  if (/^GA4_MCP_REQUIRED_TOOL_MISSING_(get_account_summaries|get_property_details|run_realtime_report|run_report)$/.test(code))
+    return 'GA4_REQUIRED_TOOL_MISSING';
+  if (/^GA4_MCP_TIMEOUT_(initialize|tools\/list|tools\/call)$/.test(code))
+    return 'GA4_MCP_REQUEST_TIMEOUT';
+  return 'GA4_READBACK_FAILED';
+}
+
+
+// Owner-only diagnostic of the already-loaded Render runtime environment.
+// No Render API access, credential transport, MCP process spawn, or secret logging.
+export function diagnoseGa4RuntimeConfig(env = {}) {
+  const raw = env.GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON;
+  if (typeof raw !== 'string' || !raw.trim())
+    return Object.freeze({ JSON_VALID: null, PROJECT_MATCH: null, reason: 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED' });
+
+  let account;
+  try { account = JSON.parse(raw); }
+  catch {
+    return Object.freeze({ JSON_VALID: false, PROJECT_MATCH: null, reason: 'GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON' });
+  }
+
+  if (!account || typeof account !== 'object' || Array.isArray(account) ||
+      account.type !== 'service_account' ||
+      typeof account.project_id !== 'string' || !account.project_id.trim() ||
+      typeof account.client_email !== 'string' || !account.client_email.trim() ||
+      typeof account.private_key !== 'string' || !account.private_key.trim())
+    return Object.freeze({ JSON_VALID: true, PROJECT_MATCH: null, reason: 'GA4_MCP_SERVICE_ACCOUNT_INVALID' });
+
+  const project = env.GOOGLE_ANALYTICS_CLOUD_PROJECT;
+  if (typeof project !== 'string' || !project.trim())
+    return Object.freeze({ JSON_VALID: true, PROJECT_MATCH: null, reason: 'GA4_MCP_CLOUD_PROJECT_NOT_CONFIGURED' });
+
+  const matches = account.project_id === project.trim();
+  return Object.freeze({
+    JSON_VALID: true,
+    PROJECT_MATCH: matches,
+    reason: matches ? 'GA4_CONFIG_VALID' : 'GA4_MCP_PROJECT_MISMATCH',
+  });
+}
+
 function configuredOwner(env) {
   const userId = String(env.CAPITAL_AI_RENDER_OWNER_USER_ID || '').trim();
   const email = String(env.CAPITAL_AI_RENDER_OWNER_EMAIL || '').trim().toLowerCase();
@@ -60,12 +127,10 @@ function readCell(container, camel, snake) {
 function eventCounts(payload) {
   return findRows(payload).slice(0, 25).map(row => {
     const eventName = String(readCell(row, 'dimensionValues', 'dimension_values') || '').slice(0, 120);
-    const rawCount = String(readCell(row, 'metricValues', 'metric_values') || '0');
+    const rawCount = String(readCell(row, 'metricValues', 'metric_values') ?? '');
     const parsed = /^\d+$/.test(rawCount) ? Number(rawCount) : NaN;
-    return Object.freeze({
-      eventName,
-      eventCount: Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0,
-    });
+    if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error('GA4_INVALID_EVENT_COUNT');
+    return Object.freeze({ eventName, eventCount: parsed });
   }).filter(row => row.eventName);
 }
 
@@ -208,7 +273,8 @@ export function createGoogleAnalyticsReadback({
   }
 
   async function handle(req, res, url, json) {
-    if (url.pathname !== PATH) return false;
+    const diagnostic = url.pathname === '/api/profile/google-analytics-config-diagnostic';
+    if (url.pathname !== PATH && !diagnostic) return false;
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Vary', 'Cookie');
@@ -227,13 +293,23 @@ export function createGoogleAnalyticsReadback({
       return true;
     }
 
+    if (diagnostic) {
+      json(res, 200, Object.freeze({
+        schema: 'CAPITAL_AI_GA4_OWNER_CONFIG_DIAGNOSTIC@1',
+        status: 'CONFIG_DIAGNOSTIC_ONLY',
+        ...diagnoseGa4RuntimeConfig(env),
+      }));
+      return true;
+    }
+
     try {
       json(res, 200, await load());
-    } catch {
+    } catch (error) {
       json(res, 503, {
         schema: 'CAPITAL_AI_GOOGLE_ANALYTICS_RENDER_READBACK@1',
         status: 'EVIDENCE_UNAVAILABLE',
         error: 'google_analytics_readback_unavailable',
+        reason: safeGa4FailureReason(error),
       });
     }
     return true;

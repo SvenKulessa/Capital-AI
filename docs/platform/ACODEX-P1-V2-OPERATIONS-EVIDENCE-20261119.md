@@ -113,6 +113,14 @@ Die folgenden **Datei-SHA-256** wurden durch unabhängiges Rücklesen der Origin
 
 Prüfmethode: Google-Drive-Connector-Metadaten und authentifiziertes Materialisieren der drei Dateien, lokale SHA-256-Berechnung der materialisierten Bytes sowie Abgleich mit der zuvor belegten Archiv-Evidence. Die Provenance bestätigt **diese drei Artefakte**, nicht eine dauerhafte OAuth-Gültigkeit, zukünftige Pulls oder einen synchronisierten Live-Datensatz der Evidence Console. Der auf Main gespeicherte Git-Blob bleibt eine eigenständige Repository-Identität.
 
+## Owner Evidence Console: revisionssichere Archivprojektion (Code-Scope)
+
+Der bestehende owner-authentifizierte Endpoint `/api/profile/evidence-dashboard-readback` stellt eine **statische, historisch gebundene** AcodeX-P1-v2-Projektion bereit. Die Quelle ist die vom Betreiber am 2026-11-19T00:43:05Z gelieferte Geräteabnahme, ergänzt um unabhängig zurückgelesene Google-Drive-Datei-SHA-256. Als Herkunft ist `OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK` ausgewiesen.
+
+**Trennungsinvariante:** `archiveStatus=VERIFIED` gilt ausschließlich für den belegten historischen Snapshot; `currentDeviceStatus=NOT_PROVEN` bleibt unverändert. Der Endpoint führt **keine** Android-, Drive- oder OAuth-Live-Abfrage aus. Das Archiv wird nicht in die Live-Provider-Quote und nicht in die CI-/Deployment-Gates eingerechnet. Fehlende oder fehlerhafte Archivdaten werden in der Owner-Ansicht nicht als aktueller Erfolg interpretiert.
+
+Die Projektion ist nur nach der bestehenden Owner-Session-Autorisierung sichtbar, nutzt die unveränderte GET-/No-Store-Vertrauensgrenze, und zeigt Versionslinks und Datei-Hashes, aber keine Tokens, Credentials oder Rohlogs. Die bestehende `AGENTS.md` bleibt allein autorisierend. **Eine produktive Render-Auslieferung, die tatsächliche Owner-UI-Anzeige und ein aktueller Android-Betriebszustand werden durch Code-/CI-Evidence allein nicht bewiesen.**
+
 ## Test- und Archivquellen
 
 - [P1-v2-Abschlussbericht v1.1.0](https://drive.google.com/file/d/18s5PsFUI2qc-0s58O-f3ECCrYA8bu9T2/view?usp=drivesdk)

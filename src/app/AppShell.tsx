@@ -1,5 +1,4 @@
 import { lazy, Suspense } from 'react';
-import { HeroBuddy } from '../components/HeroBuddy';
 
 import { useRouteAnalytics } from '../platform/analytics/useRouteAnalytics';
 import { useMarketAssets } from '../services/marketDataStore';
@@ -10,6 +9,8 @@ import { useAppOverlayController } from './overlays/useAppOverlayController';
 import { AppRoutes } from './routing/AppRoutes';
 import { useBrowserRoute } from './routing/useBrowserRoute';
 
+// The global chat is optional at bootstrap; load its heavy UI on demand.
+const HeroBuddy = lazy(() => import('../components/HeroBuddy').then(module => ({ default: module.HeroBuddy })));
 const Header = lazy(() => import('../components/Header').then(module => ({default:module.Header})));
 
 // Breadcrumbs are a non-blocking navigation enhancement; keep the bootstrap chunk lean.
@@ -96,6 +97,7 @@ export function AppShell() {
         <CookieConsentV3 />
       </Suspense>
 
+      <Suspense fallback={null}>
       <HeroBuddy
         onNavigate={navigateTo}
         onOpenMonetization={() => ui.setIsMonetizationOpen(true)}
@@ -104,6 +106,7 @@ export function AppShell() {
         onOpenWhaleRadar={() => ui.setIsWhaleRadarOpen(true)}
         onOpenAnalysis={() => ui.setIsAnalysisOpen(true)}
       />
+      </Suspense>
 
       {ui.shouldRenderOverlays && (
         <Suspense fallback={null}>

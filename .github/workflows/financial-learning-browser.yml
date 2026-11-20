@@ -22,6 +22,9 @@ on:
       - 'src/components/HubCatalog.tsx'
       - 'src/components/EcosystemRoadmapPanel.tsx'
       - 'scripts/qa/ecosystem-roadmap-browser.mjs'
+      - 'scripts/qa/chat-followup-browser.mjs'
+      - 'src/components/ChatNextStepActions.tsx'
+      - 'src/contracts/chatNextStepPrompts.ts'
       - 'scripts/qa/screener-blueprint-reset-browser.mjs'
       - 'server/learning-simulator.mjs'
       - 'server/auth.test.mjs'
@@ -143,12 +146,20 @@ jobs:
           CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
           test -n "$CHROME_BIN"
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/ecosystem-roadmap-browser.mjs | tee ecosystem-roadmap-browser-result.json
+      - name: Chat-Folgeprompts 320/390/1440, Clipboard und Fallback
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/chat-followup-browser.mjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
         if: always()
         with:
           name: financial-learning-browser-qa
           path: |
             artifacts/simulator-browser/*.png
+            artifacts/chat-followup-browser/*.png
+            artifacts/chat-followup-browser/result.json
             artifacts/scorer-browser/*.png
             artifacts/scorer-browser/*.mp4
             artifacts/scorer-browser/result.json

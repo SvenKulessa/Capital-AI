@@ -268,5 +268,17 @@
     "domain": "PRODUCT",
     "path": "deploy/analytics-pilot/powerbi-import.pq",
     "application": "CSV-Importvorlage; Desktop/Embedded nicht ausgeführt; Produktion benötigt Lizenz-/Kapazitätsprüfung"
+  },
+  {
+    "name": "ChatGPT Multi-Agent Delivery Loop",
+    "domain": "PLATFORM",
+    "path": "docs/platform/CHATGPT-MULTI-AGENT-AUTOMATIONS-20261119.md",
+    "application": "Extern verwalteter ChatGPT-PR-/CI-Delivery-Loop, Terminierung außerhalb des Repos; Laufstatus NOT_PROVEN"
+  },
+  {
+    "name": "ChatGPT Multi-Agent Quality Sentinel",
+    "domain": "TRUST",
+    "path": "docs/platform/CHATGPT-MULTI-AGENT-AUTOMATIONS-20261119.md",
+    "application": "Extern verwalteter read-only Multi-Agent-Quality-Sentinel; Laufstatus seit Reaktivierung NOT_PROVEN"
   }
 ]

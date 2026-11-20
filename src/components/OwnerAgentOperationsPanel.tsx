@@ -6,8 +6,11 @@ import {
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
 import { OwnerOperationsVisualOverview } from './OwnerOperationsVisualOverview';
+import { readGa4ConfigResult, type Ga4ConfigResult } from './ownerGa4ConfigModel';
+import { OwnerGa4ConfigView } from './OwnerGa4ConfigView';
 
 const ENDPOINT = '/api/profile/evidence-dashboard-readback';
+const GA4_CONFIG_ENDPOINT = '/api/profile/google-analytics-config-diagnostic';
 const VIEWS: { id: OperationsView; label: string }[] = [
   { id: 'overview', label: 'Übersicht' }, { id: 'github', label: 'GitHub & CI' },
   { id: 'render', label: 'Deployments' }, { id: 'analytics', label: 'Analytics' },
@@ -53,6 +56,8 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   const [agent, setAgent] = useState<AgentRole | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const [ga4Config, setGa4Config] = useState<Ga4ConfigResult | null>(null);
+  const [ga4ConfigFailure, setGa4ConfigFailure] = useState(false);
   const [busy, setBusy] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -64,6 +69,8 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
     setError('');
     // Do not retain owner data across session switches or failed revalidation.
     setSnapshot(null);
+    setGa4Config(null);
+    setGa4ConfigFailure(false);
     try {
       await verifySession(userId, controller.signal);
       const response = await fetch(ENDPOINT, {
@@ -74,6 +81,19 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
       const body = readDashboardSnapshot(await response.json());
       if (!body) throw Error('INVALID_READBACK');
       if (!controller.signal.aborted) setSnapshot(body);
+      // A missing or failed diagnostic never invalidates independently verified dashboard evidence.
+      try {
+        const configResponse = await fetch(GA4_CONFIG_ENDPOINT, {
+          method: 'GET', credentials: 'same-origin', cache: 'no-store',
+          signal: controller.signal, headers: { Accept: 'application/json' },
+        });
+        if (!configResponse.ok) throw Error('CONFIG_DIAGNOSTIC_UNAVAILABLE');
+        const result = readGa4ConfigResult(await configResponse.json());
+        if (!result) throw Error('CONFIG_DIAGNOSTIC_INVALID');
+        if (!controller.signal.aborted) setGa4Config(result);
+      } catch {
+        if (!controller.signal.aborted) setGa4ConfigFailure(true);
+      }
     } catch {
       if (!controller.signal.aborted) setError('Owner-Readback nicht verfügbar. Keine Ersatzdaten oder gespeicherten Kennzahlen angezeigt.');
     } finally {
@@ -110,6 +130,17 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
 
   return <section aria-labelledby="agent-ops-title" className="space-y-4 rounded-2xl border border-indigo-400/30 bg-[#070f21] p-3 text-white sm:p-5">
     {snapshot && <OwnerOperationsVisualOverview snapshot={snapshot} />}
+    {snapshot && !isVerified(snapshot.github) && (
+      <p role="status" className="rounded-xl border border-amber-300/30 bg-amber-300/5 p-3 text-sm text-amber-100">
+        Owner-Zugriff bestätigt. Die GitHub-PR-Zahlen sind derzeit nicht durch den Server-Provider-Readback nachgewiesen
+        (kein Hinweis auf fehlende Owner-Rechte).{' '}
+        <a href="https://github.com/SvenKulessa/Capital-AI/pulls"
+          target="_blank" rel="noopener noreferrer"
+          className="font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">
+          Offene PRs direkt auf GitHub ansehen
+        </a>.
+      </p>
+    )}
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-300">CAPITAL-AI / Owner Operations</p>
@@ -173,6 +204,33 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
             </div>)}
           </div>
         </Section>}
+        {view === 'evidence' && <Section title="AcodeX P1-v2 · archivierte Geräteabnahme">
+          {snapshot.acodex ? <div className="space-y-3 text-sm">
+            <p className="text-slate-300">Historischer Owner-Terminalnachweis mit unabhängig zurückgelesener Drive-Provenance. Keine Live-Verbindung zum Android-Gerät.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <span>Archiv <strong className="text-emerald-300">{snapshot.acodex.archiveStatus}</strong></span>
+              <span>Aktueller Gerätestatus <strong className="text-amber-200">{snapshot.acodex.currentDeviceStatus}</strong></span>
+            </div>
+            <dl className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+              <div><dt className="text-slate-400">Erwarteter Neustart (UTC)</dt><dd>{snapshot.acodex.expectedStartUtc}</dd></div>
+              <div><dt className="text-slate-400">Bestätigter Pull (UTC)</dt><dd>{snapshot.acodex.latestSuccessUtc}</dd></div>
+              <div><dt className="text-slate-400">Geräteabnahme (UTC)</dt><dd>{snapshot.acodex.checkedUtc}</dd></div>
+              <div><dt className="text-slate-400">Exit / Guard / Sperre</dt>
+                <dd>Health {snapshot.acodex.healthExit} · Guard {snapshot.acodex.guardAuditExit} · {snapshot.acodex.lockClear ? 'LOCK_CLEAR' : 'NOT_PROVEN'}</dd></div>
+            </dl>
+            <p className="text-xs text-slate-400">Keine neuen OAuth- oder Pull-Fehler im archivierten Logfenster. Dies bestätigt keine spätere Geräteverfügbarkeit.</p>
+            <ul className="space-y-2 text-xs">
+              {([
+                ['Abschluss v1.1', snapshot.acodex.evidence.v11],
+                ['Historische v1', snapshot.acodex.evidence.v1],
+                ['Governance-Standard', snapshot.acodex.evidence.standard],
+              ] as const).map(([name, file]) => <li key={name} className="rounded-lg border border-white/10 p-2">
+                <a href={file.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-200 underline underline-offset-2">{name}</a>
+                <p className="mt-1 break-all text-slate-400">SHA-256 {file.sha256}</p>
+              </li>)}
+            </ul>
+          </div> : <p className="text-amber-200">NOT_PROVEN · Keine archivierte AcodeX-Evidence im aktuellen Snapshot.</p>}
+        </Section>}
       </div>}
       {view === 'github' && <div role="tabpanel" className="space-y-3">
         <Section title="GitHub Pull Requests">
@@ -218,9 +276,11 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
           </li>)}</ul> : <p className="text-sm text-amber-200">Keine verifizierten Deployments.</p>}
       </Section></div>}
       {view === 'analytics' && <div role="tabpanel" className="space-y-3">
+        <OwnerGa4ConfigView config={ga4Config} unavailable={ga4ConfigFailure}/>
         <Section title="GA4 / 7-Tage-Eventmessung">
           <Source status={ga4?.status}/>
           <p className="my-2 text-xs text-slate-400">{ga4?.period || 'NOT_PROVEN'} · {ga4?.property || 'Keine bestätigte Property'}</p>
+          {!isVerified(ga4) && ga4?.reason && <p role="status" className="my-2 break-all rounded-lg border border-amber-300/25 bg-amber-300/5 p-2 text-xs text-amber-100">Diagnosecode: {ga4.reason}</p>}
           <div className="grid grid-cols-2 gap-2">
             <Metric title="page_view Events" value={views ?? '–'}/>
             <Metric title="generate_lead Events" value={leads ?? '–'}/>

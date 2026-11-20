@@ -42,7 +42,7 @@ async function navigate(path) {
   for (let attempt = 0; attempt < 120; attempt++) {
     try {
       const target = path === '/learning/simulator' ? '#sim-title'
-        : path === '/learning' ? '.hub-navigation nav.hub-tab-strip' : 'main,nav,header';
+        : path.startsWith('/learning') ? '.hub-navigation nav.hub-tab-strip' : 'main,nav,header';
       const ready = await evaluate("document.readyState === 'complete' && !!document.querySelector(" + JSON.stringify(target) + ")");
       if (ready) { await pause(800); return; }
     } catch { /* navigation in progress */ }
@@ -139,6 +139,29 @@ async function checkPage(path, viewport) {
     if (simulator?.privateEditorVisible) failures.push(path + ': private Pro controls visible without verified session');
   }
   if (path === '/learning') {
+    const overview = await evaluate(`(() => {
+      const search = document.querySelector('#learning-topic-search');
+      search?.focus();
+      return {
+        visible: !!document.querySelector('[data-learning-overview="v1"]'),
+        atoms: document.querySelectorAll('.lhu-atom').length,
+        topics: document.querySelectorAll('.lhu-topic').length,
+        searchFocusable: document.activeElement === search,
+        overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      };
+    })()`);
+    record.overview = overview;
+    if (!overview.visible || overview.atoms !== 7 || overview.topics !== 7 || !overview.searchFocusable) {
+      failures.push(path + ': Learning Universe overview missing interactive category navigation');
+    }
+    if (overview.overflow > 2) failures.push(path + ': Learning overview horizontal overflow at ' + viewport.width);
+    if (process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
+      await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+      const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+      await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, 'learning-overview-' + viewport.width + '.png'), Buffer.from(shot.data, 'base64'));
+    }
+  }
+  if (path === '/learning?tab=glossar') {
     record.glossary = [];
     for (const [query, expected] of [['land graph', 'LangGraph'], ['supression', 'Suppression'], ['midi', 'MiFID'], ['zznonexistenttermzz', null]]) {
       const focused = await evaluate(`(() => {
@@ -201,8 +224,8 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Accessibility.enable');
-  for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1280,height:800,mobile:false}]) {
-    for (const path of ['/', '/learning', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
+  for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1440,height:900,mobile:false}]) {
+    for (const path of ['/', '/learning', '/learning?tab=glossar', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
   }
   console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
     pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',
