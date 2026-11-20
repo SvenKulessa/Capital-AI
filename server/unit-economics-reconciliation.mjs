@@ -132,10 +132,14 @@ export function createUnitEconomicsReconciliation({
       // returning *any* numbers; no partial write, caching or fallback.
       const stripe=[];
       for (const id of stripeIds) {
-        const [inbox, provider] = await Promise.all([
-          readStripeInbox({tenantId,eventId:id}),
-          readStripeEvent({tenantId,eventId:id}),
-        ]);
+        // Never perform a provider readback for an unprocessed, mismatched or
+        // test-mode inbox event. In particular, do not invoke paid provider
+        // adapters before the existing ingress authority is checked.
+        const inbox=await readStripeInbox({tenantId,eventId:id});
+        if (!record(inbox,['eventId','eventType','status','livemode','payloadSha256']) ||
+            inbox.eventId !== id || inbox.status !== 'processed' ||
+            inbox.livemode !== true || !SHA256.test(inbox.payloadSha256)) fail();
+        const provider=await readStripeEvent({tenantId,eventId:id});
         stripe.push(checkedStripe(inbox, provider, id, tenantId, product, periodStart, periodEnd));
       }
       const runs=[];
