@@ -122,8 +122,11 @@ class TrustedLearningVerifier:
                     return False
                 ids.add(run_id)
                 app = run.get("app")
-                if (name in fl.REQUIRED_CHECKS
+                if ((name in fl.REQUIRED_CHECKS or name.startswith("Analyze ("))
                         and (not isinstance(app, dict) or app.get("slug") != "github-actions")):
+                    return False
+                if (name == "CodeQL" and
+                        (not isinstance(app, dict) or app.get("slug") != "github-advanced-security")):
                     return False
                 if run.get("status") != "completed":
                     return False
@@ -133,8 +136,7 @@ class TrustedLearningVerifier:
                 seen[name] = result
             if any(seen.get(name) != "success" for name in fl.REQUIRED_CHECKS):
                 return False
-            if not any((name == "CodeQL" or name.startswith("Analyze (")) and outcome == "success"
-                       for name, outcome in seen.items()):
+            if seen.get("Analyze (python)") != "success" and seen.get("CodeQL") != "success":
                 return False
             return all(seen.get(name) == state for name, state in reviewed.checks.items())
         except Exception:
