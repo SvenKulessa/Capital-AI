@@ -138,7 +138,21 @@ class TrustedLearningVerifier:
                 return False
             if seen.get("Analyze (python)") != "success" and seen.get("CodeQL") != "success":
                 return False
-            return all(seen.get(name) == state for name, state in reviewed.checks.items())
+            if not all(seen.get(name) == state for name, state in reviewed.checks.items()):
+                return False
+            # Bound the PR/head/main readback both before and after checking CI.
+            # A head/main change during the inspection invalidates the receipt.
+            refreshed_pr = self._github.github(f"/pulls/{proof.pr_number}", method="GET")
+            refreshed_main = self._github.github("/branches/main", method="GET")
+            if not isinstance(refreshed_pr, dict) or not isinstance(refreshed_main, dict):
+                return False
+            return (refreshed_pr.get("state") == "open"
+                    and isinstance(refreshed_pr.get("head"), dict)
+                    and isinstance(refreshed_pr.get("base"), dict)
+                    and refreshed_pr["head"].get("sha") == reviewed.head_sha
+                    and refreshed_pr["base"].get("sha") == reviewed.base_sha
+                    and isinstance(refreshed_main.get("commit"), dict)
+                    and refreshed_main["commit"].get("sha") == reviewed.base_sha)
         except Exception:
             # No raw provider response, token, PR text or signature in diagnostics.
             return False
