@@ -58,9 +58,9 @@ def classify_failure(signal: dict, *, trusted_tenant_id: str) -> dict:
     if (signal["schema"] != SCHEMA
             or not isinstance(repo, str) or not REPO.fullmatch(repo)
             or not _sha(signal["commit_sha"])
-            or signal["source"] not in SOURCES
+            or not isinstance(signal["source"], str) or signal["source"] not in SOURCES
             or not isinstance(signal["check"], str) or not CHECK.fullmatch(signal["check"])
-            or signal["category"] not in CATEGORIES
+            or not isinstance(signal["category"], str) or signal["category"] not in CATEGORIES
             or not _code(signal["failure_code"])
             or signal["conclusion"] != "failure"
             or type(signal["run_id"]) is not int or not 1 <= signal["run_id"] < 2**63):
