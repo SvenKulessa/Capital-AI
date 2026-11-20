@@ -20,6 +20,12 @@ export function trackPageView(_pagePath: string, _pageTitle: string) {
 export function trackReceivedLearningInquiry(receipt: string) {
   if (typeof window !== 'undefined') void analyticsModule().then(module => module.trackReceivedLearningInquiry(receipt));
 }
+export function trackReceivedGovernanceSprintInquiry(receipt: string) {
+  if (typeof window !== 'undefined') {
+    void analyticsModule().then(module => module.trackReceivedGovernanceSprintInquiry(receipt))
+      .catch(() => { /* Optional analytics must never change the form result. */ });
+  }
+}
 export function trackLoginClick(_source: string = 'header') {}
 
 let seoUpdateVersion = 0;

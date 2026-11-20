@@ -33,6 +33,7 @@ export type DashboardReadback = {
   };
   ga4: ProviderEvidence & {
     property?: string; period?: string; events?: { eventName: string; eventCount: number }[];
+    realtimeStatus?: string; realtimeEvents?: { eventName: string; eventCount: number }[];
     revenue?: number | null; revenueStatus?: string;
   };
   comparison: { mainVsDeploy: string; runtimeBuildIdentity: string };
@@ -69,6 +70,7 @@ export function readDashboardSnapshot(value: unknown): DashboardReadback | null 
   if (value.github.ci !== undefined && (!isRecord(value.github.ci) || !Array.isArray(value.github.ci.runs))) return null;
   if (value.render.deployments !== undefined && !Array.isArray(value.render.deployments)) return null;
   if (value.ga4.events !== undefined && !Array.isArray(value.ga4.events)) return null;
+  if (value.ga4.realtimeEvents !== undefined && !Array.isArray(value.ga4.realtimeEvents)) return null;
   if (value.acodex !== undefined && !archiveRecord(value.acodex)) return null;
   return value as unknown as DashboardReadback;
 }
@@ -90,6 +92,13 @@ export function ga4EventCount(snapshot: DashboardReadback, event: string): numbe
   const row = snapshot.ga4.events.find(entry => entry.eventName === event);
   return row && Number.isSafeInteger(row.eventCount) && row.eventCount >= 0 ? row.eventCount : null;
 }
+export function ga4RealtimeEventCount(snapshot: DashboardReadback, event: string): number | null {
+  const source = snapshot.ga4;
+  if (!isVerified(source) || source.realtimeStatus !== 'VERIFIED_PROVIDER_READ' ||
+      !Array.isArray(source.realtimeEvents)) return null;
+  const row = source.realtimeEvents.find(entry => entry.eventName === event);
+  return row && Number.isSafeInteger(row.eventCount) && row.eventCount >= 0 ? row.eventCount : null;
+}
 export function evidenceState(snapshot: DashboardReadback, source: 'github' | 'render' | 'ga4' | 'ci' | 'revenue' | 'runtime'): string {
   if (source === 'revenue' || source === 'runtime') return 'NOT_PROVEN';
   if (source === 'ci') return snapshot.github.ci?.status === 'VERIFIED_PROVIDER_READ' && isVerified(snapshot.github) ? 'VERIFIED' : 'NOT_PROVEN';
@@ -98,4 +107,32 @@ export function evidenceState(snapshot: DashboardReadback, source: 'github' | 'r
 export function isSnapshotStale(snapshot: DashboardReadback, nowMs: number, maxAgeMs = 10 * 60_000): boolean {
   const timestamp = Date.parse(snapshot.generatedAt);
   return !Number.isFinite(timestamp) || timestamp > nowMs + 60_000 || nowMs - timestamp > maxAgeMs;
+}
+
+/** Only approved status categories are rendered; raw provider errors are never echoed. */
+const GA4_DIAGNOSTIC_LABELS = Object.freeze({
+  GA4_PROPERTY_CONFIG_MISSING: 'GA4-Property-Konfiguration fehlt',
+  GA4_PROPERTY_NUMBER_NOT_CONFIGURED: 'GA4-Property-Konfiguration fehlt',
+  GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED: 'GA4-Leseidentität nicht konfiguriert',
+  GA4_MCP_PROJECT_MISMATCH: 'Projektbindung stimmt nicht überein',
+  GA4_MCP_PROCESS_START_FAILED: 'GA4-MCP-Prozess nicht verfügbar',
+  GA4_MCP_REQUEST_TIMEOUT: 'GA4-MCP-Prozess hat Zeitlimit überschritten',
+  GA4_PROPERTY_NOT_ACCESSIBLE: 'GA4-Property-Zugriff nicht bestätigt',
+  GA4_PROPERTY_DETAILS_NOT_BOUND: 'GA4-Property-Bindung nicht bestätigt',
+  GA4_PROJECT_CONFIG_MISSING: 'Google-Projektkonfiguration fehlt',
+  GA4_CREDENTIAL_CONFIG_MISSING: 'GA4-Leseidentität nicht konfiguriert',
+  GA4_CREDENTIAL_CONFIG_INVALID: 'GA4-Leseidentität ungültig konfiguriert',
+  GA4_PROJECT_BINDING_MISMATCH: 'Projektbindung stimmt nicht überein',
+  GA4_PROPERTY_ACCESS_NOT_PROVEN: 'GA4-Property-Zugriff nicht bestätigt',
+  GA4_PROPERTY_BINDING_NOT_PROVEN: 'GA4-Property-Bindung nicht bestätigt',
+  GA4_MCP_RUNTIME_UNAVAILABLE: 'GA4-MCP-Prozess nicht verfügbar',
+  GA4_MCP_RUNTIME_TIMEOUT: 'GA4-MCP-Prozess hat Zeitlimit überschritten',
+  GA4_MCP_PROVIDER_REJECTED: 'GA4-MCP-Anfrage nicht bestätigt',
+  GA4_READBACK_TIMEOUT: 'GA4-Readback hat Zeitlimit überschritten',
+  GA4_PROVIDER_RESPONSE_INVALID: 'GA4-Providerantwort ist ungültig',
+});
+export function ga4DiagnosticLabel(reason?: string): string {
+  return typeof reason === 'string' && Object.hasOwn(GA4_DIAGNOSTIC_LABELS, reason)
+    ? GA4_DIAGNOSTIC_LABELS[reason as keyof typeof GA4_DIAGNOSTIC_LABELS]
+    : 'GA4-Readback nicht nachgewiesen';
 }

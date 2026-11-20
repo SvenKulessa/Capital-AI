@@ -85,10 +85,27 @@
 .ops-mock-readonly {display:flex;align-items:center;gap:10px;border:1px solid rgb(249 191 33 / .65);border-radius:15px;background:rgb(72 55 21 / .22);box-shadow:inset 0 0 12px rgb(249 191 33 / .06);padding:13px;color:#f5edd7;font-size:12px;line-height:1.5;}
 .ops-mock-readonly svg {color:var(--ops-gold);}
 .ops-mock-readonly b {color:#fcd34d;}
+/* Owner-only GA4 panel: actual aggregated events from the existing readback.
+   Missing values have no bars and are never represented as measured zero. */
+.ops-mock-ga4-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.ops-mock-ga4-metric {min-width:0;display:flex;flex-direction:column;gap:5px;padding:12px;border:1px solid rgb(249 191 33 / .2);border-radius:12px;background:#101c35;}
+.ops-mock-ga4-metric span {font-size:11px;color:#a9b7d1;overflow-wrap:anywhere;}
+.ops-mock-ga4-metric strong {font-size:clamp(18px,2.8vw,27px);font-weight:900;line-height:1.15;color:#f8fafc;font-variant-numeric:tabular-nums;}
+.ops-mock-ga4-metric small {font-size:10px;color:#fcd34d;}
+.ops-mock-ga4-bars {display:grid;gap:9px;margin-top:16px;}
+.ops-mock-ga4-bar-row {display:grid;grid-template-columns:minmax(82px,150px) minmax(0,1fr) 44px;gap:10px;align-items:center;color:#dce7f6;font-size:11px;}
+.ops-mock-ga4-bar-row span {overflow-wrap:anywhere;}
+.ops-mock-ga4-bar-row strong {text-align:right;font-variant-numeric:tabular-nums;}
+.ops-mock-ga4-bar-track {height:10px;overflow:hidden;border-radius:8px;background:#1b2a49;}
+.ops-mock-ga4-bar-fill {height:100%;border-radius:8px;background:linear-gradient(90deg,var(--color-brand-ai),var(--color-brand-gold));}
+.ops-mock-ga4-empty {margin-top:12px;padding:12px;border:1px dashed rgb(249 191 33 / .35);border-radius:12px;font-size:12px;color:#fcd34d;}
+.ops-mock-ga4-foot {margin-top:13px;font-size:11px;line-height:1.5;color:#a9b7d1;}
 @media (max-width:900px) {.ops-mock-orbit {opacity:.28}.ops-mock-header-copy {padding-right:25px;}}
 @media (max-width:630px) {
   .ops-mock-panels{grid-template-columns:minmax(0,1fr);}
   .ops-mock-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ops-mock-ga4-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ops-mock-ga4-bar-row {grid-template-columns:minmax(72px,96px) minmax(0,1fr) 35px;gap:6px;}
   .ops-mock-header {min-height:0;}
   .ops-mock-orbit {width:120px;height:100px;top:16px;opacity:.13;}
   .ops-mock-header h3 {max-width:340px;}

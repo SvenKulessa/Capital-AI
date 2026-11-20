@@ -44,6 +44,13 @@ COPY Dockerfile .dockerignore ./
 # Offline isolation tests verify the actual dedicated production manifests, without installing them in build.
 COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runtime/
 COPY .agents/skills ./.agents/skills
+# Scoped build-only machine-readable prompts for the existing offline test suite.
+COPY .agents/app.prompt.json ./.agents/app.prompt.json
+COPY CAPITAL-AI-PRODUCT/domain.prompt.json CAPITAL-AI-PRODUCT/PROJECT.md ./CAPITAL-AI-PRODUCT/
+COPY CAPITAL-AI-MARKET/domain.prompt.json CAPITAL-AI-MARKET/PROJECT.md ./CAPITAL-AI-MARKET/
+COPY CAPITAL-AI-PLATFORM/domain.prompt.json CAPITAL-AI-PLATFORM/PROJECT.md ./CAPITAL-AI-PLATFORM/
+COPY CAPITAL-AI-TRUST/domain.prompt.json CAPITAL-AI-TRUST/PROJECT.md ./CAPITAL-AI-TRUST/
+COPY CAPITAL-AI-GROWTH/domain.prompt.json CAPITAL-AI-GROWTH/PROJECT.md ./CAPITAL-AI-GROWTH/
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
 COPY src ./src
@@ -104,6 +111,7 @@ COPY supabase/migrations/20261013042915_learning_simulator_private_scenarios.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs scripts/solo-maintainer-flow.test.mjs ./scripts/
+COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs ./scripts/
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.

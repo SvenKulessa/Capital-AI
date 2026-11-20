@@ -1,5 +1,5 @@
 > **INFORMATIONAL / NON-AUTHORIZING — 2026-10-07**
-> Dieses Domain-Dokument beschreibt nur Scope und Kontext. Es setzt keine zusätzlichen Engineering-, Governance-, Admission-, Handoff-, Merge- oder Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`.
+> Dieses Domain-Dokument beschreibt nur Scope und Kontext. Es setzt keine zusätzlichen Engineering-, Governance-, Admission-, Handoff-, Merge- oder Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@2`.
 
 # CAPITAL-AI-TRUST
 
@@ -19,3 +19,7 @@ PR-Präfix: `[CAPITAL-AI-TRUST]`
 ## Branding
 Badge: `badge.svg` — Silber / Anthrazit; facettierter Schild mit Prüfsymbol.
 Lizenznachweis: `trust.LICENSE.md`.
+
+## Maschinenlesbare Domain-Anweisung
+
+Maschinenlesbarer Domain-Prompt: `CAPITAL-AI-TRUST/domain.prompt.json`. Dieser Kontext verwendet die bestehende Skill-Registry `.agents/skills/registry.json` und erweitert keine Rechte, Required Checks oder Domain-Handoffs. Die Root-`AGENTS.md` bleibt allein autoritativ.

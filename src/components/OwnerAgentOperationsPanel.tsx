@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Activity, GitPullRequest, RefreshCw, ShieldCheck, Server, TrendingUp } from 'lucide-react';
 import {
-  AGENT_ROLES, evidenceState, ga4EventCount, isSnapshotStale, isVerified,
+  AGENT_ROLES, evidenceState, ga4DiagnosticLabel, ga4EventCount, ga4RealtimeEventCount, isSnapshotStale, isVerified,
   readDashboardSnapshot, visiblePullRequests,
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
@@ -117,6 +117,9 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   const prs = snapshot ? visiblePullRequests(snapshot, agent, search) : [];
   const checks = agent === 'ALL' || agent === 'PLATFORM' || agent === 'SECURITY' ? gh?.ci?.runs ?? [] : [];
   const views = snapshot ? ga4EventCount(snapshot, 'page_view') : null;
+  const sessionStarts = snapshot ? ga4EventCount(snapshot, 'session_start') : null;
+  const itemViews = snapshot ? ga4EventCount(snapshot, 'view_item') : null;
+  const realtimeViews = snapshot ? ga4RealtimeEventCount(snapshot, 'page_view') : null;
   const leads = snapshot ? ga4EventCount(snapshot, 'generate_lead') : null;
   const purchaseEvents = snapshot ? ga4EventCount(snapshot, 'purchase') : null;
   const evidence = snapshot ? [
@@ -169,18 +172,23 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
       <div role="tablist" aria-label="Operations-Ansichten" className="flex flex-wrap gap-2">
         {VIEWS.map(item => <button key={item.id} type="button" role="tab" aria-selected={view === item.id}
           onClick={() => setView(item.id)}
+          // Certain mobile Chromium touch streams do not synthesize a click.
+          // Touch-only pointer activation is idempotent with any later click.
+          onPointerUp={event => {
+            if (event.isPrimary && event.pointerType === 'touch') setView(item.id);
+          }}
           className={'min-h-11 rounded-lg border px-3 text-xs font-semibold ' +
             (view === item.id ? 'border-indigo-300 bg-indigo-500/25 text-white' : 'border-white/10 text-slate-300')}>
           {item.label}
         </button>)}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="agent-ops-filter" className="text-xs text-slate-300">Agenten-Domain</label>
+      {(view === 'overview' || view === 'github') && <div className="flex flex-wrap items-center gap-2">
+        <label htmlFor="agent-ops-filter" className="text-xs text-slate-300">PR-Agenten-Domain</label>
         <select id="agent-ops-filter" value={agent} onChange={event => setAgent(event.target.value as AgentRole | 'ALL')}
           className="min-h-11 rounded-xl border border-white/15 bg-slate-900 px-3 text-sm text-white">
           <option value="ALL">Alle Rollen</option>{AGENT_ROLES.map(role => <option key={role} value={role}>{role}</option>)}
         </select>
-      </div>
+      </div>}
       {(view === 'overview' || view === 'evidence') && <div className="space-y-3" role="tabpanel">
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           <Metric title="Offene GitHub-PRs" value={isVerified(gh) && gh?.openPrCountStatus === 'VERIFIED' ? gh.openPrCount ?? '–' : '–'} note={gh?.openPrCountStatus || 'NOT_PROVEN'}/>
@@ -280,13 +288,17 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
         <Section title="GA4 / 7-Tage-Eventmessung">
           <Source status={ga4?.status}/>
           <p className="my-2 text-xs text-slate-400">{ga4?.period || 'NOT_PROVEN'} · {ga4?.property || 'Keine bestätigte Property'}</p>
-          {!isVerified(ga4) && ga4?.reason && <p role="status" className="my-2 break-all rounded-lg border border-amber-300/25 bg-amber-300/5 p-2 text-xs text-amber-100">Diagnosecode: {ga4.reason}</p>}
-          <div className="grid grid-cols-2 gap-2">
+          {!isVerified(ga4) && ga4?.reason && <p role="status" className="my-2 break-all rounded-lg border border-amber-300/25 bg-amber-300/5 p-2 text-xs text-amber-100">Diagnose: {ga4DiagnosticLabel(ga4.reason)} · Code: {ga4.reason}</p>}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <Metric title="page_view Events" value={views ?? '–'}/>
+            <Metric title="session_start Events" value={sessionStarts ?? '–'}/>
+            <Metric title="view_item Events" value={itemViews ?? '–'}/>
             <Metric title="generate_lead Events" value={leads ?? '–'}/>
             <Metric title="purchase Events" value={purchaseEvents ?? '–'} note="Event, keine Zahlungsbestätigung"/>
-            <Metric title="Umsatz / MRR" value="–" note="NOT_PROVEN"/>
+            <Metric title="page_view Echtzeit" value={realtimeViews ?? '–'} note={ga4?.realtimeStatus || 'NOT_PROVEN'}/>
+            <Metric title="Umsatz / MRR" value="–" note="NOT_PROVEN · Kein Zahlungsnachweis"/>
           </div>
+          <p className="mt-3 text-xs text-slate-400">Provider-Ereignisse werden nicht als Besucherzahlen, Zahlungen oder Umsatzbelege interpretiert; Echtzeitwerte bleiben getrennt.</p>
           {isVerified(ga4) && ga4?.events?.length ? <div className="mt-4 space-y-3">
             {ga4.events.filter(row => Number.isSafeInteger(row.eventCount) && row.eventCount >= 0).map(row => {
               const largest = Math.max(1, ...(ga4.events || []).map(v => v.eventCount));
