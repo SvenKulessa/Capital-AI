@@ -1,0 +1,421 @@
+{
+  "schema_version": "growth-intelligence-content-plan/v1",
+  "generated_date": "2026-11-20",
+  "product": "CAPITAL-AI",
+  "scope": "Read-only analytics, production plan; no publication or campaign spend",
+  "timezone": "Europe/Berlin",
+  "measurement_notes": [
+    "GA4 authenticated and queried successfully; snapshot was live (cache_used=false).",
+    "Supermetrics Instagram login listed but actual Insights API token expired; no Instagram metrics validated.",
+    "Windsor Search Console connector exists but token expired/revoked; HYPD Search Console has no selected properties.",
+    "ChatGPT Ads Manager has CAPITAL-AI EUR account but no campaign records and no insight rows for the analyzed date window.",
+    "Metricool returned a TikTok-only profile with no proven association to CAPITAL-AI; excluded from KPI baselines.",
+    "Content priorities are editorial heuristics and do not predict reach, revenue or conversions."
+  ],
+  "sources": [
+    {
+      "provider": "Supermetrics",
+      "dataset": "GAWA property 548187678",
+      "status": "VERIFIED_READ",
+      "periods": [
+        "2026-09-20..2026-10-19",
+        "2026-10-20..2026-11-18"
+      ]
+    },
+    {
+      "provider": "Supermetrics",
+      "dataset": "IGI account svenkulessa",
+      "status": "BLOCKED_EXPIRED_TOKEN",
+      "periods": [
+        "2026-10-20..2026-11-18"
+      ]
+    },
+    {
+      "provider": "Windsor.ai",
+      "dataset": "Search Console sc-domain:capital-ai.online",
+      "status": "BLOCKED_INVALID_GRANT"
+    },
+    {
+      "provider": "HYPD Search Console",
+      "dataset": "Connected selected properties",
+      "status": "NOT_PROVEN_NO_PROPERTIES"
+    },
+    {
+      "provider": "ChatGPT Ads Manager",
+      "dataset": "CAPITAL-AI EUR",
+      "status": "VERIFIED_NO_CAMPAIGNS_NO_INSIGHT_ROWS",
+      "periods": [
+        "2026-10-20..2026-11-18"
+      ]
+    },
+    {
+      "provider": "Google Drive",
+      "dataset": "CAPITAL-AI Marketingkonzept 2026-10-14",
+      "status": "DOCUMENTED_DRAFT",
+      "url": "https://drive.google.com/file/d/1EAWGauKYwJFZsWS7H2De1RbLCn4gvnaM/view?usp=drivesdk"
+    },
+    {
+      "provider": "Google Drive",
+      "dataset": "CAPITAL-AI Podcast README 2026-11-15",
+      "status": "DOCUMENTED_DRAFT",
+      "url": "https://docs.google.com/document/d/1ga9FzhoCP-BX7zcV3klbGSOl8MELzL7W/edit"
+    }
+  ],
+  "insights": [
+    {
+      "insight_id": "OBS-GA4-COVERAGE-001",
+      "type": "data_quality",
+      "status": "VERIFIED_OBSERVATION_CAUSE_NOT_PROVEN",
+      "source": "Supermetrics Google Analytics 4 / Capital-AI prod / property 548187678",
+      "period_current": {
+        "start": "2026-10-20",
+        "end": "2026-11-18"
+      },
+      "period_previous": {
+        "start": "2026-09-20",
+        "end": "2026-10-19"
+      },
+      "current": {
+        "sessions": 15,
+        "engaged_sessions": 2,
+        "active_users": 11,
+        "event_count": 50,
+        "engagement_rate": 0.1333,
+        "days_with_recorded_sessions": 4,
+        "session_dates": [
+          "2026-11-13",
+          "2026-11-16",
+          "2026-11-17",
+          "2026-11-18"
+        ]
+      },
+      "previous": {
+        "sessions": 47,
+        "engaged_sessions": 38,
+        "active_users": 8,
+        "event_count": 715,
+        "days_with_recorded_sessions": 5,
+        "session_dates": [
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24"
+        ]
+      },
+      "interpretation": "Measurable session decline in GA4, but no evidence whether zero-session dates mean absence of actual traffic or absence of tracking. Cannot infer actual demand trend.",
+      "query_ids": [
+        "d32274ef3a8ea675bb1c3b64312098468b33e7cd5681de54de46c2c9c5268008",
+        "5f0f25aaddaea50ee5d410c74f3f15ac6d973eb4ac360c3d8d2776e328794b8",
+        "ffa42d5f81ce1a754797d6542582eb1ca1041fb504426dd867d9eb6eb757dc58",
+        "272f89ff9c6623d92dd2d9fadeb81e4908d5309d3c808fb84afa27b587ceaef3"
+      ]
+    },
+    {
+      "insight_id": "OBS-GA4-LANDING-002",
+      "type": "observed_entrypoints",
+      "status": "VERIFIED_SMALL_SAMPLE",
+      "source": "Supermetrics GA4 landingPage report",
+      "period": {
+        "start": "2026-10-20",
+        "end": "2026-11-18"
+      },
+      "landing_sessions": {
+        "/": 12,
+        "/learning": 2,
+        "/vocabulary/learning-kappa-architecture": 1
+      },
+      "interpretation": "Homepage is the largest observed landing page in this very small sample, not a proven top-performing content category.",
+      "query_id": "fc6e45de86df031b23d6a70641cd5720486aefd46daa065918927a008cdef703"
+    },
+    {
+      "insight_id": "OBS-GA4-ATTRIBUTION-003",
+      "type": "measurement_gap",
+      "status": "VERIFIED_OBSERVATION_CAUSE_NOT_PROVEN",
+      "source": "Supermetrics GA4 acquisition and events reports",
+      "period": {
+        "start": "2026-10-20",
+        "end": "2026-11-18"
+      },
+      "session_source_medium": {
+        "(direct) / (none)": 14,
+        "google / organic": 1
+      },
+      "events": {
+        "page_view": 17,
+        "session_start": 15,
+        "first_visit": 11,
+        "view_item": 4,
+        "user_engagement": 3
+      },
+      "interpretation": "No identifiable social campaign in returned source/medium and no lead-completion event among returned event names. This does not prove no leads or no social visitors.",
+      "query_ids": [
+        "78b0cddbe9266d63c910e4d6d7cbbd5de25eb5815b3680e1d224cdf7d0e16c51",
+        "1d1716d1fcb38a9c208fa763d0148cc58e30fe3737af554c73e20899b4f397c2"
+      ]
+    },
+    {
+      "insight_id": "OBJ-GROWTH-20261014",
+      "type": "strategic_objective",
+      "status": "DOCUMENTED_DRAFT",
+      "source": "CAPITAL-AI Marketingkonzept 14.10.2026 / Drive",
+      "source_url": "https://drive.google.com/file/d/1EAWGauKYwJFZsWS7H2De1RbLCn4gvnaM/view?usp=drivesdk",
+      "objective": "Three audiences: B2B finance research leads; learning portal completion and registration; developer documentation/feedback; four pillars: transparency, data pipeline, scoring/math, learning/evidence. No performance forecasts."
+    },
+    {
+      "insight_id": "OBJ-PODCAST-20261115",
+      "type": "production_context",
+      "status": "DRAFT_NOT_PUBLISHED",
+      "source": "Video-Podcasts v5 production README / Drive",
+      "source_url": "https://docs.google.com/document/d/1ga9FzhoCP-BX7zcV3klbGSOl8MELzL7W/edit",
+      "objective": "Five German 1920x1080 draft episodes, eight chapters each; licensing/voice/subtitle/frame-rate and editorial checks pending."
+    }
+  ],
+  "priority_scoring": {
+    "scale": "0-100",
+    "purpose": "Editorial prioritization, not performance forecast",
+    "dimensions": {
+      "strategic_alignment": 30,
+      "evidence_relevance": 25,
+      "repeatable_repurposing": 20,
+      "operational_readiness": 15,
+      "governance_feasibility": 10
+    }
+  },
+  "score_components": {
+    "CAP-GROW-001": {
+      "strategic_alignment": 30,
+      "evidence_relevance": 24,
+      "repeatable_repurposing": 19,
+      "operational_readiness": 12,
+      "governance_feasibility": 9
+    },
+    "CAP-GROW-002": {
+      "strategic_alignment": 30,
+      "evidence_relevance": 12,
+      "repeatable_repurposing": 20,
+      "operational_readiness": 15,
+      "governance_feasibility": 10
+    },
+    "CAP-GROW-003": {
+      "strategic_alignment": 30,
+      "evidence_relevance": 12,
+      "repeatable_repurposing": 19,
+      "operational_readiness": 12,
+      "governance_feasibility": 10
+    },
+    "CAP-GROW-004": {
+      "strategic_alignment": 26,
+      "evidence_relevance": 10,
+      "repeatable_repurposing": 18,
+      "operational_readiness": 13,
+      "governance_feasibility": 10
+    },
+    "CAP-GROW-005": {
+      "strategic_alignment": 26,
+      "evidence_relevance": 8,
+      "repeatable_repurposing": 18,
+      "operational_readiness": 10,
+      "governance_feasibility": 10
+    },
+    "CAP-GROW-006": {
+      "strategic_alignment": 29,
+      "evidence_relevance": 9,
+      "repeatable_repurposing": 20,
+      "operational_readiness": 2,
+      "governance_feasibility": 10
+    },
+    "CAP-GROW-007": {
+      "strategic_alignment": 28,
+      "evidence_relevance": 4,
+      "repeatable_repurposing": 19,
+      "operational_readiness": 1,
+      "governance_feasibility": 10
+    }
+  },
+  "recommendations": [
+    {
+      "content_id": "CAP-GROW-001",
+      "source_insight_id": "OBS-GA4-LANDING-002",
+      "content_pillar": "Transparenz & Produktnutzen",
+      "topic": "Wie CAPITAL-AI Marktinformationen überprüfbar erklärt: Quelle → Analyse → Grenzen",
+      "format": "Homepage-Hero-Erklärartikel + Prozessgrafik",
+      "channel": "Website",
+      "audience": "Einsteiger und B2B-Erstbesucher",
+      "funnel_stage": "awareness",
+      "hook": "Woher stammt ein Markt-Score – und was kann er nicht beweisen?",
+      "core_message": "Datenherkunft und methodische Grenzen werden vor Ergebnissen erklärt.",
+      "cta": "Learning Hub entdecken",
+      "kpi": "home_learning_cta_clicks (proposed GA4 event), engaged_sessions (observed)",
+      "experiment": "A: Datenfluss-Grafik gegen B: drei kurze Evidenz-Karten; gleiche CTA und Consentbedingungen",
+      "priority": 94
+    },
+    {
+      "content_id": "CAP-GROW-002",
+      "source_insight_id": "OBJ-GROWTH-20261014",
+      "content_pillar": "Learning & Evidence",
+      "topic": "Indikator ≠ Handelssignal: OHLC, EMA und RSI verständlich erklären",
+      "format": "SEO-Lernartikel + interaktive Demo-Grafik",
+      "channel": "Learning Hub",
+      "audience": "Lernende und technisch interessierte Trader",
+      "funnel_stage": "activation",
+      "hook": "Ein Indikator beschreibt Daten – er trifft keine Kaufentscheidung.",
+      "core_message": "Demo-Kennzahlen sind Lehrbeispiele ohne Renditeversprechen.",
+      "cta": "Erste Lernlektion starten",
+      "kpi": "lesson_start, lesson_complete (proposed events); /learning sessions (observed)",
+      "experiment": "A: Beispielchart zuerst gegen B: Begriffserklärung zuerst; Lernstarts vergleichen",
+      "priority": 87
+    },
+    {
+      "content_id": "CAP-GROW-003",
+      "source_insight_id": "OBJ-GROWTH-20261014",
+      "content_pillar": "B2B Research & Evidence",
+      "topic": "Datenherkunft, Point-in-Time-Replay und Quality Gates in der Finanzanalyse",
+      "format": "Technischer B2B-Fachbeitrag + Evidence-Diagramm",
+      "channel": "LinkedIn",
+      "audience": "FinTech-Teams, Quant-Research, Datenverantwortliche",
+      "funnel_stage": "consideration",
+      "hook": "Kann Ihr Analyseergebnis bis zur ursprünglichen Datenquelle zurückverfolgt werden?",
+      "core_message": "PIT, Quellenrechte und Reproduzierbarkeit sind Prüfkriterien, keine unbelegten Produktzertifikate.",
+      "cta": "Technische Dokumentation ansehen",
+      "kpi": "documented_b2b_cta_clicks, qualified_b2b_inquiries (proposed events)",
+      "experiment": "A: Governance-Evidence als Einstieg gegen B: Datenqualitätsproblem als Einstieg",
+      "priority": 83
+    },
+    {
+      "content_id": "CAP-GROW-004",
+      "source_insight_id": "OBJ-GROWTH-20261014",
+      "content_pillar": "Developer & Open Source",
+      "topic": "Wie man Providerrechte und Zeitstempel in Research-Pipelines testet",
+      "format": "Entwicklerartikel + synthetisches Testfall-Diagramm",
+      "channel": "Website / Developer Docs",
+      "audience": "Entwickler und Open-Source-Community",
+      "funnel_stage": "consideration",
+      "hook": "Ein korrektes Diagramm beweist noch keinen zulässigen Datenfeed.",
+      "core_message": "Providerberechtigungen, Replay und Negativtests getrennt verifizieren.",
+      "cta": "Dokumentation und Testgrenzen prüfen",
+      "kpi": "docs_entrances, documentation_cta_clicks (proposed tracking)",
+      "experiment": "A: kompakte Checkliste gegen B: annotiertes Testprotokoll",
+      "priority": 77
+    },
+    {
+      "content_id": "CAP-GROW-005",
+      "source_insight_id": "OBS-GA4-ATTRIBUTION-003",
+      "content_pillar": "Vision & Transparenz",
+      "topic": "Vom Indikator zur überprüfbaren Analyse – in einem kurzen X-Beitrag",
+      "format": "Kurzer Text-Post mit Infografik und optionalem UTM-Link",
+      "channel": "X",
+      "audience": "Finanzinteressierte und Research-Praktiker",
+      "funnel_stage": "awareness",
+      "hook": "Mehr Daten sind nicht automatisch bessere Entscheidungen.",
+      "core_message": "Qualität entsteht durch Herkunft, Annahmen und prüfbare Grenzen.",
+      "cta": "Methodik auf CAPITAL-AI ansehen",
+      "kpi": "utm_attributed_sessions; link_clicks (only if provider available)",
+      "experiment": "A: Erklärgrafik + Link gegen B: knappe Textthese + Link; keine Wirkung ohne Attribution bewerten",
+      "priority": 72
+    },
+    {
+      "content_id": "CAP-GROW-006",
+      "source_insight_id": "OBJ-PODCAST-20261115",
+      "content_pillar": "Learning & Masterclass",
+      "topic": "Was bedeutet Evidence-first für Finanzdaten? Einführung aus den Podcast-Entwürfen",
+      "format": "60-Sekunden-Teaser aus internem Video-Podcast-Entwurf",
+      "channel": "Studio Hub / YouTube",
+      "audience": "Finanzlernende und FinTech-Interessierte",
+      "funnel_stage": "awareness",
+      "hook": "Bevor Sie einem Score vertrauen, prüfen Sie die Belege dahinter.",
+      "core_message": "Einführung in Transparenz und Research-Grenzen; keine produktiven Fähigkeiten behaupten.",
+      "cta": "Lernmaterial im Studio Hub ansehen",
+      "kpi": "video_start, video_50pct, learning_cta_click (proposed events)",
+      "experiment": "A: animierte Datenkette gegen B: Moderator-Erklärung; Produktion nur nach Media-QA",
+      "priority": 70
+    },
+    {
+      "content_id": "CAP-GROW-007",
+      "source_insight_id": "OBJ-GROWTH-20261014",
+      "content_pillar": "Risk Education",
+      "topic": "Risk-Veto statt schön gerechneter Scores",
+      "format": "6-seitiger Informations-Carousel",
+      "channel": "Instagram",
+      "audience": "Lernende und risikoaffine Marktbeobachter",
+      "funnel_stage": "awareness",
+      "hook": "Ein Risikosignal kann einen hohen Gesamtscore entwerten.",
+      "core_message": "Synthetisches Beispiel für ein transparentes Hard-Veto, keine reale Handelsentscheidung.",
+      "cta": "Lernartikel öffnen",
+      "kpi": "media_reach, media_saved, interactions, profile_links_taps (NOT_PROVEN until reconnect)",
+      "experiment": "A: Risiko auf Folie 1 gegen B: Formel auf Folie 1; erst nach Instagram-Reconnect",
+      "priority": 62
+    }
+  ],
+  "production_sprints": [
+    {
+      "phase": "P0",
+      "window": "Before measurement-dependent publication",
+      "deliverables": [
+        "GA4 consent-aware event/UTM acceptance tests and source-vs-tag validation",
+        "Reconnect Instagram Supermetrics OAuth and verify Instagram identity and account rights",
+        "Reconnect or select Search Console property; document rights and freshness",
+        "Establish content_id/utm_content convention and B2B conversion event end-to-end"
+      ],
+      "release_gate": "NOT_PROVEN until measured"
+    },
+    {
+      "phase": "W1",
+      "window": "2026-11-23..2026-11-29",
+      "content_ids": [
+        "CAP-GROW-001",
+        "CAP-GROW-002"
+      ],
+      "deliverables": [
+        "Hero article with rights-cleared explanatory graphic",
+        "Learning article and synthetic figure",
+        "2 caption variants and accessibility/consent QA"
+      ]
+    },
+    {
+      "phase": "W2",
+      "window": "2026-11-30..2026-12-06",
+      "content_ids": [
+        "CAP-GROW-003",
+        "CAP-GROW-004"
+      ],
+      "deliverables": [
+        "B2B evidence case study",
+        "Developer validation/checklist article",
+        "Link attribution test and source review"
+      ]
+    },
+    {
+      "phase": "W3",
+      "window": "2026-12-07..2026-12-13",
+      "content_ids": [
+        "CAP-GROW-005",
+        "CAP-GROW-007"
+      ],
+      "deliverables": [
+        "X visual/text variants",
+        "Instagram carousel drafts",
+        "Channel rights and reauthenticated KPI baseline check"
+      ]
+    },
+    {
+      "phase": "W4",
+      "window": "2026-12-14..2026-12-20",
+      "content_ids": [
+        "CAP-GROW-006"
+      ],
+      "deliverables": [
+        "One 60-second pilot clip from existing podcast draft",
+        "Narration, captions, fps, music rights and media QA before release"
+      ]
+    }
+  ],
+  "quality_gates": {
+    "draft": "Source identity and evidence reference must exist",
+    "editorial": "No investment return, product availability or maturity claims unsupported by source evidence",
+    "rights": "All images/video/audio have commercial reuse permission",
+    "instrumentation": "Consent, UTM, content ID and event-name negative tests pass",
+    "publication": "Owner approval, exact account and cost authorization, provider readback",
+    "learning": "Use only actually measured outcomes; no uplift claims without sufficient data"
+  }
+}
