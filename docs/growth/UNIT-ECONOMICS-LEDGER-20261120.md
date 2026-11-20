@@ -82,12 +82,13 @@ no Supabase credentials or network access to a live project. The job verifies:
 - SHA/versioned inputs, broken run totals and foreign-key denials
 - same key replay, changed key conflict, duplicate source, duplicate run
 - two concurrent tenants and 12 parallel same-key writers
-- explicit BEGIN/ROLLBACK and a killed PostgreSQL client while transaction
-  is open: no committed parent/line; exact retry creates once
+- explicit BEGIN/ROLLBACK and terminated PostgreSQL backend while waiting
+  in PgSleep with an open transaction: no committed parent/line; exact retry creates once
 - immutable reversal, retry, conflicting reversal and cross-tenant denial
 - real PostgreSQL 17 pg_dump custom-format export and pg_restore into
   a separate fresh ue_ledger_restore_ci database. Restored counts, sorted
-  snapshot digest, idempotency behavior and tenant isolation must match
+  snapshot digest, restored private schema ACLs, service-only RPC access,
+  idempotency behavior and tenant isolation must match
   the source; restoreVerified=true only after assertions.
 
 The synthetic restore uses a fresh isolated database inside the disposable
