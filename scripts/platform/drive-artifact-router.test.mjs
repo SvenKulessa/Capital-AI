@@ -23,3 +23,17 @@ test('all manifest routes remain within CAPITAL-AI project hierarchy and contain
 test('known additional project areas are classified without defaulting to Acode',()=>{for(const key of ['PLATFORM_AUTHENTICATION','PRODUCT_UX','DATA_DATABASE','MARKET_PRICING','GROWTH_CAMPAIGNS','FINANCE_INVOICES','LEGAL_CONTRACTS']){const route=routingContract.routes[key];assert.ok(route,'missing '+key);const p=planDriveArtifact({...base,category:key,domain:route.domain,listedFolderPath:route.folder});assert.equal(p.status,'ROUTE_READY');assert.notEqual(p.folderId,acodeContract.driveFolderId);}});
 test('minor historical version reserves its major to prevent mistaken initial version',()=>{const p=planDriveArtifact({...base,existingNames:['2026-11-21_TRUST_EXPOSURE_AUDIT_v1.1.md']});assert.equal(p.filename,'2026-11-21_TRUST_EXPOSURE_AUDIT_v2.md');});
 test('placeholder folder IDs never create upload admission',()=>{const p=planDriveArtifact({...base,providerFolderId:'INSERT_VERIFIED_DRIVE_FOLDER_ID',listedParentId:'INSERT_VERIFIED_DRIVE_FOLDER_ID'});assert.equal(p.status,'WAIT');assert.equal(p.uploadAdmission,'HOLD');});
+
+test('append-only numbering never reuses gaps between existing versions',()=>{
+  const p=planDriveArtifact({...base,existingNames:[
+    '2026-11-21_TRUST_EXPOSURE_AUDIT_v1.md',
+    '2026-11-21_TRUST_EXPOSURE_AUDIT_v3.md',
+  ]});
+  assert.equal(p.status,'ROUTE_READY');
+  assert.equal(p.filename,'2026-11-21_TRUST_EXPOSURE_AUDIT_v4.md');
+});
+test('exhausted version number fails closed and does not reuse old names',()=>{
+  const p=planDriveArtifact({...base,existingNames:['2026-11-21_TRUST_EXPOSURE_AUDIT_v9999.md']});
+  assert.equal(p.status,'BLOCKED');
+  assert.equal(p.reason,'VERSION_SPACE_EXHAUSTED');
+});
