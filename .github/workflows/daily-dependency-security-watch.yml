@@ -115,6 +115,16 @@ jobs:
               policyTests:$tests,suppressionPolicy:"NOT_ENFORCED_OWNER_REQUEST",
               rightsApproved:false,securityApproved:false}' > security-reports/daily-dependency-summary.json
 
+      - name: Review skill source inventory
+        if: always()
+        run: |
+          node scripts/skill-bundles.mjs --probe > security-reports/skill-source-audit.json
+          jq -r '["### Skill sources",
+            ("Reviews due: " + ([.sources[] | select(.reviewState == "REVIEW_DUE")] | length | tostring)),
+            ("Sources requiring a readback: " + ([.sources[] | select(.probe.state != "ANCHOR_OBSERVED")] | length | tostring)),
+            ("Skills with missing or unproven source coverage: " + ([.skills[] | select(.reviewState == "NOT_PROVEN")] | length | tostring))] | .[]' \
+            security-reports/skill-source-audit.json >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload daily evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

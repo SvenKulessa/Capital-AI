@@ -419,8 +419,8 @@ Das vorhandene Modell `CAPITAL_AI_DOMAIN_SKILLS@1` und alle fünf Domains bleibe
 |---|---|
 | PRODUCT | `product-engineering`, `product-advisory`, `mobile-engineering`, `customer-success`, `accessibility-audit`, `accessibility-advisory`, `accessibility-engineering`, `visual-chat` |
 | MARKET | `market-engineering`, `market-advisory`, `quant-research`, `data-engineering`, `analytics-intelligence` |
-| PLATFORM | `platform-engineering`, `platform-advisory`, `ai-engineering`, `platform-observability` |
-| TRUST | `trust-engineering`, `trust-advisory`, `legal-compliance`, `incident-response` |
+| PLATFORM | `platform-engineering`, `platform-advisory`, `ai-engineering`, `platform-observability`, `integration-engineering`, `skill-lifecycle` |
+| TRUST | `trust-engineering`, `trust-advisory`, `legal-compliance`, `incident-response`, `agent-evaluation` |
 | GROWTH | `growth-engineering`, `growth-advisory`, `sales-enterprise`, `seo-engineering`, `revenue-engineering` |
 
 Pro Skill stehen `SKILL.md`, `RESPONSIBILITIES.md` und `INTERFACES.md` unter `.agents/skills/<skill>/`. Die drei Dokumente ergänzen einander; die fachliche Skill-Nutzung bleibt kompatibel zu bestehenden Agenten- und Routing-Verweisen. Insbesondere `accessibility-audit` und `sales-enterprise` bleiben bestehen; neue `accessibility-advisory`, `accessibility-engineering`, `platform-observability`, `seo-engineering` und `revenue-engineering` sind eigenständige Fähigkeiten in den vorhandenen Domains.
