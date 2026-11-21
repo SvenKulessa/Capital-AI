@@ -42,6 +42,28 @@ def canonical_review(scope, fp, reviewed, proof):
     return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
 
 
+def _current_review_target(pr, main, reviewed, proof) -> bool:
+    if not isinstance(pr, dict) or not isinstance(main, dict):
+        return False
+    head, base, commit = pr.get("head"), pr.get("base"), main.get("commit")
+    if not all(isinstance(value, dict) for value in (head, base, commit)):
+        return False
+    title = pr.get("title")
+    return (pr.get("number") == proof.pr_number
+            and pr.get("state") == "open"
+            and pr.get("draft") is False
+            and pr.get("mergeable") is True
+            and pr.get("mergeable_state") == "clean"
+            and isinstance(title, str) and bool(title.strip())
+            and re.search(r"\[HOLD(?:\]|\s*:)", title, re.IGNORECASE) is None
+            and base.get("ref") == "main"
+            and isinstance(head.get("repo"), dict)
+            and head["repo"].get("full_name") == proof.repository
+            and head.get("sha") == reviewed.head_sha
+            and base.get("sha") == reviewed.base_sha
+            and commit.get("sha") == reviewed.base_sha)
+
+
 class TrustedLearningVerifier:
     """Verification-only adapter; injected GitHub client must be an authorized SafeHTTP.
 
@@ -86,22 +108,7 @@ class TrustedLearningVerifier:
             # Live provider evidence, never the reviewer's assertion about CI.
             pr = self._github.github(f"/pulls/{proof.pr_number}", method="GET")
             main = self._github.github("/branches/main", method="GET")
-            if not isinstance(pr, dict) or not isinstance(main, dict):
-                return False
-            head, base = pr.get("head"), pr.get("base")
-            if not isinstance(head, dict) or not isinstance(base, dict):
-                return False
-            if (pr.get("number") != proof.pr_number or pr.get("state") != "open"
-                    or pr.get("draft") is not False or pr.get("mergeable") is not True
-                    or pr.get("mergeable_state") != "clean"
-                    or "[HOLD]" in str(pr.get("title", "")).upper()
-                    or base.get("ref") != "main"
-                    or not isinstance(head.get("repo"), dict)
-                    or head["repo"].get("full_name") != proof.repository
-                    or head.get("sha") != reviewed.head_sha
-                    or base.get("sha") != reviewed.base_sha
-                    or not isinstance(main.get("commit"), dict)
-                    or main["commit"].get("sha") != reviewed.base_sha):
+            if not _current_review_target(pr, main, reviewed, proof):
                 return False
 
             data = self._github.github(f"/commits/{reviewed.head_sha}/check-runs?per_page=100",
@@ -144,15 +151,7 @@ class TrustedLearningVerifier:
             # A head/main change during the inspection invalidates the receipt.
             refreshed_pr = self._github.github(f"/pulls/{proof.pr_number}", method="GET")
             refreshed_main = self._github.github("/branches/main", method="GET")
-            if not isinstance(refreshed_pr, dict) or not isinstance(refreshed_main, dict):
-                return False
-            return (refreshed_pr.get("state") == "open"
-                    and isinstance(refreshed_pr.get("head"), dict)
-                    and isinstance(refreshed_pr.get("base"), dict)
-                    and refreshed_pr["head"].get("sha") == reviewed.head_sha
-                    and refreshed_pr["base"].get("sha") == reviewed.base_sha
-                    and isinstance(refreshed_main.get("commit"), dict)
-                    and refreshed_main["commit"].get("sha") == reviewed.base_sha)
+            return _current_review_target(refreshed_pr, refreshed_main, reviewed, proof)
         except Exception:
             # No raw provider response, token, PR text or signature in diagnostics.
             return False

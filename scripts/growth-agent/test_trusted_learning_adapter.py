@@ -50,6 +50,7 @@ class FakeGithub:
         self.total_count = None
         self.raise_error = False
         self.drift_after_checks = False
+        self.pr_change_after_checks = {}
 
     def github(self, path, *, method="GET"):
         assert method == "GET"
@@ -63,6 +64,7 @@ class FakeGithub:
         if path == f"/commits/{HEAD}/check-runs?per_page=100":
             if self.drift_after_checks:
                 self.main = "c" * 40
+            self.pr.update(self.pr_change_after_checks)
             return {"total_count": len(self.checks) if self.total_count is None else self.total_count,
                     "check_runs": self.checks}
         raise ValueError("unapproved query")
@@ -134,6 +136,21 @@ class AuthenticatedLearningTests(unittest.TestCase):
         self.github.drift_after_checks = True
         self.assertFalse(self.learn())
         self.assertEqual(self.store.retrieve(scope=self.scope, fp=self.fp)[0]["verified_count"], 0)
+
+    def test_qualified_hold_is_denied_before_reading_checks(self):
+        self.github.pr["title"] = "[CAPITAL-AI-TRUST] [HOLD: FREE_TIER] sample"
+        self.assertFalse(self.learn())
+        self.assertFalse(any("/check-runs" in path for path in self.github.calls))
+
+    def test_changed_pr_eligibility_after_checks_is_denied(self):
+        for update in ({"draft": True}, {"title": "[hold] sample"},
+                       {"mergeable_state": "blocked"}, {"number": 43}):
+            with self.subTest(update=update):
+                self.github = FakeGithub()
+                self.verifier._github = self.github
+                self.github.pr_change_after_checks = update
+                self.assertFalse(self.learn())
+                self.assertEqual(self.store.retrieve(scope=self.scope, fp=self.fp)[0]["verified_count"], 0)
 
     def test_unsigned_boolean_claims_and_fake_signatures_rejected(self):
         self.assertFalse(self.store.learn(scope=self.scope, fp=self.fp,
