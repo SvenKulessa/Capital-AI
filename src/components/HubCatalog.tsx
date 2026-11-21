@@ -29,6 +29,7 @@ import {
   DollarSign,
   Server,
   ArrowRight,
+  Share2,
 } from 'lucide-react';
 
 export type MainHubId = 'marketscreener' | 'studio' | 'learning' | 'documentation' | 'social' | 'control-center';
