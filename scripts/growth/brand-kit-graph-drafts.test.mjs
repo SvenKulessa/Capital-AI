@@ -3,6 +3,7 @@ import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { CONTRACT,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
 import { buildSocialPublisherHandoff } from '../../src/contracts/socialPublisherAdapter.ts';
+import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
 const sha=s=>createHash('sha256').update(s).digest('hex');
 const colors=['#67E8F9','#B794F4','#F9BF21','#F9A8D4','#F87171','#60A5FA','#4ADE80'];
@@ -175,4 +176,14 @@ test('Exported PNG bytes, not intermediate SVG, bind the exact X and Instagram S
     assert.throws(()=>buildSocialPublisherHandoff(draft.socialPackage,channel,image.assetId),
       /CONTENT_SOCIAL_PUBLISHER_NOT_READY/);
   }
+});
+
+
+test('all offline media renderers share one idempotent resvg WASM initialization',async()=>{
+  const once=ensureResvgWasmInitialized();
+  assert.strictEqual(ensureResvgWasmInitialized(),once);
+  await once;
+  const result=await renderBrandPng(buildBrandedGrowthDraft({channel:'X'}));
+  assert.equal(result.publishReady,false);
+  assert.equal(result.sha256,sha(result.bytes));
 });

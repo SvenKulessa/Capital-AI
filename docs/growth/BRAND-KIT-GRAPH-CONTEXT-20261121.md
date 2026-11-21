@@ -28,6 +28,8 @@ Stand 21.11.2026. Domain GROWTH mit TRUST / PRODUCT / PLATFORM. Repositoryweite 
 
 Softwarelizenzen sind **keine** Rechte an gecrawlten Webseiten, Bildern oder Modell-Outputs. Robots-/Terms-/Privacy-/Datenquellen-/Attributionsgrenzen bleiben erhalten. Für Bild- oder Textassets unbekannter Herkunft gilt `NOT_PROVEN`, nicht `LICENSED`. Es wurde keine neue Cloud-Kostenquelle aktiviert.
 
+Der vorhandene `EditorialStatusGraphicRenderer`, das Social-Pipeline-Bild, der Owner-Operations-Renderer und der Brand-Kit-Renderer verwenden eine gemeinsame, zwischengespeicherte `ensureResvgWasmInitialized()`-Promise. Hintergrund: `@resvg/resvg-wasm` erlaubt pro Node-Prozess nur einen `initWasm()`-Aufruf; vor dem Fix scheiterten zwei isolierte Growth-Tests nach dem Main-Merge #891. Der gemeinsame Initialisierungspfad ist eine technische Reparatur, keine neue Veröffentlichungskomponente. Fehler der WASM-Initialisierung bleiben FAIL-CLOSED.
+
 ## Lokale Reproduktion
 
 Ab Repository-Root mit installierten bestehenden Abhängigkeiten:
