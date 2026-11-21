@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import type { LearningPortalTab } from './LearningPortalPage';
-import './learningUniverseTabScene.css';
 
 type SubTab = Exclude<LearningPortalTab, 'overview'>;
 
