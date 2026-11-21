@@ -42,7 +42,7 @@ async function navigate(path) {
   for (let attempt = 0; attempt < 120; attempt++) {
     try {
       const target = path === '/learning/simulator' ? '#sim-title'
-        : path === '/learning' ? '.hub-navigation nav.hub-tab-strip' : 'main,nav,header';
+        : path.startsWith('/learning') ? '.hub-navigation nav.hub-tab-strip' : 'main,nav,header';
       const ready = await evaluate("document.readyState === 'complete' && !!document.querySelector(" + JSON.stringify(target) + ")");
       if (ready) { await pause(800); return; }
     } catch { /* navigation in progress */ }
@@ -100,6 +100,12 @@ async function checkPage(path, viewport) {
     tabularRows: document.querySelectorAll('table tbody tr').length,
     horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
     privateEditorVisible: !!document.querySelector('#sim-name'),
+    universeStage: !!document.querySelector('[data-learning-universe-simulator="v1"]'),
+    universeAtoms: document.querySelectorAll('[data-learning-universe-simulator="v1"] [data-universe-atom]').length,
+    universePoster: !!document.querySelector('[data-learning-universe-simulator="v1"] img[alt="Stilisierte CAPITAL-AI-Erde mit umlaufenden Lichtbahnen"]'),
+    universeCanvasInitiallyLoaded: !!document.querySelector('[data-learning-universe-simulator="v1"] canvas'),
+    universeBuddyButton: !![...document.querySelectorAll('[data-learning-universe-simulator="v1"] button')].find(button => button.textContent?.includes('JaJa Universe Buddy öffnen')),
+    universeMotionToggle: !![...document.querySelectorAll('[data-learning-universe-simulator="v1"] button')].find(button => button.textContent?.includes('3D-Erde einschalten')),
   }))()` ) : null;
   const record = { path, viewport, dom, simulator, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
   pages.push(record);
@@ -137,8 +143,77 @@ async function checkPage(path, viewport) {
     if (simulator?.tasks !== 3 || simulator?.rangeFields < 3 || simulator?.tabularRows < 3) failures.push(path + ': learning controls or accessible data table missing');
     if (simulator?.horizontalOverflow > 2) failures.push(path + ': page horizontal overflow (' + simulator.horizontalOverflow + 'px)');
     if (simulator?.privateEditorVisible) failures.push(path + ': private Pro controls visible without verified session');
+    if (!simulator?.universeStage || simulator?.universeAtoms !== 7 || !simulator?.universePoster) failures.push(path + ': Universe Earth stage or seven atoms missing');
+    if (simulator?.universeCanvasInitiallyLoaded) failures.push(path + ': 3D Earth initialized before explicit opt-in');
+    if (!simulator?.universeBuddyButton || !simulator?.universeMotionToggle) failures.push(path + ': accessible JaJa/3D controls missing');
   }
   if (path === '/learning') {
+    const overview = await evaluate(`(() => {
+      const search = document.querySelector('#learning-topic-search');
+      search?.focus();
+      return {
+        visible: !!document.querySelector('[data-learning-overview="v1"]'),
+        atoms: document.querySelectorAll('.lhu-atom').length,
+        topics: document.querySelectorAll('.lhu-topic').length,
+        searchFocusable: document.activeElement === search,
+        overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      };
+    })()`);
+    record.overview = overview;
+    if (!overview.visible || overview.atoms !== 7 || overview.topics !== 7 || !overview.searchFocusable) {
+      failures.push(path + ': Learning Universe overview missing interactive category navigation');
+    }
+    if (overview.overflow > 2) failures.push(path + ': Learning overview horizontal overflow at ' + viewport.width);
+    // Real CDP keyboard events exercise React onChange, not a DOM property setter.
+    record.overviewSearch = [];
+    for (const [query, expectedCount] of [['Charts', 1], ['zznonexistenttopiczz', 0]]) {
+      const focused = await evaluate(`(() => {
+        const input = document.querySelector('#learning-topic-search');
+        if (!input) return false;
+        input.focus(); input.select(); return document.activeElement === input;
+      })()`);
+      if (!focused) { failures.push(path + ': topic search not focusable for ' + query); break; }
+      await send('Input.insertText', { text: query });
+      await pause(200);
+      const state = await evaluate(`(() => ({
+        count: document.querySelectorAll('.lhu-topic').length,
+        labels: [...document.querySelectorAll('.lhu-topic .lhu-topic-label')].map(el => el.textContent?.trim()),
+        value: document.querySelector('#learning-topic-search')?.value ?? null,
+        empty: !!document.querySelector('.lhu-empty'),
+      }))()`);
+      record.overviewSearch.push({ query, expectedCount, ...state });
+      if (state.count !== expectedCount || state.value !== query
+        || (query === 'Charts' && (state.labels.length !== 1 || state.labels[0] !== 'Charts'))
+        || (expectedCount === 0 && !state.empty)) {
+        failures.push(path + ': topic search failed for ' + query + ' at ' + viewport.width);
+      }
+    }
+    const resetFocused = await evaluate(`(() => {
+      const input = document.querySelector('#learning-topic-search');
+      if (!input) return false;
+      input.focus(); input.select(); return document.activeElement === input;
+    })()`);
+    if (resetFocused) {
+      await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8, nativeVirtualKeyCode: 8 });
+      await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8, nativeVirtualKeyCode: 8 });
+      await pause(200);
+    }
+    const restored = await evaluate(`(() => ({
+      count: document.querySelectorAll('.lhu-topic').length,
+      value: document.querySelector('#learning-topic-search')?.value ?? null,
+      empty: !!document.querySelector('.lhu-empty'),
+    }))()`);
+    record.overviewSearchReset = { focused: resetFocused, ...restored };
+    if (!resetFocused || restored.count !== 7 || restored.value !== '' || restored.empty) {
+      failures.push(path + ': clearing topic search must restore seven atoms at ' + viewport.width);
+    }
+    if (process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
+      await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+      const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+      await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, 'learning-overview-' + viewport.width + '.png'), Buffer.from(shot.data, 'base64'));
+    }
+  }
+  if (path === '/learning?tab=glossar') {
     record.glossary = [];
     for (const [query, expected] of [['land graph', 'LangGraph'], ['supression', 'Suppression'], ['midi', 'MiFID'], ['zznonexistenttermzz', null]]) {
       const focused = await evaluate(`(() => {
@@ -201,8 +276,8 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Accessibility.enable');
-  for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1280,height:800,mobile:false}]) {
-    for (const path of ['/', '/learning', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
+  for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1440,height:900,mobile:false}]) {
+    for (const path of ['/', '/learning', '/learning?tab=glossar', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
   }
   console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
     pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',

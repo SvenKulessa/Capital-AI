@@ -78,13 +78,20 @@ jobs:
           FFMPEG_SHA256: ${{ steps.inputs.outputs.ffmpeg_sha256 }}
         run: |
           set -euo pipefail
-          docker build \
+          # Stream only committed COPY inputs instead of the root filesystem
+          # context (whose BuildKit session transfer repeatedly returned HTTP 431).
+          git archive --format=tar "$GITHUB_SHA" \
+            deploy/social-media/Dockerfile.renderer \
+            deploy/social-media/renderer-requirements.txt \
+            scripts/media \
+            public/branding/asset-pack/meta/social-render-tokens.json \
+          | docker build \
             --file deploy/social-media/Dockerfile.renderer \
             --build-arg "PYTHON_BASE=$PYTHON_BASE" \
             --build-arg "FFMPEG_VERSION=$FFMPEG_VERSION" \
             --build-arg "FFMPEG_SHA256=$FFMPEG_SHA256" \
             --tag "capital-ai-social-renderer:$GITHUB_SHA" \
-            .
+            -
 
       - name: LGPL-Profil und benötigte Renderer-Capabilities verifizieren
         run: |

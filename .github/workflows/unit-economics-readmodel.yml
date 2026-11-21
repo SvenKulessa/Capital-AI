@@ -1,0 +1,90 @@
+name: Unit Economics Tests
+
+on:
+  pull_request:
+    paths:
+      - 'server/unit-economics-readmodel.mjs'
+      - 'server/unit-economics-readmodel.test.mjs'
+      - 'server/unit-economics-reconciliation.mjs'
+      - 'server/unit-economics-reconciliation.test.mjs'
+      - 'server/unit-economics-source-adapters.mjs'
+      - 'server/unit-economics-source-adapters.test.mjs'
+      - 'server/unit-economics-ledger-staging.mjs'
+      - 'server/unit-economics-ledger-staging.test.mjs'
+      - 'scripts/unit-economics-ledger-migration.test.mjs'
+      - 'scripts/unit-economics-ledger-pg-integration.mjs'
+      - 'supabase/migration-candidates/20261120045100_unit_economics_isolated_ledger.sql'
+      - 'docs/growth/UNIT-ECONOMICS-LEDGER-20261120.md'
+      - 'docs/growth/UNIT-ECONOMICS-READ-ADAPTERS-20261120.md'
+      - 'docs/growth/UNIT-ECONOMICS-RECONCILIATION-20261120.md'
+      - 'docs/growth/UNIT-ECONOMICS-READMODEL-20261120.md'
+      - '.github/workflows/unit-economics-readmodel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-economics:
+    name: Unit Economics Tests
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate offline accounting and negative scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --check server/unit-economics-readmodel.mjs
+          node --check server/unit-economics-readmodel.test.mjs
+          node --check server/unit-economics-reconciliation.mjs
+          node --check server/unit-economics-reconciliation.test.mjs
+          node --check server/unit-economics-source-adapters.mjs
+          node --check server/unit-economics-source-adapters.test.mjs
+          node --check server/unit-economics-ledger-staging.mjs
+          node --check server/unit-economics-ledger-staging.test.mjs
+          node --check scripts/unit-economics-ledger-migration.test.mjs
+          node --check scripts/unit-economics-ledger-pg-integration.mjs
+          node --test server/unit-economics-readmodel.test.mjs server/unit-economics-reconciliation.test.mjs server/unit-economics-source-adapters.test.mjs server/unit-economics-ledger-staging.test.mjs scripts/unit-economics-ledger-migration.test.mjs
+
+  isolated-postgres-ledger:
+    name: Unit Economics PostgreSQL 17
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17.11@sha256:ff87138949ad9a46f32ff23bd6852b52ce024a13dffe9b4087be98292cdd3b4f
+        env:
+          POSTGRES_DB: ue_ledger_ci
+          POSTGRES_PASSWORD: synthetic-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ue_ledger_ci"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGDATABASE: ue_ledger_ci
+      PGUSER: postgres
+      PGPASSWORD: synthetic-ci-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify isolated PostgreSQL17 atomic ledger, crash recovery and pg_dump restore
+        env:
+          PG_LEDGER_CONTAINER_ID: ${{ job.services.postgres.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql --version
+          node --check scripts/unit-economics-ledger-pg-integration.mjs
+          node scripts/unit-economics-ledger-pg-integration.mjs

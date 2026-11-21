@@ -17,6 +17,7 @@ import { QuizzesTab } from './QuizzesTab';
 
 import { VocabularyCard } from './VocabularyCard';
 import { LearningJourney } from './LearningJourney';
+import { LearningUniverseOverview } from './LearningUniverseOverview';
 import { LearningArticles } from './LearningArticles';
 import { ContactForm } from '../../components/ContactForm';
 import { LearningPurchase } from './LearningPurchase';
@@ -26,6 +27,7 @@ import { useLearningFavorites } from './LearningFavorites';
 import { dailyLearningQuestions } from './learningPolicy';
 import { ChartLearningAtlas } from './ChartLearningAtlas';
 import { FinancialLearningSimulator } from './FinancialLearningSimulator';
+import { LearningSimulatorUniverseStage } from './LearningSimulatorUniverseStage';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   Star,
@@ -71,8 +73,8 @@ const VocabularyFlashcards = React.lazy(() =>
   })),
 );
 
-export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'quizzes' | 'news' | 'kontakt' | 'simulator';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'quizzes', 'news', 'kontakt', 'simulator'];
+export type LearningPortalTab = 'overview' | 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'quizzes' | 'news' | 'kontakt' | 'simulator';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['overview', 'glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'quizzes', 'news', 'kontakt', 'simulator'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -86,7 +88,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   onBackToHome,
   onNavigateLogin,
   onNavigateTab,
-  initialTab = 'glossar',
+  initialTab = 'overview',
   initialVocabularyTermId,
 }) => {
   const termFromLink = initialVocabularyTermId ?? (typeof window === 'undefined' ? undefined : new URLSearchParams(window.location.search).get('term') ?? undefined);
@@ -101,7 +103,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
     return () => { for (const event of ['hashchange', 'popstate', APP_NAVIGATION_EVENT]) window.removeEventListener(event, sync); };
   }, []);
   const legacyCourseLink = courseInquiry && window.location.pathname === '/learning';
-  const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, legacyCourseLink ? 'kontakt' : initialTab);
+  const vocabularyDefault = typeof window !== 'undefined' && window.location.pathname.startsWith('/vocabulary') ? 'glossar' : initialTab;
+  const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, legacyCourseLink ? 'kontakt' : vocabularyDefault);
 
 
   // Vocabulary Filter States
@@ -297,7 +300,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             <button
               type="button"
               onClick={() => {
-                setActiveTab('glossar');
+                setActiveTab('overview');
                 onNavigateTab?.('/learning');
               }}
               className="text-amber-400 font-semibold hover:text-amber-200 transition-colors"
@@ -308,6 +311,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               /
             </span>
             <span className="text-cyan-300 font-medium">
+              {activeTab === 'overview' && 'Übersicht'}
               {activeTab === 'news' && 'Öffentliche Lernimpulse'}
           {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
               {activeTab === 'flashcards' && 'Vocabulary Flashcards'}
@@ -363,12 +367,16 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
 
       <HubNavigationPanel hubId="learning" onNavigate={path => { if (onNavigateTab) onNavigateTab(path); else window.location.assign(path); }} />
 
+      {activeTab === 'overview' && <LearningUniverseOverview onOpen={setActiveTab}
+        favoritesAvailable={favorites.authenticated}
+        favoritesCount={favorites.loaded ? favorites.ids.length : null} />}
+
       {activeTab === 'kontakt' && <ContactForm key={courseInquiry ? 'learning' : 'contact'} purpose={courseInquiry ? 'learning' : 'contact'} />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
-      {activeTab !== 'kontakt' && typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
+      {(activeTab === 'overview' || activeTab === 'guides') && typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
       {activeTab === 'news' && <LearningArticles />}
       {activeTab === 'flashcards' && (
         <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
@@ -618,7 +626,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
       {/* ========================================================================= */}
-      {activeTab === 'simulator' && <FinancialLearningSimulator />}
+      {activeTab === 'simulator' && <div className="min-w-0 space-y-5"><LearningSimulatorUniverseStage /><FinancialLearningSimulator /></div>}
        {activeTab === 'quizzes' && <QuizzesTab onOpenQuant={() => setActiveTab('quiz')} />}
       {activeTab === 'quiz' && (
         <div className="space-y-6">

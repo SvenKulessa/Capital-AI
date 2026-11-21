@@ -1,0 +1,55 @@
+{
+  "schema": "CAPITAL_AI_DOMAIN_EXECUTION_PROMPT@1",
+  "domain": "PRODUCT",
+  "projectFolder": "CAPITAL-AI-PRODUCT",
+  "authority": {
+    "source": "AGENTS.md",
+    "contract": "SOLO_MAINTAINER_FLOW@2",
+    "type": "NON_AUTHORIZING_CONTEXT",
+    "permissionExpansion": false
+  },
+  "skillRegistry": ".agents/skills/registry.json",
+  "engineeringSkill": "product-engineering",
+  "advisorySkill": "product-advisory",
+  "chatAgent": ".github/agents/capital-ai-product.agent.md",
+  "prompt": "Arbeite als PRODUCT-Fachperspektive eines Solo-Maintainers nach aktueller Root-AGENTS.md. Prüfe bestehenden Main, offene PRs/Issues, Quellrechte und domainübergreifende Vertragsgrenzen. Behebe konkret nachgewiesene Ursachen in vorhandenen Scopes, nutze passende Tests und bestehende Required Checks. Wende product-engineering und product-advisory aus der kanonischen Registry an. Lern- und Kontofunktionen auf vorhandenen React-Komponenten ausbauen. 320/390/1440, Tastatur, Screenreader und reduzierte Bewegung testen. Nutzeridentität, Consent und Entitlements mit Negativfällen isolieren. Ein grüner Test beweist keine Live-Wirkung. Verifiziere Main und Produktion getrennt; bei fehlender Autorität BLOCKED/NOT_PROVEN. Dieser Prompt erteilt keine Rechte.",
+  "domainObjectives": [
+    "Lern- und Kontofunktionen auf vorhandenen React-Komponenten ausbauen",
+    "320/390/1440, Tastatur, Screenreader und reduzierte Bewegung testen",
+    "Nutzeridentität, Consent und Entitlements mit Negativfällen isolieren"
+  ],
+  "efficiency": {
+    "reuseExistingBranch": true,
+    "oneActiveMutatingScope": true,
+    "reuseStillValidEvidence": true,
+    "maxDistinctRepairAttempts": 2,
+    "avoidDuplicateSchedulers": true,
+    "workflow": [
+      "READ_MAIN_AND_AGENTS",
+      "CORRELATE_EXISTING_WORK",
+      "SELECT_MINIMUM_SCOPE",
+      "IMPLEMENT_AND_REPRODUCE",
+      "POSITIVE_AND_NEGATIVE_TESTS",
+      "VERIFY_CURRENT_HEAD_CI_AND_RULESET",
+      "SQUASH_IF_AUTHORIZED",
+      "READ_BACK_MAIN_AND_RUNTIME"
+    ]
+  },
+  "evidenceOutputs": [
+    "mainSha",
+    "headSha",
+    "affectedContracts",
+    "testResults",
+    "ciRunIds",
+    "securityAndRights",
+    "productionReadback",
+    "openBlockers",
+    "nextAction"
+  ],
+  "trustBoundary": {
+    "providerChangesRequireExistingAuthority": true,
+    "rightsCannotBeInferredFromCI": true,
+    "costActivationRequiresOwnerApproval": true,
+    "productionMutationRequiresScopedEvidence": true
+  }
+}

@@ -1,6 +1,10 @@
 import { contentVocabularyContext } from '../../shared/vocabulary-lookup.mjs';
 import { z } from 'zod';
 import { ContentVocabularyContextSchema, ContentCampaignBriefSchema, type ContentCampaignBrief } from './contentEngine.ts';
+import {
+  OriginalGraphicAssetSchema, planOriginalGraphicLicense,
+  type OriginalGraphicOwnerGrant,
+} from './originalGraphicLicense.ts';
 
 export const CONTENT_SOCIAL_PACKAGE_VERSION = 'CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1' as const;
 
@@ -29,7 +33,15 @@ export const ContentSocialAssetSchema = z.object({
   mimeType: z.string().min(1).max(120),
   evidenceRef: z.string().min(1).max(500),
   sourceSha: z.string().regex(/^[a-f0-9]{40,64}$/),
-}).strict();
+  originalGraphic: OriginalGraphicAssetSchema.optional(),
+}).strict().superRefine((asset, ctx) => {
+  const graphic = asset.originalGraphic;
+  if (graphic && (asset.kind !== 'IMAGE' || graphic.assetId !== asset.assetId ||
+      graphic.contentId !== asset.contentId || graphic.sha256 !== asset.sha256 ||
+      graphic.mimeType !== asset.mimeType || graphic.sourceSha !== asset.sourceSha)) {
+    ctx.addIssue({ code: 'custom', message: 'CONTENT_SOCIAL_GRAPHIC_IDENTITY_MISMATCH' });
+  }
+});
 export type ContentSocialAsset = z.infer<typeof ContentSocialAssetSchema>;
 
 export const ContentSocialApprovalSchema = z.object({
@@ -136,10 +148,18 @@ export function findContentSocialApproval(
   manifestInput: ContentSocialPackageManifest,
   assetId: string,
   channel: ContentSocialChannel,
+  graphicOwnerGrants: readonly OriginalGraphicOwnerGrant[] = [],
 ): ContentSocialApproval | undefined {
   const manifest = ContentSocialPackageManifestSchema.parse(manifestInput);
   const asset = manifest.assets.find((candidate) => candidate.assetId === assetId);
   if (!asset) return undefined;
+
+  if (asset.originalGraphic) {
+    const grants = graphicOwnerGrants.filter(grant => grant.asset.assetId === assetId);
+    if (grants.length !== 1 || !planOriginalGraphicLicense({
+      asset: asset.originalGraphic, channel,
+    }, grants[0]).graphicUseAllowed) return undefined;
+  }
 
   return manifest.approvals.find((approval) =>
     approval.assetId === assetId

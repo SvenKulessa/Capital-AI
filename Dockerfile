@@ -1,10 +1,10 @@
 FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS crypto-base
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
-# Use patched OpenSSL and zlib packages from the existing stable Alpine 3.24 branch.
+# Use patched OpenSSL, zlib and libxml2 packages from stable Alpine 3.24.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
-# Fail closed if the repository cannot supply the OpenSSL 3.5.9-r1 security revision.
-RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' \
-    && apk info -v zlib libcrypto3 libssl3
+# Fail closed when patched OpenSSL or libxml2 (CVE-2026-86144) is unavailable.
+RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
+    && apk info -v zlib libcrypto3 libssl3 libxml2
 
 FROM crypto-base AS build
 WORKDIR /app
@@ -44,6 +44,13 @@ COPY Dockerfile .dockerignore ./
 # Offline isolation tests verify the actual dedicated production manifests, without installing them in build.
 COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runtime/
 COPY .agents/skills ./.agents/skills
+# Scoped build-only machine-readable prompts for the existing offline test suite.
+COPY .agents/app.prompt.json ./.agents/app.prompt.json
+COPY CAPITAL-AI-PRODUCT/domain.prompt.json CAPITAL-AI-PRODUCT/PROJECT.md ./CAPITAL-AI-PRODUCT/
+COPY CAPITAL-AI-MARKET/domain.prompt.json CAPITAL-AI-MARKET/PROJECT.md ./CAPITAL-AI-MARKET/
+COPY CAPITAL-AI-PLATFORM/domain.prompt.json CAPITAL-AI-PLATFORM/PROJECT.md ./CAPITAL-AI-PLATFORM/
+COPY CAPITAL-AI-TRUST/domain.prompt.json CAPITAL-AI-TRUST/PROJECT.md ./CAPITAL-AI-TRUST/
+COPY CAPITAL-AI-GROWTH/domain.prompt.json CAPITAL-AI-GROWTH/PROJECT.md ./CAPITAL-AI-GROWTH/
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
 COPY src ./src
@@ -53,6 +60,8 @@ COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
 COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
 COPY CAPITAL-AI-GROWTH/badge.svg ./CAPITAL-AI-GROWTH/badge.svg
+# DRAFT_ONLY Growth Intelligence source snapshot; required for offline contract tests.
+COPY CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json ./CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json
 COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY packages/benchmark-core ./packages/benchmark-core
@@ -102,6 +111,7 @@ COPY supabase/migrations/20261013042915_learning_simulator_private_scenarios.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs scripts/solo-maintainer-flow.test.mjs ./scripts/
+COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs ./scripts/
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
@@ -118,6 +128,7 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
+COPY scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs ./scripts/growth/
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs scripts/growth/home-editorial-edition.mjs scripts/growth/home-editorial-edition.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
