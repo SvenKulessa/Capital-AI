@@ -53,6 +53,9 @@ function validateAkashDraft(evidence, manifest) {
   assert.equal(evidence.source.historicalSourceDigestRecomputed, false);
   assert.equal(evidence.source.currentRawSourceSha256, null);
   assert.equal(evidence.source.historicalByteComparison, 'NOT_PROVEN');
+  assert.equal(evidence.source.vendorStatus, 'NOT_LIVE');
+  assert.equal(evidence.source.vendorPrimaryUrl, 'https://akash.network/blog/introducing-akash-compute-forwards/');
+  assert.equal(evidence.source.vendorStatusUrl, 'https://forwards.akash.network/status');
   assert.equal(evidence.source.comparisonScope, 'FACTUAL_SEMANTICS_ONLY_NOT_BYTE_IDENTITY');
   assert.equal(evidence.rights.sourceArticleCommercialGrant, 'NOT_PROVEN');
   assert.equal(evidence.rights.copyingSourceArticleOrExternalGraphics, 'BLOCKED');
@@ -116,6 +119,7 @@ test('Akash negative cases reject forged source identity, summary, grants and pu
   tamper(e => { e.rights.publicPublishAllowed = true; });
   tamper(e => { e.rights.sourceArticleCommercialGrant = 'APPROVED'; });
   tamper(e => { e.source.historicalByteComparison = 'VERIFIED'; });
+  tamper(e => { e.source.vendorStatus = 'LIVE'; });
   tamper(e => { e.source.observedFactsGerman += ' verändert'; });
   tamper(null, m => { m.sourceDigest = '0'.repeat(64); });
   tamper(null, m => { m.assets[0].sha256 = '0'.repeat(64); });
