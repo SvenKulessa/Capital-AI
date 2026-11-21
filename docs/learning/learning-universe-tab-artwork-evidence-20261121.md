@@ -22,7 +22,7 @@ Stand: 2026-11-21 · Status: DRAFT (keine produktive Bildrechts- oder Browserfre
 
 - `src/features/learning/LearningUniverseTabScene.tsx` · Git blob SHA-1 `e87276f8cd937ceaa3891f2702c2731d6f6ccd2d` · 8154 Zeichen
 - `src/features/learning/learningUniverseTabScene.css` · Git blob SHA-1 `27fcc5b1675603e65327bcdea2b191a615a9823b` · 4519 Zeichen
-- `src/features/learning/learningUniverseTabScene.test.tsx` · Git blob SHA-1 `57484c4298d61b6ea7d0da155234c5621dd0cfbf` · 3321 Zeichen
+- `src/features/learning/learningUniverseTabScene.test.tsx` · Git blob SHA-1 `940feed91349491244e39d977f80b2535343bffe` · 3329 Zeichen
 
 SHA-1 kennzeichnet Git-Objekte, **nicht** eine unabhängige SHA-256-Lizenzattestation.
 
