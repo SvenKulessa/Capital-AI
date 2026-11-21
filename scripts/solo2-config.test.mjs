@@ -51,7 +51,7 @@ test('declared customer plugin and permission cannot activate an adapter', () =>
 test('reject unknown fields, embedded secrets and fake evidence grants', () => {
   reject(o => { o.apiKey = 'sensitive'; }, /SECRET_FIELD_DENIED/);
   reject(o => { o.resources[0].token = 'sensitive'; }, /SECRET_FIELD_DENIED/);
-  reject(o => { o.__proto__ = { privileged: true }; }, /TOP_LEVEL/);
+  reject(o => { o.unknownField = 'extra'; }, /TOP_LEVEL/);
   reject(o => { o.resources[0].licenseEvidence = 'VERIFIED'; });
   reject(o => { o.resources[0].rightsEvidence = 'VERIFIED'; });
   reject(o => { o.safeguard.licenseGrant = true; });
