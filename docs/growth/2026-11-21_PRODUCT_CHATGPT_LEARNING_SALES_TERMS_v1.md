@@ -1,16 +1,16 @@
 # CAPITAL-AI Learning Universe · Konkretes B2B-Konditionenblatt
-Version 1 / 21.11.2026 · **OWNER_DECISION_PROPOSAL — NOT_AN_AUTHORIZED_PRICE / NO_CUSTOMER_OFFER**
+Version 2 / 21.11.2026 · **OWNER_INTERNAL_TARGET_APPROVED — PUBLIC_SALES_HOLD / NO_CUSTOMER_OFFER**
 
 ## Gewählter Vertriebsrahmen für einen kontrollierten Start
 - Ziel: zunächst **deutsche Unternehmenskunden (B2B)** mit geprüfter Identität; kein öffentlicher B2C-Checkout, keine grenzüberschreitende automatisierte Auslieferung.
 - Leistungsgegenstand: zehn SVG-Originalmotive aus der Registry `CAPITAL_AI_LEARNING_UNIVERSE_ASSETS@1`, jeder einzelne SHA-256 in der Vertragsanlage A; bereitgestellte Provenienz/Alt-Text. Bereits öffentlich sichtbare Vorschau-Dateien sind **nicht exklusiv** und dürfen nicht als kopiergeschützte Geheimdaten vermarktet werden.
 - Kaufgrund: qualitätsgeprüfte Datei-/Branding-Pakete und **soweit rechtlich vorhanden** ein klar bezeichneter nicht exklusiver Nutzungsumfang, plus ggf. Anpassungsdienstleistung; kein angeblich exklusives Copyright auf AI-Outputs.
-- Preise in Euro netto **zzgl. gesetzlich geschuldeter Umsatzsteuer, soweit anwendbar**; diese Bezeichnung gilt nur für nachgewiesene B2B-Kommunikation. Steuerliche Einordnung / Kleinunternehmerstatus und konkrete Rechnung vor Annahme prüfen. Keine Preisaktivierung ohne ausdrückliche Owner-Entscheidung.
+- Preise in Euro netto **zzgl. gesetzlich geschuldeter Umsatzsteuer, soweit anwendbar**; diese Bezeichnung gilt nur für nachgewiesene B2B-Kommunikation. Steuerliche Einordnung / Kleinunternehmerstatus und konkrete Rechnung vor Annahme prüfen. Der Owner hat die **internen Zielpreise und Rabattzeiträume ausdrücklich festgelegt**. Das erteilt keine externe Preiswerbe-, Vertrags-, Checkout-, Steuer- oder Lieferfreigabe.
 
 ## Konkrete vorgeschlagene Angebote
 | Parameter | Publisher Pack | Publisher Studio | Reseller Pilot |
 | --- | --- | --- | --- |
-| Einmaliger Angebotspreis | **EUR 129 netto** | **EUR 390 netto** | **EUR 0 Onboarding für 90-Tage-Pilot**, ausschließlich auf Einladung |
+| Einmaliger Angebotspreis | **EUR 99 netto Basisziel** | **EUR 290 netto Basisziel** | **EUR 0 Onboarding für 90-Tage-Pilot**, ausschließlich auf Einladung |
 | Lizenzmodell | je 1 juristische Person / 1 benannte Marke | je 1 juristische Person / 1 benannte Marke | eigener Partnervertrag; ein neuer Endkunden-Receipt pro Kundenmarke |
 | Assets | 10 SVGs mit SHA-256 und Alt-Texten | Publisher Pack + vier bestehende Editorial-Layoutkonzepte + ein schriftlich beschriebener Anpassungsauftrag mit max. 1 Korrekturschleife | nur freigegebene Publisher-/Studio-Endprodukte und Endkundenrechte |
 | Medium | Website, Newsletter, Video, Social, digitale Präsentation | wie Publisher; zusätzlich Anpassung für vereinbarte Endformate | wie im einzelnen Endkundenbeleg, **keine Roh-Asset-Weitergabe** |
@@ -22,7 +22,7 @@ Version 1 / 21.11.2026 · **OWNER_DECISION_PROPOSAL — NOT_AN_AUTHORIZED_PRICE 
 **Bereitstellungsgrenze:** Der Publisher Pack kann erst nach dokumentierter Asset-Rechteprüfung, ausgefüllter Anlage A, juristischer Vertragsabnahme und definiertem sicherem Lieferweg verkauft werden. Die Studio-Anpassungsleistung benötigt zusätzlich ein nachweislich lieferbares Leistungs-/Abnahmeprofil; aus dem bisherigen Katalog-HTML allein entsteht keine fertige editierbare Vorlage.
 
 ### Reseller-Einkaufskondition (kein gebundener Wiederverkaufspreis)
-- Während des 90-Tage-Pilots: Partner zahlt CAPITAL-AI für **jede separat freigegebene Endkundenlizenz 70 % des zum Belegzeitpunkt gültigen eigenen Publisher-/Studio-B2B-Listenwerts** (derzeit nur Vorschlag). Beispiel Publisher: EUR 90,30 Einkaufspreis bei EUR 129 direktem Referenzpreis; Studio: EUR 273 bei EUR 390 Referenzpreis. Dies ist eine Einkaufspreisregel, **kein vom Partner einzuhaltender Mindest- oder Endverkaufspreis**.
+- Während des 90-Tage-Pilots: Partner zahlt CAPITAL-AI für **jede separat freigegebene Endkundenlizenz 70 % des zum Belegzeitpunkt gültigen eigenen Publisher-/Studio-B2B-Listenwerts** (vom Owner als internes Ziel festgelegt). Beispiel Publisher: EUR 69,30 Einkaufspreis bei EUR 99 B2B-Basispreis; Studio: EUR 203 bei EUR 290 B2B-Basispreis. **Die befristeten Direktkundenrabatte reduzieren diesen Partner-Einkaufspreis nicht zusätzlich**; diese Kondition ist keine Vorgabe für den Endkundenpreis. Dies ist eine Einkaufspreisregel, **kein vom Partner einzuhaltender Mindest- oder Endverkaufspreis**.
 - Die unabhängige **Preisgestaltung gegenüber Endkunden verbleibt beim Reseller**; unverbindliche Referenzpreise dürfen weder durch Vertragsstrafen, Drohungen, Boni noch Mindestpreisbedingungen durchgesetzt werden. Siehe [Art. 4(a) VO (EU) 2022/720](https://eur-lex.europa.eu/eli/reg/2022/720/oj?locale=en).
 - Lizenzrecht ist kundengebunden; Endkunde erhält konkrete Publisher-Berechtigung direkt nach dokumentierter autorisierter Rechtekette. Kein Vertrieb eines unbestimmten Massen-SVG-Packs.
 - Nach Pilotende: Reconciliation von echten Deckungsbeiträgen, Kundenzahl und rechtlichen Problemen. **EUR 1.490** ist ein möglicher späterer *optionaler* Individual-Partner-Onboarding-Service, **nicht** zwingende oder bereits beschlossene Reseller-Gebühr und nicht Bestandteil des 90-Tage-Pilots.
@@ -53,7 +53,7 @@ Pilot-Entscheidung: Aufwand je Auslieferung erfassen; nach 5 tatsächlichen Kund
 ## Nicht verhandelbare Zulassungsbedingungen
 - `LICENSE_TERMS=LEGAL_REVIEW_REQUIRED`
 - `ASSET_RIGHTS=REVIEW_REQUIRED`
-- `PRICE_AUTHORITY=OWNER_DECISION_REQUIRED`
+- `PRICE_AUTHORITY=OWNER_INTERNAL_TARGET_APPROVED`
 - `TAX_STATUS=NOT_PROVEN`
 - `B2B_CHECK=NOT_PROVEN`
 - `STRIPE_PRODUCT=NOT_CREATED`
@@ -62,3 +62,20 @@ Pilot-Entscheidung: Aufwand je Auslieferung erfassen; nach 5 tatsächlichen Kund
 - `PUBLISHING=NOT_AUTHORIZED`
 
 **Kein live geschalteter Preis, keine Checkout-Erweiterung, keine Vertriebspublikation, keine Kundenlizenz und keine automatische Weiterlizenzierung durch dieses Dokument.**
+
+
+## Vom Owner festgelegte interne Rabattkonditionen (21.11.2026)
+Die Preise dieses Abschnitts sind **verbindliche interne Zielkonditionen**, jedoch **keine live gestellten Kundenangebote**. § 11 PAngV (falls auf das konkrete Produkt und den Vertrieb an Verbraucher anwendbar) sowie das UWG gelten unabhängig davon; ohne belastbare historische Referenzpreise darf keine irreführende Rabattbehauptung oder fiktive Streichpreiswerbung erscheinen.
+
+| Produkt | B2B-Basispreis netto | Bis 31.12.2026 außerhalb BF-Fenster 25 % | 27.11.–01.12.2026 inklusive 30 % | Reseller-Einkauf 70 % der Basis |
+| --- | ---: | ---: | ---: | ---: |
+| Publisher Pack | 99,00 € | 74,25 € | 69,30 € | 69,30 € |
+| Publisher Studio | 290,00 € | 217,50 € | 203,00 € | 203,00 € |
+
+Die Zusatzaktion ist **25 % + 5 Prozentpunkte = 30 %**, **nicht** 5 % auf den bereits reduzierten Preis. Der 30-%-Preis ersetzt während 27.11.–01.12.2026 den 25-%-Preis; die Rabatte sind nicht kumulativ. Geltungszeitraum nach Zeitzone `Europe/Berlin`: Basisaktion 21.11.–31.12.2026 (inklusive), Black Friday 27.11.–Cyber-Dienstag 01.12.2026 (inklusive); danach bis zum 31.12. 25 %; ab 01.01.2027 wieder internes Basisziel. Kein stillschweigend verlängertes Angebot.
+
+**Reseller:** Einladungspilot 90 Tage, null Euro Onboarding. Der Partner-Einkaufspreis ist 70 % des **nicht rabattierten** BASIS-Zielpreises, unabhängig von der Direktkundenaktion. Partner setzen ihre Endkundenpreise selbst. Kein automatisches Endkunden-Entitlement und kein exklusives Wiederverkaufsrecht.
+
+**Preiswerbe-Gate:** Es gibt noch keinen belastbaren unabhängigen Nachweis, dass 99 bzw. 290 Euro bereits tatsächlich als Vergleichspreise berechnet/abgerechnet wurden. Die Angabe eines durchgestrichenen angeblich früheren Preises oder einer 25-/30-%-Reduktion gegenüber eigener Preisgeschichte ist daher bis zur gesonderten Rechts- und Preisreferenzprüfung `HOLD`. Verbraucherpreisangaben (Bruttopreis/Steuern) sind bei Öffnung für B2C separat zu prüfen.
+
+**Technische Autorität:** `src/platform/SocialMediaEngine/Branding/learningUniverseCommercialLicenseDrafts.mjs` enthält nur interne Zielpreise und deterministische Datums-/Rabatttabellen; öffentliche Promotion, Checkout, Billing, Entitlement und Publikation bleiben false bzw. unverändert.
