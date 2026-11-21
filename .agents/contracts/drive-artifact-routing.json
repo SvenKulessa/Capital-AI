@@ -2,9 +2,7 @@
   "schema": "CAPITAL_AI_DRIVE_ARTIFACT_ROUTING@1",
   "source": "CAPITAL-AI/00_Orientierung/2026-11-14_ORIENTATION_DRIVE_ORDNERPLAN_v1.md",
   "project": "CAPITAL-AI",
-  "driveRootId": "1q3R-enFc-LdYkvo7Du1BrbmEG6VJT9q8",
   "acodeOnly": {
-    "folderId": "1j3VADFmrFfBuPVv9lFGpRsWM5ygAfusv",
     "folder": "CAPITAL-AI-ACODE-CHATGPT-EXCHANGE/shared",
     "contract": ".agents/contracts/acode-shared-delivery.json"
   },
@@ -51,83 +49,68 @@
   "routes": {
     "TRUST_AUDIT": {
       "domain": "TRUST",
-      "folder": "CAPITAL-AI/40_Trust/Audit",
-      "folderId": "1nSaGrKxdiTq6_UsyIz24wlbKyS0fBVMk"
+      "folder": "CAPITAL-AI/40_Trust/Audit"
     },
     "TRUST_SECURITY": {
       "domain": "TRUST",
-      "folder": "CAPITAL-AI/40_Trust/Security",
-      "folderId": "1fxzLcLC1qg1428_Mz4Jx_qH9zcWkwyhp"
+      "folder": "CAPITAL-AI/40_Trust/Security"
     },
     "TRUST_GOVERNANCE": {
       "domain": "TRUST",
-      "folder": "CAPITAL-AI/40_Trust/Governance",
-      "folderId": "1hhSB7ntnNbfnAQXXt0SCBMn6KKFiO_JM"
+      "folder": "CAPITAL-AI/40_Trust/Governance"
     },
     "PLATFORM_RENDER": {
       "domain": "PLATFORM",
-      "folder": "CAPITAL-AI/20_Platform/Render",
-      "folderId": "1H-AejRDL2D1DiHZJrOff0L3Igouv3PNs"
+      "folder": "CAPITAL-AI/20_Platform/Render"
     },
     "PLATFORM_DEPLOYMENT": {
       "domain": "PLATFORM",
-      "folder": "CAPITAL-AI/20_Platform/Deployment",
-      "folderId": "1XyNauHqwIm1OVO9OeznJEGtpMg7W9AWZ"
+      "folder": "CAPITAL-AI/20_Platform/Deployment"
     },
     "PLATFORM_OAUTH": {
       "domain": "PLATFORM",
-      "folder": "CAPITAL-AI/20_Platform/OAuth",
-      "folderId": "1lCvRaJZULQymv_TXaXPGcW51eUCKSuj8"
+      "folder": "CAPITAL-AI/20_Platform/OAuth"
     },
     "PRODUCT_BRANDING": {
       "domain": "PRODUCT",
-      "folder": "CAPITAL-AI/10_Product/Branding",
-      "folderId": "1z5yoQYYYgecC8nobYtyy0CNKNYKDTf8s"
+      "folder": "CAPITAL-AI/10_Product/Branding"
     },
     "PRODUCT_DOCUMENTATION": {
       "domain": "PRODUCT",
-      "folder": "CAPITAL-AI/10_Product/Documentation",
-      "folderId": "1DB6Q_xJkI8fG5UpZeZyFna1raOPPKI7g"
+      "folder": "CAPITAL-AI/10_Product/Documentation"
     },
     "PRODUCT_ROADMAP": {
       "domain": "PRODUCT",
-      "folder": "CAPITAL-AI/10_Product/Roadmap",
-      "folderId": "1s6K4aZUvxv4ljCTiHOfirvB2TcZgB0ey"
+      "folder": "CAPITAL-AI/10_Product/Roadmap"
     },
     "DATA_REPORTS": {
       "domain": "DATA",
-      "folder": "CAPITAL-AI/30_Data/Reports",
-      "folderId": "1V3buFidq40yGGafz6gOXHKMNAcnatf-d"
+      "folder": "CAPITAL-AI/30_Data/Reports"
     },
     "MARKET_RESEARCH": {
       "domain": "MARKET",
-      "folder": "CAPITAL-AI/50_Market/Research",
-      "folderId": "1Z16N5b3IDsSD2Zxz_dFJeTdSL4f3plue"
+      "folder": "CAPITAL-AI/50_Market/Research"
     },
     "GROWTH_CONTENT": {
       "domain": "GROWTH",
-      "folder": "CAPITAL-AI/60_Growth/Content",
-      "folderId": "1lqbYXOkG_kDCWsUvqns_Lll0Jj3h3eim"
+      "folder": "CAPITAL-AI/60_Growth/Content"
     },
     "GROWTH_SOCIAL_MEDIA": {
       "domain": "GROWTH",
-      "folder": "CAPITAL-AI/60_Growth/SocialMedia",
-      "folderId": "1wsEmb5JpfR-10GZquKbRkuqzybF_F6US"
+      "folder": "CAPITAL-AI/60_Growth/SocialMedia"
     },
     "FINANCE_COSTS": {
       "domain": "FINANCE",
-      "folder": "CAPITAL-AI/70_Finance/CostManagement",
-      "folderId": "1fEn4DIgqshFlEqeag5FdLkipOJsE8bp-"
+      "folder": "CAPITAL-AI/70_Finance/CostManagement"
     },
     "LEGAL_LICENSES": {
       "domain": "LEGAL",
-      "folder": "CAPITAL-AI/80_Legal/Licenses",
-      "folderId": "1bLvuN33qETQxGBpsNCMDwMOJ1BbVnXKI"
+      "folder": "CAPITAL-AI/80_Legal/Licenses"
     },
     "DISTRIBUTION_EXPORT": {
       "domain": null,
-      "folder": "CAPITAL-AI/99_Exports",
-      "folderId": "1XbE-8Kv0zkCX3WfZGYaNR9sSbN-a-muN"
+      "folder": "CAPITAL-AI/99_Exports"
     }
-  }
+  },
+  "identityResolution": "DYNAMIC_GOOGLE_DRIVE_CONNECTOR_READBACK"
 }
