@@ -57,6 +57,8 @@
 !server/billing-catalog.mjs
 !server/vocabulary-checkout.mjs
 !server/vocabulary-checkout.test.mjs
+!server/vocabulary-game.mjs
+!server/vocabulary-game.test.mjs
 !server/blueprint-commerce.mjs
 !server/blueprint-commerce.test.mjs
 !server/blueprint-private-cloud.mjs
