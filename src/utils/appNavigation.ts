@@ -1,3 +1,4 @@
+import { ANALYSIS_DOCUMENTATION } from '../../shared/analysis-documentation.mjs';
 import { canonicalHubTarget, hubRouteForPath, DOCUMENT_ROUTES } from '../../shared/hub-routes.mjs';
 /** Canonical protected Control Center subpages (kept in sync with the Hub catalog). */
 export const CONTROL_CENTER_SECTION_IDS = [
@@ -14,7 +15,7 @@ export function resolveAppRoute(rawPath: string): string {
   if (clean === '/governance-evidence-sprint' || clean === '/evidence-sprint') return '/governance-evidence-sprint';
   const hubRoute = hubRouteForPath(clean);
   if (hubRoute) return hubRoute.hub;
-  if (clean === '/architecture-hub' || clean === '/financial-intelligence') return '/architecture-hub';
+  if ([ANALYSIS_DOCUMENTATION, '/architecture-hub', '/financial-intelligence'].includes(clean)) return ANALYSIS_DOCUMENTATION;
   // Public landing language URLs resolve to the same SPA home component.
   if (/^\/(?:de|en|it|fr|pt|es)$/.test(clean)) return '/';
 

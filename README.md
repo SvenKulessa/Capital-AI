@@ -183,8 +183,8 @@ Die fünf bestehenden Domains bleiben unverändert. Die autoritative Zuordnung u
 |---|---|
 | PRODUCT | `product-engineering`, `product-advisory`, `mobile-engineering`, `customer-success`, `accessibility-audit`, `accessibility-advisory`, `accessibility-engineering`, `visual-chat` |
 | MARKET | `market-engineering`, `market-advisory`, `quant-research`, `data-engineering`, `analytics-intelligence` |
-| PLATFORM | `platform-engineering`, `platform-advisory`, `ai-engineering`, `platform-observability` |
-| TRUST | `trust-engineering`, `trust-advisory`, `legal-compliance`, `incident-response` |
+| PLATFORM | `platform-engineering`, `platform-advisory`, `ai-engineering`, `platform-observability`, `integration-engineering`, `skill-lifecycle` |
+| TRUST | `trust-engineering`, `trust-advisory`, `legal-compliance`, `incident-response`, `agent-evaluation` |
 | GROWTH | `growth-engineering`, `growth-advisory`, `sales-enterprise`, `seo-engineering`, `revenue-engineering` |
 
 Pro Skill: `SKILL.md` (Arbeitsmodus), `RESPONSIBILITIES.md` (Pflichten, KPIs, Evidence und Security) und `INTERFACES.md` (Input-/Output- und Trust-Boundary-Vertrag). Einzelne Framework-Verweise wie DDD, Team Topologies, DevSecOps, DataOps, MLOps, FinOps, SRE, NIST CSF, ISO 27001, OWASP ASVS, WCAG 2.2, DSGVO, DORA und EU AI Act sind **methodische Referenzen** und keine pauschale Compliance-Zertifizierung. Die ausschließlich autorisierende Richtlinie bleibt [AGENTS.md](AGENTS.md).

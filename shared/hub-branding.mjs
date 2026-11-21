@@ -58,9 +58,9 @@ export function hubBrandForRoute(route = '') {
   const path = route.split('?')[0];
   if (path === '/marketscreener/dokumentation') return 'documentation';
   if (/^\/(learning|vocabulary|glossar)(\/|$)/.test(path)) return 'learning';
-  if (/^\/(dokumentation|architecture|lizenz|datenprovider-lizenzen|opensource-lizenzen)(\/|$)/.test(path)) return 'documentation';
   if (/^\/(social)(\/|$)/.test(path)) return 'social';
-  if (/^\/(studio|pipeline-builder|architecture-hub|financial-intelligence)(\/|$)/.test(path)) return 'studio';
+  if (/^\/(dokumentation|architecture|architecture-hub|financial-intelligence|lizenz|datenprovider-lizenzen|opensource-lizenzen)(\/|$)/.test(path)) return 'documentation';
+  if (/^\/(studio|pipeline-builder)(\/|$)/.test(path)) return 'studio';
   if (/^\/(marketscreener|screener)(\/|$)/.test(path)) return 'marketscreener';
   if (/^\/(control-center|admin|roadmap|cost-center)(\/|$)/.test(path)) return 'control-center';
   if (/^\/(legal|faq|agb|datenschutz|impressum|kontakt)(\/|$)/.test(path)) return 'legal';

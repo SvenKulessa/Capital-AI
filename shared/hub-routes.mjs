@@ -1,3 +1,5 @@
+import { ANALYSIS_DOCUMENTATION } from './analysis-documentation.mjs';
+
 /** Canonical clean subpage URLs shared by browser navigation and HTTP redirects. */
 const definitions = {
  '/learning': {glossar:['glossar','Vocabulary & Glossar'],flashcards:['karteikasten','Karteikasten'],guides:['methodik','Analyse-Methodik'],patterns:['chart-lernatlas','Chart-Lernatlas'],videos:['videos','Lernvideos'],quiz:['quiz','Tagesquiz'],quizzes:['quizzes','Quizzes & Portfolio-Risiko'],news:['lernimpulse','Lernimpulse'],kontakt:['kontakt','Kontakt'],simulator:['simulator','Portfolio-Simulator']},
@@ -8,6 +10,10 @@ const definitions = {
 };
 export const HUB_ROUTES = Object.freeze(Object.entries(definitions).flatMap(([hub,tabs])=>Object.entries(tabs).map(([tab,[slug,title]])=>Object.freeze({hub,tab,path:`${hub}/${slug}`,title}))));
 export function hubRouteForPath(pathname){const clean=pathname.toLowerCase().replace(/\/+$/,'');return HUB_ROUTES.find(route=>route.path===clean)??null;}
-export function canonicalHubTarget(target){const url=new URL(target,'https://capital-ai.online');const tab=url.searchParams.get('tab');const route=HUB_ROUTES.find(route=>route.hub===url.pathname.replace(/\/+$/,'')&&route.tab===tab);if(!route)return target;url.pathname=route.path;url.searchParams.delete('tab');return url.pathname+url.search+url.hash;}
+export function canonicalHubTarget(target){const url=new URL(target,'https://capital-ai.online');const tab=url.searchParams.get('tab');const clean=url.pathname.toLowerCase().replace(/\/+$/,'');
+if (['/architecture-hub','/financial-intelligence'].includes(clean)) return ANALYSIS_DOCUMENTATION;
+if (clean==='/studio' && tab==='intelligence') return '/studio';
+if (clean==='/learning' && tab==='intelligence-catalogs') return '/learning';
+const route=HUB_ROUTES.find(route=>route.hub===url.pathname.replace(/\/+$/,'')&&route.tab===tab);if(!route)return target;url.pathname=route.path;url.searchParams.delete('tab');return url.pathname+url.search+url.hash;}
 
 export const DOCUMENT_ROUTES = Object.freeze({"/dokumentation/pipeline-architekturen": "/documentation/pipeline-architectures.html", "/dokumentation/preiskatalog": "/documentation/pricing-models.html", "/dokumentation/domains": "/documentation/domains.html", "/dokumentation/oss-market": "/downloads/market-screener-hub-open-source.html"});

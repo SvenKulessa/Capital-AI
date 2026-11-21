@@ -10,6 +10,23 @@ import { inspectChatBuddyKeys } from './server/chat-buddy-keys.mjs';
 import { learnStatus } from './server/chat-buddy-learn.mjs';
 import { PromptInjectionError } from './server/prompt-injection-guard.mjs';
 import { createLimiter } from './server/http-security.mjs';
+import homeEditorialEdition from './src/features/home/homeEditorialEdition.json' with { type: 'json' };
+import { HOME_PUBLIC_DISPLAY_REVIEWS } from './src/features/home/homeEditorialRightsLedger.mjs';
+import { HOME_GRAPHIC_OWNER_GRANTS } from './src/features/home/homeGraphicOwnerGrants.ts';
+import { validateHomeEditorialAssets } from './src/features/home/validateHomeEditorialAssets.ts';
+
+function homeEditorialAssetsPlugin(): Plugin {
+  let publicDir: string;
+  return {
+    name: 'home-editorial-assets',
+    apply: 'build',
+    configResolved(config) { publicDir = config.publicDir; },
+    async buildStart() {
+      await validateHomeEditorialAssets(homeEditorialEdition.stories, new Date().toISOString().slice(0, 10),
+        publicDir, HOME_PUBLIC_DISPLAY_REVIEWS, HOME_GRAPHIC_OWNER_GRANTS);
+    },
+  };
+}
 
 // Check emitted static imports, not source imports: a cycle here can expose
 // uninitialized cross-chunk bindings before the React bootstrap can catch them.
@@ -125,7 +142,7 @@ function chatBuddyKeyPlugin(): Plugin {
 export default defineConfig(() => {
   return {
     define: { __VOCABULARY_PUBLIC_COUNT__: JSON.stringify(VOCABULARY_PUBLIC_COUNT) },
-    plugins: [react(), tailwindcss(), advisorApiPlugin(), chatBuddyKeyPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard()],
+    plugins: [react(), tailwindcss(), advisorApiPlugin(), chatBuddyKeyPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard(), homeEditorialAssetsPlugin()],
     // Separate only the leaf I18N data catalog, not React, Motion or shared runtime code.
     // Retain strict 500 kB chunk budget and acyclic module-graph validation.
     build: {
