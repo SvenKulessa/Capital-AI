@@ -87,3 +87,14 @@ test('does not leak supplied personal data or credentials',()=>{
   const output=buildNextRoundDrafts('OFFEN / NÄCHSTE SCHRITTE\n- Rechtekette '+secret,registry);
   assert.equal(JSON.stringify(output).includes(secret),false);
 });
+
+test('catalog and E2E integration work use canonical skills in the next SOLO2 round', () => {
+  const source = 'OFFEN / NÄCHSTE SCHRITTE\n- Skill-Bundles und Quelleninventar für E2E-Integration pflegen';
+  const result = buildNextRoundDrafts(source, registry);
+  assert.equal(result.steps[0].recipeId, 'skill-bundle-catalog');
+  assert.equal(result.steps[0].domain, 'PLATFORM');
+  assert.ok(result.steps[0].suggestedSkills.includes('integration-engineering'));
+  assert.ok(result.steps[0].suggestedSkills.includes('skill-lifecycle'));
+  assert.ok(result.steps[0].suggestedSkills.includes('agent-evaluation'));
+  assert.deepEqual(result.executedSkills, []);
+});

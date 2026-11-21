@@ -21,10 +21,10 @@ function mutate(root,fn) {
  const p=regpath(root),r=JSON.parse(readFileSync(p,'utf8'));
  fn(r);writeFileSync(p,JSON.stringify(r));
 }
-test('main catalog has 26 uniquely owned skills and meets structural thresholds',()=>{
+test('main catalog has 29 uniquely owned skills and meets structural thresholds',()=>{
  const s=inspect();
  assert.deepEqual(s.errors,{registry:[],skills:[],agents:[],ownership:[]});
- assert.equal(s.records.length,26);
+ assert.equal(s.records.length,29);
  const rating=evaluate(s);
  assert.equal(rating.status,'DOCUMENTED');
  assert.ok(rating.score>=85&&rating.governance>=8&&rating.security>=8);

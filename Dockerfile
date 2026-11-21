@@ -73,6 +73,8 @@ COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
 COPY public/branding/universe ./public/branding/universe
+# MediaKit v5 first-party Learning Universe vectors (hash-bound in registry).
+COPY public/branding/learning-universe ./public/branding/learning-universe
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
@@ -116,6 +118,7 @@ COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 # Shared SOLO2 profile: CLI and negative tests execute in the existing offline build stage.
 COPY scripts/solo2-config.mjs scripts/solo2-config.test.mjs ./scripts/
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
+COPY scripts/skill-bundles.mjs ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs
 COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs

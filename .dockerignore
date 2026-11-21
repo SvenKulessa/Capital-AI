@@ -135,6 +135,7 @@
 !shared/solo2-commercial-policy.mjs
 !shared/solo2-commercial-policy.test.mjs
 !shared/hub-routes.mjs
+!shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -317,6 +318,9 @@
 !docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
+!public/editorial/
+!public/editorial/news/
+!public/editorial/news/*.png
 !public/bootstrap-failure.js
 !public/datenschutz/
 !public/datenschutz/index.html
@@ -340,6 +344,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/branding/learning-universe/
+!public/branding/learning-universe/*.svg
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
 !public/branding/universe/hero-universe-desktop.webp
@@ -503,6 +509,7 @@
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
+!scripts/skill-bundles.mjs
 !scripts/skill-routing-evaluation.mjs
 !scripts/skill-routing-cases.json
 !scripts/skill-routing-challenges.json

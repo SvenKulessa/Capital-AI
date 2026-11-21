@@ -1,12 +1,15 @@
+import { useEffect, useState } from 'react';
 import homeEditorialEdition from './homeEditorialEdition.json';
 import { planContentCampaign } from '../../contracts/contentEngine.ts';
-import { projectHomeEditorial } from './homeEditorialAdmission.mjs';
+import { homeEditorialPngPath, projectHomeEditorial } from './homeEditorialAdmission.mjs';
+import { verifyEditorialPng, type RenderedNewsGraphic } from './homeEditorialPng';
 import './homeEditorialNews.css';
 
 type ArticleGraphic =
   | { kind: 'network'; caption: string; center: string; labels: string[] }
   | { kind: 'status'; caption: string; rows: { label: string; outcome: string }[] }
-  | { kind: 'flow'; caption: string; labels: string[] };
+  | { kind: 'flow'; caption: string; labels: string[] }
+  | RenderedNewsGraphic;
 
 type PresentedEditorialStory = {
   id: string; topic: string; title: string; summary: string; context: string;
@@ -21,10 +24,40 @@ type PresentedEditorialEdition = {
   stories: PresentedEditorialStory[];
 };
 
+function VerifiedNewsImage({ graphic }: { graphic: RenderedNewsGraphic }) {
+  const [state, setState] = useState<{ graphic: RenderedNewsGraphic; url: string | null }>();
+  useEffect(() => {
+    const request = new AbortController();
+    let objectUrl: string | undefined;
+    const load = async () => {
+      const response = await fetch(homeEditorialPngPath(graphic.asset.sha256), {
+        signal: request.signal, redirect: 'error', credentials: 'omit',
+      });
+      if (!response.ok || response.headers.get('content-type')?.split(';')[0] !== 'image/png' ||
+          Number(response.headers.get('content-length')) > 2_000_000) throw Error('Editorial image unavailable');
+      const buffer = await response.arrayBuffer();
+      if (!await verifyEditorialPng(new Uint8Array(buffer), graphic)) throw Error('Editorial image mismatch');
+      if (request.signal.aborted) return;
+      objectUrl = URL.createObjectURL(new Blob([buffer], { type: 'image/png' }));
+      setState({ graphic, url: objectUrl });
+    };
+    load().catch(() => { if (!request.signal.aborted) setState({ graphic, url: null }); });
+    return () => {
+      request.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [graphic]);
+  if (state?.graphic !== graphic) return <p role="status">Grafik wird geprüft …</p>;
+  return state.url
+    ? <img src={state.url} width={graphic.width} height={graphic.height} alt={graphic.altText} />
+    : <p>{graphic.altText}</p>;
+}
+
 function NewsGraphic({ graphic }: { graphic: ArticleGraphic }) {
   return (
     <figure className={`editorial-graphic editorial-graphic--${graphic.kind}`}>
       <figcaption>{graphic.caption}</figcaption>
+      {graphic.kind === 'rendered-png' && <VerifiedNewsImage graphic={graphic} />}
       {graphic.kind === 'network' && (
         <>
           <p className="editorial-node">{graphic.center}</p>
@@ -69,17 +102,21 @@ export function HomeEditorialNews() {
         <p className="editorial-fallback" role="status">{fallback}</p>
       ) : (
         <div className="editorial-grid">
-          {edition.stories.map(({ id, topic, title, summary, context, graphic, source, score }) => (
-            <article className="editorial-card" key={id} aria-labelledby={`news-${id}`}>
+          {edition.stories.map(({ id, topic, title, summary, context, graphic, source, score }) => {
+            const textFirst = graphic.kind === 'rendered-png' && ['briefing', 'comparison'].includes(graphic.layout);
+            return (
+            <article className={`editorial-card${graphic.kind === 'rendered-png' ? ' editorial-card--' + graphic.layout : ''}`}
+              key={id} aria-labelledby={`news-${id}`}>
               <div className="editorial-copy">
                 <p className="editorial-topic">{topic}</p>
                 <h3 id={`news-${id}`}>{title}</h3>
               </div>
-              <NewsGraphic graphic={graphic as ArticleGraphic} />
+              {!textFirst && <NewsGraphic graphic={graphic} />}
               <div className="editorial-text">
                 <p>{summary}</p>
                 <p className="editorial-context">{context}</p>
               </div>
+              {textFirst && <NewsGraphic graphic={graphic} />}
               <footer>
                 <time dateTime={source.date}>{source.label}</time>
                 <span aria-label="Redaktioneller Score und Aktualität">
@@ -90,7 +127,8 @@ export function HomeEditorialNews() {
                 </a>
               </footer>
             </article>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>
