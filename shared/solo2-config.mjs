@@ -64,7 +64,7 @@ function scanForSecrets(value, depth = 0) {
   if (Array.isArray(value)) { for (const item of value) scanForSecrets(item, depth + 1); return; }
   if (!record(value)) return;
   for (const [key, item] of Object.entries(value)) {
-    if (forbidden.test(key)) fail('SECRET_FIELD_DENIED');
+    if (forbidden.test(key) && key !== 'secretStorage') fail('SECRET_FIELD_DENIED');
     scanForSecrets(item, depth + 1);
   }
 }
