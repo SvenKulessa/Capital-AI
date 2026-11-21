@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: main
           persist-credentials: false
       - name: Bind failed run to exact open PR and Docker job
         id: bind
@@ -31,6 +31,9 @@ jobs:
           set -euo pipefail
           [[ "$HEAD_SHA" =~ ^[a-f0-9]{40}$ ]]
           branch=$(jq -er .workflow_run.head_branch "$GITHUB_EVENT_PATH")
+          head_repo=$(jq -er .workflow_run.head_repository.full_name "$GITHUB_EVENT_PATH")
+          [[ "$head_repo" == "$GH_REPOSITORY" ]]
+          [[ "$branch" =~ ^[a-zA-Z0-9._/-]+$ ]]
           pr=$(gh api --paginate "repos/$GH_REPOSITORY/pulls?state=open&head=${GH_REPOSITORY%%/*}:$branch&per_page=100" --jq "[.[] | select(.head.sha == \"$HEAD_SHA\")] | if length == 1 then .[0].number else error(\"expected one exact open PR\") end")
           job=$(gh api --paginate "repos/$GH_REPOSITORY/actions/runs/$RUN_ID/jobs?filter=latest&per_page=100" --jq '[.jobs[] | select(.name == "Docker Security Gate" and .conclusion == "failure")] | if length == 1 then .[0].id else error("expected one failed Docker gate") end')
           echo "pr=$pr" >> "$GITHUB_OUTPUT"
@@ -87,4 +90,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPOSITORY: ${{ github.repository }}
           JOB_ID: ${{ steps.bind.outputs.job }}
-        run: gh api --method POST "repos/$GH_REPOSITORY/actions/jobs/$JOB_ID/rerun" -f enable_debug_logging=true
+        run: gh api --method POST "repos/$GH_REPOSITORY/actions/jobs/$JOB_ID/rerun"
