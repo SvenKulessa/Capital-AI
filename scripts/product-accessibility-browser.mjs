@@ -297,11 +297,12 @@ try {
       if (tab === 'glossar') {
         const focused = await evaluate("(() => { const b=document.querySelector('.lhu-tab-overview-link'); b?.focus(); return document.activeElement===b; })()");
         if (!focused) failures.push(path + ': return-to-overview keyboard focus lost at ' + viewport.width);
-        await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+        await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+        await send('Input.dispatchKeyEvent',{type:'char',key:'Enter',code:'Enter',text:'\\r',unmodifiedText:'\\r',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
         await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
-        await pause(180);
-        const returned = await evaluate("!!document.querySelector('[data-learning-overview=\"v1\"]')");
-        if (!returned) failures.push(path + ': Enter did not navigate back to overview at ' + viewport.width);
+        await pause(250);
+        const returned = await evaluate("(() => ({overview: !!document.querySelector('[data-learning-overview=\"v1\"]'), search: window.location.search}))()");
+        if (!returned.overview || !returned.search.includes('tab=overview')) failures.push(path + ': Enter did not navigate back to overview at ' + viewport.width + ': ' + JSON.stringify(returned));
       }
     }
   }
