@@ -143,3 +143,14 @@ test('existing identical version reuses verified bytes',async()=>{
   const r=await deliverDriveArtifact({request,bytes:content,provider:p,authorization:auth});
   assert.equal(r.status,'VERIFIED_SKIP');assert.equal(written.length,0);
 });
+test('mutable caller buffers are snapshotted before asynchronous upload',async()=>{
+  const {p,written}=mock();
+  const input=Buffer.from('original bytes');
+  const expected=hash(input);
+  const pending=deliverDriveArtifact({request,bytes:input,provider:p,authorization:auth});
+  input.fill(0);
+  const r=await pending;
+  assert.equal(r.status,'VERIFIED_CREATED');
+  assert.equal(r.sha256,expected);
+  assert.equal(hash(written[0].fileBytes),expected);
+});
