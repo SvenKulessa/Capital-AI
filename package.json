@@ -111,7 +111,8 @@
     "test:assets": "node --test server/account-avatar.test.mjs server/profile-avatar-upload.test.mjs server/profile-avatar-clamav.test.mjs scripts/qa/profile-avatar-freshclam-staging.test.mjs scripts/media/learning-mastermind-badge.test.mjs && node --import tsx --test src/features/account/VerifiedProfileAvatar.test.tsx",
     "render:owner-operations-social-draft": "node --import tsx scripts/growth/render-owner-operations-visual.mjs",
     "growth:intelligence:dry-run": "node --import tsx scripts/growth/growth-intelligence-drafts.mjs",
-    "test:growth-intelligence": "node --import tsx --test src/contracts/__tests__/growthIntelligenceContent.test.ts scripts/growth/growth-intelligence-drafts.test.mjs"
+    "test:growth-intelligence": "node --import tsx --test src/contracts/__tests__/growthIntelligenceContent.test.ts scripts/growth/growth-intelligence-drafts.test.mjs",
+    "growth:image-drafts": "node --import tsx scripts/growth/growth-intelligence-image-drafts.mjs --write"
   },
   "dependencies": {
     "@google/genai": "^3.4.0",
