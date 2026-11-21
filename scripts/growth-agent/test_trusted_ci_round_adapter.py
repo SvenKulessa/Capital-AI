@@ -141,11 +141,24 @@ class TrustedCIReadbackTests(unittest.TestCase):
                    check("Domain Governance", 2)]), "FAILED"),
             (HTTP([check("Docker Security Gate", 1)]), "NOT_PROVEN"),
             (HTTP([check("Docker Security Gate", 1),
-                   check("Domain Governance", 2), check("CodeQL", 3, result="neutral")]), "FAILED"),
+                   check("Domain Governance", 2), check("CodeQL", 3, result="neutral")]), "NOT_PROVEN"),
         ]
         with patch("trusted_ci_round_adapter.GitHubRenderActions", FakeActions):
             for http, state in cases:
                 self.assertEqual(self.adapter(http)[0].read_ci(CANDIDATE).state, state)
+
+    def test_neutral_aggregate_waits_only_for_an_observed_codeql_analysis(self):
+        checks = [check("Docker Security Gate", 1, "in_progress"),
+                  check("Domain Governance", 2), check("CodeQL", 3, result="neutral")]
+        analyzer = check("Analyze (python)", 4, "in_progress")
+        http = HTTP([*checks, analyzer])
+        adapter, _ = self.adapter(http)
+        with patch("trusted_ci_round_adapter.GitHubRenderActions", FakeActions):
+            self.assertEqual(adapter.read_ci(CANDIDATE).state, "PENDING")
+            analyzer.update(status="completed", conclusion="success")
+            self.assertEqual(adapter.read_ci(CANDIDATE).state, "NOT_PROVEN")
+            checks[0].update(status="completed", conclusion="failure")
+            self.assertEqual(adapter.read_ci(CANDIDATE).state, "FAILED")
 
     def test_proven_failure_takes_precedence_over_pending_optional_check(self):
         # Existing failed required status is terminal even if CodeQL is queued.
