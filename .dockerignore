@@ -84,6 +84,7 @@
 !server/benchmark-store.mjs
 !server/benchmark-store.test.mjs
 !server/auth.mjs
+!server/skill-routing-catalog.mjs
 !server/account-avatar.mjs
 !server/account-avatar.test.mjs
 !server/profile-avatar-upload.mjs
@@ -132,6 +133,7 @@
 !server/scorer-proxy.mjs
 !shared/
 !shared/solo2-config.mjs
+!shared/domain-advisory-routing.mjs
 !shared/hub-routes.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
