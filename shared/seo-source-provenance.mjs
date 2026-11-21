@@ -57,7 +57,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     sourceBlobSha: '18e7cf7f74f55febed15d25d98ca9aa577ec32ed', contentSha256: '28903a32624326f053f27ad1ffa5e57a3a31d162a4e3f8a5858b92058fabf9c4',
   }),
   'src/privacy/privacyPolicy.ts': Object.freeze({
-    sourceBlobSha: '78cb5cfc1793faf0878bb1ed9e3895d12ef3e5ea', contentSha256: 'cfb883a6dfa0184ef0cd2cd322d0c5333ab6a79b4f0af5dbfb5b52d8213e195a',
+    sourceBlobSha: 'ed273835f08851d951a56df6eaffe802224a4930', contentSha256: '35e801b29b8837c10e29496b60fef7cc067df28885c44f04f357b134805ab8db',
   }),
   'src/content/legalDocumentVersions.ts': Object.freeze({
     sourceBlobSha: '669160803b36811afaeb625b083de38738de3787',
@@ -76,7 +76,7 @@ const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
   'OPEN_SOURCE_LICENSES.md|shared/license-metadata.mjs': 'db2cb5f53bcfb48b0fdd17adbeeefc2e69c38da81c11e4eac5ce736aa7654031',
   'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '49ab4f0097ba2d64e475a7423645946522f8d7300a01753001a5cb3f7d199e83',
-  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '71fbfce5b2047ad2e9a84be478bdba7556ab04468b07bb4bbcd3e398373748ad',
+  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '5184ed68bfbc0bc496eb1dbcc2892dbd3aa9f3c4245ba0e6261631e339b500b7',
   'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '8fd7210d1bc9135ae5336b6ad2d937476397ef7b02496a4a5fdd3e597247c118',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs': '39df3fd700e9b158bec07621c5b29c9bb556d1c5e430e59e3f0aec2935129c01',
 });
