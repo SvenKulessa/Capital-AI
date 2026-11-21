@@ -46,6 +46,14 @@ async function testWidth(width) {
   await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
   await send('Page.navigate',{url:origin.origin+'/'});
   await until("document.readyState==='complete' && !!document.querySelector('[aria-label=\"JaJa Chat öffnen\"]')",'BUDDY_'+width);
+  // First dismiss the cookie-consent overlay; it can intercept native touches.
+  await evaluate(String.raw`(()=>{
+    const panel=document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
+    const reject=[...(panel?.querySelectorAll('button')||[])].find(b=>b.textContent?.trim()==='Nur notwendige');
+    reject?.click();
+    return true;
+  })()`);
+  await sleep(200);
   await evaluate("document.querySelector('[aria-label=\"JaJa Chat öffnen\"]').click()");
   await until("!!document.querySelector('[aria-label=\"JaJa CAM: Screenshot aufnehmen\"]')",'CAM_'+width);
   await evaluate("document.querySelector('[aria-label=\"JaJa CAM: Screenshot aufnehmen\"]').click()");
@@ -81,6 +89,21 @@ async function testWidth(width) {
   const px=Math.max(10,Math.min(width-10,bounds.x+bounds.w*0.40));
   const py=Math.max(10,Math.min(810,bounds.y+bounds.h*0.40));
   assert.ok(px>=bounds.x&&px<=bounds.x+bounds.w&&py>=bounds.y&&py<=bounds.y+bounds.h,'Touch target not visible');
+  const touchHit=await evaluate(String.raw`(()=>{
+    const canvas=document.querySelector('canvas[aria-label="Screenshot mit Markierungen"]');
+    const target=document.elementFromPoint(${px},${py});
+    return {tag:target?.tagName||null,label:target?.getAttribute('aria-label')||null,
+      isCanvas:target===canvas,cookieOpen:!!document.querySelector('[aria-labelledby="cookie-consent-v3-title"]')};
+  })()`);
+  assert.ok(touchHit.isCanvas,'TOUCH_TARGET_OCCLUDED_'+JSON.stringify(touchHit));
+  await evaluate(String.raw`(()=>{
+    const canvas=document.querySelector('canvas[aria-label="Screenshot mit Markierungen"]');
+    window.__buddyTouchQA={pointerdown:0,pointermove:0,pointerup:0,pointercancel:0};
+    for(const kind of ['pointerdown','pointermove','pointerup','pointercancel']) {
+      canvas.addEventListener(kind,()=>{window.__buddyTouchQA[kind]++;});
+    }
+    return true;
+  })()`);
   const first={x:px,y:py};
   const second={x:Math.min(bounds.x+bounds.w-8,px+22),y:Math.min(bounds.y+bounds.h-8,py+15)};
   await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[first]});
@@ -88,7 +111,8 @@ async function testWidth(width) {
   await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   await sleep(250);
   const after=await evaluate("document.querySelector('canvas[aria-label=\"Screenshot mit Markierungen\"]').toDataURL('image/png')");
-  assert.notEqual(after,before,'Native pointer touch did not annotate the local canvas');
+  const touchTrace=await evaluate('window.__buddyTouchQA');
+  assert.notEqual(after,before,'TOUCH_STROKE_NOT_VISIBLE_'+JSON.stringify(touchTrace));
   const screenshot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(join(outputDir,'buddy-'+width+'-touch.png'),Buffer.from(screenshot.data,'base64'));
   await evaluate("([...document.querySelectorAll('button')].find(b=>b.textContent.includes('Bild zum Prompt-Entwurf hinzufügen')))?.click()");
