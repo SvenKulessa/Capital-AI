@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createProfileAvatarUpload } from './profile-avatar-upload.mjs';
+import { createProfileProviderAvatar } from './profile-provider-avatar.mjs';
 import { startProfileAvatarClamav } from './profile-avatar-clamav.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
@@ -521,6 +522,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
   const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
   const agentOperationsPilot = createAgentOperationsPilot({ auth, env: runtimeEnv });
+  const profileProviderAvatar = createProfileProviderAvatar({auth,fetchImpl:options.fetchImpl||fetch});
   const buddyGeminiByok = createBuddyGeminiByok({auth,env:runtimeEnv,fetchImpl:options.fetchImpl||fetch});
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
@@ -547,6 +549,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await profileAvatarUpload.handle(req, res, url, json)) return;
+  if (await profileProviderAvatar.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
   if (await socialXPublishOAuthStart.handle(req, res, url, json)) return;
