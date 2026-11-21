@@ -96,7 +96,9 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
   if(preliminary.status==='BLOCKED')return deny(preliminary.reason);
   const route=preliminary.driveFolder;
   if(typeof route!=='string')return deny('ROUTING_FAILED');
-  const hash=digest(bytes);
+  // Snapshot caller-owned bytes before the first asynchronous provider operation.
+  const snapshot=Buffer.from(bytes);
+  const hash=digest(snapshot);
   const scope=request.scope==='ACODE'?'ACODE':'PROJECT';
   const lockKey='CAPITAL-AI/'+route+'/'+request.category+'/'+request.topic;
   try{
@@ -129,7 +131,7 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
       if(listed.some(f=>f.name.toLowerCase()===planned.filename.toLowerCase()))
         return deny('EXACT_NAME_COLLISION');
       const uploaded=await provider.uploadNewFile({
-        parentFolderId:folderId,fileName:planned.filename,fileBytes:bytes,
+        parentFolderId:folderId,fileName:planned.filename,fileBytes:snapshot,
         mimeType:MIME[request.extension],mode:'CREATE_ONLY',sha256:hash
       });
       if(!uploaded || !validId(uploaded.id))return deny('UPLOAD_RESULT_UNVERIFIED',
