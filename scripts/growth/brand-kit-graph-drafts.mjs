@@ -335,6 +335,7 @@ export function buildLicensedContextRound(input,trustedScope){
     const matches=trustedScope.rightsLedger.filter(g=>g?.tenantId===tenantId
       &&g.sourceId===id&&g.sourceUrl===row.sourceUrl
       &&g.sourceSha256===exactSha&&g.commercialParaphraseAllowed===true
+      &&g.commercialExcerptAllowed===true
       &&g.reviewed===true&&typeof g.evidenceRef==='string'
       &&/^[A-Za-z0-9_.:/#-]{6,220}$/.test(g.evidenceRef));
     if(matches.length!==1){
@@ -371,9 +372,13 @@ export function buildLicensedContextRound(input,trustedScope){
     ||image.sha256!==draft.image.sha256||draft.socialPackage.approvals.length
     ||draft.socialPackage.deliveries.length||draft.publicPublishAllowed)
     throw Error('LICENSED_BRAND_IDENTITY_OR_AUTHORITY_INVALID');
-  const roundSha256=sha(JSON.stringify({tenantId,channel,baseTemplateVersion,
-    ids:accepted.map(x=>x.id),digests:accepted.map(x=>x.summarySha256),
-    feedbackEvidence:draft.learning.templateCandidates.map(x=>x.evidenceIds),
+  const roundSha256=sha(JSON.stringify({tenantId,channel,baseTemplateVersion,evaluatedAt,
+    sources:accepted.map(x=>({
+      id:x.id,summarySha256:x.summarySha256,
+      rawSha256:records.find(row=>row.id===x.id).sourceSha256,
+      rightsEvidenceRef:grants.find(g=>g.sourceId===x.id).evidenceRef,
+    })),
+    consentedFeedbackDigests:allowedFeedback.map(x=>sha(JSON.stringify(x))),
     imageSha256:image.sha256}));
   return {
     contractVersion:LICENSED_CONTEXT_ROUND_VERSION,tenantId,channel,roundSha256,
