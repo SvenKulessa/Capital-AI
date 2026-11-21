@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { ArrowRight, BarChart3, Compass, Network, ShieldCheck, Workflow } from 'lucide-react';
+import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
+import { BrandLogo } from '../../components/BrandLogo';
 import './SkillRoutingPanel.css';
 
 const domainIcons = { PRODUCT: Compass, MARKET: BarChart3, PLATFORM: Workflow, TRUST: ShieldCheck, GROWTH: Network };
 type DomainId = keyof typeof domainIcons;
+const domainPalette = { PRODUCT: 'pink', MARKET: 'blue', PLATFORM: 'violet', TRUST: 'rose', GROWTH: 'green' } as const;
+const routePalette = Object.fromEntries(Object.entries(BRAND_COLORS).map(([name, value]) =>
+  ['--route-' + name, value])) as CSSProperties;
 type Domain = {
   id: DomainId;
   label: string;
@@ -67,14 +72,20 @@ export function SkillRoutingPanel({ userId }: { userId: string }) {
   }
 
   return (
-    <section className="skill-route" aria-labelledby="skill-route-heading">
+    <section className="skill-route" style={routePalette} aria-labelledby="skill-route-heading">
       <header className="skill-route__header">
-        <span className="skill-route__mark"><Workflow aria-hidden="true" size={22} /></span>
-        <div>
+        <BrandLogo variant="banner" size="sm" showSubtitle={false} className="skill-route__logo" />
+        <div className="skill-route__title">
           <h2 id="skill-route-heading">Domain- und Skill-Routing</h2>
           <p>Wähle eine Primärdomain und ergänze die Beratung aus weiteren Domains.</p>
         </div>
+        <img src="/branding/universe/hero-universe-orbit.svg" className="skill-route__atom"
+          aria-hidden="true" alt="" width="112" height="112" decoding="async" />
       </header>
+      <div className="skill-route__spectrum" aria-hidden="true">
+        {Object.entries(BRAND_COLORS).map(([name, color]) =>
+          <span key={name} style={{ backgroundColor: color }} />)}
+      </div>
       {error && <div className="skill-route__message" role="alert">
         <p>{error}</p>
         <button type="button" onClick={() => setReload(value => value + 1)}>Erneut laden</button>
@@ -88,7 +99,7 @@ export function SkillRoutingPanel({ userId }: { userId: string }) {
               {domains.map(domain => {
                 const Icon = domainIcons[domain.id];
                 return <button type="button" key={domain.id} aria-pressed={primaryId === domain.id}
-                  className="skill-route__node"
+                  className="skill-route__node" data-hue={domainPalette[domain.id]}
                   onClick={() => {
                     setPrimaryId(domain.id);
                     setRelated(current => current.filter(id => id !== domain.id));
@@ -102,7 +113,7 @@ export function SkillRoutingPanel({ userId }: { userId: string }) {
           <div className="skill-route__edge" aria-hidden="true"><ArrowRight size={20} /></div>
           <div className="skill-route__stage skill-route__stage--advisers">
             <h3>Berater-Skills</h3>
-            <div className="skill-route__decision">
+            <div className="skill-route__decision" data-hue={domainPalette[primary.id]}>
               <strong>{primary.id}</strong>
               <p>{primary.label}</p>
             </div>
@@ -121,7 +132,7 @@ export function SkillRoutingPanel({ userId }: { userId: string }) {
                 const Icon = domainIcons[domain.id];
                 const recommended = primary.recommendedDomains.includes(domain.id);
                 return <button type="button" key={domain.id} aria-pressed={related.includes(domain.id)}
-                  className="skill-route__node" onClick={() => toggleDomain(domain.id)}>
+                  className="skill-route__node" data-hue={domainPalette[domain.id]} onClick={() => toggleDomain(domain.id)}>
                   <Icon aria-hidden="true" size={18} />
                   <span><strong>{domain.id}</strong><small>{recommended ? 'Empfohlen' : domain.label}</small></span>
                 </button>;
@@ -136,7 +147,7 @@ export function SkillRoutingPanel({ userId }: { userId: string }) {
           </p>
           <p>{primary.scope}</p>
           {selectedDomains.length > 0 && <div className="skill-route__tracks">
-            {selectedDomains.map(domain => <article key={domain.id}>
+            {selectedDomains.map(domain => <article key={domain.id} data-hue={domainPalette[domain.id]}>
               <h4>{domain.id} · {domain.label}</h4>
               <ul className="skill-route__skills">
                 {domain.advisers.map(item => <li key={item.skill}>
