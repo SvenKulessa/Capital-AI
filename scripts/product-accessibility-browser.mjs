@@ -278,6 +278,32 @@ try {
   await send('Accessibility.enable');
   for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1440,height:900,mobile:false}]) {
     for (const path of ['/', '/learning', '/learning?tab=glossar', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
+    // Same actual Chromium/CDP session: all ten original tab artworks, not a static CSS assertion.
+    for (const tab of ['glossar','flashcards','guides','patterns','videos','quiz','quizzes','news','kontakt','simulator']) {
+      const path = '/learning?tab=' + tab;
+      await navigate(path);
+      const scene = await evaluate("(() => { const tab = " + JSON.stringify(tab) + "; const host = document.querySelector('[data-learning-universe-tab=\"' + tab + '\"]'); const svg = host?.querySelector('svg.lhu-tab-art'); const button = host?.querySelector('.lhu-tab-overview-link'); const rect = host?.getBoundingClientRect(); return { exists: !!host, heading: !!host?.querySelector('h2#lhu-tab-scene-title'), vector: !!svg && svg.querySelectorAll('path').length > 0, orbits: svg?.querySelectorAll('ellipse').length || 0, iconAlt: host?.querySelector('[role=\"img\"]')?.getAttribute('aria-label') || '', back: !!button, tabLinks: document.querySelectorAll('.hub-navigation[data-hub=\"learning\"] a[href]').length, visible: !!rect && rect.width > 0 && rect.height > 0, overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth) }; })()");
+      pages.push({path,viewport:viewport.width,universeTab:scene});
+      if (!scene.exists || !scene.heading || !scene.vector || scene.orbits !== 2
+        || !scene.iconAlt.startsWith('Originalillustration:') || !scene.back || !scene.visible
+        || scene.tabLinks < 10 || scene.overflow > 2) {
+        failures.push(path + ': original artwork/nav/overflow regression at ' + viewport.width + ': ' + JSON.stringify(scene));
+      }
+      if (process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR && [390,1440].includes(viewport.width)) {
+        await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+        const screenshot = await send('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
+        await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, 'learning-tab-' + tab + '-' + viewport.width + '.png'), Buffer.from(screenshot.data,'base64'));
+      }
+      if (tab === 'glossar') {
+        const focused = await evaluate("(() => { const b=document.querySelector('.lhu-tab-overview-link'); b?.focus(); return document.activeElement===b; })()");
+        if (!focused) failures.push(path + ': return-to-overview keyboard focus lost at ' + viewport.width);
+        await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+        await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+        await pause(180);
+        const returned = await evaluate("!!document.querySelector('[data-learning-overview=\"v1\"]')");
+        if (!returned) failures.push(path + ': Enter did not navigate back to overview at ' + viewport.width);
+      }
+    }
   }
   console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
     pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',

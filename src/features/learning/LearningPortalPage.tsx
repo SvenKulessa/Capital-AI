@@ -18,6 +18,7 @@ import { QuizzesTab } from './QuizzesTab';
 import { VocabularyCard } from './VocabularyCard';
 import { LearningJourney } from './LearningJourney';
 import { LearningUniverseOverview } from './LearningUniverseOverview';
+import { LearningUniverseTabScene } from './LearningUniverseTabScene';
 import { LearningArticles } from './LearningArticles';
 import { ContactForm } from '../../components/ContactForm';
 import { LearningPurchase } from './LearningPurchase';
@@ -366,6 +367,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       </div>
 
       <HubNavigationPanel hubId="learning" onNavigate={path => { if (onNavigateTab) onNavigateTab(path); else window.location.assign(path); }} />
+      <LearningUniverseTabScene tab={activeTab} onOpen={setActiveTab} />
 
       {activeTab === 'overview' && <LearningUniverseOverview onOpen={setActiveTab}
         favoritesAvailable={favorites.authenticated}
