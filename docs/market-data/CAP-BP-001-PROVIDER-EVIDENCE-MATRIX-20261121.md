@@ -30,6 +30,13 @@ Stand 2026-11-21. Scope: MARKET / CAP-BP-001 / market_integrity_gate. Quellensta
 - Twelve Data Terms: https://twelvedata.com/terms
 - Twelve Data commercial/personal usage guidance: https://support.twelvedata.com/en/articles/5332349-commercial-and-personal-usage
 
+
+### Datentyp-/Zeitpräzision: zusätzlicher PIT-Blocker
+
+Binance dokumentiert für SPOT-Dateien ab 2025-01-01 Zeitwerte in Mikrosekunden; die aktuellen CAP-BP-001-Kandidatenschemas nutzen konzeptionell Unix-Millisekunden. Jede echte Importstrecke benötigt daher explizite Quellpräzision, deterministische Umrechnung, konservative Grenzen und Negativtests für Verwechslungen von µs/ms. Aus historischen Trades lassen sich außerdem keine zuverlässigen historischen Top-of-Book-Bid-/Ask- oder Exchange-Halt-Ereignisse rekonstruieren. **Status: NOT_PROVEN** für eine solche reale Import-/PIT-Normalisierung. Quelle: https://github.com/binance/binance-public-data/blob/master/README.md.
+
+Die technische README-Version und das Vision-Lizenzdokument betreffen historische Archive; sie sind keine Live-WebSocket-Lizenz und keine Bestätigung einer Originaldaten-Kette für CAP-BP-001.
+
 ## Technische Replay-Abnahmematrix (pro Provider, Instrument, Venue und Feed)
 
 | Prüfkriterium | Erforderlicher bindender Beleg | Stand |
