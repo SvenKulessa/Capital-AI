@@ -212,7 +212,10 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
       profilePath:kit.profilePath,
       altText:'Drei Kategorien Quelle, Annahmen, Grenzen mit je drei Unterkategorien.'},
     contentPlan,socialPackage,
-    context:{usedIds:context.accepted.map(x=>x.id),rejected:context.rejected,
+    context:{usedIds:context.accepted.map(x=>x.id),
+      provenance:context.accepted.map(x=>({sourceId:x.id,sourceUrl:x.sourceUrl,
+        summarySha256:x.summarySha256,rightsEvidenceRef:x.rightsEvidenceRef,tool:x.tool})),
+      rejected:context.rejected,
       graphExecution:context.graphExecution,editorialReview:'REVIEW_REQUIRED'},
     learning:{proposals:learning.proposals,templateCandidates:learning.proposals.map(p=>({
       templateId:template.id,evidenceIds:p.evidenceIds,state:'CANDIDATE_ONLY'})),
