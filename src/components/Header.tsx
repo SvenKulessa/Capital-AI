@@ -113,6 +113,26 @@ export const Header: React.FC<HeaderProps> = ({
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
   const [authStatus, setAuthStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [sessionRetry, setSessionRetry] = useState(0);
+  const [avatarRevision, setAvatarRevision] = useState(0);
+  const [privateAvatarUrl, setPrivateAvatarUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const refresh = () => setAvatarRevision(value => value + 1);
+    window.addEventListener('capital-ai:profile-avatar-updated', refresh);
+    return () => window.removeEventListener('capital-ai:profile-avatar-updated', refresh);
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    setPrivateAvatarUrl(null);
+    if (!authSession?.authenticated) return () => controller.abort();
+    fetch('/api/profile/logo', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
+      .then(response => {
+        if (controller.signal.aborted) return;
+        if (response.ok) setPrivateAvatarUrl('/api/profile/avatar/current?revision=' + avatarRevision);
+      })
+      .catch(() => { /* Provider avatar remains the fallback. */ });
+    return () => controller.abort();
+  }, [authSession?.authenticated, authSession?.user?.email, avatarRevision]);
+
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isDrawerAccountExpanded, setIsDrawerAccountExpanded] = useState(false);
 
@@ -294,7 +314,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label={t('navAccount')}
               title="Kontomenü"
             >
-              <ProfileAvatar url={authSession.user?.avatarUrl} owner={isOwner} size="md" />
+              <ProfileAvatar url={privateAvatarUrl ?? authSession.user?.avatarUrl} owner={isOwner} size="md" />
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
@@ -428,7 +448,7 @@ export const Header: React.FC<HeaderProps> = ({
                       >
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">
-                            <ProfileAvatar url={authSession.user?.avatarUrl} owner={isOwner} />
+                            <ProfileAvatar url={privateAvatarUrl ?? authSession.user?.avatarUrl} owner={isOwner} />
                             <span className={`min-w-0 truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
                           </span>
                           {accountTier && <span className={`mt-1 block truncate pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</span>}
