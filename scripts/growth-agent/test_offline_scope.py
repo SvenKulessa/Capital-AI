@@ -53,6 +53,21 @@ class OfflineScopeTests(unittest.TestCase):
             with self.subTest(payload=type(payload).__name__), self.assertRaises(ValueError):
                 self.identity(payload=payload)
 
+    def test_ambiguous_numeric_keys_and_nested_shapes_denied(self):
+        # Python JSON otherwise coerces {1: "value"} to {"1": "value"}.
+        for payload in ({1: "value"}, {"nest": {1: "value"}},
+                        {"nest": [{"value": float("inf")}]},
+                        {"nested": {"nested": {"a": object()}}}):
+            with self.subTest(repr=repr(payload)), self.assertRaises(ValueError):
+                self.identity(payload=payload)
+
+    def test_nesting_boundary_is_bounded(self):
+        deep = "safe"
+        for _ in range(20):
+            deep = {"child": deep}
+        with self.assertRaises(ValueError):
+            self.identity(payload={"deep": deep})
+
     def test_no_implicit_provider_or_authority_fields(self):
         self.assertNotEqual(self.identity(), self.identity(payload=BASE["payload"] | {"consent": False}))
         self.assertNotEqual(self.identity(), self.identity(payload=BASE["payload"] | {"license": "REVOKED"}))
