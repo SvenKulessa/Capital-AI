@@ -44,10 +44,18 @@ export function planArtifact(input, contract, acodeContract) {
   const filenameFor=version=>`${prefix}${version}.${extension}`;
   if (!Array.isArray(input.existingNames) || input.existingNames.some(v=>typeof v!=="string"||v.length>240)) return {...hold("FOLDER_LISTING_REQUIRED"),target:parent};
   const prior=new Set(input.existingNames);
-  const usedMajors=new Set();
-  for(const name of prior){if(!name.startsWith(prefix)||!name.endsWith('.'+extension))continue;const part=name.slice(prefix.length,-(extension.length+1));const match=/^([1-9][0-9]*)(?:\.[0-9]+)?$/.exec(part);if(match)usedMajors.add(Number(match[1]));}
-  let version=1; while (usedMajors.has(version)||prior.has(filenameFor(version))) {version++;if(version>9999)return hold("VERSION_SPACE_EXHAUSTED");}
+  // Append only: never reuse a historical version gap after a rename, archival or partial export.
+  let maxVersion=0;
+  for(const name of prior){
+    if(!name.startsWith(prefix)||!name.endsWith('.'+extension))continue;
+    const part=name.slice(prefix.length,-(extension.length+1));
+    const match=/^([1-9][0-9]*)(?:\.[0-9]+)?$/.exec(part);
+    if(match)maxVersion=Math.max(maxVersion,Number(match[1]));
+  }
+  const version=maxVersion+1;
+  if(!Number.isSafeInteger(version)||version>9999)return hold("VERSION_SPACE_EXHAUSTED");
   const filename=filenameFor(version);
+  if(prior.has(filename))return hold("EXACT_NAME_COLLISION");
   const readback=input.listingComplete===true && resolvedId!==null && input.listedParentId===resolvedId && (input.scope==="ACODE" || (input.listedFolderPath===folder.folder && input.parentChainVerified===true));
   return {status:readback?"ROUTE_READY":"WAIT",reason:readback?null:"PARENT_LISTING_NOT_VERIFIED",filename,folderId:resolvedId,driveFolder:folder.folder,category,domain,version,project:contract.project,naming:"VERIFIED",uploadAdmission:readback?"READY_FOR_AUTHORIZED_CONNECTOR":"HOLD",driveUpload:"NOT_PROVEN",driveParent:"NOT_PROVEN",deviceSync:"NOT_PROVEN",sha256:"NOT_PROVEN"};
 }
