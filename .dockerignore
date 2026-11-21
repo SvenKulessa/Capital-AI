@@ -133,6 +133,7 @@
 !shared/
 !shared/solo2-config.mjs
 !shared/hub-routes.mjs
+!shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -315,6 +316,9 @@
 !docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
+!public/editorial/
+!public/editorial/news/
+!public/editorial/news/*.png
 !public/bootstrap-failure.js
 !public/datenschutz/
 !public/datenschutz/index.html

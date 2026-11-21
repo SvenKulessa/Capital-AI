@@ -418,3 +418,34 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
     process.stdout.write('DRAFT_EXPORTED='+name+'\nPUBLISH=DISABLED\n');
   }
 }
+
+/** Authority-neutral metadata for the existing offline LangGraph, no raw text. */
+export const LICENSED_GRAPH_PROJECTION='CAPITAL_AI_LICENSED_GRAPH_PROJECTION@1';
+export function projectLicensedContextForGraph(input,trustedScope){
+  const round=buildLicensedContextRound(input,trustedScope);
+  const graphic=round.draft.socialPackage.assets.find(x=>x.kind==='IMAGE');
+  if(!graphic||graphic.sha256!==round.draft.image.sha256||round.publicPublishAllowed
+    ||round.draft.publicPublishAllowed||round.publicationState!=='DRAFT_ONLY'
+    ||round.templateEvaluation.autoPromote||round.templateEvaluation.weightsChanged
+    ||round.draft.socialPackage.approvals.length||round.draft.socialPackage.deliveries.length
+    ||round.providerCalls!==0||round.publishCalls!==0)throw Error('GRAPH_AUTHORITY_DENIED');
+  const projection={
+    contractVersion:LICENSED_GRAPH_PROJECTION,
+    roundContractVersion:LICENSED_CONTEXT_ROUND_VERSION,
+    tenantId:round.tenantId,roundSha256:round.roundSha256,
+    channel:round.channel,contentId:round.draft.contentId,
+    imageSha256:graphic.sha256,logoSha256:round.draft.image.logoSha256,
+    sources:round.sourceIntake.accepted.map(x=>({
+      id:x.id,sourceSha256:x.sourceSha256,summarySha256:x.summarySha256,
+      rightsEvidenceSha256:sha(x.rightsEvidenceRef),
+    })),
+    rejectedSourceCount:round.sourceIntake.rejected.length,
+    candidates:round.templateEvaluation.candidates.map(x=>({
+      id:x.templateId,version:x.proposedVersion,state:x.state,
+    })),
+    rejectedConsentCount:round.templateEvaluation.rejectedConsentCount,
+    publicationState:'DRAFT_ONLY',publicPublishAllowed:false,
+    autoPromote:false,providerCalls:0,publishCalls:0,
+  };
+  return {...projection,projectionSha256:sha(JSON.stringify(projection))};
+}

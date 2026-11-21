@@ -13,6 +13,37 @@ const allowed = (value, max = 500) => typeof value === 'string' && value.trim().
   value.length <= max && !/[<>\u0000-\u001f\u007f]/.test(value);
 const exact = (value, keys) => value && typeof value === 'object' && !Array.isArray(value) &&
   Object.keys(value).every(key => keys.includes(key)) && keys.every(key => Object.hasOwn(value, key));
+const sha256 = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+const renderedLayouts = new Set(['hero', 'briefing', 'timeline', 'comparison']);
+
+export function homeEditorialPngPath(digest) {
+  if (!sha256(digest)) throw Error('HOME_GRAPHIC_DIGEST_INVALID');
+  return '/editorial/news/' + digest + '.png';
+}
+
+export function homeGraphicContentSnapshot(story) {
+  const { caption, altText, layout, width, height } = story.graphic;
+  return homeReviewContentSnapshot({
+    ...story,
+    graphic: { kind: 'rendered-png', caption, altText, layout, width, height },
+  });
+}
+
+function validRenderedGraphic(graphic, storyId) {
+  const asset = graphic.asset;
+  return exact(graphic, ['kind','caption','altText','layout','width','height','asset']) &&
+    allowed(graphic.altText, 500) && renderedLayouts.has(graphic.layout) &&
+    ((graphic.width === 1440 && graphic.height === 960) ||
+     (graphic.width === 1080 && graphic.height === 1350)) &&
+    exact(asset, ['assetId','contentId','sha256','mimeType','sourceSha','sourceDigest','contentDigest',
+      'origin','creationMethod','renderer','thirdPartyAssets']) &&
+    asset.assetId === `home-${storyId}-png-v1` && asset.contentId === storyId &&
+    sha256(asset.sha256) && sha256(asset.sourceDigest) && sha256(asset.contentDigest) &&
+    typeof asset.sourceSha === 'string' && /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/.test(asset.sourceSha) &&
+    asset.mimeType === 'image/png' && asset.origin === 'FIRST_PARTY_TEMPLATE' &&
+    ['AI_ASSISTED','HUMAN_AUTHORED'].includes(asset.creationMethod) && asset.thirdPartyAssets === false &&
+    exact(asset.renderer, ['id','version']) && allowed(asset.renderer.id,120) && allowed(asset.renderer.version,120);
+}
 
 export function homeIsoDay(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw Error('HOME_DATE_INVALID');
@@ -63,7 +94,9 @@ export function homeRightsAdmitted(story, reviews = HOME_PUBLIC_DISPLAY_REVIEWS)
       review?.decision === 'APPROVED' &&
       review.storyId === story.id &&
       review.kind === key &&
-      review.allowedUse === HOME_RIGHTS_USE_CASES[key] &&
+      review.allowedUse === (key === 'graphic' && story.graphic.kind === 'rendered-png'
+        ? 'FIRST_PARTY_RENDERED_GRAPHIC' : HOME_RIGHTS_USE_CASES[key]) &&
+      (key !== 'graphic' || story.graphic.kind !== 'rendered-png' || allowed(review.graphicGrantId, 200)) &&
       review.evidenceRef === rights.evidenceRef &&
       review.reviewedAt === rights.reviewedAt &&
       review.contentSnapshot === snapshot
@@ -83,8 +116,9 @@ export function normalizeHomeStory(story, asOf) {
   if (homeIsoDay(source.date) > homeIsoDay(asOf)) throw Error('HOME_SOURCE_FUTURE');
   const url = verifiedSourceUrl(source.url);
   if (source.label !== labelDay(source.date) ||
+      (graphic?.kind === 'rendered-png' ? !validRenderedGraphic(graphic, id) :
       !exact(graphic,['kind','caption',...(graphic?.kind === 'network' ? ['center','labels'] :
-        graphic?.kind === 'flow' ? ['labels'] : graphic?.kind === 'status' ? ['rows'] : [])]) ||
+        graphic?.kind === 'flow' ? ['labels'] : graphic?.kind === 'status' ? ['rows'] : [])])) ||
       !allowed(graphic.caption,100)) throw Error('HOME_GRAPHIC_INVALID');
   if (graphic.kind === 'network') {
     if (!allowed(graphic.center,56) || !validList(graphic.labels)) throw Error('HOME_GRAPHIC_INVALID');
@@ -94,15 +128,15 @@ export function normalizeHomeStory(story, asOf) {
     if (!Array.isArray(graphic.rows) || graphic.rows.length < 2 || graphic.rows.length > 4 ||
         !graphic.rows.every(row => exact(row,['label','outcome']) && allowed(row.label,56) && allowed(row.outcome,56)) ||
         new Set(graphic.rows.map(row=>row.label)).size !== graphic.rows.length) throw Error('HOME_GRAPHIC_INVALID');
-  } else throw Error('HOME_GRAPHIC_INVALID');
+  } else if (graphic.kind !== 'rendered-png') throw Error('HOME_GRAPHIC_INVALID');
   if (!exact(evidence,['news','graphic','rights','freshness','priceData']) ||
       !exact(evidence.news,['sourceKind','observedAt','eventAt']) ||
       evidence.news.sourceKind !== 'OFFICIAL_LINK_METADATA' ||
       homeIsoDay(evidence.news.observedAt) > homeIsoDay(asOf) ||
       evidence.news.eventAt !== null ||
       !exact(evidence.graphic,['assetId','mediaType']) ||
-      evidence.graphic.assetId !== `home-${id}-vector-v1` ||
-      evidence.graphic.mediaType !== 'STRUCTURED_VECTOR' ||
+      evidence.graphic.assetId !== (graphic.kind === 'rendered-png' ? graphic.asset.assetId : `home-${id}-vector-v1`) ||
+      evidence.graphic.mediaType !== (graphic.kind === 'rendered-png' ? 'image/png' : 'STRUCTURED_VECTOR') ||
       !exact(evidence.rights,['story','source','graphic']) ||
       !exact(evidence.freshness,['maxAgeDays']) ||
       !Number.isInteger(evidence.freshness.maxAgeDays) ||

@@ -653,7 +653,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             <p className="text-sm leading-relaxed text-slate-300">Component Blueprints beschreiben Datenverträge, geplante Pipelines, Formeln, Gewichtungen, Risiko-Gates und UI-Konzepte. Keine produktiven Daten, Providerrechte, validierten Scores oder Handelsfunktionen. CAP-BP-001 Market Integrity Gate und CAP-BP-002 Data Quality Scorer sind privat gesicherte Konzeptdokumente. Die Einmalkauf-Produkte sind als 50,00 € netto zuzüglich anfallender Steuer in Stripe vorbereitet; der Checkout bleibt bis zur vollständigen Auslieferungsprüfung gesperrt.</p>
             <p className="text-xs text-amber-200">CONCEPT / DESIGNED · DATA EVIDENCE NOT_PROVEN · Kein Checkout freigeschaltet</p>
             <div className="flex flex-wrap gap-3">
-              <button type="button" onClick={() => onNavigate?.('/architecture-hub')} className="rounded-lg border border-cyan-400/40 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-400/10">50 Komponenten &amp; Architektur erkunden</button>
               <button type="button" onClick={() => onNavigate?.('/marketscreener/dokumentation')} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/5">Öffentliche Blueprint-Vorschau</button>
             </div>
           </section>
