@@ -29,6 +29,30 @@ test('rejects synthetic, public and malformed trust-boundary payloads', () => {
   assert.equal(readDashboardSnapshot({ ...base, ga4: { ...base.ga4, realtimeEvents: {} } }), null);
   assert.ok(readDashboardSnapshot(base));
 });
+test('TypeScript evidence requires blocked repo decision and exact immutable main provenance', () => {
+  const ts = {
+    status: 'VERIFIED_PROVIDER_READ', state: 'BLOCKED', classification: 'BINARY_AFFECTED',
+    dependency: 'typescript', currentVersion: '6.0.3', candidateVersion: '7.0.2',
+    evaluatedAt: '2026-11-19T06:10:46.574Z', reviewOnOrAfter: '2026-12-03',
+    reasonCode: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY', binarySha256: 'sha256:' + 'f'.repeat(64),
+    evidenceScope: 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION',
+    evidenceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/' + sha +
+      '/docs/security/evidence/dependency-decisions/typescript-7.0.2.json',
+  };
+  assert.ok(readDashboardSnapshot({ ...base, github: { ...base.github, typescript: ts } }));
+  for (const change of [
+    { state: 'APPROVED' }, { classification: 'NOT_AFFECTED' }, { evidenceUrl: 'https://evil.example/decision' },
+    { evidenceUrl: ts.evidenceUrl.replace(sha, 'b'.repeat(40)) }, { binarySha256: 'oops' },
+    { currentVersion: ['6.0.3'] }, { reviewOnOrAfter: '2026-02-31' },
+  ]) {
+    assert.equal(readDashboardSnapshot({ ...base, github: { ...base.github, typescript: { ...ts, ...change } } }), null);
+  }
+  assert.ok(readDashboardSnapshot({ ...base, github: { ...base.github,
+    typescript: { status: 'NOT_PROVEN', reason: 'TS7_EVIDENCE_UNAVAILABLE' } } }));
+  assert.equal(readDashboardSnapshot({ ...base, github: { ...base.github,
+    typescript: { status: 'NOT_PROVEN', reason: 'secret-provider-error' } } }), null);
+});
+
 test('agent filters use anchored PR labels without inventing runtime statuses', () => {
   const s = readDashboardSnapshot(base)!;
   assert.deepEqual(AGENT_ROLES, ['TRUST','SECURITY','PLATFORM','PRODUCT','MARKET','GROWTH']);

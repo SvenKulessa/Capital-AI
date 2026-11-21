@@ -48,9 +48,13 @@ checkpoint, API caller input or repository configuration. No signing endpoint
 or key provisioning is included. Do not co-locate the separate reviewer
 signers with an untrusted agent process.
 
-The verifier refuses missing, stale, duplicated, failed or ambiguous
-readbacks and re-checks main/head after the CI readback to catch mid-review
-races. New verified rows are written only to `authenticated_outcomes`; any
+The verifier refuses missing, stale, failed or ambiguous readbacks and
+re-checks main/head and PR eligibility after the CI readback. A repeated
+required Actions check is accepted only when each run has distinct job and
+workflow-run IDs and a successful, canonical workflow receipt on the exact
+head. The same verifier is used by the existing reviewed-PR worker. Real
+#878 and #876 runs demonstrated the repeated Domain Governance case.
+A stale, unverified or unsuccessful run still blocks learning. New verified rows are written only to `authenticated_outcomes`; any
 older `outcomes` table remains untouched and untrusted, and its counts never
 promote a candidate. This is a fail-closed, non-destructive schema separation.
 It cannot initiate an HTTP write, merge, deployment or model

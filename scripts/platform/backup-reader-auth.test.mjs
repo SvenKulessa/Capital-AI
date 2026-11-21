@@ -51,7 +51,10 @@ test('backup reader transport, TLS and credential fail-closed checks', () => {
     { CAPITAL_BACKUP_AGE_RECIPIENT: '' }, { CAPITAL_BACKUP_AGE_RECIPIENT: 'invalid' } ];
   try {
     fs.symlinkSync(ca, tmp + '/ca-link'); fs.symlinkSync(pass, tmp + '/pass-link');
-    fs.writeFileSync(tmp + '/loose', 'SYNTHETIC_ONLY', { mode: 0o644 });
+    const loose = tmp + '/loose';
+    fs.writeFileSync(loose, 'SYNTHETIC_ONLY', { mode: 0o600 });
+    // Set the deliberately loose test permissions independently of the runner umask.
+    fs.chmodSync(loose, 0o644);
     for (const pair of valid) {
       for (const name of fs.readdirSync(out)) fs.unlinkSync(path.join(out, name));
       const count = calls(), result = run(pair);
