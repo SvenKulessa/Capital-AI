@@ -73,6 +73,8 @@ COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
 COPY public/branding/universe ./public/branding/universe
+# MediaKit v5 first-party Learning Universe vectors (hash-bound in registry).
+COPY public/branding/learning-universe ./public/branding/learning-universe
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
