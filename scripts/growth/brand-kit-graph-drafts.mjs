@@ -235,20 +235,56 @@ export async function renderBrandPng(draft) {
   }finally{image.free();}}finally{r.free();}
 }
 
+/** Bind the *rendered PNG bytes* to the canonical social package, never the SVG digest. */
+export async function buildBrandedPngDraft(options={}) {
+  const draft=buildBrandedGrowthDraft(options);
+  const png=await renderBrandPng(draft);
+  const original=draft.socialPackage.assets.find(a=>a.kind==='IMAGE');
+  const textAsset=draft.socialPackage.assets.find(a=>a.kind==='TEXT');
+  if(!original?.originalGraphic||!textAsset||draft.socialPackage.assets.length!==2)
+    throw Error('BRAND_RENDER_SOURCE_MANIFEST_INVALID');
+  const assetId=draft.contentId+'-universe-3x3-png';
+  const pngAsset={
+    ...original,assetId,mimeType:'image/png',sha256:png.sha256,
+    originalGraphic:{
+      ...original.originalGraphic,
+      assetId,mimeType:'image/png',sha256:png.sha256,
+      contentDigest:sha(JSON.stringify({
+        svgSha256:draft.image.sha256,pngSha256:png.sha256,
+        templateId:draft.template.id,templateVersion:draft.template.version,
+      })),
+      renderer:{id:'CAPITAL_AI_BRAND_CONTEXT_RESVG',version:'1.0.0'},
+    },
+  };
+  const campaign=draft.contentPlan.campaign;
+  const socialPackage=buildDraftContentSocialPackage({
+    campaign,contentId:draft.contentId,assets:[textAsset,pngAsset],
+  });
+  const contentPlan=planContentCampaign(campaign,{originalGraphics:[pngAsset.originalGraphic]});
+  if(socialPackage.approvals.length||socialPackage.deliveries.length
+    ||contentPlan.publication.publicPublishAllowed
+    ||contentPlan.graphicLicenses?.some(x=>x.graphicUseAllowed||x.publicationAllowed))
+    throw Error('BRAND_PNG_PUBLICATION_AUTHORITY_VIOLATION');
+  return {...draft,contentPlan,socialPackage,png,
+    image:{...draft.image,pngSha256:png.sha256,pngAssetId:assetId},
+    rights:'REVIEW_REQUIRED',publicationState:'DRAFT_ONLY',publicPublishAllowed:false};
+}
+
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
   const channel=process.argv[2],output=process.argv[3];
-  const draft=buildBrandedGrowthDraft({channel});
-  if(!output)process.stdout.write(JSON.stringify({contractVersion:draft.contractVersion,
-    channel,contentId:draft.contentId,svgSha256:draft.image.sha256,
-    publicationState:draft.publicationState,rights:draft.rights},null,2)+'\n');
-  else {
+  if(!output) {
+    const draft=buildBrandedGrowthDraft({channel});
+    process.stdout.write(JSON.stringify({contractVersion:draft.contractVersion,
+      channel,contentId:draft.contentId,svgSha256:draft.image.sha256,
+      publicationState:draft.publicationState,rights:draft.rights},null,2)+'\n');
+  } else {
+    const draft=await buildBrandedPngDraft({channel});
     const directory=resolve(output),name=channel.toLowerCase()+'-'+draft.contentId.toLowerCase();
     mkdirSync(directory,{recursive:true,mode:0o700});
-    const png=await renderBrandPng(draft);
     writeFileSync(join(directory,name+'.svg'),draft.image.svg,{flag:'wx'});
-    writeFileSync(join(directory,name+'.png'),png.bytes,{flag:'wx'});
+    writeFileSync(join(directory,name+'.png'),draft.png.bytes,{flag:'wx'});
     writeFileSync(join(directory,name+'.json'),JSON.stringify({contentId:draft.contentId,channel,
-      svgSha256:draft.image.sha256,pngSha256:png.sha256,
+      svgSha256:draft.image.sha256,pngSha256:draft.png.sha256,
       socialPackage:draft.socialPackage,contentPlan:draft.contentPlan,
       rights:draft.rights,publicationState:'DRAFT_ONLY',publicPublishAllowed:false},null,2)+'\n',{flag:'wx'});
     process.stdout.write('DRAFT_EXPORTED='+name+'\nPUBLISH=DISABLED\n');
