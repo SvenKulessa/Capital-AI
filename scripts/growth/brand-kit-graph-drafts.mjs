@@ -323,7 +323,10 @@ export function buildLicensedContextRound(input,trustedScope){
       rejected.push({id:'invalid',reason:'LICENSED_SOURCE_TENANT_OR_ID_INVALID'});continue;
     }
     seen.add(id);
-    const exactSha=sha(Buffer.from(typeof row.sourceText==='string'?row.sourceText:''));
+    if(typeof row.sourceText!=='string'||row.sourceText.length<35||row.sourceText.length>6000){
+      rejected.push({id,reason:'LICENSED_SOURCE_TEXT_UNSAFE'});continue;
+    }
+    const exactSha=sha(Buffer.from(row.sourceText,'utf8'));
     if(!digest.test(row.sourceSha256??'')||row.sourceSha256!==exactSha){
       rejected.push({id,reason:'LICENSED_SOURCE_SHA_MISMATCH'});continue;
     }
@@ -348,11 +351,15 @@ export function buildLicensedContextRound(input,trustedScope){
     accepted.push(record);grants.push(grant);
   }
   const allowedFeedback=feedback.filter(f=>{
-    if(f?.kind!=='user_feedback'||f?.anonymized!==true||f?.consent!==true)return false;
+    if(f?.kind!=='user_feedback'||f?.anonymized!==true||f?.consent!==true
+      ||typeof f.summary!=='string'||f.summary.length>400
+      ||Object.keys(f).length>12)return false;
+    const eventString=JSON.stringify(f);
+    if(eventString.length>1200)return false;
     // Only a separately trusted, tenant-bound consent/anonymization receipt admits feedback.
     const receipts=(trustedScope.consentLedger??[]).filter(x=>
       x?.tenantId===tenantId&&x.eventId===f.eventId
-      &&x.eventSha256===sha(JSON.stringify(f))
+      &&x.eventSha256===sha(eventString)
       &&x.consentGranted===true&&x.anonymizationVerified===true
       &&typeof x.evidenceRef==='string'&&/^[A-Za-z0-9_.:/#-]{6,220}$/.test(x.evidenceRef));
     return receipts.length===1;
