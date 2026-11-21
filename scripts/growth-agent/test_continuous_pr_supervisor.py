@@ -125,5 +125,8 @@ class SupervisorTests(unittest.TestCase):
                     pass
 
 
+from test_trusted_ci_round_adapter import TrustedCIReadbackTests  # included by the existing offline candidate suite
+
+
 if __name__ == "__main__":
     unittest.main()
