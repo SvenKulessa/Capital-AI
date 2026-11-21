@@ -13,8 +13,12 @@ also bind to their canonical workflow ID, path, job ID, and PR-triggered
 successful run for that same head. The worker requires Actions read access
 for this readback. These identities were observed
 on [PR #878](https://github.com/SvenKulessa/Capital-AI/pull/878).
-Same-name runs with ambiguous provenance fail closed. Evidence stores the
-identifiers from the same check response and recognized outcomes only.
+Same-name runs with ambiguous provenance fail closed. GitHub can produce
+distinct runs of the same canonical workflow for a single head, as observed
+on #878. Both the reviewed-PR worker and the learning verifier require every
+such run to be independently bound, complete and successful. A pending,
+failed or unverifiable repeat cannot inherit an earlier success. Evidence
+stores identifiers from the same check response and recognized outcomes only.
 
 The worker reads the PR and Main again after it reads checks. A changed head,
 base, Main, PR identity or eligibility stops the pending mutation. A HOLD
