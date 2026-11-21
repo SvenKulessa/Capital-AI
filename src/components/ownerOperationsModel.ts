@@ -52,6 +52,11 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 const safeDate = (value: unknown): value is string =>
   typeof value === 'string' && Number.isFinite(Date.parse(value));
+const isoCalendarDate = (value: unknown): boolean => {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const time = Date.parse(value + 'T00:00:00Z');
+  return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value;
+};
 const archiveFile = (value: unknown): boolean =>
   isRecord(value) && typeof value.url === 'string' &&
   /^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/view\?usp=drivesdk$/.test(value.url) &&
@@ -88,7 +93,7 @@ export function readDashboardSnapshot(value: unknown): DashboardReadback | null 
           t.dependency !== 'typescript' || t.candidateVersion !== '7.0.2' ||
           typeof t.currentVersion !== 'string' || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(t.currentVersion) ||
           typeof t.evaluatedAt !== 'string' || !safeDate(t.evaluatedAt) ||
-          typeof t.reviewOnOrAfter !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(t.reviewOnOrAfter) ||
+          !isoCalendarDate(t.reviewOnOrAfter) ||
           t.reasonCode !== 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY' ||
           typeof t.binarySha256 !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(t.binarySha256) ||
           t.evidenceScope !== 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION' ||

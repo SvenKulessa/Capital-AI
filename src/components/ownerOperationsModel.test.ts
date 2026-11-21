@@ -43,6 +43,7 @@ test('TypeScript evidence requires blocked repo decision and exact immutable mai
   for (const change of [
     { state: 'APPROVED' }, { classification: 'NOT_AFFECTED' }, { evidenceUrl: 'https://evil.example/decision' },
     { evidenceUrl: ts.evidenceUrl.replace(sha, 'b'.repeat(40)) }, { binarySha256: 'oops' },
+    { currentVersion: ['6.0.3'] }, { reviewOnOrAfter: '2026-02-31' },
   ]) {
     assert.equal(readDashboardSnapshot({ ...base, github: { ...base.github, typescript: { ...ts, ...change } } }), null);
   }

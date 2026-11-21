@@ -141,6 +141,9 @@ test('TypeScript evidence fails closed on missing, manipulated or cross-path pro
   const cases = [
     () => new Response('missing', { status: 404 }),
     () => ts7Fixture({ ...ts7Evidence, decision: { ...ts7Evidence.decision, state: 'APPROVED' } }),
+    () => ts7Fixture({ ...ts7Evidence, dependency: { ...ts7Evidence.dependency, currentVersion: ['6.0.3'] } }),
+    () => ts7Fixture({ ...ts7Evidence, fingerprint: { nativeArtifact: { binarySha256: [ts7Evidence.fingerprint.nativeArtifact.binarySha256] } } }),
+    () => ts7Fixture({ ...ts7Evidence, decision: { ...ts7Evidence.decision, reviewOnOrAfter: '2026-02-31' } }),
     () => ts7Fixture({ ...ts7Evidence, fingerprint: { nativeArtifact: { binarySha256: 'not-a-digest' } } }),
     () => ({ ...ts7Fixture(), path: 'docs/security/evidence/foreign.json' }),
     () => ({ ...ts7Fixture(), encoding: 'utf-8' }),

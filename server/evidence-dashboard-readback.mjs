@@ -55,7 +55,7 @@ async function readJson(fetchImpl, address, token, signal) {
 // decision. The historical scan is NOT a fresh binary scan or an upgrade approval.
 function projectTs7Decision(file, mainSha) {
   if (file?.type !== 'file' || file?.path !== TS7_EVIDENCE || file?.encoding !== 'base64' ||
-      !SHA.test(file?.sha || '') || typeof file?.content !== 'string' || file.content.length > 60_000)
+      typeof file?.sha !== 'string' || !SHA.test(file.sha) || typeof file?.content !== 'string' || file.content.length > 60_000)
     throw Error('TS7_INVALID_SOURCE');
   const encoded = file.content.replace(/\s/g, '');
   if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded) ||
@@ -63,15 +63,16 @@ function projectTs7Decision(file, mainSha) {
   const record = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
   const dep = record?.dependency, decision = record?.decision, native = record?.fingerprint?.nativeArtifact;
   const semver = /^[0-9]+\.[0-9]+\.[0-9]+$/;
+  const reviewDate = decision?.reviewOnOrAfter;
+  const reviewTime = typeof reviewDate === 'string' ? Date.parse(reviewDate + 'T00:00:00Z') : NaN;
   if (record?.schema !== 'CAPITAL_AI_SH_SUPPLY_CHAIN_DEPENDENCY_RECOVERY@1' ||
       dep?.name !== 'typescript' || dep?.candidateVersion !== '7.0.2' ||
-      !semver.test(dep?.currentVersion || '') || decision?.state !== 'BLOCKED' ||
+      typeof dep?.currentVersion !== 'string' || !semver.test(dep.currentVersion) || decision?.state !== 'BLOCKED' ||
       decision?.classification !== 'BINARY_AFFECTED' ||
       decision?.reasonCode !== 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY' ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(decision?.reviewOnOrAfter || '') ||
-      !Number.isFinite(Date.parse(decision?.reviewOnOrAfter + 'T00:00:00Z')) ||
+      !Number.isFinite(reviewTime) || new Date(reviewTime).toISOString().slice(0, 10) !== reviewDate ||
       typeof decision?.evaluatedAt !== 'string' || !Number.isFinite(Date.parse(decision.evaluatedAt)) ||
-      !/^sha256:[a-f0-9]{64}$/.test(native?.binarySha256 || ''))
+      typeof native?.binarySha256 !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(native.binarySha256))
     throw Error('TS7_INVALID_DECISION');
   return {
     status: 'VERIFIED_PROVIDER_READ', state: 'BLOCKED', classification: 'BINARY_AFFECTED',
