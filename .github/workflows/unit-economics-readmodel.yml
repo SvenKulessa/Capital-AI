@@ -3,6 +3,12 @@ name: Unit Economics Tests
 on:
   pull_request:
     paths:
+      - 'server/loop-agent-product.mjs'
+      - 'server/loop-agent-product.test.mjs'
+      - 'scripts/growth/loop-agent-productization-acceptance.mjs'
+      - 'scripts/growth/loop-agent-productization-acceptance.test.mjs'
+      - 'docs/growth/LOOP-AGENT-STRIPE-PRODUCTIZATION-20261121.md'
+      - 'docs/growth/evidence/stripe-loop-catalog-*.json'
       - 'server/unit-economics-readmodel.mjs'
       - 'server/unit-economics-readmodel.test.mjs'
       - 'server/unit-economics-reconciliation.mjs'
@@ -38,6 +44,11 @@ jobs:
         run: |
           set -euo pipefail
           node --version
+          node --check server/loop-agent-product.mjs
+          node --check server/loop-agent-product.test.mjs
+          node --check scripts/growth/loop-agent-productization-acceptance.mjs
+          node --check scripts/growth/loop-agent-productization-acceptance.test.mjs
+          node --test server/loop-agent-product.test.mjs scripts/growth/loop-agent-productization-acceptance.test.mjs
           node --check server/unit-economics-readmodel.mjs
           node --check server/unit-economics-readmodel.test.mjs
           node --check server/unit-economics-reconciliation.mjs
