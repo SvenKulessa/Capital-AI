@@ -64,3 +64,10 @@ Severity × Likelihood von 1–5; Score 1–4 GRÜN, 5–9 GELB, 10–15 ORANGE,
 5. Sales-/Publishing-Zuständigkeiten einschließlich Art. 50 AI Act im konkreten jeweiligen Inhalt; nicht aus generischem KI-Etikett ableiten.
 
 **Vertriebsreife = HOLD; Vertragsmuster = PREPARED; Rechtssicherheit = NOT_PROVEN.** Änderungen nur auf PR-Branch; weder Live-Preis, Kundenlizenz, Checkout noch Posting erzeugt.
+
+## Nachtrag 21.11.2026 – beworbene Rabattkonditionen und Preisreferenz
+Vom Owner interne Basiszielpreise EUR 99 Publisher / EUR 290 Studio sowie 25 % bis 31.12.2026 und zusätzliche 5 **Prozentpunkte** ausschließlich 27.11.–01.12.2026 (30 % insgesamt) festgelegt. Die geplanten Netto-Aktionspreise sind EUR 74,25 / EUR 217,50 (Basisaktion) und EUR 69,30 / EUR 203,00 (BF/Cyber-Dienstag). Reseller-Einkauf 70 % vom nicht rabattierten B2B-Basiszielpreis; Preisfreiheit gegenüber Endkunden bleibt erhalten.
+
+[§ 11 PAngV](https://www.gesetze-im-internet.de/pangv_2022/__11.html) verpflichtet bei Warenpreisermäßigungen **gegenüber Verbrauchern**, soweit anwendbar, zur Angabe des niedrigsten Gesamtpreises der 30 Tage vor der Reduzierung. Die konkrete Einordnung digitaler Nutzungsrechte, digitaler Grafikdownloads und individuell erbrachter Designdienstleistungen ist gesondert juristisch zu prüfen. Auch soweit § 11 im reinen B2B-Verhältnis oder auf bestimmte digitale Leistungen nicht unmittelbar greift, verbietet [§ 5 UWG](https://www.gesetze-im-internet.de/uwg_2004/__5.html) irreführende Preisbehauptungen. Eine rein intern beschlossene Basispreisidee ist **keine verifizierte frühere Verkaufspreishistorie**.
+
+Für die entworfenen Poster ist deshalb **`PUBLIC_CAMPAIGN=BLOCKED`**, bis eine zulässige, wahre Bezugsgröße nachgewiesen, die korrekte Steuer-/Gesamtpreisangabe geklärt und die Kommunikationsfreigabe erfolgt ist. Die internen Werbemuster nennen ihre Bedingtheit und sind ohne den Prüfprozess nicht als Social-Posts oder Anzeigen zu verwenden.
