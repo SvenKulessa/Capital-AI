@@ -158,7 +158,7 @@ export function createLoopSubscriptionEventAdapter(deps) {
 }
 
 export async function authorizeLoopAction({ entitlement, principal, repositoryId, capability, runId, idempotencyKey,
-  authority, nowMs, atomicAdmission }) {
+  authority, nowMs, atomicAdmission, readPersistedEntitlement }) {
   if (!object(entitlement) || !object(principal) || !object(authority) || !positive(nowMs) ||
       !UUID.test(principal.tenantId) || !UUID.test(principal.subjectId) ||
       entitlement.contract !== 'LOOP_AGENT_ENTITLEMENT@1' ||
@@ -175,7 +175,17 @@ export async function authorizeLoopAction({ entitlement, principal, repositoryId
       authority.repositoryId !== repositoryId || authority.tenantId !== principal.tenantId ||
       authority.subjectId !== principal.subjectId ||
       !['repositoryPolicy','capabilityGrant','trust','quality','providerEvidence','membership'].every(k=>authority[k]===true) ||
-      typeof atomicAdmission !== 'function') fail();
+      typeof atomicAdmission !== 'function' || typeof readPersistedEntitlement !== 'function') fail();
+  // Never treat a digest supplied by the caller as a signature or as server-side
+  // persistence. Re-read the entitlement through the existing trusted store.
+  const persisted = await readPersistedEntitlement({
+    tenantId:principal.tenantId, subjectId:principal.subjectId,
+    entitlementId:entitlement.entitlementId,
+  });
+  if (!object(persisted) || persisted.integritySha256 !== entitlement.integritySha256 ||
+      persisted.entitlementId !== entitlement.entitlementId ||
+      loopDigest(Object.fromEntries(Object.entries(persisted).filter(([k])=>k!=='integritySha256'))) !== persisted.integritySha256 ||
+      loopDigest(persisted) !== loopDigest(entitlement)) fail();
   // Existing SQL/RPC ledger must atomically enforce quota, run idempotency and concurrency.
   const admitted = await atomicAdmission({ tenantId: principal.tenantId, subjectId: principal.subjectId,
     entitlementId: entitlement.entitlementId, repositoryId, capability,
