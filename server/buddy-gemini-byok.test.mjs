@@ -55,6 +55,10 @@ test('explicit consent required and bounded synthetic provider response',async()
   assert.equal(result.response.body.answer,'Synthetische Antwort');
   assert.equal(calls,1);
 });
+test('credential revocation stays possible when BYOK is disabled',async()=>{
+  const r=await invoke({method:'DELETE',env:{...goodEnv,BUDDY_GEMINI_BYOK_ENABLED:'false'}});
+  assert.equal(r.response.status,200);assert.match(r.headers['set-cookie'],/Max-Age=0/);
+});
 test('delete clears encrypted client cookie',async()=>{
   const r=await invoke({method:'DELETE'});
   assert.equal(r.response.status,200);
