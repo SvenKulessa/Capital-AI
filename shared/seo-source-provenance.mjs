@@ -11,7 +11,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'src/data/vocabularyOffer.ts': Object.freeze({ sourceBlobSha: 'ef2ef444280b56dcf9fa5182e09f3ac8d03fbf25', contentSha256: 'adc8faec932b2dcc29ff2fb4c836a1044c474d83dd405a025efae386d894b274' }),
 
   'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '571f55e1bedebd631d0d74015c9aef7e665b5661', contentSha256: 'bbfc951ce10f2d22eb3aec8d0bda6a5d65a61948c4f13ea467be2775196e7f33' }),
-  'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: 'fd85f3de2efecafa34c07f9cf5e132b565e03dd9', contentSha256: '2d501a6635fa025d96806a81235ae92368d86faff8b4a01083e91f528d713690' }),
+  'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: '170aad95b29221e9c7e37687bcc9ac0ecb9f9130', contentSha256: '5aa1e9ba51032ff43f9e849a6a4e96d01515f64f95d5ed5d942191654c97d592' }),
 
   'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: 'f5d0b669403b45157538b48a4eca432ce3f13a26', contentSha256: '13a1c4cc8a3aa3b699bf0f7bb7044e2e1081881c9a038855ed5753341fa0fad2' }),
   'index.html': Object.freeze({
@@ -67,7 +67,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '0e809eaf86887dbc990b70fc18582bd73b6db821b58594d40aa8b9f7a565027b',
-  'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '6826080ed80d9d288c3244cecb654afbe808e3bfe7df1b802a08952ff5840b1c',
+  'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '8eae7215ac4d99bb718c794b63f0b4058f3128f87048d00674e7a91122f0396d',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
   'index.html|src/features/home/HomePage.tsx': '2ce3527312ad2a4e9b9b746040722f78b4a90c54fa7e77c850392782b24724a1',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'dc081c50a4656ab2f699614401138032475a2fc3cc53bda68469f3bac09c1536',
