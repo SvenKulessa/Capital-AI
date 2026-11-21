@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "CAPITAL_AI_SEO_TERMINOLOGY@1",
+  "authority": "AGENTS.md",
+  "mode": "NON_AUTHORIZING_DISCOVERY_TAXONOMY",
+  "discovery": {
+    "searchableForAll": true,
+    "searchFields": ["term", "aliases", "category", "domain", "description", "keywords"],
+    "rankBySkillLevel": false,
+    "filterBySkillLevel": false,
+    "accessBySkillLevel": false,
+    "subscriptionAssignment": "LEVEL_AND_CATEGORY",
+    "subscriptionControlsDiscovery": false
+  },
+  "levels": {
+    "L0": "Foundation: public product and architecture vocabulary",
+    "L1": "Practitioner: implementation and operational vocabulary",
+    "L2": "Professional: architecture, evidence and integration vocabulary",
+    "L3": "Enterprise: trust-boundary, governance and control-plane vocabulary"
+  },
+  "categories": [
+    "enterprise-technology",
+    "control-plane",
+    "trust-infrastructure",
+    "evidence",
+    "market-intelligence",
+    "platform-runtime",
+    "product-experience",
+    "growth-seo"
+  ],
+  "terms": [
+    {"term":"CAPITAL-AI Enterprise Technology","aliases":["Enterprise Technology"],"level":"L0","category":"enterprise-technology","domain":"GROWTH","description":"Umbrella concept for the CAPITAL-AI enterprise-oriented technology system.","keywords":["capital ai enterprise technology","enterprise ai architecture"],"subscriptions":["PUBLIC","DEVELOPER","STUDIO","BUSINESS","ENTERPRISE"]},
+    {"term":"Control Plane","aliases":["CAPITAL-AI Control Plane"],"level":"L2","category":"control-plane","domain":"PLATFORM","description":"Coordination and decision architecture for tenant context, policy, entitlements, state, limits and protected effects.","keywords":["ai control plane","enterprise control plane"],"subscriptions":["STUDIO","BUSINESS","ENTERPRISE"]},
+    {"term":"Trust Infrastructure","aliases":["CAPITAL-AI Trust Infrastructure"],"level":"L2","category":"trust-infrastructure","domain":"TRUST","description":"Cross-cutting security, provenance, rights, evidence and fail-closed capabilities.","keywords":["ai trust infrastructure","enterprise trust infrastructure"],"subscriptions":["STUDIO","BUSINESS","ENTERPRISE"]},
+    {"term":"Evidence-First","aliases":["evidence-bound architecture"],"level":"L1","category":"evidence","domain":"TRUST","description":"Principle that consequential claims and state transitions remain bound to reproducible evidence for their exact scope.","keywords":["evidence first ai","evidence bound architecture"],"subscriptions":["DEVELOPER","STUDIO","BUSINESS","ENTERPRISE"]},
+    {"term":"Trust Boundary","aliases":["security boundary"],"level":"L3","category":"trust-infrastructure","domain":"TRUST","description":"Boundary where identity, tenant, secret, rights, privilege or production effect changes security context.","keywords":["ai trust boundary","security boundary architecture"],"subscriptions":["BUSINESS","ENTERPRISE"]},
+    {"term":"RuntimeReadback","aliases":["runtime readback"],"level":"L2","category":"evidence","domain":"PLATFORM","description":"Post-action observation verifying runtime identity or the externally visible effect of an executed change.","keywords":["runtime evidence","deployment readback"],"subscriptions":["STUDIO","BUSINESS","ENTERPRISE"]},
+    {"term":"Canonical Market Data","aliases":[],"level":"L1","category":"market-intelligence","domain":"MARKET","description":"Normalized market data whose provider and evidence context can be carried with the value.","keywords":["canonical market data","market data provenance"],"subscriptions":["DEVELOPER","STUDIO","BUSINESS","ENTERPRISE"]},
+    {"term":"Fail-Closed","aliases":["fail closed"],"level":"L2","category":"trust-infrastructure","domain":"TRUST","description":"Protected effects remain denied or inactive when required authority, rights or evidence are unresolved.","keywords":["fail closed ai","fail closed security"],"subscriptions":["STUDIO","BUSINESS","ENTERPRISE"]}
+  ],
+  "guardrails": {
+    "levelIsKnowledgeDepthNotUserSkill": true,
+    "skillLevelMayNotHideTerms": true,
+    "subscriptionMayNotHideSearchResults": true,
+    "subscriptionAssignmentUsesTermLevelAndCategory": true,
+    "noComplianceOrProductionClaimFromTaxonomy": true
+  }
+}
