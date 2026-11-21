@@ -44,3 +44,24 @@ src/contracts/capBp001AdmissionReview.ts fügt ausschließlich eine maschinenles
 ## Rollback
 
 Revert des isolierten MARKET-Commits/PR: neue Inspector-Datei, Testdatei, analysisFoundation-Testimport und dieses Dokument. Keine produktiven Mutationen oder Provider-Entitlements betroffen.
+
+
+## 2026-11-21: Provider-neutral PIT candidate contracts (feature branch)
+
+New strict, versioned Zod schemas in `src/contracts/capBp001MarketDataContracts.ts`:
+`RawTickStreamContractSchema`, `ExchangeStatusContractSchema` and
+`IntegrityStatusContractSchema`. A read-only PIT pair inspector checks
+same instrument/venue/provider, ordered timestamps, decision-time availability,
+contiguous sequences, crossed books and exchange halts. Negative fixtures are
+in `src/contracts/__tests__/capBp001MarketDataContracts.test.ts`, imported
+by the existing analysisFoundation CI suite.
+
+**Boundary:** These are offline *candidate* schemas. They are intentionally
+NOT added to the live `analysisComponentRegistryValidator` contract resolver.
+Schema acceptance, supplied SHA-256-shaped digests and internally consistent
+PIT claims cannot establish independent feed authenticity, licensed rights,
+immutable storage, retention permissions or a write/readback/replay receipt.
+The canonical registry stays blocked/unavailable, and the production contract
+references remain unresolved until a separately verified runtime adapter
+and authenticated source/archive are available. No provider secrets, new
+resources, deployment, data ingestion or customer-facing capability.

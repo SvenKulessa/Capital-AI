@@ -25,7 +25,9 @@ class FakeHTTP:
         self.main = MAIN
         self.head = HEAD
         self.base = MAIN
-        self.status = "success"
+        self.title = "[CAPITAL-AI-PLATFORM] Example"
+        self.change_after_checks = {}
+        self.workflow_overrides = {}
         self.merged = False
         self.mergeable = True
         self.merge_state = "clean"
@@ -38,6 +40,14 @@ class FakeHTTP:
             {"id": 3, "name": "CodeQL", "status": "completed", "conclusion": "success"},
             {"id": 4, "name": "Supabase Preview", "status": "completed", "conclusion": "skipped"},
         ]
+        for check in self.checks:
+            check["head_sha"] = HEAD
+            check["details_url"] = (f"https://github.com/SvenKulessa/Capital-AI/actions/runs/"
+                                    f"{100 + check['id']}/job/{check['id']}")
+            if check["name"] == "CodeQL":
+                check["app"] = {"slug": "github-advanced-security", "id": 57789}
+            else:
+                check["app"] = {"slug": "github-actions", "id": 15368}
 
     def github(self, path, *, method="GET", body=None):
         self.calls.append((method, path))
@@ -48,7 +58,7 @@ class FakeHTTP:
             self.merged = True
             return {"merged": True, "sha": MERGE}
         if path == "/pulls/42":
-            return {"state": "open" if not self.merged else "closed",
+            return {"number": 42, "title": self.title, "state": "open" if not self.merged else "closed",
                     "merged": self.merged, "merge_commit_sha": MERGE if self.merged else None,
                     "draft": False, "mergeable": self.mergeable,
                     "mergeable_state": self.merge_state, "changed_files": 2,
@@ -57,7 +67,15 @@ class FakeHTTP:
                     "base": {"ref": "main", "sha": self.base}}
         if path == "/branches/main":
             return {"commit": {"sha": self.main}}
+        if path in ("/actions/runs/101", "/actions/runs/102", "/actions/runs/105"):
+            run_id = int(path.rsplit("/", 1)[-1])
+            workflow_id, file = ((370506106, "build-security") if run_id == 101 else (371617040, "domain-governance"))
+            return {"id": run_id, "workflow_id": workflow_id, "path": f".github/workflows/{file}.yml",
+                    "head_sha": HEAD, "event": "pull_request", "status": "completed",
+                    "conclusion": "success", **self.workflow_overrides}
         if path.startswith("/commits/") and path.endswith("/check-runs?per_page=100"):
+            for field, value in self.change_after_checks.items():
+                setattr(self, field, value)
             return {"total_count": len(self.checks),
                     "check_runs": self.checks}
         raise ValueError("unexpected path: " + path)
@@ -137,13 +155,14 @@ class ProviderAdapterTests(unittest.TestCase):
     def test_optional_skips_do_not_block_but_unknown_skip_does(self):
         c = FakeHTTP()
         self.assertTrue(self.adapter(c)._checks(HEAD)[1])
-        c.checks.append({"id": 5, "name": "Critical unknown", "status": "completed", "conclusion": "skipped"})
+        c.checks.append({"id": 5, "name": "Critical unknown", "head_sha": HEAD, "status": "completed", "conclusion": "skipped"})
         self.assertFalse(self.adapter(c)._checks(HEAD)[1])
 
     def test_duplicate_or_truncated_check_results_fail_closed(self):
         c = FakeHTTP()
         c.checks.append(c.checks[0].copy())
-        self.assertFalse(self.adapter(c)._checks(HEAD)[1])
+        with self.assertRaisesRegex(ValueError, "repeated GitHub check ID"):
+            self.adapter(c)._checks(HEAD)
         class Truncated(FakeHTTP):
             def github(self, path, *, method="GET", body=None):
                 result = super().github(path, method=method, body=body)
@@ -152,6 +171,58 @@ class ProviderAdapterTests(unittest.TestCase):
                 return result
         with self.assertRaises(ValueError):
             self.adapter(Truncated())._checks(HEAD)
+
+    def test_check_name_requires_expected_app_and_exact_head(self):
+        for case in ("wrong_source", "wrong_head", "missing_codeql", "wrong_codeql"):
+            with self.subTest(case=case):
+                client = FakeHTTP()
+                if case == "wrong_source":
+                    client.checks[0]["app"]["id"] = 1
+                if case == "wrong_head":
+                    client.checks[0]["head_sha"] = MAIN
+                if case == "missing_codeql":
+                    client.checks.pop(2)
+                if case == "wrong_codeql":
+                    client.checks[2]["app"]["id"] = 1
+                self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+
+    def test_repeat_required_workflow_needs_each_independent_run_to_be_green(self):
+        client = FakeHTTP()
+        duplicate = {**client.checks[1], "id": 5,
+                     "details_url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/105/job/5"}
+        client.checks.append(duplicate)
+        self.assertTrue(self.adapter(client)._checks(HEAD)[1])
+        for result in ("failure", "neutral", "skipped"):
+            with self.subTest(result=result):
+                duplicate["conclusion"] = result
+                self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+        duplicate.update(status="in_progress", conclusion=None)
+        self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+        duplicate.update(status="completed", conclusion="success")
+        duplicate["details_url"] = duplicate["details_url"].replace("/105/", "/102/")
+        self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+
+    def test_required_workflow_is_bound_to_job_head_and_workflow_identity(self):
+        for override in ({"workflow_id": 1}, {"path": ".github/workflows/other.yml"},
+                         {"head_sha": MAIN}, {"event": "push"}, {"id": 99}):
+            with self.subTest(override=override):
+                client = FakeHTTP()
+                client.workflow_overrides = override
+                self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+        client = FakeHTTP()
+        client.checks[0]["details_url"] = client.checks[0]["details_url"].removesuffix("/1") + "/9"
+        self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+
+    def test_provider_eligibility_change_during_ci_readback_prevents_put(self):
+        for update in ({"merge_state": "blocked"}, {"title": "[HOLD: PRIVATE] Example"},
+                       {"main": "d" * 40}, {"head": "d" * 40}):
+            with self.subTest(update=update):
+                client = FakeHTTP()
+                adapter = self.adapter(client)
+                evidence = adapter.evidence({})
+                client.change_after_checks = update
+                self.assertEqual(adapter.merge({"evidence": evidence}), {})
+                self.assertEqual(client.mutation_count, 0)
 
     def test_base_changed_between_evidence_and_merge_no_mutation(self):
         client = FakeHTTP()
@@ -202,10 +273,12 @@ class ProviderAdapterTests(unittest.TestCase):
 
     def test_traversal_and_unlisted_provider_paths_fail_closed(self):
         t = SafeHTTP(github_token="sample", render_token="sample")
-        for path in ("/pulls/42/../../admin", "/actions/runs/1",
+        for path in ("/pulls/42/../../admin", "/actions/runs/1/jobs", "/actions/runs/01",
                      "/pulls/42?allow=1", "/commits/not-a-sha/check-runs?per_page=100"):
             with self.subTest(path=path), self.assertRaises(ValueError):
                 t.github(path)
+        with self.assertRaises(ValueError):
+            t.github("/actions/runs/101", method="PUT")
         for path in ("/deploys/../secrets", "/deploys?limit=100"):
             with self.assertRaises(ValueError):
                 t.render(path)
