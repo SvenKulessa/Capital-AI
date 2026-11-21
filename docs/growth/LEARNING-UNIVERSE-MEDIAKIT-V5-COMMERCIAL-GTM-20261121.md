@@ -12,9 +12,9 @@ PR #885 (Merge `463c737c6210cbb6bc18470a90a5d8030b4d9fd1`) hat zehn lokale, SHA-
 | --- | --- | --- | --- | --- |
 | Publisher Pack | Fachblog, FinTech-Newsletter, Bildungsträger | 10 geprüfte SVGs + Alt-Texte + SHA-Manifest + Designhinweise | PUBLISH_END_PRODUCT, 1 Marke, keine Raw-Resales | einmalig EUR 129 netto |
 | Publisher Studio | FinTech-Marketingteam / Agentur für eigene Marke | Publisher Pack + 4 Editorial Layoutrezepte + 1 Anpassungsrunde laut Angebot | PUBLISH_END_PRODUCT, benannte Marke; Kundenarbeit nur mit benannter Zulassung | einmalig EUR 390 netto |
-| Authorized Reseller | Agentur / White-Label-Medienpartner | kontrolliertes Vertriebs- und Lizenzreceipt-System, verhandelte Endkundenrechte und Asset-SKUs | eingeschränkte sublicensierte Endproduktionen, rohe Dateien gesondert | Pilotverhandlung, Orientierung EUR 1.490 einmalige Einrichtung; laufende Vergütung nach Vertrag |
+| Authorized Reseller | Agentur / White-Label-Medienpartner | kontrolliertes Vertriebs- und Lizenzreceipt-System, verhandelte Endkundenrechte und Asset-SKUs | nur freigegebene kundenspezifische Publisher-Endprodukte; Rohdatei-Resale gesperrt | empfohlener 90-Tage-Einladungspilot ohne Onboardinggebühr; Einkauf je Endkundenlizenz 70 % des aktuellen eigenen B2B-Listenpreises; Reseller-Endkundenpreise frei |
 
-Alle Beträge dienen ausschließlich der Validierung. **Kein autorisierter Preis** und keine Aufnahme in den aktiven Stripe-Katalog ohne gesonderte Commerce-Entscheidung, Steuer-/Widerrufs-/Kundenrechtsprüfung und Server-Side-Entitlement-Vertrag. Der bestehende Artikel-Design-Studio-Katalog bleibt Preis-auf-Anfrage.
+Preisvorschlag konkretisiert in `docs/growth/2026-11-21_PRODUCT_CHATGPT_LEARNING_SALES_TERMS_v1.md`; zusätzliche DE/EU-Rechtsprüfung in `docs/legal/2026-11-21_PRODUCT_CHATGPT_LEARNING_LICENSE_LEGAL_MEMO_v1.md`. Die Preise EUR 129 und EUR 390 bleiben Vorschläge, keine Ownerfreigabe. Die alte EUR-1.490-Onboardingannahme ist ausdrücklich keine Pflichtgebühr des Pilotvertrags. Alle Beträge dienen ausschließlich der Validierung. **Kein autorisierter Preis** und keine Aufnahme in den aktiven Stripe-Katalog ohne gesonderte Commerce-Entscheidung, Steuer-/Widerrufs-/Kundenrechtsprüfung und Server-Side-Entitlement-Vertrag. Der bestehende Artikel-Design-Studio-Katalog bleibt Preis-auf-Anfrage.
 
 ## Zielkunden und Kaufmotive
 1. **FinTech-Redaktionen / Newsletter:** Visuals mit Herkunftsnachweis; Käuferrolle: Chefredaktion oder Marketing Owner. Einwand: KI-Rechte und Markenpassung.
@@ -22,7 +22,7 @@ Alle Beträge dienen ausschließlich der Validierung. **Kein autorisierter Preis
 3. **B2B-SaaS-Finanzteams:** Onboarding-Screens, Learning Hub, Release-Posts; Käuferrolle: Product Marketing / Design Lead. Einwand: Änderbarkeit und UI-Konsistenz.
 4. **Agenturen / Reseller (später):** einheitliche Kundenpakete mit revisionsfähigen Nutzungsrechten. Einwand: Unterlizenzierung, Mandantenabgrenzung und Margen.
 
-**Nicht Ziel des Launches:** allgemeine Stock-Plattform, ungeprüfte Endkunden-Downloads, exklusive AI-Art-Verkäufe oder automatisches X-/Instagram-Publishing.
+**Nicht Ziel des Launches:** allgemeine Stock-Plattform, ungeprüfte Endkunden-Downloads, exklusive AI-Art-Verkäufe oder automatisches X-/Instagram-Publishing. B2B-Email-Kaltakquise ohne geeignete Einwilligungsgrundlage unterlassen (UWG § 7); Resellerpreise dürfen nicht durch feste oder Mindest-Endkundenpreise begrenzt werden (Art. 4(a) VO EU 2022/720).
 
 ## Marktabgrenzung (öffentlich belegte Lizenzmuster, keine Preisbenchmarks)
 - Adobe Stock unterscheidet Standard-/Enhanced-/Extended-Lizenzen und gesonderte Rechte für bestimmte Endprodukte zur Weitergabe: https://stock.adobe.com/license-terms
@@ -36,7 +36,7 @@ Alle Beträge dienen ausschließlich der Validierung. **Kein autorisierter Preis
 
 **Tage 31–60 · Nachfrage testen:** redaktionelle Showcase-Seite mit 3 Use Cases (Learning, News, Video), jeweils Alt-Text, Vorher-/Nachher-Bild und eindeutiger Hinweis `Anfrage / noch nicht lizenzierbar` bis zu wirksamen Grant. Organische Verteilung über erlaubte eigene Kanäle (Website, LinkedIn, Social nur nach bestehender Publishing-Freigabe). 10–15 zielgerichtete B2B-Interviews/Anfragen als Pilotziel, keine behaupteten Leads. Standardisierte Bedarfsklärung: Marke, Kanal, Gebiet, Dateiformat, Nutzerzahl, Bearbeitungsrecht, Unterlizenzbedarf, Budgetfenster.
 
-**Tage 61–90 · Verkaufsversuch nach Freigabe:** maximal ein manuell geprüftes B2B-Publisher-Pilotangebot; separate Partner-Lizenz erst nach positivem Rights/Unit-Economics-Review. Messen, ob die Angebotsannahme, Supportlast und Provenienzanforderungen das Modell tragen. Nur mit wirksamem Vertrag fakturieren und liefern.
+**Tage 61–90 · Verkaufsversuch nach Freigabe:** maximal ein manuell geprüftes deutsches B2B-Publisher-Pilotangebot; separate Partner-Lizenz erst nach positivem Rights/Unit-Economics-Review. Messen, ob die Angebotsannahme, Supportlast und Provenienzanforderungen das Modell tragen. Nur mit wirksamem Vertrag fakturieren und liefern.
 
 ## Funnel, KPIs und Instrumentierung
 | Schritt | Kennzahl | Quelle/Definition | Status |
