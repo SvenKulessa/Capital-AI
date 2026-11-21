@@ -29,6 +29,7 @@ ACTIONS_CHECK_URL = re.compile(
 HOLD_TITLE = re.compile(r"\[HOLD(?:\]|\s*:)", re.IGNORECASE)
 OPTIONAL_SKIP = frozenset(("Supabase Preview", "Production Handoff Gate", "publish_candidate"))
 BRANCH_RE = re.compile(r"^capital-ai-(product|market|platform|trust|growth)/[a-z0-9][a-z0-9._-]*-[0-9]{8}$")
+DEPENDABOT_BRANCH_RE = re.compile(r"dependabot/[A-Za-z0-9][A-Za-z0-9._/-]{0,199}\Z")
 HEX40 = re.compile(r"^[a-f0-9]{40}$")
 # Escape dots: DNS labels must match exactly, never wildcard hosts.
 MERGE_URL_RE = re.compile(r"https://api\.github\.com/repos/SvenKulessa/Capital-AI/pulls/[0-9]+/merge")
@@ -174,20 +175,28 @@ class GitHubRenderActions:
             raise ValueError("invalid PR")
         return result
 
-    def _current(self):
+    def _current(self, *, observe_dependabot=False):
         pr = self._pr()
         main = self.http.github("/branches/main")
         head = pr.get("head") or {}
         base = pr.get("base") or {}
         main_sha = (main.get("commit") or {}).get("sha")
         head_sha = head.get("sha")
+        head_ref = head.get("ref")
+        user = pr.get("user")
+        dependabot_readback = (
+            observe_dependabot is True and not self.enable_merge
+            and isinstance(head_ref, str) and DEPENDABOT_BRANCH_RE.fullmatch(head_ref) is not None
+            and isinstance(user, dict) and user.get("login") == "dependabot[bot]" and user.get("type") == "Bot"
+        )
         title = pr.get("title")
         good = (pr.get("state") == "open" and pr.get("draft") is False
                 and (not self.enable_merge or (isinstance(title, str) and bool(title.strip())
                                                 and HOLD_TITLE.search(title) is None))
                 and base.get("ref") == "main" and sha(base.get("sha"))
                 and sha(head_sha) and sha(main_sha)
-                and BRANCH_RE.fullmatch(head.get("ref", "")) is not None
+                and isinstance(head_ref, str)
+                and (BRANCH_RE.fullmatch(head_ref) is not None or dependabot_readback)
                 and head.get("repo", {}).get("full_name") == REPO
                 and (not self.enable_merge or (
                     head_sha == self.approved_head_sha

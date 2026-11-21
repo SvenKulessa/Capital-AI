@@ -6,7 +6,7 @@ import unittest
 
 from continuous_pr_supervisor import Candidate, serve
 from trusted_ci_round_adapter import TrustedCIReadback
-from provider_adapters import CHECK_SOURCES
+from provider_adapters import CHECK_SOURCES, GitHubRenderActions, REPO, TrustedAssessment
 
 HEAD = "a" * 40
 MAIN = "b" * 40
@@ -46,8 +46,8 @@ class FakeActions:
             raise AssertionError("write scope")
         self.pr_number = pr_number
 
-    def _current(self):
-        if not self.permitted:
+    def _current(self, *, observe_dependabot=False):
+        if observe_dependabot is not True or not self.permitted:
             raise ValueError("stale PR")
         return ({"head": {"sha": HEAD}, "base": {"sha": MAIN}}, MAIN)
 
@@ -77,6 +77,38 @@ class TrustedCIReadbackTests(unittest.TestCase):
         self.assertEqual(logs, [(17, HEAD, "READ_ONLY_COMPLETE")])
         self.assertTrue(all(x == "/commits/" + HEAD + "/check-runs?per_page=100"
                             for x in http.paths))
+
+    def test_current_same_repository_dependabot_is_observable_without_merge_authority(self):
+        class DependabotHTTP(HTTP):
+            login = "dependabot[bot]"
+            repository = REPO
+
+            def github(self, path):
+                if path == "/pulls/17":
+                    return {
+                        "number": 17, "state": "open", "draft": False,
+                        "title": "[CAPITAL-AI-TRUST] Dependency update",
+                        "user": {"login": self.login, "type": "Bot"},
+                        "head": {"sha": HEAD, "ref": "dependabot/npm_and_yarn/routine",
+                                 "repo": {"full_name": self.repository}},
+                        "base": {"ref": "main", "sha": MAIN},
+                    }
+                if path == "/branches/main":
+                    return {"commit": {"sha": MAIN}}
+                return super().github(path)
+
+        http = DependabotHTTP([check("Docker Security Gate", 1, "in_progress"),
+                               check("Domain Governance", 2)])
+        adapter, _ = self.adapter(http)
+        self.assertEqual(adapter.read_ci(CANDIDATE).state, "PENDING")
+        mutation = GitHubRenderActions(http, pr_number=17, assessment=TrustedAssessment(),
+                                      enable_merge=True, approved_head_sha=HEAD, approved_base_sha=MAIN)
+        with self.assertRaises(ValueError):
+            mutation._current(observe_dependabot=True)
+        http.login = "another[bot]"
+        self.assertEqual(adapter.read_ci(CANDIDATE).state, "NOT_PROVEN")
+        http.login, http.repository = "dependabot[bot]", "example/fork"
+        self.assertEqual(adapter.read_ci(CANDIDATE).state, "NOT_PROVEN")
 
     def test_pending_waits_30_seconds_and_stop_interrupts_cycle(self):
         http = HTTP([check("Docker Security Gate", 1, "in_progress"),

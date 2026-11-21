@@ -37,7 +37,7 @@ class TrustedCIReadback:
             # PR/branch/current-main checks are provided by the existing trusted adapter.
             actions = GitHubRenderActions(self.http, pr_number=candidate.pr_number,
                                           assessment=TrustedAssessment(), enable_merge=False)
-            pr, main_sha = actions._current()
+            pr, main_sha = actions._current(observe_dependabot=True)
             if pr["head"]["sha"] != sha or pr["base"]["sha"] != main_sha:
                 return CheckReadback(sha, "NOT_PROVEN")
             data = self.http.github(f"/commits/{sha}/check-runs?per_page=100")
