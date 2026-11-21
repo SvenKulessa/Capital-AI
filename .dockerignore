@@ -295,6 +295,16 @@
 !docs/licenses/
 !docs/licenses/**
 !docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md
+# Only these five immutable draft evidence inputs enter the offline test build.
+!docs/growth/
+!docs/growth/drafts/
+!docs/growth/drafts/akash-20261120/
+!docs/growth/drafts/akash-20261120/manifest.json
+!docs/growth/drafts/akash-20261120/Akash-Vorschau.html
+!docs/growth/drafts/akash-20261120/akash-landscape.png
+!docs/growth/drafts/akash-20261120/akash-portrait.png
+!docs/growth/drafts/akash-20261121/
+!docs/growth/drafts/akash-20261121/source-review-v1.json
 !docs/security/
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
