@@ -26,7 +26,7 @@ export function planArtifact(input, contract, acodeContract) {
   } else {
     if (category==="ACODE_CODE") return hold("ACODE_CODE_REQUIRES_ACODE_SCOPE");
     folder=contract.routes[category];
-    if (!folder || !folder.folderId) return hold("CATEGORY_NOT_MAPPED");
+    if (!folder || !folder.folder) return hold("CATEGORY_NOT_MAPPED");
     domain=folder.domain||input.domain;
     if (!contract.domains.includes(domain)) return hold("INVALID_DOMAIN");
     if (folder.domain && input.domain && input.domain!==folder.domain) return hold("DOMAIN_CATEGORY_MISMATCH");
@@ -39,14 +39,15 @@ export function planArtifact(input, contract, acodeContract) {
     }
     prefix=`${date}_${domain}_${input.topic}${status}_v`;
   }
-  const parent={folderId:folder.folderId,folder:folder.folder};
+  const resolvedId=input.scope==="ACODE" ? acodeContract.driveFolderId : ((typeof input.providerFolderId==="string" && /^[A-Za-z0-9_-]{15,120}$/.test(input.providerFolderId)) ? input.providerFolderId : null);
+  const parent={folderId:resolvedId,folder:folder.folder};
   const filenameFor=version=>`${prefix}${version}.${extension}`;
   if (!Array.isArray(input.existingNames) || input.existingNames.some(v=>typeof v!=="string"||v.length>240)) return {...hold("FOLDER_LISTING_REQUIRED"),target:parent};
   const prior=new Set(input.existingNames);
   let version=1; while (prior.has(filenameFor(version))) {version++;if(version>9999)return hold("VERSION_SPACE_EXHAUSTED");}
   const filename=filenameFor(version);
-  const readback=input.listingComplete===true && input.listedParentId===folder.folderId;
-  return {status:readback?"ROUTE_READY":"WAIT",reason:readback?null:"PARENT_LISTING_NOT_VERIFIED",filename,folderId:folder.folderId,driveFolder:folder.folder,category,domain,version,project:contract.project,naming:"VERIFIED",uploadAdmission:readback?"READY_FOR_AUTHORIZED_CONNECTOR":"HOLD",driveUpload:"NOT_PROVEN",driveParent:"NOT_PROVEN",deviceSync:"NOT_PROVEN",sha256:"NOT_PROVEN"};
+  const readback=input.listingComplete===true && resolvedId!==null && input.listedParentId===resolvedId && (input.scope==="ACODE" || (input.listedFolderPath===folder.folder && input.parentChainVerified===true));
+  return {status:readback?"ROUTE_READY":"WAIT",reason:readback?null:"PARENT_LISTING_NOT_VERIFIED",filename,folderId:resolvedId,driveFolder:folder.folder,category,domain,version,project:contract.project,naming:"VERIFIED",uploadAdmission:readback?"READY_FOR_AUTHORIZED_CONNECTOR":"HOLD",driveUpload:"NOT_PROVEN",driveParent:"NOT_PROVEN",deviceSync:"NOT_PROVEN",sha256:"NOT_PROVEN"};
 }
 export function planDriveArtifact(input){ return planArtifact(input,routingContract,acodeContract); }
 if(process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)){
