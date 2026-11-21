@@ -7,6 +7,7 @@ This graph only evaluates caller-supplied contract output and local evidence.
 from __future__ import annotations
 
 import json
+import math
 import operator
 import os
 import re
@@ -99,16 +100,25 @@ def domain_agent(domain: str):
             return {"findings": [finding(domain, "BLOCKED", "Unknown input contract.")]}
         docs = state.get("retrieved", [])
         if domain == "MARKET":
-            ok = product.get("competitorCount", 0) > 0 and any(d["scope"] == "MARKET" for d in docs)
+            count = product.get("competitorCount")
+            ok = (isinstance(count, int) and not isinstance(count, bool) and count > 0
+                  and isinstance(docs, list) and any(
+                      isinstance(d, dict) and d.get("scope") == "MARKET" for d in docs))
             detail = "Competitor evidence recorded; independent market verification still required."
         elif domain == "PRODUCT":
-            ok = bool(product.get("supportedDraftClaims")) and valid_sha(product.get("sourceSha"))
+            claims = product.get("supportedDraftClaims")
+            ok = (isinstance(claims, list) and 0 < len(claims) <= 20
+                  and all(isinstance(item, str) and bool(re.fullmatch(r"[a-z0-9-]{2,80}", item))
+                          for item in claims)
+                  and valid_sha(product.get("sourceSha")))
             detail = "Bound draft capabilities recorded; product evidence remains unverified."
         elif domain == "FINANCE":
             values = product.get("scenarioResults")
             ok = isinstance(values, list) and 0 < len(values) <= 6 and all(
                 isinstance(s, dict) and s.get("evidenceStatus") == "HYPOTHESIS_NOT_VERIFIED"
-                and isinstance(s.get("roiPercent"), (float, int, type(None)))
+                and (s.get("roiPercent") is None or
+                     (type(s.get("roiPercent")) in (float, int)
+                      and math.isfinite(s.get("roiPercent"))))
                 for s in values
             )
             detail = "Unit economics are scenarios, never measured ROI."
@@ -119,23 +129,29 @@ def domain_agent(domain: str):
             )
             detail = "No paid media, publisher, billing or deployment authority."
         else:
-            ok = product.get("quality", {}).get("verdict") == "NOT_PROVEN" and all(
-                d.get("status") == "SOURCE_RECORDED_NOT_AUTHENTICATED" for d in docs
-            )
+            quality = product.get("quality")
+            ok = (isinstance(quality, dict) and quality.get("verdict") == "NOT_PROVEN"
+                  and isinstance(docs, list) and all(
+                      isinstance(d, dict) and d.get("status") == "SOURCE_RECORDED_NOT_AUTHENTICATED"
+                      for d in docs))
             detail = "Evidence source identities bounded; source authenticity and rights not attested."
         return {"findings": [finding(domain, "PASS_WITH_GAPS" if ok else "BLOCKED", detail)]}
     return run
 
 
 def independent_quality(state: OpportunityState) -> dict:
-    observed = {f["agent"]: f["status"] for f in state.get("findings", [])}
+    findings = state.get("findings")
+    observed = {f["agent"]: f["status"] for f in findings
+                if isinstance(f, dict) and isinstance(f.get("agent"), str)
+                and isinstance(f.get("status"), str)} if isinstance(findings, list) else {}
     completed = all(observed.get(domain) == "PASS_WITH_GAPS" for domain in DOMAINS)
     product = state.get("product", {})
+    proposed = product.get("decision") if isinstance(product, dict) else None
     return {"report": {
         "contractVersion": CONTRACT,
         "engine": "langgraph",
         "retrieval": "LOCAL_SOURCE_BOUND_LEXICAL_RAG",
-        "decision": product.get("decision", "HOLD") if isinstance(product, dict) and completed else "HOLD",
+        "decision": proposed if completed and proposed in ("VALIDATE", "HOLD", "REJECT") else "HOLD",
         "quality": "PASS_WITH_GAPS" if completed else "BLOCKED",
         "externalFactVerification": "NOT_PROVEN",
         "publicationAllowed": False,
