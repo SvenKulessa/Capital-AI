@@ -314,7 +314,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label={t('navAccount')}
               title="Kontomenü"
             >
-              <ProfileAvatar url={privateAvatarUrl ?? authSession.user?.avatarUrl} owner={isOwner} size="md" />
+              <ProfileAvatar url={privateAvatarUrl ?? (authSession.user?.avatarUrl?.startsWith('https://') ? '/api/profile/avatar/provider' : authSession.user?.avatarUrl)} owner={isOwner} size="md" />
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
@@ -448,7 +448,7 @@ export const Header: React.FC<HeaderProps> = ({
                       >
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">
-                            <ProfileAvatar url={privateAvatarUrl ?? authSession.user?.avatarUrl} owner={isOwner} />
+                            <ProfileAvatar url={privateAvatarUrl ?? (authSession.user?.avatarUrl?.startsWith('https://') ? '/api/profile/avatar/provider' : authSession.user?.avatarUrl)} owner={isOwner} />
                             <span className={`min-w-0 truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
                           </span>
                           {accountTier && <span className={`mt-1 block truncate pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</span>}
