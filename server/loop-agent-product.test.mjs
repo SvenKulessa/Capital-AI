@@ -57,6 +57,9 @@ test('canceled, past_due, unpaid, incomplete and unknown statuses deny',()=>{
     assert.equal(result.status,'BLOCKED');assert.equal(result.limits.loopRuns,0);
   }
 });
+test('signed deletion event revokes even when provider readback is briefly stale',()=>{
+  assert.equal(projectLoopEntitlement({...good,event:{...event,type:'customer.subscription.deleted'}}).status,'BLOCKED');
+});
 test('expired subscription cannot grant a loop',()=>{
   assert.equal(projectLoopEntitlement({...good,subscription:{...subscription,current_period_end:Math.floor(NOW/1000)-1}}).status,'BLOCKED');
 });
