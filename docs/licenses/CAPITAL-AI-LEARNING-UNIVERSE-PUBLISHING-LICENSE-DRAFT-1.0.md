@@ -4,6 +4,8 @@ Status: **DRAFT_ONLY / NOT_EFFECTIVE** · Stand: 21.11.2026 · Vertragskennzeich
 
 **Kein öffentliches Lizenzangebot und keine automatisch wirksame Rechteeinräumung.** Dieser Text wird erst in einer rechtlich geprüften, von beiden Parteien angenommenen Vereinbarung mit Anlage A und einem authentifizierten Owner-Grant wirksam. Bestehende Rechte-/Publishing-Gates werden nicht ersetzt.
 
+**Konditionenspiegel (unverbindlicher Entwurf):** `docs/growth/2026-11-21_PRODUCT_CHATGPT_LEARNING_SALES_TERMS_v1.md`. Rechtsmemorandum: `docs/legal/2026-11-21_PRODUCT_CHATGPT_LEARNING_LICENSE_LEGAL_MEMO_v1.md`. Für den Erstmarkt sind ausschließlich deutsche B2B-Verträge vorgesehen. B2C-/Auslandsfälle bleiben gesondert zu prüfen. Angegebene Angebotsbeträge sind weder öffentliche Preise noch Teil eines angenommenen Vertrags.
+
 ## 1. Parteien und Umfang
 Lizenzgeber: [vollständige geprüfte juristische Identität, Anschrift, USt.-Angaben]. Lizenznehmer: [Firma, Anschrift, Land, vertretungsberechtigte Person]. Vertrags-/Beleg-ID: [ID]. Angebot und Entgelt: [individuelle schriftliche Vereinbarung]. Vertrags- und Rechtedatum: [Datum].
 
@@ -27,6 +29,8 @@ Die Rechteeinräumung setzt mindestens ein überprüftes Owner-Grant, die konkre
 
 ## 6. Vergütung, Abhilfe, Haftung, Recht
 Entgelt, Steuerbehandlung, Lieferung, Leistungsumfang, Support und Laufzeit sind im individuellen Angebot festzuhalten. Bei einer begründeten Rechtebeanstandung werden betroffene Assets aus neuen Lieferungen genommen; Abhilfe, Ersatzlieferung, Rückerstattung und Nutzung vorhandener Endprodukte richten sich nach Vertrag und zwingendem Recht. Gewährleistung/Haftung, Datenschutz, Gerichtsstand und Rechtswahl sind **vor Vertriebsstart juristisch zu prüfen**; keine Ausschaltung zwingender Ansprüche. Für B2B-Verträge kann deutsches Recht vereinbart werden, soweit zulässig.
+
+**Zu Haftung und AGB:** Die Parteien beschreiben Rechte- und Sachmängel, zumutbare Abhilfe, etwaige Rückzahlung, gesetzlich zwingende Ansprüche und Sanktionen für Lizenzverletzungen klar im individuellen Vertrag. Ein allgemeiner Ausschluss jeglicher Haftung oder ein pauschales Erlöschen aller Endproduktnutzungen ist nicht aus diesem Entwurf abzuleiten. Standardklauseln nach §§ 307, 310 BGB anwaltlich prüfen. Der License-Receipt/Publikations-Approval wird nie allein aus einer Zahlung oder einem Datenmanifest erzeugt.
 
 ## Anlage A – zwingendes, noch nicht ausgefülltes Lizenzreceipt
 - contractId, licensorLegalIdentity, licenseeLegalIdentity, brandId, scope/territory, allowedChannels, term, acceptedTermsVersion
