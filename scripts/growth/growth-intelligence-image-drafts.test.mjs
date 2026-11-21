@@ -83,3 +83,11 @@ test('semantic 320/390-ready preview escapes hostile text, supports alt and redu
   assert.match(growthImagePreviewHtml([{ ...d[0], altText: '<script>bad</script>' }, d[1]]), /&lt;script&gt;bad&lt;\/script&gt;/);
   assert.throws(() => growthImagePreviewHtml([d[0], { ...d[1], publicPublishAllowed: true }]), /GROWTH_IMAGE_PREVIEW_NOT_SAFE/);
 });
+
+import { prepareInstagramCarousel } from '../../server/social-media/instagram-carousel.mjs';
+test('Instagram carousel exists but single PNG and missing approvals fail the 2–10 JPEG boundary', async () => {
+  const d = (await bundle()).drafts.find(row => row.channel === 'INSTAGRAM');
+  assert(d);
+  await assert.rejects(prepareInstagramCarousel({ manifest: d.socialPackage, handoffs: [], media: [] }), /SOCIAL_CAROUSEL_GROUP_INVALID/);
+  await assert.rejects(prepareInstagramCarousel({ manifest: d.socialPackage, handoffs: [{}], media: [{}] }), /SOCIAL_CAROUSEL_GROUP_INVALID/);
+});
