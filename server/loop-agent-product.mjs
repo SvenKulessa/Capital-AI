@@ -159,7 +159,7 @@ export function createLoopSubscriptionEventAdapter(deps) {
 
 export async function authorizeLoopAction({ entitlement, principal, repositoryId, capability, runId, idempotencyKey,
   authority, nowMs, atomicAdmission }) {
-  if (!object(entitlement) || !object(principal) || !object(authority) ||
+  if (!object(entitlement) || !object(principal) || !object(authority) || !positive(nowMs) ||
       !UUID.test(principal.tenantId) || !UUID.test(principal.subjectId) ||
       entitlement.contract !== 'LOOP_AGENT_ENTITLEMENT@1' ||
       entitlement.tenantId !== principal.tenantId || entitlement.subjectId !== principal.subjectId ||
@@ -191,7 +191,7 @@ export function loopUsageReceipt(input) {
   if (!object(input) || !UUID.test(input.tenantId) || !UUID.test(input.runId) ||
       !ID.test(input.repositoryId) || !SHA.test(input.entitlementId) || !TIERS.has(input.tier) ||
       !timestamp(input.startedAt) || !timestamp(input.completedAt) ||
-      input.completedAt < input.startedAt || !['SYNTHETIC_TEST','VERIFIED_PROVIDER'].includes(input.provenance) ||
+      Date.parse(input.completedAt) < Date.parse(input.startedAt) || !['SYNTHETIC_TEST','VERIFIED_PROVIDER'].includes(input.provenance) ||
       !['SUCCEEDED','FAILED','HUMAN_INTERVENTION'].includes(input.outcome) ||
       !Array.isArray(input.evidenceRefs) || input.evidenceRefs.length === 0 ||
       input.evidenceRefs.some(x=>typeof x !== 'string' || x.length > 160 || x.length === 0) ||
@@ -217,7 +217,7 @@ export function loopGrowthProjection(receipt, { providerReadbackVerified = false
   if (receipt.provenance !== 'VERIFIED_PROVIDER' || !providerReadbackVerified) {
     return { status:'NOT_PROVEN', events:[], sourceRun:receipt.runId };
   }
-  return { status:'GROWTH_EVIDENCE_VERIFIED', sourceRun:receipt.runId,
+  return { status:'SOURCE_IMPLEMENTED', evidenceStatus:'NOT_PROVEN', sourceRun:receipt.runId,
     events:[{ type:receipt.outcome === 'SUCCEEDED' ? 'LOOP_SUCCEEDED' : 'LOOP_FAILED',
       sourceReceiptSha256:receipt.receiptSha256 }] };
 }
