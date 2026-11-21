@@ -342,6 +342,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/branding/learning-universe/
+!public/branding/learning-universe/*.svg
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
 !public/branding/universe/hero-universe-desktop.webp
