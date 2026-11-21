@@ -14,7 +14,7 @@ import re
 import time
 
 import failure_learning as fl
-from provider_adapters import REPO, OPTIONAL_SKIP
+from provider_adapters import HOLD_TITLE, OPTIONAL_SKIP, REPO, required_workflow_group_verified
 
 
 @dataclass(frozen=True)
@@ -40,6 +40,28 @@ def canonical_review(scope, fp, reviewed, proof):
         "reviewed": asdict(reviewed),
     }
     return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+
+
+def _current_review_target(pr, main, reviewed, proof) -> bool:
+    if not isinstance(pr, dict) or not isinstance(main, dict):
+        return False
+    head, base, commit = pr.get("head"), pr.get("base"), main.get("commit")
+    if not all(isinstance(value, dict) for value in (head, base, commit)):
+        return False
+    title = pr.get("title")
+    return (pr.get("number") == proof.pr_number
+            and pr.get("state") == "open"
+            and pr.get("draft") is False
+            and pr.get("mergeable") is True
+            and pr.get("mergeable_state") == "clean"
+            and isinstance(title, str) and bool(title.strip())
+            and HOLD_TITLE.search(title) is None
+            and base.get("ref") == "main"
+            and isinstance(head.get("repo"), dict)
+            and head["repo"].get("full_name") == proof.repository
+            and head.get("sha") == reviewed.head_sha
+            and base.get("sha") == reviewed.base_sha
+            and commit.get("sha") == reviewed.base_sha)
 
 
 class TrustedLearningVerifier:
@@ -86,22 +108,7 @@ class TrustedLearningVerifier:
             # Live provider evidence, never the reviewer's assertion about CI.
             pr = self._github.github(f"/pulls/{proof.pr_number}", method="GET")
             main = self._github.github("/branches/main", method="GET")
-            if not isinstance(pr, dict) or not isinstance(main, dict):
-                return False
-            head, base = pr.get("head"), pr.get("base")
-            if not isinstance(head, dict) or not isinstance(base, dict):
-                return False
-            if (pr.get("number") != proof.pr_number or pr.get("state") != "open"
-                    or pr.get("draft") is not False or pr.get("mergeable") is not True
-                    or pr.get("mergeable_state") != "clean"
-                    or "[HOLD]" in str(pr.get("title", "")).upper()
-                    or base.get("ref") != "main"
-                    or not isinstance(head.get("repo"), dict)
-                    or head["repo"].get("full_name") != proof.repository
-                    or head.get("sha") != reviewed.head_sha
-                    or base.get("sha") != reviewed.base_sha
-                    or not isinstance(main.get("commit"), dict)
-                    or main["commit"].get("sha") != reviewed.base_sha):
+            if not _current_review_target(pr, main, reviewed, proof):
                 return False
 
             data = self._github.github(f"/commits/{reviewed.head_sha}/check-runs?per_page=100",
@@ -112,17 +119,21 @@ class TrustedLearningVerifier:
                     or data["total_count"] != len(runs)):
                 return False
             seen, ids = {}, set()
+            required_runs = {name: [] for name in fl.REQUIRED_CHECKS}
             for run in runs:
                 if not isinstance(run, dict):
                     return False
                 name, run_id = run.get("name"), run.get("id")
                 if (not isinstance(name, str) or not name or name in seen
-                        or type(run_id) is not int or run_id in ids
+                        or type(run_id) is not int or run_id <= 0 or run_id in ids
                         or run.get("head_sha") != reviewed.head_sha):
                     return False
                 ids.add(run_id)
+                if name in required_runs:
+                    required_runs[name].append(run)
+                    continue
                 app = run.get("app")
-                if ((name in fl.REQUIRED_CHECKS or name.startswith("Analyze ("))
+                if (name.startswith("Analyze (")
                         and (not isinstance(app, dict) or app.get("slug") != "github-actions")):
                     return False
                 if (name == "CodeQL" and
@@ -134,8 +145,10 @@ class TrustedLearningVerifier:
                 if result != "success" and not (result == "skipped" and name in OPTIONAL_SKIP):
                     return False
                 seen[name] = result
-            if any(seen.get(name) != "success" for name in fl.REQUIRED_CHECKS):
-                return False
+            for name, group in required_runs.items():
+                if not required_workflow_group_verified(self._github, name, group, reviewed.head_sha):
+                    return False
+                seen[name] = "success"
             if seen.get("Analyze (python)") != "success" and seen.get("CodeQL") != "success":
                 return False
             if not all(seen.get(name) == state for name, state in reviewed.checks.items()):
@@ -144,15 +157,7 @@ class TrustedLearningVerifier:
             # A head/main change during the inspection invalidates the receipt.
             refreshed_pr = self._github.github(f"/pulls/{proof.pr_number}", method="GET")
             refreshed_main = self._github.github("/branches/main", method="GET")
-            if not isinstance(refreshed_pr, dict) or not isinstance(refreshed_main, dict):
-                return False
-            return (refreshed_pr.get("state") == "open"
-                    and isinstance(refreshed_pr.get("head"), dict)
-                    and isinstance(refreshed_pr.get("base"), dict)
-                    and refreshed_pr["head"].get("sha") == reviewed.head_sha
-                    and refreshed_pr["base"].get("sha") == reviewed.base_sha
-                    and isinstance(refreshed_main.get("commit"), dict)
-                    and refreshed_main["commit"].get("sha") == reviewed.base_sha)
+            return _current_review_target(refreshed_pr, refreshed_main, reviewed, proof)
         except Exception:
             # No raw provider response, token, PR text or signature in diagnostics.
             return False

@@ -32,7 +32,8 @@ class FakeTransport:
             self.merged = True
             return {"merged": True, "sha": C}
         if path == "/pulls/42":
-            return {"state": "closed" if self.merged else "open",
+            return {"number": 42, "title": "[CAPITAL-AI-PLATFORM] Example",
+                    "state": "closed" if self.merged else "open",
                     "draft": False, "merged": self.merged,
                     "merge_commit_sha": C if self.merged else None,
                     "head": {"sha": B, "ref": "capital-ai-platform/checkpoint-20261115",
@@ -42,10 +43,23 @@ class FakeTransport:
                     "changed_files": 1}
         if path == "/branches/main":
             return {"commit": {"sha": A}}
+        if path in ("/actions/runs/100", "/actions/runs/101"):
+            run_id = int(path.rsplit("/", 1)[-1])
+            workflow_id, file = ((370506106, "build-security") if run_id == 100 else (371617040, "domain-governance"))
+            return {"id": run_id, "workflow_id": workflow_id, "path": f".github/workflows/{file}.yml",
+                    "head_sha": B, "event": "pull_request", "status": "completed", "conclusion": "success"}
         if path.startswith("/commits/"):
-            checks = [{"id": 10, "name": "Docker Security Gate", "status": "completed", "conclusion": "success"},
-                      {"id": 11, "name": "Domain Governance", "status": "completed", "conclusion": "success"}]
-            return {"total_count": 2, "check_runs": checks}
+            checks = [
+                {"id": 10, "name": "Docker Security Gate", "status": "completed",
+                 "details_url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/100/job/10",
+                 "conclusion": "success", "head_sha": B, "app": {"slug": "github-actions", "id": 15368}},
+                {"id": 11, "name": "Domain Governance", "status": "completed",
+                 "details_url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/101/job/11",
+                 "conclusion": "success", "head_sha": B, "app": {"slug": "github-actions", "id": 15368}},
+                {"id": 12, "name": "CodeQL", "status": "completed",
+                 "conclusion": "success", "head_sha": B, "app": {"slug": "github-advanced-security", "id": 57789}},
+            ]
+            return {"total_count": len(checks), "check_runs": checks}
         raise ValueError(path)
 
     def render(self, path):

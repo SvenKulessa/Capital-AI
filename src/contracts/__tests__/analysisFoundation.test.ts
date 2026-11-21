@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import './shadowPipeline.test';
 import './capBp001Blueprint.test';
 import './capBp001AdmissionReview.test';
+import './capBp001MarketDataContracts.test';
 import './rawFeatureCalculation.test';
 import './marketIntelligenceReadiness.test';
 import './marketTaxonomyResearchGates.test';
