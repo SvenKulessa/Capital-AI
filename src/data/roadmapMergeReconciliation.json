@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 800,
-  "mergeCount": 640,
-  "fromPr": 793,
-  "toPr": 800,
-  "sourceSha": "bd1106b0582f8518a0d730d5db3d01e76c4f11ea",
-  "reconciledAt": "2026-11-19T04:27:24.421Z",
+  "lastReconciledPr": 908,
+  "mergeCount": 720,
+  "fromPr": 892,
+  "toPr": 908,
+  "sourceSha": "fa706af9aa698d702dc782f3f95a95c7f7572a22",
+  "reconciledAt": "2026-11-21T22:14:53.122Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
@@ -14,7 +14,7 @@
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
-      "sha256": "b535cf6c0aef56588891ae3eab00b8d45439a6f58e4e4892198f717d633bfc04"
+      "sha256": "288bd9f5416a99a62101f4e0a07d8f71ba5d99a650d706a43ff0e9e1a0d3ef72"
     },
     {
       "path": "src/data/productionWebsiteWorkPackage.ts",
@@ -203,7 +203,10 @@
       "evidencePathsPresent": [
         "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md",
         "docs/platform/GOOGLE-CLOUD-OPERATOR-OIDC.md",
-        ".github/workflows/google-cloud-admin.yml"
+        ".github/workflows/google-cloud-admin.yml",
+        "scripts/growth-agent/worker_service.py",
+        "scripts/growth-agent/checkpoint_store.py",
+        "scripts/architecture/strategy-2026-pr-live.mjs"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
@@ -548,7 +551,10 @@
       "owner": "PLATFORM",
       "recordedState": "OFFEN",
       "evidencePathsPresent": [
-        "docs/architecture/INFRASTRUCTURE-BACKUP-RECOVERY.md"
+        "docs/architecture/INFRASTRUCTURE-BACKUP-RECOVERY.md",
+        "scripts/platform/backup-reader-contract-test.sh",
+        "docs/platform/SUPABASE-BACKUP-READER-CONTRACT.md",
+        "docs/platform/SUPABASE-STREAM-BACKUP-P0.md"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
@@ -728,7 +734,9 @@
         "scripts/market-blueprint-demo.test.mjs",
         "shared/seo-content-manifest.mjs",
         "shared/seo-metadata.mjs",
-        "scripts/seo-content-manifest.test.mjs"
+        "scripts/seo-content-manifest.test.mjs",
+        "server/google-analytics-readback.mjs",
+        "src/components/OwnerGa4ConfigView.tsx"
       ],
       "evidencePathsMissing": [
         "docs/",
@@ -1428,7 +1436,9 @@
       "evidencePathsPresent": [
         "src/contracts/analysisComponentRegistry.ts",
         "server/scorer-proxy.mjs",
-        "docs/architecture/ANALYSIS-FOUNDATION.md"
+        "docs/architecture/ANALYSIS-FOUNDATION.md",
+        "src/contracts/capBp001AdmissionReview.ts",
+        "docs/market-data/CAP-BP-001-ADMISSION-EVIDENCE-20261119.md"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
