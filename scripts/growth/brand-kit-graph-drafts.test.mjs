@@ -12,6 +12,10 @@ test('Branding kit: exact owned logo digest and all seven Universe colors',()=>{
   assert.equal(kit.logoSha256,'6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3');
   assert.deepEqual(kit.colors,colors);
   assert.equal(kit.logoRightsRef,'docs/licenses/Capital-AI-BRANDING.md');
+  assert.equal(kit.profileSha256,'0238503dd58d879f822edb9ac7c8146336cdaf68de12ddb579e5dd96eb90c56a');
+  const instaKit=readBrandKit('INSTAGRAM');
+  assert.equal(instaKit.profileSha256,'297761f524292ce90a8704e18e1441c48a1972c8fc8018436d5e0b2f701a4d47');
+  assert.notEqual(kit.profileSha256,instaKit.profileSha256);
 });
 
 test('Growth X/Instagram: real hash-bound SVG IMAGE + TEXT in existing Social package, no approval',()=>{
@@ -19,6 +23,9 @@ test('Growth X/Instagram: real hash-bound SVG IMAGE + TEXT in existing Social pa
     const result=buildBrandedGrowthDraft({channel});
     assert.equal(result.contractVersion,CONTRACT);
     assert.equal(result.contentId,channel==='X'?'CAP-GROW-005':'CAP-GROW-007');
+    assert.equal(result.image.profileSha256,channel==='X'
+      ? '0238503dd58d879f822edb9ac7c8146336cdaf68de12ddb579e5dd96eb90c56a'
+      : '297761f524292ce90a8704e18e1441c48a1972c8fc8018436d5e0b2f701a4d47');
     assert.equal(result.template.width,channel==='X'?1200:1080);
     assert.equal(result.template.height,channel==='X'?1200:1350);
     assert.equal(result.publicPublishAllowed,false);
