@@ -21,7 +21,7 @@ test('five explicit next steps become deterministic drafts without authority',()
   assert.equal(a.schema,CONTRACT);
   assert.equal(a.steps.length,5);
   assert.deepEqual(a.steps.map(x=>x.recipeId),[
-    'rights-name','commerce-sandbox','commercial-admission','buyer-validation','mvp-architecture']);
+    'rights-name','buyer-validation','mvp-architecture','commerce-sandbox','commercial-admission']);
   assert.equal(a.publicPublishAllowed,false);
   assert.equal(a.autoExecuteAllowed,false);
   assert.equal(a.autoMergeAllowed,false);
