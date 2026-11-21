@@ -104,6 +104,7 @@ jobs:
             scripts/architecture/strategy-2026-source-graph.test.mjs \
             scripts/docker-archive-config.test.mjs \
             scripts/growth/product-opportunity-contract.test.mjs
+          PYTHONPATH=scripts/growth-agent python3 -m unittest -v test_offline_scope
           npm run validate:all
           git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
           node scripts/license-evidence.mjs
