@@ -78,7 +78,8 @@ export function readBrandKit() {
   const bytes=readFileSync(logoPath);
   if(bytes.length<64||bytes.length>3*1024*1024||bytes[0]!==255||bytes[1]!==216
     || bytes[2]!==255||tokens.authority?.logo!=='public/branding/capital-ai-logo.jpg'
-    || sha(bytes)!==tokens.authority?.logoSha256)
+    || sha(bytes)!=='6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3'
+    || tokens.authority?.logoSha256!=='6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3')
     throw Error('BRAND_LOGO_DIGEST_MISMATCH');
   const colors=FAMILIES.map(k=>tokens.color?.universe?.[k]?.$value);
   if(colors.some(v=>!/^#[0-9a-fA-F]{6}$/.test(v??''))
