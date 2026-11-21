@@ -42,8 +42,49 @@ Create a private JSON metadata file (not raw file bytes or secrets), with folder
 
 Then run `node scripts/platform/drive-artifact-router.mjs metadata.json`. When these values come from real Drive connector readback, the expected destination is `CAPITAL-AI/40_Trust/Audit`, with `2026-11-21_TRUST_EXPOSURE_AUDIT_v1.md` as candidate if this **real** folder listing remains empty. Sample data is explanatory only, not provider evidence or an authorized upload. The same CLI with `scope=ACODE` and `category=ACODE_CODE` applies the separate Acode contract.
 
+## Authorized create-only adapter (separate from offline planner)
+
+The module `scripts/platform/drive-artifact-delivery.mjs` exports `deliverDriveArtifact({request,bytes,provider,authorization})`. It is an **orchestration port**, not a new Google Drive login, OAuth client, direct HTTP caller, cron worker or a claim that this repository can automatically invoke a ChatGPT connector. Its `provider` must be injected by an **already authenticated, appropriately authorized** runtime. The caller must explicitly approve `{project:"CAPITAL-AI",operation:"CREATE_ONLY",approved:true}`; provider authorization and real folder access are verified independently.
+
+The trusted provider adapter exposes these existing Drive capabilities under a narrow interface:
+
+| Method | Provider implementation and proof |
+|---|---|
+| `assertCreateAuthorized` | Existing delegated Google Drive identity/permissions for the exact folder; no new auth scopes |
+| `resolveFolderId`, `getFolder` | Resolve existing path, read each parent/name/ID, folder MIME and `canAddChildren`; anchor to previously authorized root ID |
+| `listFolder` | Enumerate **every page**, return `{files:[{id,name,parentId}],nextPageToken:null|string}`; detect duplicates, cycles and missing pages |
+| `withExclusiveCreateLease` | Trusted cross-agent, cross-process lease for route/category/topic; **no write if the runtime cannot provide it** |
+| `uploadNewFile` | Map to existing Drive **create-new-file** action, with required parent/name/content/MIME, never update/overwrite/move |
+| `getFile`, `readFileBytes` | Independent metadata and **remote file bytes** readback, not only a Drive MD5/ETag or client-provided SHA |
+
+A ChatGPT Google Drive connector can provide listing, upload and metadata/fetch capabilities, but its upload API does **not** provide a distributed atomic create-if-absent lock. Until the orchestrator provides a genuine cross-worker exclusive lease, **the connector alone is insufficient for the adapter's write admission** and must remain `HOLD`. Do not substitute a local boolean, synthetic lock, fabricated `canAddChildren`, mock folder metadata or user-supplied response as live evidence. For binary uploads, the connected host converts trusted local bytes to its supported file reference **without storing secrets in prompts or logs**; the repository module does not fabricate a file URI.
+
+### Replay, corruption and retry contract
+
+- SHA-256 is computed from local bytes. Under an exclusive lease, list and verify existing matching versions against **actual provider-downloaded bytes**; exact matches yield `VERIFIED_SKIP` with `driveUpload=NOT_PERFORMED`. Different content receives the next free version. Any unreadable existing match yields `HOLD`; do not create a duplicate.
+- After create-only upload, fetch fresh file metadata and bytes, verify exact **name, unique parent, ID and digest**, then re-list the complete folder to detect duplicate names. Only then `VERIFIED_CREATED`; device sync remains `NOT_PROVEN`.
+- If the write may already have happened but its readback fails, return `HOLD` and **do not blindly retry** or delete the file. A later attempt can prove a matching existing file and skip it. Cross-worker locking must remain active over both read and write operations.
+- No existing Drive object is changed; no cloud resources, costs, OAuth grants or separate synchronization service are created. File size limit: 32 MiB for this adapter. A caller lacking source-byte rights or remote-byte readback cannot claim SHA-256 proof.
+- These are **mock-port tests**, not a successful live Drive upload. Production integration remains unproven until the real host adapter and exclusive lease are observed.
+
+### Usage by authorized host runtime
+
+```js
+import {deliverDriveArtifact} from './scripts/platform/drive-artifact-delivery.mjs';
+const result = await deliverDriveArtifact({
+  request: {project:'CAPITAL-AI',scope:'PROJECT',category:'TRUST_AUDIT',
+    topic:'EXPOSURE_AUDIT',extension:'md',date:'2026-11-21',
+    sensitivity:'REDACTED',privacyReview:'VERIFIED',rightsReview:'VERIFIED'},
+  bytes: verifiedRedactedBytes,
+  provider: alreadyConnectedExclusiveDriveProvider,
+  authorization: {project:'CAPITAL-AI',operation:'CREATE_ONLY',approved:true},
+});
+```
+
+The example variable names are **injection points**, not evidence that provider access or a global lease exists in this repository.
+
 ## Validation
-- `node --test scripts/platform/drive-artifact-router.test.mjs`
+- `node --test scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.test.mjs`
 - `npm run test:domain-skills`
 - Existing `Docker Security Gate` runs the same router tests; no additional Required Check.
 - **Expected evidence:** `FILE_NAME`, `ROUTE`, `LOCAL_EXPORT`, `DRIVE_UPLOAD`, `DRIVE_PARENT`, `SHA256`, `ACODE_SYNC` are independent. Without provider proof, use `NOT_PROVEN`.
