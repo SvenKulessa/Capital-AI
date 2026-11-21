@@ -19,10 +19,11 @@ const reject = (mutate, match = /SOLO2_CONFIG_/) => {
   assert.throws(() => validateSolo2Profile(value), match);
 };
 
-test('registry skill IDs equal the canonical 26-skill source (no drift)', () => {
+test('profile accepts exactly the canonical skill IDs', () => {
   const registry = JSON.parse(readFileSync(new URL('../.agents/skills/registry.json', import.meta.url)));
   const skills = Object.values(registry.domains).flatMap(domain => domain.ownedSkills);
   assert.deepEqual([...SOLO2_SKILLS].sort(), skills.sort());
+  assert.deepEqual(validateSolo2Profile({ ...profile(), skills }).skills, skills);
 });
 test('default is an offline-only, source-bound, zero-cost declaration', () => {
   const draft = validateSolo2Profile(profile());
