@@ -350,6 +350,19 @@ export function BuddyStickyNotes({ initialText = '', captureRequest = 0 }: { ini
   return (
     <div className="space-y-3 text-xs" aria-label="JaJa Buddy Notizen">
       <p className="text-slate-300">Nur für dein angemeldetes Konto. Speicherung über das private Dashboard, keine Drittanbieter-KI.</p>
+      <section aria-label="Private Bildreferenzen" className="space-y-2 rounded-xl border border-cyan-300/20 p-2">
+        <button type="button" onClick={()=>setCaptureOpen(open=>!open)}
+          className="min-h-11 rounded-lg border border-cyan-300/40 px-3 font-medium text-cyan-100">JaJa CAM · Screenshot / Markieren</button>
+        {captureOpen && <BuddyCapturePanel onAttach={attachImage} onClose={()=>setCaptureOpen(false)} />}
+        {images.length>0&&<ul className="grid gap-2">
+          {images.map(image=><li key={image.id} className="rounded border border-slate-700 p-2">
+            <img src={image.previewUrl} alt="Lokaler markierter Screenshot" className="max-h-40 w-full object-contain"/>
+            <p className="truncate text-[11px] text-slate-300">{image.name}</p>
+            <button type="button" onClick={()=>removeImage(image.id)} className="min-h-11 underline">Bild entfernen</button>
+          </li>)}
+        </ul>}
+        <p className="text-[11px] text-slate-400">Bilder verbleiben in dieser Sitzung und werden nicht serverseitig gespeichert. Bei Kontowechsel/Schließen gehen sie verloren.</p>
+      </section>
       <form onSubmit={add} className="space-y-2">
         <label htmlFor="buddy-note-draft" className="block text-slate-200">Notiz oder Chat-Vokabel</label>
         <textarea id="buddy-note-draft" rows={2} maxLength={500} disabled={!userId || busy || !!conflict}
@@ -395,19 +408,6 @@ export function BuddyStickyNotes({ initialText = '', captureRequest = 0 }: { ini
           );
         })}
       </ul>
-      <section aria-label="Private Bildreferenzen" className="space-y-2 rounded-xl border border-cyan-300/20 p-2">
-        <button type="button" onClick={()=>setCaptureOpen(open=>!open)}
-          className="min-h-11 rounded-lg border border-cyan-300/40 px-3 font-medium text-cyan-100">JaJa CAM · Screenshot / Markieren</button>
-        {captureOpen && <BuddyCapturePanel onAttach={attachImage} onClose={()=>setCaptureOpen(false)} />}
-        {images.length>0&&<ul className="grid gap-2">
-          {images.map(image=><li key={image.id} className="rounded border border-slate-700 p-2">
-            <img src={image.previewUrl} alt="Lokaler markierter Screenshot" className="max-h-40 w-full object-contain"/>
-            <p className="truncate text-[11px] text-slate-300">{image.name}</p>
-            <button type="button" onClick={()=>removeImage(image.id)} className="min-h-11 underline">Bild entfernen</button>
-          </li>)}
-        </ul>}
-        <p className="text-[11px] text-slate-400">Bilder verbleiben in dieser Sitzung und werden nicht serverseitig gespeichert. Bei Kontowechsel/Schließen gehen sie verloren.</p>
-      </section>
       {ownerPromptAllowed&&<section aria-label="Owner Frontend-Prompt" className="space-y-2 rounded-xl border border-violet-400/40 bg-violet-950/20 p-2">
         <h3 className="text-sm font-bold text-violet-100">Frontend-Prompt · Nur Owner</h3>
         <p className="text-slate-300">Wähle oben einzelne bestätigte JaJa-Notizen aus. Der Text wird lokal mit passenden Fachbegriffen erzeugt und nicht an externe KI-Dienste übertragen.</p>
