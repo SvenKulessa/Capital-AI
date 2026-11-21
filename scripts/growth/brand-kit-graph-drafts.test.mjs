@@ -202,8 +202,8 @@ const licenseRound=(record=sourceRound())=>({
   sourceSha256:record.sourceSha256,commercialParaphraseAllowed:true,
   reviewed:true,evidenceRef:'rights-ledger:source-round-001',
 });
-const scopeRound=(rightsLedger=[licenseRound()])=>({
-  kind:'SERVER_VERIFIED_TENANT_SCOPE',authenticated:true,tenantId:TENANT,rightsLedger,
+const scopeRound=(rightsLedger=[licenseRound()],consentLedger=[])=>({
+  kind:'SERVER_VERIFIED_TENANT_SCOPE',authenticated:true,tenantId:TENANT,rightsLedger,consentLedger,
 });
 const requestRound=(patch={})=>({
   tenantId:TENANT,channel:'X',records:[sourceRound()],feedback:[],
@@ -281,7 +281,16 @@ test('QUALITY: consented feedback is versioned candidate only, never template pr
   const feedback={tenantId:TENANT,eventId:'feedback_alpha_001',kind:'user_feedback',
     topic:'content_quality',summary:'Die Beschriftung lässt sich sehr gut lesen.',
     observedAt:'2026-11-21T11:00:00Z',consent:true,anonymized:true};
-  const round=buildLicensedContextRound(requestRound({feedback:[feedback]}),scopeRound());
+  const receipt={tenantId:TENANT,eventId:feedback.eventId,eventSha256:sha(JSON.stringify(feedback)),
+    consentGranted:true,anonymizationVerified:true,evidenceRef:'consent-ledger:feedback-alpha-001'};
+  const round=buildLicensedContextRound(requestRound({feedback:[feedback]}),
+    scopeRound([licenseRound()],[receipt]));
+  const unverified=buildLicensedContextRound(requestRound({feedback:[feedback]}),scopeRound());
+  assert.deepEqual(unverified.templateEvaluation.candidates,[]);
+  assert.equal(unverified.templateEvaluation.rejectedConsentCount,1);
+  const wrongTenant=buildLicensedContextRound(requestRound({feedback:[feedback]}),
+    scopeRound([licenseRound()],[{...receipt,tenantId:'tenant_beta_001'}]));
+  assert.deepEqual(wrongTenant.templateEvaluation.candidates,[]);
   assert.equal(round.templateEvaluation.baseVersion,'1.0.0');
   assert.equal(round.templateEvaluation.candidates.length,1);
   assert.match(round.templateEvaluation.candidates[0].proposedVersion,
