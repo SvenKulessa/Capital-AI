@@ -310,7 +310,8 @@ export function buildLicensedContextRound(input,trustedScope){
     ||typeof evaluatedAt!=='string'||!Number.isFinite(Date.parse(evaluatedAt))
     ||!Array.isArray(records)||records.length>3||!Array.isArray(feedback)
     ||feedback.length>80||!Array.isArray(trustedScope.rightsLedger)
-    ||trustedScope.rightsLedger.length>16)
+    ||trustedScope.rightsLedger.length>16||!Array.isArray(trustedScope.consentLedger??[])
+    ||(trustedScope.consentLedger??[]).length>80)
     throw Error('LICENSED_BATCH_INVALID');
   if(feedback.some(x=>x?.tenantId!==tenantId))
     throw Error('LICENSED_FEEDBACK_TENANT_MISMATCH');
@@ -346,8 +347,16 @@ export function buildLicensedContextRound(input,trustedScope){
     }
     accepted.push(record);grants.push(grant);
   }
-  const allowedFeedback=feedback.filter(f=>f?.kind==='user_feedback'
-    &&f?.anonymized===true&&f?.consent===true);
+  const allowedFeedback=feedback.filter(f=>{
+    if(f?.kind!=='user_feedback'||f?.anonymized!==true||f?.consent!==true)return false;
+    // Only a separately trusted, tenant-bound consent/anonymization receipt admits feedback.
+    const receipts=(trustedScope.consentLedger??[]).filter(x=>
+      x?.tenantId===tenantId&&x.eventId===f.eventId
+      &&x.eventSha256===sha(JSON.stringify(f))
+      &&x.consentGranted===true&&x.anonymizationVerified===true
+      &&typeof x.evidenceRef==='string'&&/^[A-Za-z0-9_.:/#-]{6,220}$/.test(x.evidenceRef));
+    return receipts.length===1;
+  });
   const draft=buildBrandedGrowthDraft({channel,records:accepted,
     trustedRights:grants,feedback:allowedFeedback,evaluatedAt});
   const image=draft.socialPackage.assets.find(x=>x.kind==='IMAGE');
