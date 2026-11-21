@@ -30,7 +30,7 @@ function send(method,params={}) {
 }
 async function evaluate(expression) {
   const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});
-  if(result.exceptionDetails)throw new Error('EVALUATION_FAILED');
+  if(result.exceptionDetails)throw new Error('EVALUATION_FAILED_' + String(result.exceptionDetails.exception?.description || result.exceptionDetails.text || 'UNKNOWN').slice(0,180));
   return result.result?.value;
 }
 async function until(expression,label) {
