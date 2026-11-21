@@ -18,7 +18,7 @@ const USAGE = [
   '  node scripts/solo2-config.mjs validate --file PATH',
   '  node scripts/solo2-config.mjs set --file PATH --key FIELD --value VALUE',
   'Settable fields: mode, tenantRef, domains, skills, online.ciPollSeconds,',
-  'limits.maxRepairAttempts, resources.ID.{selected,owner,requestedRight,licenseEvidence,rightsEvidence},',
+  'limits.maxRepairAttempts, offline.{modelRef,ragRef}, resources.ID.{selected,owner,requestedRight,licenseEvidence,rightsEvidence},',
   'pipelines.ID.selected. No keys, tokens or URLs are accepted.',
 ].join('\n');
 
@@ -70,6 +70,7 @@ function bool(raw) {
 function setValue(profile, key, value) {
   if (key === 'mode' || key === 'tenantRef') profile[key] = value;
   else if (key === 'domains' || key === 'skills') profile[key] = value.split(',').filter(Boolean);
+  else if (key === 'offline.modelRef' || key === 'offline.ragRef') profile.offline[key.split('.')[1]] = value;
   else if (key === 'online.ciPollSeconds') profile.online.ciPollSeconds = Number(value);
   else if (key === 'limits.maxRepairAttempts') profile.limits.maxRepairAttempts = Number(value);
   else {
