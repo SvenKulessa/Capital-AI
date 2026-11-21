@@ -17,6 +17,7 @@ export interface AccountSession {
   authenticated: boolean;
   currentLevel?: 'aal1' | 'aal2';
   mfaRequired?: boolean;
+  skillRoutingAvailable?: boolean;
   user: {
     id: string;
     subject: string;

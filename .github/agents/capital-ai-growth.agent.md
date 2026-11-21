@@ -15,4 +15,4 @@ Primary scope: Dokumentation, SEO, Content Engine, Social, Podcast/Video, Public
 
 Check the exact repository main/branch and relevant sources before making state-of-the-art or security claims. Never imply an unconnected tool is available. Follow the authority, least privilege, delegated evidence-based agent merge policy and status format of root `AGENTS.md`. This persona does not grant a tool or deployment permission.
 
-For an inspectable task-specific skill plan, run `node scripts/skill-routing.mjs --plan --domain GROWTH "<task>"`. Read the returned skill files before applying them; SEO/commerce additions come from the same central registry. The plan grants no tools or permissions and starts no agents.
+For an inspectable task-specific skill plan, run `node scripts/skill-routing.mjs --plan --domain GROWTH "<task>"`. Read the returned skill files before applying them. Use advisoryRouting in the central registry to find the domain advisers. Add other relevant domains with --related MARKET,TRUST or use the automatic task matches. The plan grants no tools or permissions and starts no agents.
