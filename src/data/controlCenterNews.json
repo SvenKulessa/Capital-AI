@@ -1,101 +1,101 @@
 {
   "schema": "CAPITAL_AI_CONTROL_CENTER_NEWS@1",
   "state": "DRAFT_NOT_PUBLISHED",
-  "lastBatchPr": 800,
-  "mergeCount": 640,
-  "fromPr": 771,
-  "sourceSha": "bd1106b0582f8518a0d730d5db3d01e76c4f11ea",
-  "generatedAt": "2026-11-19T04:27:29.443Z",
-  "title": "CAPITAL-AI: Repository-Updates bis PR #800",
-  "article": "# CAPITAL-AI: Repository-Updates bis PR #800\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #771](https://github.com/SvenKulessa/Capital-AI/pull/771): CAPITAL-AI-TRUST bump actions/setup-node from 4 to 7\n- [PR #780](https://github.com/SvenKulessa/Capital-AI/pull/780): CAPITAL-AI-TRUST Folgeprompts auf konkrete Auftragsgrenzen begrenzen\n- [PR #762](https://github.com/SvenKulessa/Capital-AI/pull/762): CAPITAL-AI-PRODUCT Learning Mastermind und privater, sicherheitsgeprüfter Profilbild-Upload\n- [PR #774](https://github.com/SvenKulessa/Capital-AI/pull/774): CAPITAL-AI-TRUST bump nats from 2.15.2-alpine to 2.15.3-alpine in /deploy\n- [PR #758](https://github.com/SvenKulessa/Capital-AI/pull/758): CAPITAL-AI-TRUST Credential Lifecycle Manager mit LangGraph-Ablaufwarnungen\n- [PR #773](https://github.com/SvenKulessa/Capital-AI/pull/773): CAPITAL-AI-TRUST bump rust from 1.99.1-alpine3.23 to 1.100.0-alpine3.23 in /deploy\n- [PR #784](https://github.com/SvenKulessa/Capital-AI/pull/784): CAPITAL-AI-GROWTH X OAuth Callback und isolierte Pay-Per-Use-Publishing-App\n- [PR #790](https://github.com/SvenKulessa/Capital-AI/pull/790): CAPITAL-AI-TRUST Google OAuth YouTube/Drive scope reconciliation\n- [PR #789](https://github.com/SvenKulessa/Capital-AI/pull/789): CAPITAL-AI-TRUST Build-only Vite and picomatch runtime isolation\n- [PR #791](https://github.com/SvenKulessa/Capital-AI/pull/791): CAPITAL-AI-TRUST Capture audit exit codes in npm update evidence under errexit\n- [PR #793](https://github.com/SvenKulessa/Capital-AI/pull/793): CAPITAL-AI-TRUST Count all CI retry attempts in weekly evidence\n- [PR #794](https://github.com/SvenKulessa/Capital-AI/pull/794): CAPITAL-AI-GROWTH Governance & Evidence Sprint B2B-Landingpage und Lead-Pfad\n- [PR #795](https://github.com/SvenKulessa/Capital-AI/pull/795): CAPITAL-AI-PLATFORM Development Chain: Concurrency, Pinning und Dependabot-Bündelung\n- [PR #797](https://github.com/SvenKulessa/Capital-AI/pull/797): CAPITAL-AI-PLATFORM AcodeX P1-v2 read-only Operations-Evidence dokumentieren\n- [PR #779](https://github.com/SvenKulessa/Capital-AI/pull/779): CAPITAL-AI-TRUST Governance-Audit und nicht autorisierende Evidence-Vorlagen\n- [PR #798](https://github.com/SvenKulessa/Capital-AI/pull/798): CAPITAL-AI-PLATFORM AcodeX P1-v2 Evidence SHA-256-Provenance ergänzen\n- [PR #763](https://github.com/SvenKulessa/Capital-AI/pull/763): CAPITAL-AI-PLATFORM Synchronisierte Trusted Adapters und getrennte Render BuildIdentity\n- [PR #799](https://github.com/SvenKulessa/Capital-AI/pull/799): CAPITAL-AI-TRUST Surface non-attested runtime readback drift in CI summary\n- [PR #796](https://github.com/SvenKulessa/Capital-AI/pull/796): CAPITAL-AI-PLATFORM bump nodemailer from 10.5.0 to 10.6.0 in /deploy/runtime in the runtime-minor-patch group\n- [PR #800](https://github.com/SvenKulessa/Capital-AI/pull/800): CAPITAL-AI-PLATFORM Owner-privaten GitHub Render GA4 Evidence-Adapter integrieren\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuelle: [bd1106b0582f](https://github.com/SvenKulessa/Capital-AI/commit/bd1106b0582f8518a0d730d5db3d01e76c4f11ea)\n",
+  "lastBatchPr": 825,
+  "mergeCount": 660,
+  "fromPr": 801,
+  "sourceSha": "001fc5535df18a08519538a81ba9ca3cc494573f",
+  "generatedAt": "2026-11-19T16:19:14.138Z",
+  "title": "CAPITAL-AI: Repository-Updates bis PR #825",
+  "article": "# CAPITAL-AI: Repository-Updates bis PR #825\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #801](https://github.com/SvenKulessa/Capital-AI/pull/801): CAPITAL-AI-TRUST combined milestone draft from PR 800\n- [PR #768](https://github.com/SvenKulessa/Capital-AI/pull/768): CAPITAL-AI-TRUST bump the routine-minor-patch group across 1 directory with 5 updates\n- [PR #804](https://github.com/SvenKulessa/Capital-AI/pull/804): CAPITAL-AI-PRODUCT Owner Operations Visual Kit bildgetreu und evidence-bound integrieren\n- [PR #803](https://github.com/SvenKulessa/Capital-AI/pull/803): CAPITAL-AI-TRUST Node-26 Lizenz-Evidence historisch abgrenzen und SBOM korrelieren\n- [PR #805](https://github.com/SvenKulessa/Capital-AI/pull/805): CAPITAL-AI-TRUST TypeScript 7.0.2: Review erneuert\n- [PR #806](https://github.com/SvenKulessa/Capital-AI/pull/806): CAPITAL-AI-PRODUCT Owner Operations SECURITY-PR-Filter vervollständigen\n- [PR #808](https://github.com/SvenKulessa/Capital-AI/pull/808): CAPITAL-AI-TRUST Automatische Suppression-Verifier-Regel entfernen\n- [PR #807](https://github.com/SvenKulessa/Capital-AI/pull/807): CAPITAL-AI-TRUST bump the routine-minor-patch group with 2 updates\n- [PR #752](https://github.com/SvenKulessa/Capital-AI/pull/752): CAPITAL-AI-MARKET Marktnews-Lifecycle: Analytics-Überblick und kategorisiertes News-Archiv\n- [PR #777](https://github.com/SvenKulessa/Capital-AI/pull/777): CAPITAL-AI-PLATFORM Isolierter LangGraph RAG Multi-Agent Worker (offline, default-off)\n- [PR #811](https://github.com/SvenKulessa/Capital-AI/pull/811): CAPITAL-AI-PLATFORM Render SHA / BellSoft OCI rights / LangGraph Worker Admission\n- [PR #786](https://github.com/SvenKulessa/Capital-AI/pull/786): CAPITAL-AI-PRODUCT Governed Agent Operations pilot: 3 synthetic workflows, LangGraph and B2B preview\n- [PR #812](https://github.com/SvenKulessa/Capital-AI/pull/812): CAPITAL-AI-PLATFORM Bind LangGraph worker SBOM, license inventory and Render admission evidence\n- [PR #813](https://github.com/SvenKulessa/Capital-AI/pull/813): CAPITAL-AI-GROWTH Agent Operations B2B-Pilot: Evidence, interne Landing-Vorschau und organischer Funnel\n- [PR #817](https://github.com/SvenKulessa/Capital-AI/pull/817): CAPITAL-AI-GROWTH Owner-JPEG für X-Launch hashgebunden integrieren\n- [PR #818](https://github.com/SvenKulessa/Capital-AI/pull/818): CAPITAL-AI-PLATFORM Externe ChatGPT Multi-Agent-Automationen im Tool-Katalog nachweisen\n- [PR #820](https://github.com/SvenKulessa/Capital-AI/pull/820): CAPITAL-AI-TRUST OpenSSL-Paketfix für Alpine 3.24 fail-closed absichern\n- [PR #823](https://github.com/SvenKulessa/Capital-AI/pull/823): CAPITAL-AI-PLATFORM Buildx-HTTP2-Kontexttransport für große Docker-Allowlist stabilisieren\n- [PR #822](https://github.com/SvenKulessa/Capital-AI/pull/822): CAPITAL-AI-PRODUCT GA4 Owner-Dashboard: ungültige Eventwerte fail-closed behandeln\n- [PR #825](https://github.com/SvenKulessa/Capital-AI/pull/825): CAPITAL-AI-PRODUCT CAP-BP-001 Market Integrity Gate blueprint and offline negative tests\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuelle: [001fc5535df1](https://github.com/SvenKulessa/Capital-AI/commit/001fc5535df18a08519538a81ba9ca3cc494573f)\n",
   "sourcePrs": [
     {
-      "number": 771,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/771"
+      "number": 801,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/801"
     },
     {
-      "number": 780,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/780"
+      "number": 768,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/768"
     },
     {
-      "number": 762,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/762"
+      "number": 804,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/804"
     },
     {
-      "number": 774,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/774"
+      "number": 803,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/803"
     },
     {
-      "number": 758,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/758"
+      "number": 805,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/805"
     },
     {
-      "number": 773,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/773"
+      "number": 806,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/806"
     },
     {
-      "number": 784,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/784"
+      "number": 808,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/808"
     },
     {
-      "number": 790,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/790"
+      "number": 807,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/807"
     },
     {
-      "number": 789,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/789"
+      "number": 752,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/752"
     },
     {
-      "number": 791,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/791"
+      "number": 777,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/777"
     },
     {
-      "number": 793,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/793"
+      "number": 811,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/811"
     },
     {
-      "number": 794,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/794"
+      "number": 786,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/786"
     },
     {
-      "number": 795,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/795"
+      "number": 812,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/812"
     },
     {
-      "number": 797,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/797"
+      "number": 813,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/813"
     },
     {
-      "number": 779,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/779"
+      "number": 817,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/817"
     },
     {
-      "number": 798,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/798"
+      "number": 818,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/818"
     },
     {
-      "number": 763,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/763"
+      "number": 820,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/820"
     },
     {
-      "number": 799,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/799"
+      "number": 823,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/823"
     },
     {
-      "number": 796,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/796"
+      "number": 822,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/822"
     },
     {
-      "number": 800,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/800"
+      "number": 825,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/825"
     }
   ],
   "contentEnginePlan": {
     "contractVersion": "CAPITAL_AI_CONTENT_ENGINE@1",
     "campaign": {
-      "campaignId": "capital-ai-repository-pr-800",
+      "campaignId": "capital-ai-repository-pr-825",
       "productId": "capital-ai-web",
-      "sourceSha": "bd1106b0582f8518a0d730d5db3d01e76c4f11ea",
+      "sourceSha": "001fc5535df18a08519538a81ba9ca3cc494573f",
       "canonicalUrl": "https://capital-ai.online/",
       "locale": "de-DE",
       "objective": "Belegte Zusammenfassung der letzten 20 gemergten PRs als Blogentwurf.",
@@ -111,18 +111,18 @@
         "TEXT"
       ],
       "sourceUrls": [
-        "https://github.com/SvenKulessa/Capital-AI/pull/771",
-        "https://github.com/SvenKulessa/Capital-AI/pull/780",
-        "https://github.com/SvenKulessa/Capital-AI/pull/762",
-        "https://github.com/SvenKulessa/Capital-AI/pull/774",
-        "https://github.com/SvenKulessa/Capital-AI/pull/758",
-        "https://github.com/SvenKulessa/Capital-AI/pull/773",
-        "https://github.com/SvenKulessa/Capital-AI/pull/784",
-        "https://github.com/SvenKulessa/Capital-AI/pull/790",
-        "https://github.com/SvenKulessa/Capital-AI/pull/789",
-        "https://github.com/SvenKulessa/Capital-AI/pull/791",
-        "https://github.com/SvenKulessa/Capital-AI/pull/793",
-        "https://github.com/SvenKulessa/Capital-AI/pull/794"
+        "https://github.com/SvenKulessa/Capital-AI/pull/801",
+        "https://github.com/SvenKulessa/Capital-AI/pull/768",
+        "https://github.com/SvenKulessa/Capital-AI/pull/804",
+        "https://github.com/SvenKulessa/Capital-AI/pull/803",
+        "https://github.com/SvenKulessa/Capital-AI/pull/805",
+        "https://github.com/SvenKulessa/Capital-AI/pull/806",
+        "https://github.com/SvenKulessa/Capital-AI/pull/808",
+        "https://github.com/SvenKulessa/Capital-AI/pull/807",
+        "https://github.com/SvenKulessa/Capital-AI/pull/752",
+        "https://github.com/SvenKulessa/Capital-AI/pull/777",
+        "https://github.com/SvenKulessa/Capital-AI/pull/811",
+        "https://github.com/SvenKulessa/Capital-AI/pull/786"
       ]
     },
     "vocabularyContext": {
