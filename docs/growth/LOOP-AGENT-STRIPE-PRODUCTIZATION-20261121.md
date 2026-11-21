@@ -41,7 +41,7 @@ Price evidence model: CURRENT_STRIPE_PRICE (readback only); INTERNAL_COST_FLOOR 
 
 ## G. Entitlement implementation
 LOOP_AGENT_ENTITLEMENT@1 projects tenantId, subjectId, tier, capabilities, limits, periodEnd, Stripe customer/subscription/price/event evidence and a canonical SHA-256 integrity digest.
-Active subscriptions require a valid period; trialing requires independently enabled product policy; canceled, past_due, unpaid, incomplete and unknown states resolve to BLOCKED and no paid Loop access.
+Signed subscription deletion revokes access even if provider readback briefly reports active. Active subscriptions require a valid period; trialing requires independently enabled product policy; canceled, past_due, unpaid, incomplete and unknown states resolve to BLOCKED and no paid Loop access.
 A hash is not authority: authorizeLoopAction requires the trusted existing persisted-entitlement readback in addition to identical full digest, the authenticated tenant/user/repository scope and independent provider/policy/TRUST/QUALITY/membership/capability evidence.
 No browser tier or Stripe metadata grants repository, GitHub administration, merge, deploy or production mutation rights.
 
@@ -62,14 +62,14 @@ calculateLoopKpis returns null for zero denominators and rejects contradictory c
 CADS contract views: Pricing, Entitlements, Usage, Loop Economics, Growth Funnel. Empty states are NOT_PROVEN / NO_DATA / INSUFFICIENT_EVIDENCE as applicable; do not construct fabricated graphs or fork the existing Universe visual design.
 
 ## K. Tests executed
-Local Node.js 22.16.0 offline test run: node --test server/loop-agent-product.test.mjs scripts/growth/loop-agent-productization-acceptance.test.mjs : 36 tests, 36 PASS, 0 FAIL.
+Local Node.js 22.16.0 offline test run: node --test server/loop-agent-product.test.mjs scripts/growth/loop-agent-productization-acceptance.test.mjs : 37 tests, 37 PASS, 0 FAIL.
 Also node --check of affected source and CLI.
 Coverage: valid mapping, unknown/inactive prices, trial policy, cancel/unpaid/past_due/unknown status, wrong tenant/user/customer/repository, forged/missing/stale entitlement, independent authority checks, quota boundary, fake concurrent admission, explicit event replay, invalid signature, forged processed inbox, missing readback, deterministic receipt, zero KPIs and CLI no real claims.
 The event inbox, quotas and usage storage in the CLI are in-memory test doubles; parallel and persistence behavior MUST NOT be promoted to live. No real Stripe test checkout or Postgres integration was executed.
 
 ## L. CI evidence
 Existing Unit Economics Tests workflow was extended with targeted source checks and synthetic acceptance tests; no new required check created.
-GitHub Docker Security Gate, Domain Governance, CodeQL and overall PR merge eligibility require independent observed runs on the final PR head. Until observed, CI = NOT_PROVEN; do not infer green from local tests.
+At earlier head 26d8ca6ae9a597367a72e9adf615f279feb7bd6d the Unit Economics Tests, PostgreSQL 17 and Domain Governance checks completed successfully. This source was then revised; all applicable checks need to be observed on the final PR head. Until that completes, final CI = NOT_PROVEN; do not infer green from local tests.
 
 ## M. Security findings
 Confirmed design risks requiring conservative denial:
