@@ -24,6 +24,11 @@ function secretKey(env) {
 function cookieString(value, maxAge) {
   return COOKIE + '=' + value + '; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=' + maxAge;
 }
+function appendPrivateCookie(res, value, maxAge) {
+  const existing = res.getHeader?.('Set-Cookie');
+  const preserved = existing ? (Array.isArray(existing) ? existing : [existing]) : [];
+  res.setHeader('Set-Cookie', [...preserved, cookieString(value,maxAge)]);
+}
 function getCookie(req) {
   const cookies = String(req.headers?.cookie || '').split(';');
   const entry = cookies.map(x => x.trim()).find(x => x.startsWith(COOKIE + '='));
@@ -87,7 +92,7 @@ export function createBuddyGeminiByok({ env = process.env, auth, fetchImpl = fet
     // Revocation must work even when the provider feature has been disabled.
     if (isStatus && req.method === 'DELETE') {
       if (!auth?.sameOrigin?.(req)) {json(res,403,{error:'forbidden_origin'});return true;}
-      res.setHeader('Set-Cookie',cookieString('',0));
+      appendPrivateCookie(res,'',0);
       json(res,200,{removed:true});return true;
     }
     if (!secretKey(env) || env.BUDDY_GEMINI_BYOK_ENABLED !== 'true') {
@@ -116,7 +121,7 @@ export function createBuddyGeminiByok({ env = process.env, auth, fetchImpl = fet
       if (typeof key !== 'string' || !KEY_FORMAT.test(key)) {
         json(res,400,{error:'invalid_gemini_key_format'});return true;
       }
-      res.setHeader('Set-Cookie',cookieString(seal(user.userId,key,env,now()),TTL));
+      appendPrivateCookie(res,seal(user.userId,key,env,now()),TTL);
       json(res,200,{provider:'gemini',connected:true,verified:false,model:MODEL,storage:'ENCRYPTED_BROWSER_COOKIE'});
       return true;
     }
