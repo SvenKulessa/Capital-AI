@@ -7,7 +7,13 @@ on:
       - 'deploy/Dockerfile.langgraph-worker.dockerignore'
       - 'scripts/growth-agent/agent_platform.py'
       - 'scripts/growth-agent/checkpoint_store.py'
+      - 'scripts/growth-agent/product_opportunity_graph.py'
+      - 'scripts/growth-agent/test_product_opportunity_graph.py'
       - 'scripts/growth-agent/worker_service.py'
+      - 'scripts/growth-agent/continuous_pr_supervisor.py'
+      - 'scripts/growth-agent/test_continuous_pr_supervisor.py'
+      - 'scripts/growth-agent/trusted_ci_round_adapter.py'
+      - 'scripts/growth-agent/test_trusted_ci_round_adapter.py'
       - 'scripts/growth-agent/worker_oci_evidence.py'
       - 'scripts/growth-agent/test_worker_oci_evidence.py'
       - 'scripts/growth-agent/worker_os_licenses.py'
@@ -77,6 +83,22 @@ jobs:
           test "$code" -ne 0
           grep -q 'worker disabled by default' <<< "$output"
           echo "DEFAULT_DENY_PASS"
+          # Scope #874: exercise the actual pinned LangGraph StateGraph offline,
+          # without granting additional rights or enabling the candidate worker.
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_product_opportunity_graph.py -v
+          echo "OPPORTUNITY_LANGGRAPH_OFFLINE_TESTED"
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_continuous_pr_supervisor.py -v
+          echo "PR_CI_WAKE_SUPERVISOR_OFFLINE_TESTED"
       - name: Scan entire candidate for vulnerabilities and secrets
         shell: bash
         run: |

@@ -180,6 +180,8 @@
 !scripts/growth/learning-content-draft.mjs
 !scripts/growth/growth-intelligence-drafts.mjs
 !scripts/growth/growth-intelligence-drafts.test.mjs
+!scripts/growth/next-round-planner.mjs
+!scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs

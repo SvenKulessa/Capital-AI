@@ -1,10 +1,10 @@
 FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS crypto-base
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
-# Use patched OpenSSL and zlib packages from the existing stable Alpine 3.24 branch.
+# Use patched OpenSSL, zlib and libxml2 packages from stable Alpine 3.24.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
-# Fail closed if the repository cannot supply the OpenSSL 3.5.9-r1 security revision.
-RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' \
-    && apk info -v zlib libcrypto3 libssl3
+# Fail closed when patched OpenSSL or libxml2 (CVE-2026-86144) is unavailable.
+RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
+    && apk info -v zlib libcrypto3 libssl3 libxml2
 
 FROM crypto-base AS build
 WORKDIR /app
@@ -128,7 +128,7 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
-COPY scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs ./scripts/growth/
+COPY scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs scripts/growth/next-round-planner.mjs scripts/growth/next-round-planner.test.mjs ./scripts/growth/
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs scripts/growth/home-editorial-edition.mjs scripts/growth/home-editorial-edition.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs

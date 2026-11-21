@@ -1,4 +1,5 @@
 import { assessCadsMediaProject, assessCadsAssetIdentity } from '../../../../packages/benchmark-core/growth-quality.mjs';
+import { type OriginalGraphicAsset, type OriginalGraphicOwnerGrant } from '../../../contracts/originalGraphicLicense.ts';
 import {
   type MediaProjectV2,
 } from '../Contracts/MediaProject';
@@ -24,6 +25,7 @@ export interface RenderedMediaAssetIdentity {
   sha256: string;
   mimeType: string;
   evidenceRef: string;
+  originalGraphic?: OriginalGraphicAsset;
 }
 
 function requiredText(value: string, code: string, max = 500): string {
@@ -84,6 +86,7 @@ export function buildContentSocialAssetFromMediaProject(input: {
       500,
     ),
     sourceSha,
+    ...(input.renderedAsset.originalGraphic ? { originalGraphic: input.renderedAsset.originalGraphic } : {}),
   });
   const assetQuality = assessCadsAssetIdentity(asset, { sourceSha, contentId });
   if (assetQuality.technicalStatus !== 'PASS') {
@@ -98,6 +101,7 @@ export function buildMediaProjectPublisherHandoff(input: {
   channel: SocialPublisherChannel;
   assetId: string;
   adapterStates?: Readonly<Record<SocialPublisherChannel, SocialPublisherAdapterState>>;
+  graphicOwnerGrants?: readonly OriginalGraphicOwnerGrant[];
 }): SocialPublisherHandoff {
   const validation = validateMediaProjectV2(input.project);
   if (!validation.ok) throw new Error('SOCIAL_MEDIA_PROJECT_INVALID');
@@ -116,5 +120,6 @@ export function buildMediaProjectPublisherHandoff(input: {
     input.channel,
     input.assetId,
     input.adapterStates ?? CURRENT_SOCIAL_PUBLISHER_ADAPTERS,
+    input.graphicOwnerGrants,
   );
 }

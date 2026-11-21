@@ -1,0 +1,498 @@
+{
+  "generatedAt": "2026-11-20T21:08:42.553Z",
+  "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+  "sourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+  "reviewedStoryDigest": "3b476e900a75e32ef9a5daba6ea3fecb93cdf03588677dcb2fb16a18f6394b31",
+  "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+  "licenseDocumentSha256": "881d39959c8dd1797c6f10e15f3939f46a01ca9aa2e547e782a5edc9637d308e",
+  "licenseId": "LicenseRef-CapitalAI-Owned",
+  "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+  "dependencies": {
+    "font": "public/fonts/PlusJakartaSans-Regular.ttf",
+    "fontLicense": "public/fonts/OFL.txt",
+    "renderer": "@resvg/resvg-wasm",
+    "template": "src/platform/SocialMediaEngine/Branding/EditorialStatusGraphicRenderer.mjs"
+  },
+  "sourceUrl": "https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push",
+  "assets": [
+    {
+      "assetId": "akash-landscape",
+      "contentId": "akash-compute-forwards-design",
+      "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+      "sourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+      "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+      "sha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+      "mimeType": "image/png",
+      "origin": "FIRST_PARTY_TEMPLATE",
+      "creationMethod": "AI_ASSISTED",
+      "renderer": {
+        "id": "EditorialStatusGraphicRenderer",
+        "version": "CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1"
+      },
+      "thirdPartyAssets": false
+    },
+    {
+      "assetId": "akash-portrait",
+      "contentId": "akash-compute-forwards-design",
+      "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+      "sourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+      "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+      "sha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+      "mimeType": "image/png",
+      "origin": "FIRST_PARTY_TEMPLATE",
+      "creationMethod": "AI_ASSISTED",
+      "renderer": {
+        "id": "EditorialStatusGraphicRenderer",
+        "version": "CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1"
+      },
+      "thirdPartyAssets": false
+    }
+  ],
+  "graphicOwnerGrants": [
+    {
+      "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+      "grantId": "owner-akash-landscape-20261120",
+      "grantedBy": "OWNER",
+      "ownerName": "Sven Michael Kulessa",
+      "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+      "authorizedAt": "2026-11-20T21:08:42.553Z",
+      "decision": "LICENSED",
+      "licenseId": "LicenseRef-CapitalAI-Owned",
+      "asset": {
+        "assetId": "akash-landscape",
+        "contentId": "akash-compute-forwards-design",
+        "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+        "sourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+        "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+        "sha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+        "mimeType": "image/png",
+        "origin": "FIRST_PARTY_TEMPLATE",
+        "creationMethod": "AI_ASSISTED",
+        "renderer": {
+          "id": "EditorialStatusGraphicRenderer",
+          "version": "CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1"
+        },
+        "thirdPartyAssets": false
+      },
+      "allowedChannels": [
+        "WEBSITE",
+        "INSTAGRAM",
+        "X",
+        "LINKEDIN"
+      ],
+      "aiAssistanceDisclosed": true
+    },
+    {
+      "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+      "grantId": "owner-akash-portrait-20261120",
+      "grantedBy": "OWNER",
+      "ownerName": "Sven Michael Kulessa",
+      "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+      "authorizedAt": "2026-11-20T21:08:42.553Z",
+      "decision": "LICENSED",
+      "licenseId": "LicenseRef-CapitalAI-Owned",
+      "asset": {
+        "assetId": "akash-portrait",
+        "contentId": "akash-compute-forwards-design",
+        "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+        "sourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+        "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+        "sha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+        "mimeType": "image/png",
+        "origin": "FIRST_PARTY_TEMPLATE",
+        "creationMethod": "AI_ASSISTED",
+        "renderer": {
+          "id": "EditorialStatusGraphicRenderer",
+          "version": "CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1"
+        },
+        "thirdPartyAssets": false
+      },
+      "allowedChannels": [
+        "WEBSITE",
+        "INSTAGRAM",
+        "X",
+        "LINKEDIN"
+      ],
+      "aiAssistanceDisclosed": true
+    }
+  ],
+  "plan": {
+    "contractVersion": "CAPITAL_AI_CONTENT_ENGINE@1",
+    "campaign": {
+      "campaignId": "akash-editorial-20261120",
+      "productId": "capital-ai-learning-hub",
+      "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+      "canonicalUrl": "https://capital-ai.online/",
+      "locale": "de-DE",
+      "objective": "Akash Compute Forwards als Entwurf erklären und Pilot sowie Lieferstatus sachlich abgrenzen.",
+      "audience": [
+        "FinTech-Lernende",
+        "KI-Infrastrukturentwickler"
+      ],
+      "channels": [
+        "WEBSITE",
+        "INSTAGRAM",
+        "X",
+        "LINKEDIN"
+      ],
+      "outputs": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "sourceUrls": [
+        "https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push"
+      ]
+    },
+    "vocabularyContext": {
+      "catalogCount": 386,
+      "terms": [
+        {
+          "id": "fintech",
+          "term": "FinTech",
+          "definition": "Einsatz technologischer Lösungen für Finanzprodukte, Finanzdienste oder deren Infrastruktur.",
+          "category": "FinTech & Finanzinfrastruktur",
+          "level": "Einsteiger",
+          "thesaurus": [
+            "Financial Technology",
+            "Finanztechnologie",
+            "Finanztechnologiebranche"
+          ],
+          "path": "/vocabulary/fintech"
+        }
+      ]
+    },
+    "modules": [
+      {
+        "module": "COPY",
+        "capability": "CONTENT_DRAFTING",
+        "state": "READY_FOR_DRAFT",
+        "productionEligible": false,
+        "reason": "Architecture A: standard APIs/OSS are preferred before generative provider spend"
+      },
+      {
+        "module": "URL_CONTEXT",
+        "capability": "URL_CONTEXT",
+        "state": "RESTRICTED",
+        "productionEligible": false,
+        "reason": "only use explicitly supplied or policy-admitted URLs"
+      },
+      {
+        "module": "IMAGE",
+        "capability": "IMAGE_GENERATION",
+        "state": "READY_FOR_DRAFT",
+        "productionEligible": false,
+        "reason": "use only rights-cleared input assets and CAPITAL-AI branding references"
+      },
+      {
+        "module": "PUBLISHER",
+        "capability": null,
+        "state": "INTEGRATION_PENDING",
+        "productionEligible": false,
+        "reason": "Social Media Engine publisher adapter is intentionally separate until the migration/cutover is complete."
+      }
+    ],
+    "graphicLicenses": [
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-landscape",
+        "assetSha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+        "channel": "WEBSITE",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-landscape-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      },
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-landscape",
+        "assetSha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+        "channel": "INSTAGRAM",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-landscape-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      },
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-landscape",
+        "assetSha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+        "channel": "X",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-landscape-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      },
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-landscape",
+        "assetSha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+        "channel": "LINKEDIN",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-landscape-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      },
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-portrait",
+        "assetSha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+        "channel": "WEBSITE",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-portrait-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      },
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-portrait",
+        "assetSha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+        "channel": "INSTAGRAM",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-portrait-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      },
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-portrait",
+        "assetSha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+        "channel": "X",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-portrait-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      },
+      {
+        "contractVersion": "CAPITAL_AI_ORIGINAL_GRAPHIC_LICENSE@1",
+        "assetId": "akash-portrait",
+        "assetSha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+        "channel": "LINKEDIN",
+        "state": "LICENSED_FOR_CHANNEL",
+        "reason": "MATCHED_OWNER_GRANT",
+        "graphicUseAllowed": true,
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "grantRef": "owner-akash-portrait-20261120",
+        "authorizationEvidenceRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "rightsHolder": "Sven Michael Kulessa",
+        "sourceRights": "NOT_PROVEN",
+        "editorialReview": "REVIEW_REQUIRED",
+        "publicationAllowed": false
+      }
+    ],
+    "visualIdentity": {
+      "id": "CAPITAL_AI_UNIVERSE@1",
+      "palette": [
+        "cyan",
+        "violet",
+        "gold",
+        "pink",
+        "rose",
+        "blue",
+        "green"
+      ],
+      "artDirection": "ORIGINAL_COSMIC_FINTECH",
+      "motifs": [
+        "orbital-rings",
+        "constellation-network",
+        "luminous-data-grid",
+        "spectral-hud"
+      ],
+      "visualRule": "ALL_SEVEN_COLORS_PER_VISUAL",
+      "accessibility": "COLOR_IS_DECORATIVE",
+      "franchiseAssets": "NOT_PERMITTED",
+      "publication": "DRAFT_ONLY"
+    },
+    "cadsQuality": {
+      "schemaVersion": "CAPITAL_AI_CADS_GROWTH_QUALITY@1",
+      "benchmarkEvidenceSchema": "CAPITAL_AI_BENCHMARK_EVIDENCE@1",
+      "profile": "CONTENT_ENGINE_DRAFT",
+      "technicalStatus": "PASS",
+      "checks": [
+        {
+          "code": "CONTENT_SOURCE_COMMIT",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_CAMPAIGN_IDENTITY",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_CANONICAL_HTTPS",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_AUDIENCE_DEFINED",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_CHANNELS_DEFINED",
+          "status": "PASS"
+        }
+      ],
+      "editorialReview": "REVIEW_REQUIRED",
+      "actualAssetBytes": "NOT_PROVEN",
+      "providerRights": "NOT_PROVEN",
+      "productionApproval": false,
+      "securityApproval": false,
+      "licenseApproval": false,
+      "publicationApproval": false,
+      "customerPurchaseApproval": false
+    },
+    "publication": {
+      "adapter": "SOCIAL_MEDIA_ENGINE",
+      "state": "INTEGRATION_PENDING",
+      "publicPublishAllowed": false
+    }
+  },
+  "socialPackage": {
+    "contractVersion": "CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1",
+    "campaignId": "akash-editorial-20261120",
+    "contentId": "akash-compute-forwards-design",
+    "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+    "canonicalUrl": "https://capital-ai.online/",
+    "locale": "de-DE",
+    "publicationAuthority": "SOCIAL_MEDIA_ENGINE_ONLY",
+    "campaign": {
+      "campaignId": "akash-editorial-20261120",
+      "productId": "capital-ai-learning-hub",
+      "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+      "canonicalUrl": "https://capital-ai.online/",
+      "locale": "de-DE",
+      "objective": "Akash Compute Forwards als Entwurf erklären und Pilot sowie Lieferstatus sachlich abgrenzen.",
+      "audience": [
+        "FinTech-Lernende",
+        "KI-Infrastrukturentwickler"
+      ],
+      "channels": [
+        "WEBSITE",
+        "INSTAGRAM",
+        "X",
+        "LINKEDIN"
+      ],
+      "outputs": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "sourceUrls": [
+        "https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push"
+      ]
+    },
+    "vocabularyContext": {
+      "catalogCount": 386,
+      "terms": [
+        {
+          "id": "fintech",
+          "term": "FinTech",
+          "definition": "Einsatz technologischer Lösungen für Finanzprodukte, Finanzdienste oder deren Infrastruktur.",
+          "category": "FinTech & Finanzinfrastruktur",
+          "level": "Einsteiger",
+          "thesaurus": [
+            "Financial Technology",
+            "Finanztechnologie",
+            "Finanztechnologiebranche"
+          ],
+          "path": "/vocabulary/fintech"
+        }
+      ]
+    },
+    "assets": [
+      {
+        "assetId": "akash-landscape",
+        "contentId": "akash-compute-forwards-design",
+        "kind": "IMAGE",
+        "sha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+        "mimeType": "image/png",
+        "evidenceRef": "docs/growth/drafts/akash-20261120/akash-landscape.png",
+        "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+        "originalGraphic": {
+          "assetId": "akash-landscape",
+          "contentId": "akash-compute-forwards-design",
+          "sha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+          "mimeType": "image/png",
+          "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+          "sourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+          "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+          "origin": "FIRST_PARTY_TEMPLATE",
+          "creationMethod": "AI_ASSISTED",
+          "renderer": {
+            "id": "EditorialStatusGraphicRenderer",
+            "version": "CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1"
+          },
+          "thirdPartyAssets": false
+        }
+      },
+      {
+        "assetId": "akash-portrait",
+        "contentId": "akash-compute-forwards-design",
+        "kind": "IMAGE",
+        "sha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+        "mimeType": "image/png",
+        "evidenceRef": "docs/growth/drafts/akash-20261120/akash-portrait.png",
+        "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+        "originalGraphic": {
+          "assetId": "akash-portrait",
+          "contentId": "akash-compute-forwards-design",
+          "sha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+          "mimeType": "image/png",
+          "sourceSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+          "sourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+          "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+          "origin": "FIRST_PARTY_TEMPLATE",
+          "creationMethod": "AI_ASSISTED",
+          "renderer": {
+            "id": "EditorialStatusGraphicRenderer",
+            "version": "CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1"
+          },
+          "thirdPartyAssets": false
+        }
+      }
+    ],
+    "approvals": [],
+    "deliveries": []
+  },
+  "sourceRights": "NOT_PROVEN",
+  "editorialReview": "REVIEW_REQUIRED",
+  "publicPublishAllowed": false
+}
