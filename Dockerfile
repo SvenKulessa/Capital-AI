@@ -113,7 +113,7 @@ COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scri
 COPY scripts/domain-skills.test.mjs scripts/solo-maintainer-flow.test.mjs ./scripts/
 COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs ./scripts/
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
-COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
+COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-bundles.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs
 COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { skillSourceAudit } from './skill-bundles.mjs';
 
 const defaultRegistry = JSON.parse(readFileSync(new URL('../.agents/skills/registry.json', import.meta.url), 'utf8'));
 
@@ -49,7 +50,7 @@ function selectSpecialists(task, { domain, registry } = {}) {
 }
 
 // Advisory plan only: no agent spawning, tool calls or permission changes.
-function selectSkillPlan(task, { domain, registry = defaultRegistry } = {}) {
+function selectSkillPlan(task, { domain, registry = defaultRegistry, asOf } = {}) {
   const specialists = selectSpecialists(task, { domain, registry });
   if (!domain) throw new RangeError('primary domain required for a skill plan');
   const routing = registry.taskSkillRouting;
@@ -71,8 +72,12 @@ function selectSkillPlan(task, { domain, registry = defaultRegistry } = {}) {
   const primary = registry.domains[domain];
   const skills = [...new Set([primary.engineering, primary.advisory,
     ...extra.map(x => x.skill), ...specialists.skills, primary.presentation])];
+  const sourceReviews = registry.skillSourceInventory
+    ? skillSourceAudit(registry, asOf).skills.filter(skill => skills.includes(skill.id))
+    : undefined;
   return {
     ...specialists,
+    ...(sourceReviews ? { sourceReviews } : {}),
     status: extra.length || specialists.skills.length ? 'MATCHED' : 'REVIEW_REQUIRED',
     agent: primary.chatAgent,
     skills,

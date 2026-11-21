@@ -10,6 +10,10 @@ const sha256 = value => createHash('sha256').update(value).digest('hex');
 const risks = /[\u202a-\u202e\u2066-\u2069\u200b-\u200f\uFEFF\u0000-\u0008\u000b-\u001f\u007f]/u;
 
 const RECIPES = Object.freeze([
+  {id:'skill-bundle-catalog', priority:2, pattern:/skill[s]?[- ](?:bundles?|inventar|katalog|registry|aktualit[aä]t)|quelleninventar|mcp.adapter|a2a.workflow|e2e.integration/i,
+   domain:'PLATFORM', skills:['skill-lifecycle','integration-engineering','agent-evaluation','revenue-engineering'],
+   title:'Skill-Bundles, Quellen und Integrationen prüfen',
+   prompt:'SOLO2: Prüfe die kanonische Skill-Registry und offizielle Referenzen für Founder-, B2B- und Enterprise-Bundles. Trenne Review-Fälligkeit, Adapter- und E2E-Tests, kommerzielle Rechte und Laufzeitbelege. Erfasse fehlende Nachweise und liefere einen Sandbox-Plan für zulässige Verbindungen.'},
   {id:'rights-name', priority:0, pattern:/rechtekette|produktnamen|markenpr[uü]fung|lizenz(?:en|rechte)?|trademark/i,
    domain:'TRUST', skills:['trust-engineering','legal-compliance','growth-advisory'],
    title:'Rechtekette und Produktnamen validieren',
