@@ -29,9 +29,10 @@ import {
   DollarSign,
   Server,
   ArrowRight,
+  Share2,
 } from 'lucide-react';
 
-export type MainHubId = 'marketscreener' | 'studio' | 'learning' | 'documentation' | 'control-center';
+export type MainHubId = 'marketscreener' | 'studio' | 'learning' | 'documentation' | 'social' | 'control-center';
 
 export interface HubSubpageConfig {
   id: string;
@@ -285,6 +286,24 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         shortDesc: 'Lokaler OFL-Lizenztext', path: '/fonts/OFL.txt' },
       { id: 'domains', name: 'CAPITAL-AI Domains', icon: <Building2 className="w-4 h-4 text-violet-400" />,
         shortDesc: 'Domain-Struktur und Verantwortungsbereiche', path: '/dokumentation/domains' },
+    ],
+  },
+  social: {
+    id: 'social',
+    name: 'Social Hub',
+    shortTitle: 'Social Hub',
+    color: '#F9A8D4',
+    glowColor: 'rgba(249,168,212,0.45)',
+    accentBg: 'bg-pink-400/10 border-pink-300/40 text-pink-200',
+    icon: <Share2 className="h-5 w-5 text-pink-300" />,
+    badge: '4 Bereiche',
+    description: 'Eigene Visual Assets, Content Engine, redaktionelle Beiträge und Lizenzprüfung.',
+    mainPath: '/social',
+    subpages: [
+      { id: 'overview', name: 'Übersicht', icon: <Compass className="h-4 w-4" />, shortDesc: 'Engine Asset-Konzept in sieben Markenfarben', path: '/social?tab=overview' },
+      { id: 'studio', name: 'Content Studio', icon: <Layers className="h-4 w-4" />, shortDesc: 'Entwurf und vorhandene Social Content Engine', path: '/social?tab=studio' },
+      { id: 'news', name: 'News & Blog', icon: <Newspaper className="h-4 w-4" />, shortDesc: 'Eigene redaktionelle Beiträge und Quellennachweise', path: '/social?tab=news' },
+      { id: 'licenses', name: 'Lizenzen', icon: <ShieldCheck className="h-4 w-4" />, shortDesc: 'Veröffentlichungsgrenzen und Freigaben', path: '/social?tab=licenses' },
     ],
   },
   'control-center': {

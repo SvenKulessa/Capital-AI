@@ -4,13 +4,11 @@ import { Hero } from '../../components/Hero';
 
 
 const HomeEditorialNews = lazy(() => import('./HomeEditorialNews').then(module => ({ default: module.HomeEditorialNews })));
-const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
+import { CompactSocialNews } from './CompactSocialNews';
 const KeyPillars = lazy(() => import('../../components/KeyPillars').then(module => ({ default: module.KeyPillars })));
 // Secondary, below-the-fold market widgets should not inflate the initial landing bundle.
-const MarketSentiment = lazy(() => import('../market/MarketSentiment').then(module => ({ default: module.MarketSentiment })));
-const SectorAnalysis = lazy(() => import('../market/SectorAnalysis').then(module => ({ default: module.SectorAnalysis })));
 import type {
   AssetSubclass,
   MainCategory,
@@ -18,11 +16,7 @@ import type {
 } from '../../entities/market/model';
 import type { CoreModule } from '../../entities/module/model';
 
-const MarketOverview = lazy(() =>
-  import('../../components/MarketOverview').then((module) => ({
-    default: module.MarketOverview,
-  })),
-);
+
 
 const HomeHubDirectory = lazy(() =>
   import('../../components/HomeHubDirectory').then((module) => ({
@@ -30,11 +24,7 @@ const HomeHubDirectory = lazy(() =>
   })),
 );
 
-const CoreModules = lazy(() =>
-  import('../../components/CoreModules').then((module) => ({
-    default: module.CoreModules,
-  })),
-);
+
 
 type HomePageProps = {
   currentRoute: string;
@@ -55,24 +45,7 @@ type HomePageProps = {
   onStartProductTour: () => void;
 };
 
-export function HomePage({
-  currentRoute,
-  onNavigate,
-  onOpenMarketscreener,
-  onOpenAnalysis,
-  onOpenSectorAnalysis,
-  onOpenModule,
-  onOpenVocabulary,
-  onOpenPriceAlerts,
-  onOpenMonetization,
-  onOpenWhaleRadar,
-  onNavigateLogin,
-  onSelectSubclass,
-  onExploreMarkets,
-  onSelectAsset,
-  onSelectModule,
-  onStartProductTour,
-}: HomePageProps) {
+export function HomePage({ onNavigate, onStartProductTour, onOpenModule, onOpenSectorAnalysis, onOpenPriceAlerts }: HomePageProps) {
   return (
     <>
 
@@ -131,49 +104,7 @@ export function HomePage({
       <Suspense fallback={null}>
         <KeyPillars />
       </Suspense>
-      <Suspense fallback={null}>
-        <ContentEngineConcept onNavigate={onNavigate} />
-      </Suspense>
-
-      <Suspense fallback={<section role="status" className="px-5 py-8 text-sm text-slate-300">Marktsektoren werden geladen …</section>}>
-        <SectorAnalysis
-          onSelectAsset={onSelectAsset}
-          onOpenPriceAlerts={onOpenPriceAlerts}
-          onExploreMarkets={onExploreMarkets}
-        />
-      </Suspense>
-
-      <Suspense fallback={<section role="status" className="px-5 py-8 text-sm text-slate-300">Marktstimmung wird geladen …</section>}>
-        <MarketSentiment
-          onStartAnalysis={onOpenAnalysis}
-          onExploreMarkets={() => onExploreMarkets()}
-        />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <MarketOverview
-          onSelectAsset={onSelectAsset}
-          onViewAllMarkets={() => onExploreMarkets()}
-        />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <CoreModules
-          onSelectModule={(module) => {
-            if (module.id === 'market-screener' || module.id === 'screener') {
-              onNavigate('/screener');
-            } else if (module.id === 'learning-portal' || module.id === 'vocabulary') {
-              onNavigate('/learning');
-            } else if (module.id === 'pipeline-builder') {
-              onNavigate('/pipeline-builder');
-            } else {
-              onSelectModule(module);
-            }
-          }}
-          onViewAllModules={() => onOpenModule('enterprise-scorer')}
-          onNavigate={onNavigate}
-        />
-      </Suspense>
+      <CompactSocialNews onNavigate={onNavigate} />
 
     </>
   );

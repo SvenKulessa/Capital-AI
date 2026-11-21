@@ -1,6 +1,7 @@
 /** Canonical clean subpage URLs shared by browser navigation and HTTP redirects. */
 const definitions = {
  '/learning': {glossar:['glossar','Vocabulary & Glossar'],flashcards:['karteikasten','Karteikasten'],guides:['methodik','Analyse-Methodik'],patterns:['chart-lernatlas','Chart-Lernatlas'],videos:['videos','Lernvideos'],quiz:['quiz','Tagesquiz'],quizzes:['quizzes','Quizzes & Portfolio-Risiko'],news:['lernimpulse','Lernimpulse'],kontakt:['kontakt','Kontakt'],simulator:['simulator','Portfolio-Simulator']},
+ '/social': {overview:['uebersicht','Übersicht'],studio:['studio','Content Studio'],news:['news','News & Blog'],licenses:['lizenzen','Lizenzen']},
  '/studio': {architecture:['architektur','Pipeline-Architektur'],content:['content','Content Studio'],blueprints:['blueprints','Blueprints'],builder:['builder','Pipeline Builder'],advisor:['berater','Produktberater'],providers:['provider','Data & Providers'],analytics:['analyse','Analytics & Scoring'],benchmark:['benchmark','Benchmark Lab'],console:['konfigurator','Konfigurator'],kontakt:['kontakt','Kontakt']},
  '/marketscreener': {overview:['uebersicht','Übersicht'],newsArchive:['news-archiv','News-Archiv'],scorer:['scorer','Enterprise Scorer'],terminal:['terminal','Screener'],binance:['krypto','Krypto-Kursverlauf'],components:['analysekomponenten','50 Analysekomponenten'],sentiment:['sentiment','Sentiment'],whales:['whale-radar','Whale Radar'],kontakt:['kontakt','Kontakt']},
  '/dokumentation': {blogs:['blogs','Blogs'],byok:['byok','BYOK Dokumentation – PENDING']},

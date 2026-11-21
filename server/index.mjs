@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createProfileAvatarUpload } from './profile-avatar-upload.mjs';
+import { createProfileProviderAvatar } from './profile-provider-avatar.mjs';
 import { startProfileAvatarClamav } from './profile-avatar-clamav.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
@@ -91,6 +92,7 @@ import { beginRequest, finishRequest, metricsAuthorized, operationalSnapshot, re
 import { cadsSnapshot } from './cads-observability.mjs';
 import { createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
 import { inspectChatBuddyKeys } from './chat-buddy-keys.mjs';
+import { createBuddyGeminiByok } from './buddy-gemini-byok.mjs';
 import { learnStatus } from './chat-buddy-learn.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -520,6 +522,8 @@ export function createApp(root = defaultRoot, options = {}) {
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
   const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
   const agentOperationsPilot = createAgentOperationsPilot({ auth, env: runtimeEnv });
+  const profileProviderAvatar = createProfileProviderAvatar({auth,fetchImpl:options.fetchImpl||fetch});
+  const buddyGeminiByok = createBuddyGeminiByok({auth,env:runtimeEnv,fetchImpl:options.fetchImpl||fetch});
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -545,6 +549,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await profileAvatarUpload.handle(req, res, url, json)) return;
+  if (await profileProviderAvatar.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
   if (await socialXPublishOAuthStart.handle(req, res, url, json)) return;
@@ -563,6 +568,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await xUrlContext.handle(req, res, url, json)) return;
   if (await socialPublishOAuthCallback.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
+  if (await buddyGeminiByok.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
