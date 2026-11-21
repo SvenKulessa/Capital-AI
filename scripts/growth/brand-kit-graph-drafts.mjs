@@ -11,6 +11,7 @@ import { buildGrowthIntelligenceDraftBundle } from './growth-intelligence-drafts
 import { evaluateGrowthLearningCandidates } from '../../src/platform/SocialMediaEngine/Learning/FeedbackLearningLoop.mjs';
 import { buildDraftContentSocialPackage } from '../../src/contracts/contentSocialPackage.ts';
 import { planContentCampaign } from '../../src/contracts/contentEngine.ts';
+import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
 export const CONTRACT = 'CAPITAL_AI_BRAND_CONTEXT_DRAFT@1';
 const sha = value => createHash('sha256').update(value).digest('hex');
@@ -224,16 +225,13 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
     providerCalls:0,publishCalls:0};
 }
 
-let wasmReady;
 export async function renderBrandPng(draft) {
   if(draft?.contractVersion!==CONTRACT||draft?.publicationState!=='DRAFT_ONLY'
     ||draft.publicPublishAllowed!==false
     ||sha(Buffer.from(draft?.image?.svg??''))!==draft.image.sha256)
     throw Error('BRAND_PNG_INPUT_UNVERIFIED');
-  const {Resvg,initWasm}=await import('@resvg/resvg-wasm');
-  wasmReady??=Promise.resolve().then(()=>initWasm(readFileSync(
-    new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm')))));
-  await wasmReady;
+  const {Resvg}=await import('@resvg/resvg-wasm');
+  await ensureResvgWasmInitialized();
   const font=readFileSync(new URL('../../public/fonts/PlusJakartaSans-Regular.ttf',import.meta.url));
   const r=new Resvg(draft.image.svg,{font:{fontBuffers:[font],defaultFontFamily:'Plus Jakarta Sans'}});
   try {const image=r.render();try{
