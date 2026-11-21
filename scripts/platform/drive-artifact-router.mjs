@@ -8,6 +8,7 @@ export function planArtifact(input, contract, acodeContract) {
   const hold = reason=>({status:"BLOCKED",reason,driveUpload:"NOT_PROVEN",driveParent:"NOT_PROVEN",deviceSync:"NOT_PROVEN"});
   if (!input || typeof input!=="object" || Array.isArray(input) || input.project!=="CAPITAL-AI") return hold("PROJECT_SCOPE_MISMATCH");
   if (input.sensitivity!=="PUBLIC" && input.sensitivity!=="REDACTED") return hold("CONTENT_PRIVACY_REVIEW_REQUIRED");
+  if (input.privacyReview!=="VERIFIED" || input.rightsReview!=="VERIFIED") return hold("PRIVACY_OR_RIGHTS_EVIDENCE_MISSING");
   if (input.scope!=="ACODE" && input.scope!=="PROJECT") return hold("DESTINATION_SCOPE_REQUIRED");
   if (typeof input.topic!=="string" || !/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/.test(input.topic) || input.topic.length>72) return hold("INVALID_TOPIC");
   const date=input.date;
