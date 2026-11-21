@@ -84,6 +84,12 @@ export function createBuddyGeminiByok({ env = process.env, auth, fetchImpl = fet
     if (!user?.userId || !UUID.test(user.userId)) {
       json(res,401,{error:'authentication_required'});return true;
     }
+    // Revocation must work even when the provider feature has been disabled.
+    if (isStatus && req.method === 'DELETE') {
+      if (!auth?.sameOrigin?.(req)) {json(res,403,{error:'forbidden_origin'});return true;}
+      res.setHeader('Set-Cookie',cookieString('',0));
+      json(res,200,{removed:true});return true;
+    }
     if (!secretKey(env) || env.BUDDY_GEMINI_BYOK_ENABLED !== 'true') {
       json(res,503,{error:'gemini_byok_not_admitted'});return true;
     }
@@ -98,10 +104,6 @@ export function createBuddyGeminiByok({ env = process.env, auth, fetchImpl = fet
     if (method === 'GET') {
       json(res,200,{provider:'gemini',connected:!!unseal(req,user.userId,env,now()),model:MODEL,storage:'ENCRYPTED_BROWSER_COOKIE'});
       return true;
-    }
-    if (method === 'DELETE') {
-      res.setHeader('Set-Cookie',cookieString('',0));
-      json(res,200,{removed:true});return true;
     }
     if (req.headers['content-type'] !== 'application/json') {
       json(res,415,{error:'json_required'});return true;
