@@ -110,6 +110,194 @@
     "DISTRIBUTION_EXPORT": {
       "domain": null,
       "folder": "CAPITAL-AI/99_Exports"
+    },
+    "PRODUCT_VISION": {
+      "domain": "PRODUCT",
+      "folder": "CAPITAL-AI/10_Product/Vision"
+    },
+    "PRODUCT_REQUIREMENTS": {
+      "domain": "PRODUCT",
+      "folder": "CAPITAL-AI/10_Product/Requirements"
+    },
+    "PRODUCT_FEATURES": {
+      "domain": "PRODUCT",
+      "folder": "CAPITAL-AI/10_Product/Features"
+    },
+    "PRODUCT_USER_STORIES": {
+      "domain": "PRODUCT",
+      "folder": "CAPITAL-AI/10_Product/UserStories"
+    },
+    "PRODUCT_UX": {
+      "domain": "PRODUCT",
+      "folder": "CAPITAL-AI/10_Product/UX"
+    },
+    "PRODUCT_WIREFRAMES": {
+      "domain": "PRODUCT",
+      "folder": "CAPITAL-AI/10_Product/Wireframes"
+    },
+    "PLATFORM_FRONTEND": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/Frontend"
+    },
+    "PLATFORM_BACKEND": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/Backend"
+    },
+    "PLATFORM_APIS": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/APIs"
+    },
+    "PLATFORM_AUTHENTICATION": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/Authentication"
+    },
+    "PLATFORM_SUPABASE": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/Supabase"
+    },
+    "PLATFORM_DOMAINS": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/Domains"
+    },
+    "PLATFORM_DNS": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/DNS"
+    },
+    "PLATFORM_SMTP": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/SMTP"
+    },
+    "PLATFORM_INTEGRATIONS": {
+      "domain": "PLATFORM",
+      "folder": "CAPITAL-AI/20_Platform/Integrations"
+    },
+    "DATA_DATABASE": {
+      "domain": "DATA",
+      "folder": "CAPITAL-AI/30_Data/Database"
+    },
+    "DATA_MIGRATIONS": {
+      "domain": "DATA",
+      "folder": "CAPITAL-AI/30_Data/Migrations"
+    },
+    "DATA_DATA_MODEL": {
+      "domain": "DATA",
+      "folder": "CAPITAL-AI/30_Data/DataModel"
+    },
+    "DATA_ANALYTICS": {
+      "domain": "DATA",
+      "folder": "CAPITAL-AI/30_Data/Analytics"
+    },
+    "DATA_TEMPLATES": {
+      "domain": "DATA",
+      "folder": "CAPITAL-AI/30_Data/Templates"
+    },
+    "DATA_BACKUPS": {
+      "domain": "DATA",
+      "folder": "CAPITAL-AI/30_Data/Backups"
+    },
+    "TRUST_COMPLIANCE": {
+      "domain": "TRUST",
+      "folder": "CAPITAL-AI/40_Trust/Compliance"
+    },
+    "TRUST_DSGVO": {
+      "domain": "TRUST",
+      "folder": "CAPITAL-AI/40_Trust/DSGVO"
+    },
+    "TRUST_PRIVACY": {
+      "domain": "TRUST",
+      "folder": "CAPITAL-AI/40_Trust/Privacy"
+    },
+    "TRUST_POLICIES": {
+      "domain": "TRUST",
+      "folder": "CAPITAL-AI/40_Trust/Policies"
+    },
+    "TRUST_RISK_MANAGEMENT": {
+      "domain": "TRUST",
+      "folder": "CAPITAL-AI/40_Trust/RiskManagement"
+    },
+    "MARKET_COMPETITORS": {
+      "domain": "MARKET",
+      "folder": "CAPITAL-AI/50_Market/Competitors"
+    },
+    "MARKET_PERSONAS": {
+      "domain": "MARKET",
+      "folder": "CAPITAL-AI/50_Market/Personas"
+    },
+    "MARKET_POSITIONING": {
+      "domain": "MARKET",
+      "folder": "CAPITAL-AI/50_Market/Positioning"
+    },
+    "MARKET_PRICING": {
+      "domain": "MARKET",
+      "folder": "CAPITAL-AI/50_Market/Pricing"
+    },
+    "MARKET_MARKET_ANALYSIS": {
+      "domain": "MARKET",
+      "folder": "CAPITAL-AI/50_Market/MarketAnalysis"
+    },
+    "GROWTH_SEO": {
+      "domain": "GROWTH",
+      "folder": "CAPITAL-AI/60_Growth/SEO"
+    },
+    "GROWTH_CAMPAIGNS": {
+      "domain": "GROWTH",
+      "folder": "CAPITAL-AI/60_Growth/Campaigns"
+    },
+    "GROWTH_NEWSLETTER": {
+      "domain": "GROWTH",
+      "folder": "CAPITAL-AI/60_Growth/Newsletter"
+    },
+    "GROWTH_TIK_TOK": {
+      "domain": "GROWTH",
+      "folder": "CAPITAL-AI/60_Growth/TikTok"
+    },
+    "GROWTH_FUNNELS": {
+      "domain": "GROWTH",
+      "folder": "CAPITAL-AI/60_Growth/Funnels"
+    },
+    "GROWTH_UNVEROFFENTLICHTE_VIDEOS": {
+      "domain": "GROWTH",
+      "folder": "CAPITAL-AI/60_Growth/Unveröffentlichte Videos"
+    },
+    "GROWTH_VIDEOS_STATUS_PRUFEN": {
+      "domain": "GROWTH",
+      "folder": "CAPITAL-AI/60_Growth/Videos – Status prüfen"
+    },
+    "FINANCE_REVENUE": {
+      "domain": "FINANCE",
+      "folder": "CAPITAL-AI/70_Finance/Revenue"
+    },
+    "FINANCE_FORECASTING": {
+      "domain": "FINANCE",
+      "folder": "CAPITAL-AI/70_Finance/Forecasting"
+    },
+    "FINANCE_INVOICES": {
+      "domain": "FINANCE",
+      "folder": "CAPITAL-AI/70_Finance/Invoices"
+    },
+    "FINANCE_COST_MANAGEMENT": {
+      "domain": "FINANCE",
+      "folder": "CAPITAL-AI/70_Finance/CostManagement"
+    },
+    "FINANCE_BUDGETS": {
+      "domain": "FINANCE",
+      "folder": "CAPITAL-AI/70_Finance/Budgets"
+    },
+    "LEGAL_CONTRACTS": {
+      "domain": "LEGAL",
+      "folder": "CAPITAL-AI/80_Legal/Contracts"
+    },
+    "LEGAL_NDA": {
+      "domain": "LEGAL",
+      "folder": "CAPITAL-AI/80_Legal/NDA"
+    },
+    "LEGAL_TERMS": {
+      "domain": "LEGAL",
+      "folder": "CAPITAL-AI/80_Legal/Terms"
+    },
+    "LEGAL_PRIVACY_POLICY": {
+      "domain": "LEGAL",
+      "folder": "CAPITAL-AI/80_Legal/PrivacyPolicy"
     }
   },
   "identityResolution": "DYNAMIC_GOOGLE_DRIVE_CONNECTOR_READBACK"
