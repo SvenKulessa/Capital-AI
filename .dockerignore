@@ -132,6 +132,8 @@
 !server/scorer-proxy.mjs
 !shared/
 !shared/solo2-config.mjs
+!shared/solo2-commercial-policy.mjs
+!shared/solo2-commercial-policy.test.mjs
 !shared/hub-routes.mjs
 !shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
