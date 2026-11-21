@@ -180,6 +180,8 @@
 !scripts/growth/learning-content-draft.mjs
 !scripts/growth/growth-intelligence-drafts.mjs
 !scripts/growth/growth-intelligence-drafts.test.mjs
+!scripts/growth/growth-intelligence-image-drafts.mjs
+!scripts/growth/growth-intelligence-image-drafts.test.mjs
 !scripts/growth/brand-kit-graph-drafts.mjs
 !scripts/growth/brand-kit-graph-drafts.test.mjs
 !scripts/growth/next-round-planner.mjs
