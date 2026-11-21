@@ -30,6 +30,19 @@ export function Solo2RuntimeConfigurator({
       setNotice('BLOCKED: Konfigurationsfeld verletzt den sicheren Vertrag');
     }
   };
+  const importProfile = async (file?: File) => {
+    if (!file) return;
+    try {
+      if (file.size > 32768 || freshness === 'STALE') throw Error('UNTRUSTED_PROFILE');
+      const raw: unknown = JSON.parse(await file.text());
+      const parsed = validateSolo2Profile(raw);
+      if (parsed.sourceSha !== sourceSha) throw Error('SHA_MISMATCH');
+      setProfile(parsed);
+      setNotice('Lokales JSON eingelesen und geprüft – keine Runtime-Aktivierung');
+    } catch {
+      setNotice('BLOCKED: Datei ungültig, Quelle veraltet oder unsicher');
+    }
+  };
   const readiness = solo2ConfigReadiness(profile);
   const exportProfile = () => {
     if (freshness === 'STALE' || profile.sourceSha !== sourceSha) {
@@ -78,6 +91,26 @@ export function Solo2RuntimeConfigurator({
             className="min-h-11 w-full rounded-lg border border-slate-500 bg-slate-900 p-2" />
         </label>
       </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="space-y-1 text-sm text-slate-100">
+          <span>Offline-Modellalias (kein Schlüssel)</span>
+          <input aria-label="Offline-Modellalias" value={profile.offline.modelRef} maxLength={96}
+            onChange={event => change(draft => { draft.offline.modelRef = event.target.value; })}
+            className="min-h-11 w-full rounded-lg border border-slate-500 bg-slate-900 p-2" />
+        </label>
+        <label className="space-y-1 text-sm text-slate-100">
+          <span>Lokaler RAG-Indexalias</span>
+          <input aria-label="RAG-Indexalias" value={profile.offline.ragRef} maxLength={96}
+            onChange={event => change(draft => { draft.offline.ragRef = event.target.value; })}
+            className="min-h-11 w-full rounded-lg border border-slate-500 bg-slate-900 p-2" />
+        </label>
+      </div>
+      <label className="block space-y-1 text-xs text-slate-300">
+        <span>Lokales CLI-Profil laden (kein Server-Upload)</span>
+        <input aria-label="SOLO2 JSON importieren" type="file" accept=".json,application/json"
+          onChange={event => { void importProfile(event.target.files?.[0]); event.target.value = ''; }}
+          className="block min-h-11 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-sm" />
+      </label>
       <fieldset className="rounded-lg border border-slate-700 p-3">
         <legend className="px-1 text-sm font-semibold text-white">Domains</legend>
         <div className="flex flex-wrap gap-3">
