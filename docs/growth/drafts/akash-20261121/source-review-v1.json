@@ -1,0 +1,89 @@
+{
+  "contractVersion": "CAPITAL_AI_AKASH_SOURCE_REVIEW@1",
+  "status": "DRAFT_ONLY",
+  "reviewedOn": "2026-11-21",
+  "baselineMainSha": "7dffe0457dc45c28ceb69341bc228bcbd02cd240",
+  "scope": "Evidence-only; no source ingestion, public admission or publication",
+  "source": {
+    "url": "https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push",
+    "publisher": "Solana Foundation",
+    "publishedOn": "2026-11-19",
+    "observationMethod": "Read-only public official article, human-readable text; NOT raw page bytes",
+    "observedFactsGerman": "Akash veröffentlichte den Entwurf für ein Onchain-Orderbuch künftiger GPU-Stunden auf Solana. Ein Pilot ist für März und die ersten Lieferungen für April angekündigt. Umsetzung und Lieferungen sind noch nicht belegt.",
+    "observedFactsSha256": "4dbf2d4c91c8c6258d29f410f19dc231a69fe3caf551a2f24da972da046ab107",
+    "historicalSourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+    "historicalRawSourceAvailable": false,
+    "currentRawSourceSha256": null,
+    "historicalSourceDigestRecomputed": false,
+    "historicalByteComparison": "NOT_PROVEN",
+    "currentVsDraftFactComparison": "CONSISTENT",
+    "comparisonScope": "FACTUAL_SEMANTICS_ONLY_NOT_BYTE_IDENTITY"
+  },
+  "firstParty": {
+    "manifestPath": "docs/growth/drafts/akash-20261120/manifest.json",
+    "rendererPath": "scripts/media/render-akash-editorial.mts",
+    "previewPath": "docs/growth/drafts/akash-20261120/Akash-Vorschau.html",
+    "graphicsPath": "docs/growth/drafts/akash-20261120",
+    "graphicSourceCommitSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+    "reviewedStoryDigest": "3b476e900a75e32ef9a5daba6ea3fecb93cdf03588677dcb2fb16a18f6394b31",
+    "expectedContentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+    "contentDigestBasis": "SHA256 of JSON.stringify({contentId,reviewedStoryDigest,sourceUrl,sourceDigest,recipe}); separate from historical source digest",
+    "recipe": {
+      "eyebrow": "AKASH COMPUTE FORWARDS",
+      "title": "Künftige GPU-Rechenstunden",
+      "subtitle": "Akash stellt einen Marktentwurf auf Solana vor.",
+      "rows": [
+        {
+          "title": "Entwurf",
+          "lines": [
+            "Laut Solana",
+            "veröffentlicht"
+          ]
+        },
+        {
+          "title": "Pilot",
+          "lines": [
+            "Vorgesehen,",
+            "Voraussetzungen offen"
+          ]
+        },
+        {
+          "title": "Rechenlieferung",
+          "lines": [
+            "Geplant",
+            "Verfügbarkeit offen"
+          ]
+        }
+      ],
+      "note": "Pilotstart abhängig von offenen Prüfungen und Voraussetzungen.",
+      "sourceLabel": "Quelle: Solana · 19.11.2026 · Gegenprüfung: Akash",
+      "altText": "Akash Compute Forwards. Ein Entwurf für künftige GPU-Rechenstunden auf Solana ist veröffentlicht. Ein Pilot ist vorgesehen und an offene Voraussetzungen gebunden. Rechenlieferungen sind geplant. Allgemeine Verfügbarkeit ist nicht nachgewiesen."
+    },
+    "graphicLicenseRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+    "graphicOwnerGrants": "RECORDED_FOR_IDENTIFIED_FIRST_PARTY_IMAGES_ONLY",
+    "graphicsSha256Verification": "TEST_RECALCULATE_FROM_REPO_PNG_BYTES",
+    "sourceRawDigestVerification": "NOT_PROVEN"
+  },
+  "rights": {
+    "sourceTerms": "https://solana.com/de/tos",
+    "sourceBrandGuidelines": "https://solana.com/de/branding",
+    "originalGraphicLicenseOnly": "LicenseRef-CapitalAI-Owned",
+    "officialAttributionLink": "CONDITIONALLY_PERMISSIBLE",
+    "independentlyWrittenFactSummary": "REVIEW_REQUIRED",
+    "copyingSourceArticleOrExternalGraphics": "BLOCKED",
+    "brandReuseWithoutReview": "BLOCKED",
+    "sourceArticleCommercialGrant": "NOT_PROVEN",
+    "editorialReview": "REVIEW_REQUIRED",
+    "publicPublishAllowed": false
+  },
+  "quality": {
+    "independentClaimsReview": "FACTS_MATCH_SOURCE_TEXT",
+    "articleSourceByteHash": "NOT_PROVEN",
+    "historicVsCurrentExactArticleBlock": "NOT_PROVEN",
+    "manifestAndGraphicsVerification": "TESTED_SEPARATELY",
+    "publicationDisposition": "BLOCKED",
+    "noProviderApiCalls": true,
+    "noAdditionalCosts": true,
+    "noProductionMutation": true
+  }
+}
