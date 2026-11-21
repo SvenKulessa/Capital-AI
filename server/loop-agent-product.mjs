@@ -92,8 +92,8 @@ export function projectLoopEntitlement({ principal, binding, subscription, price
   const selected = tierPolicy(policy, tier);
   const end = subscription.current_period_end;
   const validTime = Number.isSafeInteger(end) && end*1000 > nowMs;
-  const active = subscription.status === 'active' ||
-    (subscription.status === 'trialing' && allowTrial === true);
+  const active = event.type !== 'customer.subscription.deleted' &&
+    (subscription.status === 'active' || (subscription.status === 'trialing' && allowTrial === true));
   const granted = active && validTime;
   const data = {
     contract: 'LOOP_AGENT_ENTITLEMENT@1',
