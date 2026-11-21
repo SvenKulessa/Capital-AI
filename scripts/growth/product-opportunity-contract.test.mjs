@@ -178,6 +178,36 @@ test('PII, access tokens and false security claims cannot enter draft texts', ()
   }
 });
 
+test('draft and evidence URLs reject query parameters, fragments and encoded sensitive paths', () => {
+  for (const url of [
+    'https://capital-ai.online/?ref=private',
+    'https://capital-ai.online/#private',
+    'https://capital-ai.online/contact/user%40example.com',
+  ]) {
+    const bad = sample();
+    bad.canonicalUrl = url;
+    assert.throws(() => buildOpportunityDraftCampaign(bad, 'manual-scan'), /CANONICAL_/);
+    const source = sample();
+    source.capabilities[0].evidence.sourceUrl = url;
+    assert.throws(() => validateProductOpportunity(source), /CAPABILITY_/);
+  }
+});
+
+test('non-representable break-even and ROI fail closed', () => {
+  const breakEven = sample();
+  Object.assign(breakEven.scenarios[0], {
+    monthlyNetArpuEur: Number.MIN_VALUE, monthlyVariableCostEur: 0,
+  });
+  assert.throws(() => evaluateProductOpportunity(breakEven), /SCENARIO_SCALE_UNSUPPORTED/);
+
+  const roi = sample();
+  Object.assign(roi.scenarios[0], {
+    monthlyVariableCostEur: 0, monthlyFixedCostEur: Number.MIN_VALUE,
+    cacEur: 0, developerHours: 0,
+  });
+  assert.throws(() => evaluateProductOpportunity(roi), /SCENARIO_SCALE_UNSUPPORTED/);
+});
+
 test('NOT_PROVEN capability must never become a draft campaign claim', () => {
   assert.throws(() => buildOpportunityDraftCampaign(sample(), 'real-time'),
     /CLAIM_SOURCE_REQUIRED/);

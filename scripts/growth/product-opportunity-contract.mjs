@@ -41,12 +41,17 @@ function sha(value, code) {
   return value;
 }
 function https(value, code) {
-  let parsed;
-  try { parsed = new URL(value); } catch { fail(code + '_URL'); }
-  if (parsed.protocol !== 'https:' || !parsed.hostname || parsed.username || parsed.password) {
+  if (safeText(value, code + '_URL', 2048) !== value) fail(code + '_URL');
+  let parsed, decoded;
+  try {
+    parsed = new URL(value);
+    decoded = decodeURIComponent(value);
+  } catch { fail(code + '_URL'); }
+  if (parsed.protocol !== 'https:' || !parsed.hostname || parsed.username || parsed.password ||
+      parsed.href !== value || /[?#]/u.test(value)) {
     fail(code + '_URL');
   }
-  return value;
+  safeText(decoded, code + '_URL', 2048);
 }
 function list(value, code, max, min = 1) {
   if (!Array.isArray(value) || value.length < min || value.length > max) fail(code + '_COUNT');
@@ -185,13 +190,18 @@ export function calculateOpportunityScenario(scenario) {
   const breakEvenPaidUsers = contributionPerUserEur > 0 ?
     Math.ceil((s.monthlyFixedCostEur + (acquisitionEur + developmentEur) / months) /
       contributionPerUserEur) : null;
+  const roiPercent = costsEur > 0 ? round2(profitEur / costsEur * 100) : null;
+  if ((breakEvenPaidUsers !== null && !Number.isSafeInteger(breakEvenPaidUsers)) ||
+      (roiPercent !== null && (!Number.isFinite(roiPercent) || Math.abs(roiPercent) > 1_000_000_000_000))) {
+    fail('SCENARIO_SCALE_UNSUPPORTED');
+  }
   return Object.freeze({
     scenarioId: s.id, evidenceStatus: 'HYPOTHESIS_NOT_VERIFIED',
     horizonMonths: months, revenueEur: round2(revenueEur), operatingEur: round2(operatingEur),
     acquisitionEur: round2(acquisitionEur), developmentEur: round2(developmentEur),
     totalCostsEur: round2(costsEur), profitEur: round2(profitEur),
     contributionPerUserEur: round2(contributionPerUserEur),
-    breakEvenPaidUsers, roiPercent: costsEur > 0 ? round2(profitEur / costsEur * 100) : null,
+    breakEvenPaidUsers, roiPercent,
   });
 }
 

@@ -97,6 +97,8 @@ class LocalRagTests(unittest.TestCase):
                                   "roiPercent": True}], "FINANCE"),
             ("scenarioResults", [{"evidenceStatus": "HYPOTHESIS_NOT_VERIFIED",
                                   "roiPercent": float("nan")}], "FINANCE"),
+            ("scenarioResults", [{"evidenceStatus": "HYPOTHESIS_NOT_VERIFIED",
+                                  "roiPercent": 10**400}], "FINANCE"),
             ("quality", None, "TRUST"),
         ]
         for field, invalid, role in cases:

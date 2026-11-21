@@ -7,7 +7,6 @@ This graph only evaluates caller-supplied contract output and local evidence.
 from __future__ import annotations
 
 import json
-import math
 import operator
 import os
 import re
@@ -118,7 +117,7 @@ def domain_agent(domain: str):
                 isinstance(s, dict) and s.get("evidenceStatus") == "HYPOTHESIS_NOT_VERIFIED"
                 and (s.get("roiPercent") is None or
                      (type(s.get("roiPercent")) in (float, int)
-                      and math.isfinite(s.get("roiPercent"))))
+                      and -10**12 <= s["roiPercent"] <= 10**12))
                 for s in values
             )
             detail = "Unit economics are scenarios, never measured ROI."
