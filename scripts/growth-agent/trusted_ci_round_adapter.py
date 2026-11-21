@@ -72,10 +72,12 @@ class TrustedCIReadback:
             if not all(name in states for name in REQUIRED):
                 return CheckReadback(sha, "NOT_PROVEN")
             # Actual pending evidence, not absence of required evidence.
-            if "PENDING" in states.values():
-                return CheckReadback(sha, "PENDING")
+            # A proven failure is terminal for this head, even while other checks
+            # remain queued. Do not spin a 30-second wait on a failed candidate.
             if "FAILED" in states.values():
                 return CheckReadback(sha, "FAILED")
+            if "PENDING" in states.values():
+                return CheckReadback(sha, "PENDING")
             checks, ok, _ = actions._checks(sha)
             if not ok or any(checks.get(name) != "success" for name in REQUIRED):
                 return CheckReadback(sha, "NOT_PROVEN")
