@@ -15,6 +15,18 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 REPO = "SvenKulessa/Capital-AI"
 SERVICE_ID = "srv-dau1rp893c1s73cdhm1g"
 REQUIRED = ("Docker Security Gate", "Domain Governance")
+CHECK_SOURCES = {
+    **dict.fromkeys(REQUIRED, ("github-actions", 15368)),
+    "CodeQL": ("github-advanced-security", 57789),
+}
+REQUIRED_WORKFLOWS = {
+    "Docker Security Gate": (370506106, ".github/workflows/build-security.yml"),
+    "Domain Governance": (371617040, ".github/workflows/domain-governance.yml"),
+}
+ACTIONS_CHECK_URL = re.compile(
+    r"https://github\.com/SvenKulessa/Capital-AI/actions/runs/([1-9][0-9]{0,19})/job/([1-9][0-9]{0,19})"
+)
+HOLD_TITLE = re.compile(r"\[HOLD(?:\]|\s*:)", re.IGNORECASE)
 OPTIONAL_SKIP = frozenset(("Supabase Preview", "Production Handoff Gate", "publish_candidate"))
 BRANCH_RE = re.compile(r"^capital-ai-(product|market|platform|trust|growth)/[a-z0-9][a-z0-9._-]*-[0-9]{8}$")
 HEX40 = re.compile(r"^[a-f0-9]{40}$")
@@ -85,7 +97,7 @@ class SafeHTTP:
             raise RuntimeError("TRUSTED_PROVIDER_REQUEST_NOT_PROVEN") from None
 
     def github(self, path, *, method="GET", body=None):
-        if not isinstance(path, str) or re.fullmatch(r"/(?:pulls/[0-9]+(?:/merge)?|branches/main|commits/[a-f0-9]{40}/check-runs\?per_page=100)", path) is None:
+        if not isinstance(path, str) or re.fullmatch(r"/(?:pulls/[0-9]+(?:/merge)?|branches/main|actions/runs/[1-9][0-9]{0,19}|commits/[a-f0-9]{40}/check-runs\?per_page=100)", path) is None:
             raise ValueError("invalid or unapproved GitHub path")
         return self._request("https://api.github.com/repos/" + REPO + path,
                              token=self._github_token, method=method, body=body)
@@ -126,7 +138,7 @@ class GitHubRenderActions:
 
     def _pr(self):
         result = self.http.github(f"/pulls/{self.number}")
-        if not isinstance(result, dict):
+        if not isinstance(result, dict) or result.get("number") != self.number:
             raise ValueError("invalid PR")
         return result
 
@@ -137,7 +149,10 @@ class GitHubRenderActions:
         base = pr.get("base") or {}
         main_sha = (main.get("commit") or {}).get("sha")
         head_sha = head.get("sha")
+        title = pr.get("title")
         good = (pr.get("state") == "open" and pr.get("draft") is False
+                and (not self.enable_merge or (isinstance(title, str) and bool(title.strip())
+                                                and HOLD_TITLE.search(title) is None))
                 and base.get("ref") == "main" and sha(base.get("sha"))
                 and sha(head_sha) and sha(main_sha)
                 and BRANCH_RE.fullmatch(head.get("ref", "")) is not None
@@ -150,25 +165,59 @@ class GitHubRenderActions:
             raise ValueError("PR scope not verified")
         return pr, main_sha
 
+    def _required_workflow_matches(self, run, head_sha):
+        workflow = REQUIRED_WORKFLOWS.get(run["name"])
+        if workflow is None:
+            return True
+        url = run.get("details_url")
+        match = ACTIONS_CHECK_URL.fullmatch(url) if isinstance(url, str) else None
+        if match is None or int(match[2]) != run["id"]:
+            return False
+        workflow_run = self.http.github(f"/actions/runs/{match[1]}")
+        return (isinstance(workflow_run, dict)
+                and workflow_run.get("id") == int(match[1])
+                and (workflow_run.get("workflow_id"), workflow_run.get("path")) == workflow
+                and workflow_run.get("head_sha") == head_sha
+                and workflow_run.get("event") == "pull_request"
+                and workflow_run.get("status") == "completed"
+                and workflow_run.get("conclusion") == "success")
+
     def _checks(self, head_sha):
         data = self.http.github(f"/commits/{head_sha}/check-runs?per_page=100")
         runs = data.get("check_runs") if isinstance(data, dict) else None
-        if (not isinstance(runs, list) or not runs
-                or data.get("total_count") != len(runs)):
+        if (not isinstance(runs, list) or not 1 <= len(runs) <= 100
+                or type(data.get("total_count")) is not int
+                or data["total_count"] != len(runs)):
             raise ValueError("incomplete GitHub check coverage")
         by_name = {}
+        ids = set()
         for run in runs:
-            if not isinstance(run, dict) or not isinstance(run.get("name"), str):
+            if (not isinstance(run, dict) or not isinstance(run.get("name"), str)
+                    or type(run.get("id")) is not int or run["id"] <= 0):
                 raise ValueError("invalid check run")
-            name = run["name"]
-            if name in by_name:  # Do not use old successes to mask pending reruns.
+            name, run_id = run["name"], run["id"]
+            source = CHECK_SOURCES.get(name)
+            app = run.get("app")
+            if name in by_name or run_id in ids:
                 by_name[name] = "duplicate"
+            elif run.get("head_sha") != head_sha or (source is not None and
+                    (not isinstance(app, dict) or (app.get("slug"), app.get("id")) != source)):
+                by_name[name] = "invalid_provenance"
+            elif run.get("status") != "completed":
+                by_name[name] = "pending"
             else:
-                by_name[name] = (run.get("conclusion") if run.get("status") == "completed" else "pending")
-        required_ok = all(by_name.get(name) == "success" for name in REQUIRED)
+                result = run.get("conclusion")
+                if result == "success" and self._required_workflow_matches(run, head_sha):
+                    by_name[name] = "success"
+                else:
+                    by_name[name] = "skipped" if result == "skipped" else "not_success"
+            ids.add(run_id)
+        required_ok = all(by_name.get(name) == "success" for name in CHECK_SOURCES)
         applicable_ok = all(status == "success" or (status == "skipped" and name in OPTIONAL_SKIP)
                             for name, status in by_name.items())
-        return by_name, required_ok and applicable_ok
+        # Check names and conclusions from other apps never enter persisted evidence.
+        return ({name: by_name[name] for name in CHECK_SOURCES if name in by_name},
+                required_ok and applicable_ok, sorted(ids))
 
     def analyze(self, state):
         pr, _ = self._current()
@@ -183,7 +232,7 @@ class GitHubRenderActions:
 
     def test(self, state):
         pr, _ = self._current()
-        _, ok = self._checks(pr["head"]["sha"])
+        _, ok, _ = self._checks(pr["head"]["sha"])
         return {"passed": ok}
 
     def repair(self, state):
@@ -193,7 +242,12 @@ class GitHubRenderActions:
 
     def evidence(self, state):
         pr, main_sha = self._current()
-        checks, valid = self._checks(pr["head"]["sha"])
+        head_sha = pr["head"]["sha"]
+        base_sha = pr["base"]["sha"]
+        checks, valid, run_ids = self._checks(head_sha)
+        pr, refreshed_main = self._current()
+        if (pr["head"]["sha"], pr["base"]["sha"], refreshed_main) != (head_sha, base_sha, main_sha):
+            return {}
         return {
             "base_sha": pr["base"]["sha"],
             "head_sha": pr["head"]["sha"],
@@ -206,9 +260,7 @@ class GitHubRenderActions:
             "scope_complete": self.assessment.scope_complete is True,
             "current_main": pr["base"]["sha"] == main_sha,
             "no_active_hold": self.assessment.no_active_hold is True,
-            "run_ids": sorted({r.get("id") for r in
-                self.http.github(f"/commits/{pr['head']['sha']}/check-runs?per_page=100").get("check_runs", [])
-                if type(r.get("id")) is int}),
+            "run_ids": run_ids,
         }
 
     def merge(self, state):
