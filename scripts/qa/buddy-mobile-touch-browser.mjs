@@ -47,13 +47,17 @@ async function testWidth(width) {
   await send('Page.navigate',{url:origin.origin+'/'});
   await until("document.readyState==='complete' && !!document.querySelector('[aria-label=\"JaJa Chat öffnen\"]')",'BUDDY_'+width);
   // First dismiss the cookie-consent overlay; it can intercept native touches.
-  await evaluate(String.raw`(()=>{
+  const consentChoice=await evaluate(String.raw`(()=>{
     const panel=document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
-    const reject=[...(panel?.querySelectorAll('button')||[])].find(b=>b.textContent?.trim()==='Nur notwendige');
-    reject?.click();
-    return true;
+    if(!panel)return 'ABSENT';
+    const reject=[...panel.querySelectorAll('button')]
+      .find(b=>/^(Necessary only|Nur notwendige)$/i.test(b.textContent?.trim()||''));
+    if(!reject)return 'MISSING';
+    reject.click();
+    return 'DISMISSED';
   })()`);
-  await sleep(200);
+  assert.notEqual(consentChoice,'MISSING','COOKIE_CONSENT_CHOICE_MISSING');
+  await until("!document.querySelector('[aria-labelledby=\"cookie-consent-v3-title\"]')",'CONSENT_CLOSE_'+width);
   await evaluate("document.querySelector('[aria-label=\"JaJa Chat öffnen\"]').click()");
   await until("!!document.querySelector('[aria-label=\"JaJa CAM: Screenshot aufnehmen\"]')",'CAM_'+width);
   await evaluate("document.querySelector('[aria-label=\"JaJa CAM: Screenshot aufnehmen\"]').click()");
