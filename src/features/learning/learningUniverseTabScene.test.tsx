@@ -13,7 +13,7 @@ const TABS = [
 
 test('ten existing Learning subpages have distinct, first-party tab illustration contracts', () => {
   assert.deepEqual(new Set(Object.keys(LEARNING_TAB_SCENES)), new Set(TABS));
-  const palette = new Set(Object.values(BRAND_COLORS));
+  const palette = new Set<string>(Object.values(BRAND_COLORS));
   const descriptions = new Set<string>();
   for (const tab of TABS) {
     const scene = LEARNING_TAB_SCENES[tab];
