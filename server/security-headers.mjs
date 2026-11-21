@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 // limited to gtag.js; its execution still requires the separate consent gate in the UI.
 const CSP_BASE = [
   "default-src 'self'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://pbs.twimg.com https://images.notion.so https://www.notion.so https://secure.notion-static.com https://prod-files-secure.s3.us-west-2.amazonaws.com",
   "font-src 'self'",
   "script-src 'self' https://www.googletagmanager.com/gtag/js",
   "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com",
