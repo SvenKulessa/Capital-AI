@@ -96,7 +96,10 @@ test('Forged source SHA, URLs, duplicates, missing Graph reference, and rights s
   ]) assert.equal(assessContext([{...source,...patch}],[right]).rejected[0].reason,reason);
   assert.equal(assessContext([source],[right,right]).rejected[0].reason,
     'COMMERCIAL_SOURCE_RIGHTS_NOT_PROVEN');
-  assert.equal(assessContext([source,source],[right]).rejected[1].reason,'SOURCE_ID_INVALID');
+  const duplicate=assessContext([source,source],[right]);
+  assert.equal(duplicate.accepted.length,1);
+  assert.equal(duplicate.rejected.length,1);
+  assert.equal(duplicate.rejected[0].reason,'SOURCE_ID_INVALID');
   assert.throws(()=>assessContext(new Array(17).fill(source)),/BRAND_CONTEXT_BATCH_INVALID/);
 });
 
