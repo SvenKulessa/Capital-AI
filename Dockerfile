@@ -46,6 +46,8 @@ COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runti
 COPY .agents/skills ./.agents/skills
 # Scoped build-only machine-readable prompts for the existing offline test suite.
 COPY .agents/app.prompt.json ./.agents/app.prompt.json
+# Build-only offline Drive routing contract (the runtime image does not receive these files).
+COPY .agents/contracts/acode-shared-delivery.json .agents/contracts/drive-artifact-routing.json ./.agents/contracts/
 COPY CAPITAL-AI-PRODUCT/domain.prompt.json CAPITAL-AI-PRODUCT/PROJECT.md ./CAPITAL-AI-PRODUCT/
 COPY CAPITAL-AI-MARKET/domain.prompt.json CAPITAL-AI-MARKET/PROJECT.md ./CAPITAL-AI-MARKET/
 COPY CAPITAL-AI-PLATFORM/domain.prompt.json CAPITAL-AI-PLATFORM/PROJECT.md ./CAPITAL-AI-PLATFORM/
@@ -117,6 +119,7 @@ COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs 
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 # Shared SOLO2 profile: CLI and negative tests execute in the existing offline build stage.
 COPY scripts/solo2-config.mjs scripts/solo2-config.test.mjs ./scripts/
+COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs ./scripts/platform/
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 COPY scripts/skill-bundles.mjs ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
