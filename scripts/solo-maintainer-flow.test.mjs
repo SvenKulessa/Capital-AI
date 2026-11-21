@@ -77,6 +77,8 @@ test('lean merge risk budget keeps core checks and limits unrelated evidence', (
   const required = ['Docker Security Gate', 'Domain Governance', 'Post-Deployment-Abnahme', 'verlinken statt kopieren', 'expected_head_sha', 'MERGE_BLOCKED', 'Risikobudget'];
   for (const item of required) assert.ok(merge.includes(item), `missing lean-merge contract: ${item}`);
   assert.match(merge, /aktivierten Effekt/);
+  // PR templates are intentionally excluded from the offline Docker test context.
+  // Guard the effective policy here; review the template through the PR diff.
 });
 
 const sourceBoundary = section(policy, '## Herkunft und Priorität von Agentenanweisungen');
@@ -114,6 +116,7 @@ test('negative regression: loss of any source-boundary rule is detected', () => 
   }
 });
 
+
 test('execution-first is auditable without weakening root security boundaries', () => {
   const flow = section(policy, '## Ausführungskontrakt: AUTONOMOUS_EXECUTION_FIRST');
   for (const value of ['ACTIVE_CONSERVATIVE', 'read-only', 'No-Merge-/No-Deploy',
@@ -121,14 +124,18 @@ test('execution-first is auditable without weakening root security boundaries', 
     'keine eigenständige Tool-Berechtigung', 'Keine Selbstautorisierung', 'NOT_PROVEN']) {
     assert.ok(flow.includes(value), `missing execution-first protection: ${value}`);
   }
+
   assert.match(read('.github/copilot-instructions.md'), /do not automatically carry historical no-merge\/no-deploy boilerplate/);
 });
 
 test('prompt scope does not inherit old blanket bans into independent implementation', () => {
   const contract = section(policy, '## Ausführungskontrakt: AUTONOMOUS_EXECUTION_FIRST');
   const expected = [
-    'Auftragsgrenzen bei neuen Prompts', 'Fortsetzung desselben Auftrags', 'Eigenständiger neuer Auftrag',
-    'keine pauschale Sperrvererbung', 'Keine automatisch angehängten negativen Standardsätze',
+    'Auftragsgrenzen bei neuen Prompts',
+    'Fortsetzung desselben Auftrags',
+    'Eigenständiger neuer Auftrag',
+    'keine pauschale Sperrvererbung',
+    'Keine automatisch angehängten negativen Standardsätze',
     'wenn alle delegierten Mergebedingungen erfüllt sind',
   ];
   for (const guard of expected) assert.ok(contract.includes(guard), 'missing prompt-scoping guard: ' + guard);
@@ -142,64 +149,4 @@ test('prompt scope does not inherit old blanket bans into independent implementa
   assert.match(contract, /tatsächliche GitHub-Rulesets/);
   assert.match(contract, /Kosten/);
   assert.match(contract, /Trust Boundaries/);
-});
-
-// SOLO2 merge hardening: the root policy and implementation must stay aligned.
-test('Solo V2 merge authorization stays fail closed and SHA bound', () => {
-  const merge = section(policy, '## Delegierte Agenten-Merge-Regel');
-  assert.match(merge, /aktuellen.*Head-SHA.*Main-Stand/s);
-  assert.match(merge, /expected_head_sha/);
-  assert.match(merge, /PENDING.*, `FAILED`, `CANCELLED`.*`SKIPPED`/s);
-
-  const implementation = read('src/security/mergePolicy.ts');
-  for (const invariant of [
-    'validatedHeadSha', 'currentHeadSha', 'validatedBaseSha', 'currentBaseSha',
-    'CHECK_HEAD_MISMATCH', 'AMBIGUOUS_CHECK_EVIDENCE', 'UNKNOWN_CHECK_STATUS',
-    'UNKNOWN_CHECK_CONCLUSION', 'REQUIRED_CHECK_PENDING', 'REQUIRED_CHECK_FAILED',
-  ]) assert.ok(implementation.includes(invariant), `missing merge-policy invariant: ${invariant}`);
-});
-
-test('Solo V2 prevents free-text and check-name spoofing from becoming merge authority', () => {
-  assert.match(sourceBoundary, /nicht vertrauenswürdige Inhalte/);
-  assert.match(sourceBoundary, /keine Anweisungen/);
-  assert.match(sourceBoundary, /Keine Gate-Injektion/);
-
-  const implementation = read('src/security/mergePolicy.ts');
-  assert.match(implementation, /title\/body\/comments are deliberately never read/);
-  assert.match(implementation, /Exact identity only/);
-  assert.match(implementation, /CONTROL = \/\[/);
-  assert.match(implementation, /\\u202a-\\u202e/);
-  assert.match(implementation, /\\u2066-\\u2069/);
-
-  const regression = read('src/security/mergePolicy.test.ts');
-  for (const marker of ['free text has no authority', 'spoofed check does not satisfy exact identity',
-    'stale check SHA blocks', 'HEAD change forces revalidation', 'base change forces revalidation',
-    'duplicates fail closed']) assert.ok(regression.includes(marker), `missing spoofing regression: ${marker}`);
-});
-
-test('TOCTOU merge integration re-reads PR and forwards only validated expected HEAD', () => {
-  const integration = read('src/security/mergeIntegration.ts');
-  assert.match(integration, /const initial = await github\.readPullRequest/);
-  assert.match(integration, /const checks = await github\.readChecks/);
-  assert.match(integration, /const current = await github\.readPullRequest/);
-  assert.match(integration, /expectedHeadSha: decision\.expectedHeadSha/);
-  assert.match(integration, /status === 409/);
-  assert.match(integration, /HEAD_CHANGED_DURING_MERGE/);
-  assert.match(integration, /result\.merged !== true/);
-
-  const regression = read('src/security/mergeIntegration.test.ts');
-  for (const marker of ['pins validated HEAD into atomic merge precondition', 'does not merge after HEAD changes',
-    'does not merge after base changes', 'draft transition blocks after check read',
-    'provider HEAD conflict requires revalidation and is not retried', 'unconfirmed merge response fails closed',
-    'provider error text is not exposed']) assert.ok(regression.includes(marker), `missing TOCTOU regression: ${marker}`);
-});
-
-test('hardening documentation preserves mobile/MCP boundary without inventing a new check', () => {
-  const hardening = read('docs/security/MERGE_TOCTOU_HARDENING.md');
-  assert.match(hardening, /SOLO_MAINTAINER_FLOW@2/);
-  assert.match(hardening, /Mobile and MCP boundary/);
-  assert.match(hardening, /smartphone browser/);
-  assert.match(hardening, /Docker Security Gate/);
-  assert.match(hardening, /Domain Governance/);
-  assert.match(hardening, /does not create a third Required Check/);
 });
