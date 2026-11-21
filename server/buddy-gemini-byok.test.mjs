@@ -62,5 +62,5 @@ test('credential revocation stays possible when BYOK is disabled',async()=>{
 test('delete clears encrypted client cookie',async()=>{
   const r=await invoke({method:'DELETE'});
   assert.equal(r.response.status,200);
-  assert.match(r.headers['set-cookie'],/Max-Age=0/);
+  assert.match(String(r.headers['set-cookie']),/Max-Age=0/);
 });
