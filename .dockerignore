@@ -86,6 +86,7 @@
 !server/auth.mjs
 !server/account-avatar.mjs
 !server/profile-provider-avatar.mjs
+!server/profile-provider-avatar.test.mjs
 !server/buddy-gemini-byok.mjs
 !server/buddy-gemini-byok.test.mjs
 !server/account-avatar.test.mjs
