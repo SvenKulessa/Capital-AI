@@ -1,4 +1,5 @@
 import React from 'react';
+import { Solo2RuntimeConfigurator } from './Solo2RuntimeConfigurator';
 import {
   ROADMAP_TOOL_WORKSTREAMS, routeRoadmapTools, repoPathsPresent,
   type RoadmapWorkstream,
@@ -108,6 +109,7 @@ export function RoadmapSkillOrchestrationPanel({
           </ul>
         </section>
       </div>
+      <Solo2RuntimeConfigurator sourceSha={sourceSha} freshness={freshness} />
       <section aria-label="Ausführung und Umsatzgrenzen"
         className="space-y-2 border-t border-slate-700 pt-4 text-sm text-slate-300">
         <p><strong className="text-white">Nächste technische Abnahme:</strong> {workstream.nextGate}</p>

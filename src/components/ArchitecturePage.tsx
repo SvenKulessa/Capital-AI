@@ -385,7 +385,6 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
           <div className="h-4 w-px bg-slate-800" />
 
           <BrandLogo variant="inline" size="sm" />
-          <a href="/architecture-hub" className="min-h-11 inline-flex items-center rounded-lg border border-cyan-400/50 px-3 text-sm font-semibold text-cyan-200 hover:bg-cyan-400/10 focus-visible:outline-2 focus-visible:outline-amber-300">Architecture Hub →</a>
         </div>
 
         {/* Live System Health Badge */}

@@ -39,9 +39,11 @@ class FakeGithub:
         }
         self.checks = [
             {"id": 1, "name": "Docker Security Gate", "status": "completed",
-             "conclusion": "success", "head_sha": HEAD, "app": {"slug": "github-actions"}},
+             "conclusion": "success", "head_sha": HEAD, "app": {"slug": "github-actions", "id": 15368},
+             "details_url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/101/job/1"},
             {"id": 2, "name": "Domain Governance", "status": "completed",
-             "conclusion": "success", "head_sha": HEAD, "app": {"slug": "github-actions"}},
+             "conclusion": "success", "head_sha": HEAD, "app": {"slug": "github-actions", "id": 15368},
+             "details_url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/102/job/2"},
             {"id": 3, "name": "Analyze (python)", "status": "completed",
              "conclusion": "success", "head_sha": HEAD, "app": {"slug": "github-actions"}},
             {"id": 4, "name": "Supabase Preview", "status": "completed",
@@ -61,6 +63,11 @@ class FakeGithub:
             return self.pr
         if path == "/branches/main":
             return {"commit": {"sha": self.main}}
+        if path in ("/actions/runs/101", "/actions/runs/102", "/actions/runs/105"):
+            run_id = int(path.rsplit("/", 1)[-1])
+            workflow_id, file = ((370506106, "build-security") if run_id == 101 else (371617040, "domain-governance"))
+            return {"id": run_id, "workflow_id": workflow_id, "path": f".github/workflows/{file}.yml",
+                    "head_sha": HEAD, "event": "pull_request", "status": "completed", "conclusion": "success"}
         if path == f"/commits/{HEAD}/check-runs?per_page=100":
             if self.drift_after_checks:
                 self.main = "c" * 40
@@ -213,6 +220,17 @@ class AuthenticatedLearningTests(unittest.TestCase):
                         "status": "completed", "conclusion": "skipped",
                         "head_sha": HEAD, "app": {"slug": "github-actions"}})
                 self.assertFalse(self.learn())
+
+    def test_each_repeat_of_a_required_check_must_be_canonical_and_green(self):
+        duplicate = {**self.github.checks[1], "id": 5,
+                     "details_url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/105/job/5"}
+        self.github.checks.append(duplicate)
+        self.assertTrue(self.verifier.verify(scope=self.scope, fp=self.fp, reviewed=self.reviewed, proof=self.proof()))
+        duplicate["conclusion"] = "failure"
+        self.assertFalse(self.verifier.verify(scope=self.scope, fp=self.fp, reviewed=self.reviewed, proof=self.proof()))
+        duplicate["conclusion"] = "success"
+        duplicate["details_url"] = duplicate["details_url"].replace("/105/", "/102/")
+        self.assertFalse(self.verifier.verify(scope=self.scope, fp=self.fp, reviewed=self.reviewed, proof=self.proof()))
 
     def test_provider_error_and_new_key_requirements_fail_closed(self):
         self.github.raise_error = True

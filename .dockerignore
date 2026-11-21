@@ -131,7 +131,9 @@
 !server/cads-observability.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/solo2-config.mjs
 !shared/hub-routes.mjs
+!shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -180,6 +182,12 @@
 !scripts/growth/learning-content-draft.mjs
 !scripts/growth/growth-intelligence-drafts.mjs
 !scripts/growth/growth-intelligence-drafts.test.mjs
+!scripts/growth/growth-intelligence-image-drafts.mjs
+!scripts/growth/growth-intelligence-image-drafts.test.mjs
+!scripts/growth/brand-kit-graph-drafts.mjs
+!scripts/growth/brand-kit-graph-drafts.test.mjs
+!scripts/growth/next-round-planner.mjs
+!scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs
@@ -295,6 +303,8 @@
 !docs/licenses/
 !docs/licenses/**
 !docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md
+!docs/security/
+!docs/security/evidence/
 # Only these five immutable draft evidence inputs enter the offline test build.
 !docs/growth/
 !docs/growth/drafts/
@@ -305,8 +315,6 @@
 !docs/growth/drafts/akash-20261120/akash-portrait.png
 !docs/growth/drafts/akash-20261121/
 !docs/growth/drafts/akash-20261121/source-review-v1.json
-!docs/security/
-!docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
 !docs/security/evidence/stripe-catalog-readback-20261006.json
 !docs/security/evidence/benchmark-cost-calibration-20261006.json
@@ -318,6 +326,9 @@
 !docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
+!public/editorial/
+!public/editorial/news/
+!public/editorial/news/*.png
 !public/bootstrap-failure.js
 !public/datenschutz/
 !public/datenschutz/index.html
@@ -499,6 +510,8 @@
 !server/historical-analytics-demo.mjs
 !server/historical-analytics-demo.test.mjs
 !server/auth.test.mjs
+!scripts/solo2-config.mjs
+!scripts/solo2-config.test.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
