@@ -86,6 +86,51 @@ class LocalRagTests(unittest.TestCase):
         self.assertEqual(final["externalFactVerification"], "NOT_PROVEN")
         self.assertFalse(final["publicationAllowed"])
 
+    def test_untrusted_product_fields_fail_closed_without_exceptions(self):
+        p = product()
+        docs = graph.retrieve_source_bound(p, [evidence()])
+        cases = [
+            ("competitorCount", "1", "MARKET"),
+            ("competitorCount", True, "MARKET"),
+            ("supportedDraftClaims", "manual-scan", "PRODUCT"),
+            ("scenarioResults", [{"evidenceStatus": "HYPOTHESIS_NOT_VERIFIED",
+                                  "roiPercent": True}], "FINANCE"),
+            ("scenarioResults", [{"evidenceStatus": "HYPOTHESIS_NOT_VERIFIED",
+                                  "roiPercent": float("nan")}], "FINANCE"),
+            ("quality", None, "TRUST"),
+        ]
+        for field, invalid, role in cases:
+            with self.subTest(field=field, role=role, value=repr(invalid)):
+                bad = {**p, field: invalid}
+                result = graph.domain_agent(role)({"product": bad, "retrieved": docs})
+                self.assertEqual(result["findings"][0]["status"], "BLOCKED")
+
+    def test_independent_quality_rejects_forged_go_and_invalid_findings(self):
+        p = product()
+        p["decision"] = "GO"
+        findings = [graph.finding(domain, "PASS_WITH_GAPS", "Synthetic") for domain in graph.DOMAINS]
+        decision = graph.independent_quality({"product": p, "findings": findings})["report"]
+        self.assertEqual(decision["decision"], "HOLD")
+        self.assertFalse(decision["publicationAllowed"])
+        malformed = graph.independent_quality({"product": p, "findings": None})["report"]
+        self.assertEqual(malformed["quality"], "BLOCKED")
+        self.assertEqual(malformed["decision"], "HOLD")
+
+    def test_actual_graph_malformed_trust_field_denies_without_crashing(self):
+        try:
+            from langgraph.graph import StateGraph
+        except ImportError:
+            self.skipTest("pinned LangGraph not installed locally; graph execution NOT_PROVEN")
+        _ = StateGraph
+        bad = product()
+        bad["quality"] = None
+        report = graph.build_graph().invoke({
+            "product": bad, "documents": [evidence()], "findings": []
+        }, {"recursion_limit": 8})["report"]
+        self.assertEqual(report["quality"], "BLOCKED")
+        self.assertEqual(report["decision"], "HOLD")
+        self.assertFalse(report["publicationAllowed"])
+
     def test_actual_langgraph_parallel_review_when_dependency_installed(self):
         try:
             from langgraph.graph import StateGraph
