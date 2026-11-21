@@ -24,6 +24,13 @@ Alle Beträge dienen ausschließlich der Validierung. **Kein autorisierter Preis
 
 **Nicht Ziel des Launches:** allgemeine Stock-Plattform, ungeprüfte Endkunden-Downloads, exklusive AI-Art-Verkäufe oder automatisches X-/Instagram-Publishing.
 
+## Marktabgrenzung (öffentlich belegte Lizenzmuster, keine Preisbenchmarks)
+- Adobe Stock unterscheidet Standard-/Enhanced-/Extended-Lizenzen und gesonderte Rechte für bestimmte Endprodukte zur Weitergabe: https://stock.adobe.com/license-terms
+- Envato Elements erlaubt kommerzielle Endprodukte, untersagt aber die Standalone-Weitergabe von Stock-Dateien und Quellassets: https://help.elements.envato.com/hc/en-us/articles/360000628966-Envato-Elements-License/
+- Canva unterscheidet Nutzungen in Designs von Standalone-Redistribution und vergibt keine pauschalen Marken-/Exklusivrechte: https://www.canva.com/policies/content-license-agreement/
+
+**Differenzierung:** Der kapitalisierbare Mehrwert ist das kundenspezifische Designpaket mit nachvollziehbaren Asset-Digests, sauberem Endkunden-Receipt und klaren Kanälen – nicht der Anspruch, ein allgemeiner günstiger Stock-Marktplatz zu sein. Die Konkurrenz-AGB sind Vergleichsmaßstäbe, **keine** Autorisierung zur Übernahme deren Bildinhalte oder Geschäftsbedingungen.
+
 ## Go-to-Market: risikoarmer 90-Tage-Pilot
 **Tage 1–30 · Recht und Packaging:** unabhängige Rechte-/Marken-/KI-Ausgabeprüfung je Asset, vollständige menschliche Gestaltungsdokumentation (wenn nachweisbar), genaue Bindung der zehn Hashes, rechtliche Prüfung beider Vertragsmuster, Accessibility-Review, Export-Paket und Endkunden-Receipt-Muster. Eine unverbindliche Vorschau darf unverändert im Catalogue Center stehen. Keine neue Paid-Infrastruktur.
 
@@ -60,6 +67,6 @@ Konkrete Content-Pieces (nur freigegebene Quellen/Bildrechte): Demo-Carousel „
 **Aktueller Stand:** CURRENT_PREVIEW=VERIFIED; PUBLISHER_LICENSE=NOT_EFFECTIVE; RESELLER_LICENSE=NOT_EFFECTIVE; COMMERCIAL_PRICES=PROPOSAL_ONLY; CHECKOUT=BLOCKED; CAMPAIGNS=NOT_PUBLISHED; CUSTOMER_SALES=NOT_PROVEN. Jede Live-Freigabe erfordert unabhängige, dokumentierte Vertrags-/Rechteentscheidung; der bestehende MediaKit-v5-Importer verbleibt DRAFT_ONLY.
 
 ## Quellen und Rücknahme
-Quellnorm: §31 UrhG (Einräumung von Nutzungsrechten); DPMA (menschliche Schöpfung), BMJ-FAQ KI und Urheberrecht, OpenAI Terms of Use (Output-Zuordnung im rechtlich erlaubten Umfang). Quellenlinks in der Rechtsfassung referenzieren, nicht als automatisches Copyright-Attest interpretieren.
+Quellnorm und Prüfquellen: §31 UrhG https://www.gesetze-im-internet.de/urhg/__31.html ; DPMA zur menschlichen Schöpfung https://www.dpma.de/schuetzen/urheberrecht ; BMJ-FAQ KI und Urheberrecht https://www.bmjv.de/SharedDocs/Downloads/DE/Themen/Nav_Themen/240305_FAQ_KI_Urheberrecht.pdf ; OpenAI Terms of Use https://openai.com/policies/terms-of-use/ . Keine dieser Quellen stellt ein automatisches Copyright-, Marken- oder Exklusivitätsattest für die konkreten Grafiken aus.
 
 Rücknahme: diesen konzeptionellen Slice revertieren; keine Änderung an Stripe, Entitlements, OAuth, Social Publisher, Rendering oder vorhandener Asset-Registry notwendig.
