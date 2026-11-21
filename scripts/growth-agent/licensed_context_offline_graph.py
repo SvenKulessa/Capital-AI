@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 import sqlite3
 import stat
+from typing import TypedDict
 
 os.environ["LANGSMITH_TRACING"] = "false"
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
@@ -84,6 +85,21 @@ def thread_id(tenant, task, projection_sha):
     return "licensed-" + digest([tenant, task, projection_sha])[:40]
 
 
+class ContextState(TypedDict, total=False):
+    task_id: str
+    tenantId: str
+    channel: str
+    roundSha256: str
+    projectionSha256: str
+    graphRunId: str
+    sources: list[dict]
+    candidates: list[dict]
+    rejectedConsentCount: int
+    status: str
+    route: list[str]
+    retrievedDigests: list[str]
+
+
 def build_graph(expected, *, checkpointer=None):
     from langgraph.graph import START, END, StateGraph
 
@@ -111,7 +127,7 @@ def build_graph(expected, *, checkpointer=None):
         return {"status": "OFFLINE_DRAFT_VERIFIED" if ok else "HOLD",
                 "route": ["admission", "source_context", "trust", "quality"]}
 
-    graph = StateGraph(dict)
+    graph = StateGraph(ContextState)
     for n, fn in (("admission", admit), ("source_context", retrieve),
                   ("trust", trust), ("quality", quality)):
         graph.add_node(n, fn)
