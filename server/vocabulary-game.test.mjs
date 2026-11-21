@@ -4,6 +4,7 @@ import { Readable } from 'node:stream';
 import { randomUUID } from 'node:crypto';
 import { advanceVocabularyGame, projectVocabularyGame, QUESTION_MS, vocabularyGameInitial } from './vocabulary-game.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
+import { vocabularyMetadata } from '../shared/vocabulary-metadata.mjs';
 
 const answerFor = (state, option) => {
   const round = state.round;
@@ -53,6 +54,13 @@ test('earned words deduplicate while real correct answers unlock a persistent 10
   assert.equal(advanceVocabularyGame(state, swipe, 2_000).changed, true);
   assert.equal(advanceVocabularyGame(state, swipe, 2_001).changed, false);
   assert.deepEqual(projectVocabularyGame(state, 2_002).reviews[0], { id, at: 2_000, swiped: true, result: 'missed' });
+  const unearned = vocabularyMetadata.find(term => !Object.hasOwn(state.earned, term.id) && term.description);
+  assert.ok(unearned, 'fixture must include a legitimate term that was not earned');
+  const before = JSON.stringify(state);
+  assert.deepEqual(advanceVocabularyGame(state, {
+    type: 'review', word: unearned.id, result: 'known', swipe: true, receipt: randomUUID(),
+  }, 2_003), { status: 403, error: 'card_not_earned' });
+  assert.equal(JSON.stringify(state), before, 'forbidden review must not mutate progress');
   assert.equal(state.right, 110);
 });
 
@@ -100,6 +108,10 @@ test('account isolation, origin, duplicate writes and download authorization hol
   assert.equal((await request('?view=quiz', 'bob')).payload.round, null);
   assert.equal((await request('', 'alice')).payload.round, undefined);
   assert.equal((await request('/badge', 'alice')).status, 403);
+  assert.equal((await request('', 'bob', {
+    type: 'review', word: vocabularyMetadata[0].id,
+    result: 'known', swipe: false, receipt: randomUUID(),
+  })).status, 403);
   const row = records.get('alice');
   row.state.badge = { id: randomUUID(), earnedAt: 1_234 };
   const certificate = await request('/certificate', 'alice');
