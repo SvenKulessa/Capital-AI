@@ -40,3 +40,8 @@ SHA-1 kennzeichnet Git-Objekte, **nicht** eine unabhängige SHA-256-Lizenzattest
 | Produktive Auslieferung / Render-BuildIdentity | SHA-gebundener Readback | NOT_PROVEN |
 
 Rollback: Revert des Feature-PR; kein Schema, Feature-Flag, OAuth-Provider, Backend-Endpoint oder kostenpflichtiger Dienst wird geändert.
+
+
+## MediaKit-v5- und Catalogue-Integration (2026-11-21)
+
+Die zehn bestehenden Vektormotive sind nun zusätzlich als eigene SVG-Dateien unter `public/branding/learning-universe/` und in einer SHA-256-gebundenen kanonischen Asset-Registry enthalten. Der vorhandene NewsDesignCatalog zeigt sie als Owner-beauftragte first-party Designbeispiele, nicht als selbstständiges Lizenzprodukt. MediaKit-v5-Draft und externe Weitergabelizenzen bleiben `REVIEW_REQUIRED`/`NOT_PROVEN`. Vgl. `docs/growth/LEARNING-UNIVERSE-MEDIAKIT-V5-ASSET-REGISTRY-20261121.md`.
