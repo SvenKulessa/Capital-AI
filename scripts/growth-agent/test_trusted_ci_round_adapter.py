@@ -115,6 +115,21 @@ class TrustedCIReadbackTests(unittest.TestCase):
             for http, state in cases:
                 self.assertEqual(self.adapter(http)[0].read_ci(CANDIDATE).state, state)
 
+    def test_proven_failure_takes_precedence_over_pending_optional_check(self):
+        # Existing failed required status is terminal even if CodeQL is queued.
+        http = HTTP([
+            check("Docker Security Gate", 1, result="failure"),
+            check("Domain Governance", 2),
+            check("CodeQL", 3, state="in_progress"),
+        ])
+        adapter, log = self.adapter(http)
+        with patch("trusted_ci_round_adapter.GitHubRenderActions", FakeActions):
+            self.assertEqual(adapter.read_ci(CANDIDATE).state, "FAILED")
+            self.assertEqual(serve(adapter, stop_requested=lambda: False,
+                                   sleep=lambda _: self.fail("unnecessary CI wait"),
+                                   max_cycles=1), 1)
+        self.assertEqual(log, [(17, HEAD, "BLOCKED")])
+
     def test_stale_pr_and_source_validator_fail_closed(self):
         http = HTTP()
         adapter, _ = self.adapter(http)
