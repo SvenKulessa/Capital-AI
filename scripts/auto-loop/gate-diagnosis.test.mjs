@@ -3,3 +3,12 @@ test('redacts credentials before evidence leaves runner',()=>{const clean=saniti
 test('security finding is never rerun or bypassed',()=>{const r=diagnoseGateFailure({...base,log:'CRITICAL vulnerability found'});assert.equal(r.classification,'SECURITY_FINDING');assert.equal(r.autoRerunAllowed,false);assert.equal(r.securityGateBypassAllowed,false);});
 test('bounded transient retry is admitted once',()=>{const a=diagnoseGateFailure({...base,log:'hosted runner internal server error'});const b=diagnoseGateFailure({...base,attempt:2,log:'hosted runner internal server error'});assert.equal(a.autoRerunAllowed,true);assert.equal(b.autoRerunAllowed,false);assert.equal(a.fingerprint,b.fingerprint);});
 test('unknown failures require reproduction',()=>{const r=diagnoseGateFailure({...base,log:'unexpected opaque state'});assert.equal(r.classification,'UNKNOWN_REPRODUCTION_REQUIRED');assert.equal(r.autoRerunAllowed,false);assert.equal(r.repairAuthority,'NONE');});
+
+test('privileged workflow_run checks out trusted main, never an untrusted head',async()=>{
+  const {readFileSync}=await import('node:fs');
+  const workflow=readFileSync(new URL('../../.github/workflows/auto-loop-gate-diagnosis.yml',import.meta.url),'utf8');
+  assert.match(workflow,/ref: main/);
+  assert.doesNotMatch(workflow,/ref:\s*\$\{\{\s*github\.event\.workflow_run\.head_sha/);
+  assert.match(workflow,/head_repository\.full_name/);
+  assert.doesNotMatch(workflow,/enable_debug_logging=true/);
+});
