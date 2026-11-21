@@ -266,7 +266,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <nav aria-label={nav.main} className="hidden xl:flex items-center gap-1 rounded-xl border border-slate-700 bg-black/40 p-1">
-        {Object.values(MAIN_HUBS_CONFIG).filter(hub => hub.id !== 'control-center' || isOwner).map(hub => <button key={hub.id} type="button" data-hub={hub.id} aria-current={activeHub === hub.id ? 'page' : undefined} className="hub-tab hub-switch !px-3 !text-xs" onClick={() => openHubSidebar(hub.id)}><span aria-hidden="true">{hub.icon}</span>{hub.name}</button>)}
+        {Object.values(MAIN_HUBS_CONFIG).sort((a,b)=>a.name.localeCompare(b.name,'de')).filter(hub => hub.id !== 'control-center' || isOwner).map(hub => <button key={hub.id} type="button" data-hub={hub.id} aria-current={activeHub === hub.id ? 'page' : undefined} className="hub-tab hub-switch !px-3 !text-xs" onClick={() => openHubSidebar(hub.id)}><span aria-hidden="true">{hub.icon}</span>{hub.name}</button>)}
       </nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
@@ -497,7 +497,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 gap-1.25">
-                    {Object.values(MAIN_HUBS_CONFIG).map(hub => ({...hub, glow:hub.glowColor, tagline:hub.description})).filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
+                    {Object.values(MAIN_HUBS_CONFIG).sort((a,b)=>a.name.localeCompare(b.name,'de')).map(hub => ({...hub, glow:hub.glowColor, tagline:hub.description})).filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
                       <button
                         key={hub.id}
                         data-hub={hub.id}
