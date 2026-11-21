@@ -13,6 +13,9 @@
 !.agents/skills/
 !.agents/skills/**
 !.agents/app.prompt.json
+!.agents/contracts/
+!.agents/contracts/acode-shared-delivery.json
+!.agents/contracts/drive-artifact-routing.json
 !.github/
 !.github/agents/
 !.github/workflows/
@@ -506,6 +509,10 @@
 !server/auth.test.mjs
 !scripts/solo2-config.mjs
 !scripts/solo2-config.test.mjs
+# Offline artifact routing tests/metadata only; no credentials or transfer clients.
+!scripts/platform/
+!scripts/platform/drive-artifact-router.mjs
+!scripts/platform/drive-artifact-router.test.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
