@@ -63,7 +63,7 @@ export function GeminiByokSettings() {
         className="min-h-11 w-full rounded-xl border border-pink-300/30 bg-slate-950 px-3 text-sm text-white disabled:opacity-50" />
       <div className="flex flex-wrap gap-2">
         <button type="submit" disabled={!available||busy||!key.trim()} className="min-h-11 rounded-xl bg-pink-300 px-4 text-sm font-bold text-slate-950 disabled:opacity-50">Gemini-Schlüssel speichern</button>
-        {connected && <button type="button" disabled={busy} onClick={()=>void remove()} className="min-h-11 rounded-xl border border-red-300/40 px-4 text-sm font-semibold text-red-100">Schlüssel entfernen</button>}
+        {<button type="button" disabled={busy} onClick={()=>void remove()} className="min-h-11 rounded-xl border border-red-300/40 px-4 text-sm font-semibold text-red-100">Schlüssel entfernen</button>}
       </div>
     </form>
     <p role="status" className="mt-3 flex items-start gap-2 text-xs text-slate-200"><ShieldCheck className="h-4 w-4 shrink-0 text-pink-300" aria-hidden="true"/>{message}</p>
