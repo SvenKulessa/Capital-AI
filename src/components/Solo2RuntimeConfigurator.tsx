@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   createSolo2Profile, validateSolo2Profile, solo2ConfigReadiness,
-  SOLO2_DOMAINS, SOLO2_MODES, SOLO2_RESOURCES, SOLO2_SKILLS,
+  SOLO2_DOMAINS, SOLO2_MODES, SOLO2_RESOURCES, SOLO2_SKILLS, SOLO2_PIPELINES,
 } from '../../shared/solo2-config.mjs';
 
 /**
@@ -111,6 +111,34 @@ export function Solo2RuntimeConfigurator({
           onChange={event => { void importProfile(event.target.files?.[0]); event.target.value = ''; }}
           className="block min-h-11 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-sm" />
       </label>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="space-y-1 text-sm text-slate-100">
+          <span>Online-CI-Polling (Sekunden, bei späterer Autorisierung)</span>
+          <input type="number" min={30} max={3600} step={30} value={profile.online.ciPollSeconds}
+            onChange={event => change(draft => { draft.online.ciPollSeconds = Number(event.target.value); })}
+            className="min-h-11 w-full rounded-lg border border-slate-500 bg-slate-900 p-2" />
+        </label>
+        <label className="space-y-1 text-sm text-slate-100">
+          <span>Maximale Reparaturversuche</span>
+          <input type="number" min={0} max={3} value={profile.limits.maxRepairAttempts}
+            onChange={event => change(draft => { draft.limits.maxRepairAttempts = Number(event.target.value); })}
+            className="min-h-11 w-full rounded-lg border border-slate-500 bg-slate-900 p-2" />
+        </label>
+      </div>
+      <fieldset className="rounded-lg border border-slate-700 p-3">
+        <legend className="px-1 text-sm font-semibold text-white">Pipeline-Prozesse (nur Routing-Entwurf)</legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {SOLO2_PIPELINES.map(id => {
+            const item = profile.pipelines.find(p => p.id === id)!;
+            return <label key={id} className="flex min-h-11 items-center gap-2 text-xs text-slate-200">
+              <input type="checkbox" checked={item.selected} onChange={event => change(draft => {
+                draft.pipelines.find(p => p.id === id)!.selected = event.target.checked;
+              })} />
+              {id}
+            </label>;
+          })}
+        </div>
+      </fieldset>
       <fieldset className="rounded-lg border border-slate-700 p-3">
         <legend className="px-1 text-sm font-semibold text-white">Domains</legend>
         <div className="flex flex-wrap gap-3">
