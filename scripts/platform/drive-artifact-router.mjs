@@ -39,12 +39,14 @@ export function planArtifact(input, contract, acodeContract) {
     }
     prefix=`${date}_${domain}_${input.topic}${status}_v`;
   }
-  const resolvedId=input.scope==="ACODE" ? acodeContract.driveFolderId : ((typeof input.providerFolderId==="string" && /^[A-Za-z0-9_-]{15,120}$/.test(input.providerFolderId)) ? input.providerFolderId : null);
+  const resolvedId=input.scope==="ACODE" ? acodeContract.driveFolderId : ((typeof input.providerFolderId==="string" && /^[A-Za-z0-9_-]{15,120}$/.test(input.providerFolderId) && !/^(?:INSERT|REPLACE|PLACEHOLDER|CHANGE_ME|EXAMPLE)/i.test(input.providerFolderId)) ? input.providerFolderId : null);
   const parent={folderId:resolvedId,folder:folder.folder};
   const filenameFor=version=>`${prefix}${version}.${extension}`;
   if (!Array.isArray(input.existingNames) || input.existingNames.some(v=>typeof v!=="string"||v.length>240)) return {...hold("FOLDER_LISTING_REQUIRED"),target:parent};
   const prior=new Set(input.existingNames);
-  let version=1; while (prior.has(filenameFor(version))) {version++;if(version>9999)return hold("VERSION_SPACE_EXHAUSTED");}
+  const usedMajors=new Set();
+  for(const name of prior){if(!name.startsWith(prefix)||!name.endsWith('.'+extension))continue;const part=name.slice(prefix.length,-(extension.length+1));const match=/^([1-9][0-9]*)(?:\.[0-9]+)?$/.exec(part);if(match)usedMajors.add(Number(match[1]));}
+  let version=1; while (usedMajors.has(version)||prior.has(filenameFor(version))) {version++;if(version>9999)return hold("VERSION_SPACE_EXHAUSTED");}
   const filename=filenameFor(version);
   const readback=input.listingComplete===true && resolvedId!==null && input.listedParentId===resolvedId && (input.scope==="ACODE" || (input.listedFolderPath===folder.folder && input.parentChainVerified===true));
   return {status:readback?"ROUTE_READY":"WAIT",reason:readback?null:"PARENT_LISTING_NOT_VERIFIED",filename,folderId:resolvedId,driveFolder:folder.folder,category,domain,version,project:contract.project,naming:"VERIFIED",uploadAdmission:readback?"READY_FOR_AUTHORIZED_CONNECTOR":"HOLD",driveUpload:"NOT_PROVEN",driveParent:"NOT_PROVEN",deviceSync:"NOT_PROVEN",sha256:"NOT_PROVEN"};
