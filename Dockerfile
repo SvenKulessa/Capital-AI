@@ -119,7 +119,7 @@ COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs 
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 # Shared SOLO2 profile: CLI and negative tests execute in the existing offline build stage.
 COPY scripts/solo2-config.mjs scripts/solo2-config.test.mjs ./scripts/
-COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs ./scripts/platform/
+COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.mjs scripts/platform/drive-artifact-delivery.test.mjs ./scripts/platform/
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 COPY scripts/skill-bundles.mjs ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
