@@ -17,7 +17,11 @@
     "historicalSourceDigestRecomputed": false,
     "historicalByteComparison": "NOT_PROVEN",
     "currentVsDraftFactComparison": "CONSISTENT",
-    "comparisonScope": "FACTUAL_SEMANTICS_ONLY_NOT_BYTE_IDENTITY"
+    "comparisonScope": "FACTUAL_SEMANTICS_ONLY_NOT_BYTE_IDENTITY",
+    "vendorPrimaryUrl": "https://akash.network/blog/introducing-akash-compute-forwards/",
+    "vendorStatusUrl": "https://forwards.akash.network/status",
+    "vendorCrossCheck": "Akash bezeichnet Compute Forwards als Entwurf: nichts wird gehandelt; Pilot nur bei erfüllten Audits, rechtlichen, Hardware- und Absicherungs-Gates; Früh-2027 ist Planung, kein Betriebsnachweis.",
+    "vendorStatus": "NOT_LIVE"
   },
   "firstParty": {
     "manifestPath": "docs/growth/drafts/akash-20261120/manifest.json",
@@ -77,10 +81,10 @@
     "publicPublishAllowed": false
   },
   "quality": {
-    "independentClaimsReview": "FACTS_MATCH_SOURCE_TEXT",
+    "independentClaimsReview": "SOLANA_NEWS_AND_AKASH_PRIMARY_CROSSCHECK",
     "articleSourceByteHash": "NOT_PROVEN",
     "historicVsCurrentExactArticleBlock": "NOT_PROVEN",
-    "manifestAndGraphicsVerification": "TESTED_SEPARATELY",
+    "manifestAndGraphicsVerification": "CI_TEST_PENDING",
     "publicationDisposition": "BLOCKED",
     "noProviderApiCalls": true,
     "noAdditionalCosts": true,
