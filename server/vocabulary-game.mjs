@@ -54,6 +54,9 @@ export function advanceVocabularyGame(state, action, now = Date.now()) {
   if (action.type === 'review') {
     if (typeof action.word !== 'string' || !words.has(action.word) ||
       !['known', 'missed'].includes(action.result) || typeof action.swipe !== 'boolean') return problem(400, 'invalid_review');
+    // Only previously earned cards can change the private learning statistics.
+    // Public vocabulary IDs must never grant learning progress on their own.
+    if (!Object.hasOwn(state.earned, action.word)) return problem(403, 'card_not_earned');
     const previous = state.reviews[action.word];
     if (previous?.receipt === action.receipt) return { changed: false };
     state.reviews[action.word] = { result: action.result, swiped: action.swipe || previous?.swiped === true,
