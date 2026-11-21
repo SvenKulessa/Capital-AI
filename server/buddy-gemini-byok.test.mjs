@@ -29,7 +29,7 @@ test('AES-GCM cookie binds to authenticated account; no secret in JSON or logs',
   assert.equal(saved.response.status,200);
   assert.equal(saved.response.body.verified,false);
   assert.equal(JSON.stringify(saved.response).includes(fakeKey),false);
-  const cookie=saved.headers['set-cookie'];
+  const cookie=String(saved.headers['set-cookie']);
   assert.match(cookie,/HttpOnly; Secure; SameSite=Strict/);
   assert.equal(cookie.includes(fakeKey),false);
   const value=cookie.split(';')[0];
@@ -39,7 +39,7 @@ test('AES-GCM cookie binds to authenticated account; no secret in JSON or logs',
 });
 test('explicit consent required and bounded synthetic provider response',async()=>{
   const saved=await invoke({method:'POST',body:{apiKey:fakeKey}});
-  const cookie=saved.headers['set-cookie'].split(';')[0];
+  const cookie=String(saved.headers['set-cookie']).split(';')[0];
   let calls=0;
   const fetchImpl=async(url,args)=>{
     calls++;
@@ -57,7 +57,7 @@ test('explicit consent required and bounded synthetic provider response',async()
 });
 test('credential revocation stays possible when BYOK is disabled',async()=>{
   const r=await invoke({method:'DELETE',env:{...goodEnv,BUDDY_GEMINI_BYOK_ENABLED:'false'}});
-  assert.equal(r.response.status,200);assert.match(r.headers['set-cookie'],/Max-Age=0/);
+  assert.equal(r.response.status,200);assert.match(String(r.headers['set-cookie']),/Max-Age=0/);
 });
 test('delete clears encrypted client cookie',async()=>{
   const r=await invoke({method:'DELETE'});
