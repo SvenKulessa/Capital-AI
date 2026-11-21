@@ -200,7 +200,7 @@ const sourceRound=()=>({
 const licenseRound=(record=sourceRound())=>({
   tenantId:record.tenantId,sourceId:record.id,sourceUrl:record.sourceUrl,
   sourceSha256:record.sourceSha256,commercialParaphraseAllowed:true,
-  reviewed:true,evidenceRef:'rights-ledger:source-round-001',
+  commercialExcerptAllowed:true,reviewed:true,evidenceRef:'rights-ledger:source-round-001',
 });
 const scopeRound=(rightsLedger=[licenseRound()],consentLedger=[])=>({
   kind:'SERVER_VERIFIED_TENANT_SCOPE',authenticated:true,tenantId:TENANT,rightsLedger,consentLedger,
@@ -231,6 +231,8 @@ test('TRUST: neither crawler fields nor cross-tenant rights can grant reuse',()=
   const base=sourceRound();
   const cases=[
     [requestRound(),scopeRound([]),'COMMERCIAL_SOURCE_RIGHTS_NOT_PROVEN'],
+    [requestRound(),scopeRound([{...licenseRound(),commercialExcerptAllowed:false}]),
+      'COMMERCIAL_SOURCE_RIGHTS_NOT_PROVEN'],
     [requestRound({records:[{...base,sourceSha256:'0'.repeat(64)}]}),
       scopeRound(),'LICENSED_SOURCE_SHA_MISMATCH'],
     [requestRound(),scopeRound([{...licenseRound(),tenantId:'tenant_beta_001'}]),
@@ -305,4 +307,18 @@ test('QUALITY: consented feedback is versioned candidate only, never template pr
   assert.equal(noConsent.templateEvaluation.rejectedConsentCount,1);
   assert.throws(()=>buildLicensedContextRound(requestRound({
     baseTemplateVersion:'2.0.0'}),scopeRound()),/LICENSED_BATCH_INVALID/);
+});
+
+
+test('QUALITY: source and consent changes alter immutable evaluation identity',()=>{
+  const first=buildLicensedContextRound(requestRound(),scopeRound());
+  const changedText=SOURCE_TEXT+' Die Studie nennt weitere dokumentierte Randbedingungen.';
+  const other={...sourceRound(),sourceText:changedText,sourceSha256:sha(changedText)};
+  const second=buildLicensedContextRound(requestRound({records:[other]}),
+    scopeRound([licenseRound(other)]));
+  assert.equal(second.sourceIntake.accepted.length,1);
+  assert.notEqual(first.roundSha256,second.roundSha256);
+  const third=buildLicensedContextRound(requestRound({
+    evaluatedAt:'2026-11-21T12:05:00.000Z'}),scopeRound());
+  assert.notEqual(first.roundSha256,third.roundSha256);
 });
