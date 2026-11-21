@@ -153,6 +153,9 @@ COPY server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wir
 COPY docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md ./docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
+# Bound, offline Akash evidence used only by the build-stage security tests.
+COPY docs/growth/drafts/akash-20261120/manifest.json docs/growth/drafts/akash-20261120/Akash-Vorschau.html docs/growth/drafts/akash-20261120/akash-landscape.png docs/growth/drafts/akash-20261120/akash-portrait.png ./docs/growth/drafts/akash-20261120/
+COPY docs/growth/drafts/akash-20261121/source-review-v1.json ./docs/growth/drafts/akash-20261121/source-review-v1.json
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
 COPY docs/security/evidence/stripe-catalog-readback-20261006.json ./docs/security/evidence/stripe-catalog-readback-20261006.json
 COPY docs/security/evidence/benchmark-cost-calibration-20261006.json ./docs/security/evidence/benchmark-cost-calibration-20261006.json
