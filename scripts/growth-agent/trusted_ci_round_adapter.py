@@ -13,6 +13,11 @@ from provider_adapters import (
 )
 
 
+CODEQL_ANALYZERS = frozenset((
+    "Analyze (actions)", "Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)",
+))
+
+
 class TrustedCIReadback:
     def __init__(self, http, *, select_candidate, record_result):
         if not callable(select_candidate) or not callable(record_result):
@@ -37,7 +42,7 @@ class TrustedCIReadback:
             # PR/branch/current-main checks are provided by the existing trusted adapter.
             actions = GitHubRenderActions(self.http, pr_number=candidate.pr_number,
                                           assessment=TrustedAssessment(), enable_merge=False)
-            pr, main_sha = actions._current()
+            pr, main_sha = actions._current(observe_dependabot=True)
             if pr["head"]["sha"] != sha or pr["base"]["sha"] != main_sha:
                 return CheckReadback(sha, "NOT_PROVEN")
             data = self.http.github(f"/commits/{sha}/check-runs?per_page=100")
@@ -60,9 +65,16 @@ class TrustedCIReadback:
                         not isinstance(app, dict)
                         or (app.get("slug"), app.get("id")) != CHECK_SOURCES[name]):
                     return CheckReadback(sha, "NOT_PROVEN")
+                if (name in CODEQL_ANALYZERS and
+                        (not isinstance(app, dict)
+                         or (app.get("slug"), app.get("id")) != CHECK_SOURCES[REQUIRED[0]])):
+                    return CheckReadback(sha, "NOT_PROVEN")
                 status, conclusion = run.get("status"), run.get("conclusion")
                 if status in ("queued", "in_progress", "pending", "waiting", "requested"):
                     states[name] = "PENDING"
+                elif status == "completed" and name == "CodeQL" and conclusion == "neutral":
+                    # GitHub briefly reports the native aggregate as neutral while its analyzers run.
+                    states[name] = "INDETERMINATE"
                 elif status == "completed":
                     states[name] = ("SUCCESS" if conclusion == "success" or
                                     (conclusion == "skipped" and name in OPTIONAL_SKIP)
@@ -76,6 +88,10 @@ class TrustedCIReadback:
             # remain queued. Do not spin a 30-second wait on a failed candidate.
             if "FAILED" in states.values():
                 return CheckReadback(sha, "FAILED")
+            if states.get("CodeQL") == "INDETERMINATE":
+                if any(states.get(name) == "PENDING" for name in CODEQL_ANALYZERS):
+                    return CheckReadback(sha, "PENDING")
+                return CheckReadback(sha, "NOT_PROVEN")
             if "PENDING" in states.values():
                 return CheckReadback(sha, "PENDING")
             checks, ok, _ = actions._checks(sha)
