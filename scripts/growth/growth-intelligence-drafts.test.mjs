@@ -34,3 +34,6 @@ test('repeat builds are content-addressed and byte-identical without provider st
 
 // Offline-only next-round prompt drafts use the same existing Growth test entrypoint.
 import './next-round-planner.test.mjs';
+
+// Branded image/Graph context tests share the existing Growth suite.
+import './brand-kit-graph-drafts.test.mjs';
