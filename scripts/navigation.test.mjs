@@ -27,14 +27,17 @@ test('aliases and trailing slash normalize without losing query or hash', () => 
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
 });
 
-test('Architecture Intelligence has a dedicated public route and deep-link tabs', () => {
-  assert.equal(resolveAppRoute('/architecture-hub'), '/architecture-hub');
-  assert.equal(resolveAppRoute('/financial-intelligence'), '/architecture-hub');
-  assert.equal(resolveNavigationTarget('/architecture-hub?tab=explainability'), '/architecture-hub?tab=explainability');
-  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+test('analysis articles are routed through Documentation and legacy Studio and Learning tabs are retired', () => {
+  const target = '/dokumentation/analyse-komponenten';
+  assert.equal(resolveAppRoute(target), target);
+  assert.equal(resolveAppRoute('/architecture-hub'), target);
+  assert.equal(resolveAppRoute('/financial-intelligence'), target);
+  assert.equal(resolveNavigationTarget('/architecture-hub?tab=explainability'), target);
+  assert.equal(resolveNavigationTarget('/studio?tab=intelligence'), '/studio');
+  assert.equal(resolveNavigationTarget('/learning?tab=intelligence-catalogs'), '/learning');
   const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
-  assert.match(routes, /IntelligenceArchitectureHub/);
-  assert.match(catalog, /path: '\/architecture-hub'/);
+  assert.match(catalog, /id: 'analysis-components', name: 'Analyse Komponenten'/);
+  assert.doesNotMatch(catalog, /Financial Intelligence Kataloge|path: '\/architecture-hub'/);
 });
 
 test('Market Screener documentation aliases keep the dedicated blueprint documentation hub', () => {
