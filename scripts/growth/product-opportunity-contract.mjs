@@ -3,6 +3,8 @@
  * Issue #874. No provider calls, persistence, publication, billing or new authority.
  * External evidence statuses in input are claims to be checked, not trusted attestations.
  */
+import { assessCadsContentCampaign } from '../../packages/benchmark-core/growth-quality.mjs';
+
 export const PRODUCT_OPPORTUNITY_VERSION = 'CAPITAL_AI_PRODUCT_OPPORTUNITY@1';
 export const PRODUCT_OPPORTUNITY_LIMITS = Object.freeze({
   scenarios: 6, competitors: 12, capabilities: 20, audience: 6,
@@ -255,6 +257,9 @@ export function buildOpportunityDraftCampaign(input, claimId) {
     audience: [...p.audience], channels: ['WEBSITE', 'LINKEDIN'],
     outputs: ['TEXT', 'ANALYTICS'], sourceUrls: [p.canonicalUrl],
   };
+  if (assessCadsContentCampaign(brief).technicalStatus !== 'PASS') {
+    fail('CADS_CONTENT_IDENTITY_REJECTED');
+  }
   return Object.freeze({
     contractVersion: PRODUCT_OPPORTUNITY_VERSION,
     mode: 'DRAFT_ONLY',

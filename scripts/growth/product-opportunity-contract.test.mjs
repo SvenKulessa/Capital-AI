@@ -213,6 +213,13 @@ test('NOT_PROVEN capability must never become a draft campaign claim', () => {
     /CLAIM_SOURCE_REQUIRED/);
 });
 
+test('draft projection rejects briefs the canonical Content Engine would refuse', () => {
+  for (const change of [{ campaignId: 'abc' }, { canonicalUrl: 'https://localhost:8080/' }]) {
+    assert.throws(() => buildOpportunityDraftCampaign({ ...sample(), ...change }, 'manual-scan'),
+      /CADS_CONTENT_IDENTITY_REJECTED/);
+  }
+});
+
 test('valid source-recorded claim makes content-engine-compatible draft but no publishing', () => {
   const draft = buildOpportunityDraftCampaign(sample(), 'manual-scan');
   assert.equal(draft.mode, 'DRAFT_ONLY');
