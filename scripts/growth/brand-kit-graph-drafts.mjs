@@ -47,6 +47,7 @@ export function assessContext(records=[], trustedRights=[]) {
     else if(!['CRAWLEE','FIRECRAWL','TINYFISH','LANGGRAPH'].includes(record.tool)
       || !url || url.protocol!=='https:' || url.username || url.password || url.port
       || url.hash || !url.hostname.includes('.') || /(^localhost$|\.local$|\.internal$)/.test(url.hostname)
+      || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(url.hostname) || url.hostname.startsWith('[')
       || !validSummary(record.summary) || !digest.test(record.summarySha256??'')
       || sha(record.summary)!==record.summarySha256)
       reason='SOURCE_PROVENANCE_INVALID';
@@ -117,7 +118,8 @@ export function drawBrandedSvg({draft,kit,context,template}) {
   const headline=draft.draftText.split('\n')[1]||'Methodik statt Versprechen';
   const summary=context.accepted[0]?.summary??draft.contentPlan.campaign.objective;
   const safeSummary=validSummary(summary)?summary:'Quellen, Annahmen und Grenzen überprüfen.';
-  const summaryShort=safeSummary.slice(0,85).replace(/\s+\S*$/,'')+(safeSummary.length>85?'…':'');
+  const summaryShort=safeSummary.length>85
+    ? safeSummary.slice(0,85).replace(/\s+\S*$/,'')+'…' : safeSummary;
   const orbit=kit.colors.map((c,i)=>'<circle cx="'+w*.82+'" cy="'+h*.36+'" r="'+
     (83+i*24)+'" fill="none" stroke="'+c+'" stroke-width="2" opacity=".15"/>').join('');
   const panels=PANELS.map((p,i)=>{
