@@ -45,7 +45,7 @@ type HomePageProps = {
   onStartProductTour: () => void;
 };
 
-export function HomePage({ onNavigate, onStartProductTour }: HomePageProps) {
+export function HomePage({ onNavigate, onStartProductTour, onOpenModule, onOpenSectorAnalysis, onOpenPriceAlerts }: HomePageProps) {
   return (
     <>
 
