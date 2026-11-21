@@ -55,12 +55,12 @@ Die vorhandene Growth-Intelligence-Testsuite importiert die neuen Positiv-/Negat
   `test:growth-intelligence`-Kette, `Dockerfile`-COPY und `.dockerignore` enthalten.
 - Eingabe: höchstens drei bereits extrahierte, schlichte UTF-8-Webtexte
   (kein HTML und keine Live-Crawls). Exakter SHA-256-Text-Hash, Quellenkennung,
-  HTTPS-Adresse und Werkzeug-Typ. Die deterministische Kurzfassung wird erneut
+  HTTPS-Adresse und Werkzeug-Typ. Die Kurzfassung ist eine deterministische, **wörtlich-extraktive Textpassage** (keine automatische Paraphrase). Sie wird erneut
   durch `assessContext` auf Provenance, Source-SHA und Rechte gebunden.
 - **Autorisierung**: Die vertrauenswürdige Server-Seite muss unabhängig vom
   Request `trustedScope` liefern und eine zuvor authentifizierte Tenant-ID,
   eine pro Quelle an Tenant/URL/Rohtext-SHA gebundene kommerzielle
-  Paraphrasierungsberechtigung im Rechte-Ledger und einen
+  Paraphrasierungs- **und wörtliche Auszugsberechtigung** im Rechte-Ledger und einen
   an Tenant/Event/SHA gebundenen Consent-/Anonymisierungsbeleg liefern.
   Die hier geprüfte Strukturangabe `authenticated:true` allein ist **kein**
   Authentifizierungsnachweis. Deswegen wurde **keine HTTP-Route** freigeschaltet.
@@ -85,3 +85,5 @@ Die vorhandene Growth-Intelligence-Testsuite importiert die neuen Positiv-/Negat
   LangGraph-Readback, Produktiv-Auth und RAG weiterhin NOT_PROVEN.
 - **Rollback**: Revert des separaten GROWTH-Folge-PRs. Keine Datenmigration,
   Credentials, OAuth-Änderung, neuen Pakete, Scheduler oder Deploys.
+
+Der Versionierungs-Hash bindet auch den vollständigen Rohtext-SHA, den getrennten Rechtebeleg, die akzeptierten Feedback-Bytes und den Auswertungszeitpunkt. Der Contract beweist nur die Validierung dieser übergebenen Belege, nicht deren externe Echtheit. Fehlende Auszugsrechte blockieren den Import auch dann, wenn eine Paraphrase erlaubt wäre.
