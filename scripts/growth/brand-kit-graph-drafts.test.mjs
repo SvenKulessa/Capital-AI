@@ -76,6 +76,11 @@ test('Crawler and LangGraph summaries cannot import themselves as commercial sou
   assert.equal(accepted.accepted[0].editorialReview,'REVIEW_REQUIRED');
   const result=buildBrandedGrowthDraft({channel:'X',records:[record],trustedRights:[grant]});
   assert.deepEqual(result.context.usedIds,[record.id]);
+  assert.match(result.copyDraft,/Quellenkontext \(redaktionell zu prüfen\)/);
+  assert.match(result.copyDraft,/Öffentliches Dokument erläutert Grenzen/);
+  const textAsset=result.socialPackage.assets.find(a=>a.kind==='TEXT');
+  assert.equal(textAsset.sha256,sha(Buffer.from(result.copyDraft,'utf8')));
+  assert.equal(buildBrandedGrowthDraft({channel:'X',records:[record]}).context.usedIds.length,0);
   assert.match(result.image.svg,/Öffentliches Dokument erläutert Grenzen/);
   assert.equal(result.rights,'REVIEW_REQUIRED');
 });
