@@ -28,6 +28,13 @@ test('not proven evidence reduces coverage and cannot be published', () => {
   assert.equal(createPublicChatBenchmarkProjection(value), null);
 });
 
+test('verified dimensions require an evidence reference before they can be published', () => {
+  const missing = structuredClone(dimensions);
+  missing.evidenceQuality.evidenceRefs = [];
+  assert.throws(() => createChatBenchmark({ benchmarkId: 'chat-5', dimensions: missing }),
+    /VERIFIED_CHAT_BENCHMARK_EVIDENCE_REQUIRED/);
+});
+
 test('scores outside their dimension budget fail closed', () => {
   const invalid = structuredClone(dimensions);
   invalid.communicationAndAccessibility.score = 11;

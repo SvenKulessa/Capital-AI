@@ -37,6 +37,9 @@ export function createChatBenchmark(input) {
     const score = item.score;
     if (!Number.isFinite(score) || score < 0 || score > maxScore) throw new RangeError(`INVALID_CHAT_BENCHMARK_SCORE:${id}`);
     const evidenceRefs = item.status === 'NOT_APPLICABLE' ? [] : requireRefs(item.evidenceRefs, `dimensions.${id}.evidenceRefs`);
+    if (item.status === 'VERIFIED' && evidenceRefs.length === 0) {
+      throw new RangeError(`VERIFIED_CHAT_BENCHMARK_EVIDENCE_REQUIRED:${id}`);
+    }
     const findings = Array.isArray(item.findings) ? item.findings.filter(value => typeof value === 'string') : [];
     const improvementActions = Array.isArray(item.improvementActions) ? item.improvementActions.filter(value => typeof value === 'string') : [];
     results[id] = { score, maxScore, status: item.status, evidenceRefs, findings, improvementActions };
