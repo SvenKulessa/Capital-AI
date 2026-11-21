@@ -14,7 +14,7 @@ import re
 import time
 
 import failure_learning as fl
-from provider_adapters import REPO, OPTIONAL_SKIP
+from provider_adapters import HOLD_TITLE, OPTIONAL_SKIP, REPO, required_workflow_group_verified
 
 
 @dataclass(frozen=True)
@@ -55,7 +55,7 @@ def _current_review_target(pr, main, reviewed, proof) -> bool:
             and pr.get("mergeable") is True
             and pr.get("mergeable_state") == "clean"
             and isinstance(title, str) and bool(title.strip())
-            and re.search(r"\[HOLD(?:\]|\s*:)", title, re.IGNORECASE) is None
+            and HOLD_TITLE.search(title) is None
             and base.get("ref") == "main"
             and isinstance(head.get("repo"), dict)
             and head["repo"].get("full_name") == proof.repository
@@ -119,17 +119,21 @@ class TrustedLearningVerifier:
                     or data["total_count"] != len(runs)):
                 return False
             seen, ids = {}, set()
+            required_runs = {name: [] for name in fl.REQUIRED_CHECKS}
             for run in runs:
                 if not isinstance(run, dict):
                     return False
                 name, run_id = run.get("name"), run.get("id")
                 if (not isinstance(name, str) or not name or name in seen
-                        or type(run_id) is not int or run_id in ids
+                        or type(run_id) is not int or run_id <= 0 or run_id in ids
                         or run.get("head_sha") != reviewed.head_sha):
                     return False
                 ids.add(run_id)
+                if name in required_runs:
+                    required_runs[name].append(run)
+                    continue
                 app = run.get("app")
-                if ((name in fl.REQUIRED_CHECKS or name.startswith("Analyze ("))
+                if (name.startswith("Analyze (")
                         and (not isinstance(app, dict) or app.get("slug") != "github-actions")):
                     return False
                 if (name == "CodeQL" and
@@ -141,8 +145,10 @@ class TrustedLearningVerifier:
                 if result != "success" and not (result == "skipped" and name in OPTIONAL_SKIP):
                     return False
                 seen[name] = result
-            if any(seen.get(name) != "success" for name in fl.REQUIRED_CHECKS):
-                return False
+            for name, group in required_runs.items():
+                if not required_workflow_group_verified(self._github, name, group, reviewed.head_sha):
+                    return False
+                seen[name] = "success"
             if seen.get("Analyze (python)") != "success" and seen.get("CodeQL") != "success":
                 return False
             if not all(seen.get(name) == state for name, state in reviewed.checks.items()):
