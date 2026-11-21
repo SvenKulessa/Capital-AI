@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { CONTRACT,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng } from './brand-kit-graph-drafts.mjs';
+import { CONTRACT,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
 import { buildSocialPublisherHandoff } from '../../src/contracts/socialPublisherAdapter.ts';
 
 const sha=s=>createHash('sha256').update(s).digest('hex');
@@ -141,4 +141,29 @@ test('Existing local resvg creates PNG with correct dimensions and hash without 
   assert.deepEqual([...png.bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
   await assert.rejects(()=>renderBrandPng({...draft,image:{...draft.image,svg:draft.image.svg+'tamper'}}),
     /BRAND_PNG_INPUT_UNVERIFIED/);
+});
+
+
+test('Exported PNG bytes, not intermediate SVG, bind the exact X and Instagram Social IMAGE manifests',async()=>{
+  for(const channel of ['X','INSTAGRAM']){
+    const draft=await buildBrandedPngDraft({channel});
+    const image=draft.socialPackage.assets.find(a=>a.kind==='IMAGE');
+    assert.equal(image.sha256,sha(draft.png.bytes));
+    assert.equal(image.mimeType,'image/png');
+    assert.equal(image.assetId,draft.image.pngAssetId);
+    assert.equal(image.sha256,draft.image.pngSha256);
+    assert.equal(image.originalGraphic.sha256,draft.png.sha256);
+    assert.equal(image.originalGraphic.mimeType,'image/png');
+    assert.equal(image.originalGraphic.sourceSha,draft.socialPackage.sourceSha);
+    assert.equal(image.originalGraphic.origin,'FIRST_PARTY_TEMPLATE');
+    assert.notEqual(image.sha256,draft.image.sha256);
+    assert.equal(draft.png.width,channel==='X'?1200:1080);
+    assert.equal(draft.png.height,channel==='X'?1200:1350);
+    assert.equal(draft.contentPlan.graphicLicenses[0].state,'REVIEW_REQUIRED');
+    assert.deepEqual(draft.socialPackage.approvals,[]);
+    assert.deepEqual(draft.socialPackage.deliveries,[]);
+    assert.equal(draft.publicPublishAllowed,false);
+    assert.throws(()=>buildSocialPublisherHandoff(draft.socialPackage,channel,image.assetId),
+      /CONTENT_SOCIAL_PUBLISHER_NOT_READY/);
+  }
 });
