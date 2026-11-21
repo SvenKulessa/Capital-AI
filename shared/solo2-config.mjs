@@ -109,8 +109,7 @@ export function validateSolo2Profile(input) {
     || !safeId(input.tenantRef) || !SOLO2_MODES.includes(input.mode)) fail('IDENTITY');
   exactKeys(input.offline, ['rootAgent', 'modelRef', 'ragRef'], 'OFFLINE_KEYS');
   if (input.offline.rootAgent !== 'langgraph-python'
-    || !['NOT_CONFIGURED', 'LOCAL_NOT_PROVEN'].includes(input.offline.modelRef)
-    || input.offline.ragRef !== 'LOCAL_NOT_PROVEN') fail('OFFLINE_AUTHORITY');
+    || !safeId(input.offline.modelRef) || !safeId(input.offline.ragRef)) fail('OFFLINE_AUTHORITY');
   exactKeys(input.online, ['enabled', 'ciPollSeconds', 'maxExternalCalls'], 'ONLINE_KEYS');
   if (input.online.enabled !== false || !Number.isInteger(input.online.ciPollSeconds)
     || input.online.ciPollSeconds < 30 || input.online.ciPollSeconds > 3600
