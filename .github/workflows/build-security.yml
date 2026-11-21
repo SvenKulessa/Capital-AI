@@ -49,6 +49,8 @@ jobs:
             scripts/domain-skills.test.mjs \
             scripts/solo-maintainer-flow.test.mjs \
             scripts/platform/acode-shared-delivery.test.mjs \
+            scripts/platform/drive-artifact-router.test.mjs \
+            scripts/platform/drive-artifact-delivery.test.mjs \
             scripts/skill-routing.test.mjs \
             scripts/docker-context.test.mjs \
             scripts/docker-build-cache-policy.test.mjs \
