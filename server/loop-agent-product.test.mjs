@@ -24,7 +24,7 @@ const good={principal,binding,subscription,price,product,mapping,policy,event,no
 const ent=()=>projectLoopEntitlement(good);
 const repo='1293009324';
 const authority={tenantId,subjectId,repositoryId:repo,repositoryPolicy:true,capabilityGrant:true,trust:true,quality:true,providerEvidence:true,membership:true};
-const admit=(override={})=>authorizeLoopAction({entitlement:ent(),principal,repositoryId:repo,capability:'advisor',runId,idempotencyKey:'loop-test-run-123',authority,nowMs:NOW,atomicAdmission:async x=>({state:'created',...x}),...override});
+const admit=(override={})=>authorizeLoopAction({entitlement:ent(),principal,repositoryId:repo,capability:'advisor',runId,idempotencyKey:'loop-test-run-123',authority,nowMs:NOW,atomicAdmission:async x=>({state:'created',...x}),readPersistedEntitlement:async()=>ent(),...override});
 const denial=fn=>assert.throws(fn,/LOOP_AGENT_ADMISSION_DENIED/);
 const asyncDenial=fn=>assert.rejects(fn,/LOOP_AGENT_ADMISSION_DENIED/);
 
@@ -91,6 +91,12 @@ test('client-forged tier and FREE-to-paid escalation denied',async()=>{
   await asyncDenial(()=>admit({entitlement:forged}));
   const free=projectLoopEntitlement({...good,subscription:{...subscription,status:'canceled'}});
   await asyncDenial(()=>admit({entitlement:free}));
+});
+test('reauthorization must re-read persisted entitlement, forged digest is not server authority',async()=>{
+  await asyncDenial(()=>admit({readPersistedEntitlement:undefined}));
+  await asyncDenial(()=>admit({readPersistedEntitlement:async()=>null}));
+  const forged={...ent(),tier:'TEAM'}; forged.integritySha256=loopDigest(Object.fromEntries(Object.entries(forged).filter(([k])=>k!=='integritySha256')));
+  await asyncDenial(()=>admit({entitlement:forged}));
 });
 test('wrong tenant, wrong user, wrong repository and missing policy denied',async()=>{
   await asyncDenial(()=>admit({principal:{...principal,tenantId:subjectId}}));
