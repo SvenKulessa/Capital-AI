@@ -84,6 +84,7 @@ test('missing, forged or stale entitlement denied',async()=>{
   await asyncDenial(()=>admit({entitlement:null}));
   await asyncDenial(()=>admit({entitlement:{...ent(),tier:'ENTERPRISE'}}));
   await asyncDenial(()=>admit({nowMs:NOW+7200000}));
+  await asyncDenial(()=>admit({nowMs:undefined}));
 });
 test('client-forged tier and FREE-to-paid escalation denied',async()=>{
   const forged={...ent(),tier:'TEAM',capabilities:{...ent().capabilities,repair:true}};
@@ -135,6 +136,7 @@ test('verified-provider receipt still needs independent readback for Growth',()=
   const receipt=loopUsageReceipt({...usage,provenance:'VERIFIED_PROVIDER'});
   assert.deepEqual(loopGrowthProjection(receipt).events,[]);
   assert.deepEqual(loopGrowthProjection(receipt,{providerReadbackVerified:true}).events.map(x=>x.type),['LOOP_SUCCEEDED']);
+  assert.equal(loopGrowthProjection(receipt,{providerReadbackVerified:true}).evidenceStatus,'NOT_PROVEN');
   denial(()=>loopGrowthProjection({...receipt,outcome:'FAILED'},{providerReadbackVerified:true}));
 });
 test('KPI zero denominators never emit NaN or Infinity',()=>{
