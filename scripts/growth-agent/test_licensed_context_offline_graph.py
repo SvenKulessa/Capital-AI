@@ -108,7 +108,8 @@ class OfflineGraphTests(unittest.TestCase):
             result, _ = run(fixture(sources=False), Path(tmp))
             self.assertEqual(result["status"], "HOLD")
             unsafe = Path(tmp)/"unsafe"
-            unsafe.mkdir(mode=0o755)
+            unsafe.mkdir(mode=0o700)
+            unsafe.chmod(0o755)  # umask 077 would otherwise mask the insecure mode
             p = fixture()
             tid = thread_id(TENANT, "round-001", p["projectionSha256"])
             with self.assertRaises(ValueError):
