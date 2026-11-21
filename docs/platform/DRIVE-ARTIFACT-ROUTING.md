@@ -32,8 +32,8 @@ Create a private JSON metadata file (not raw file bytes or secrets), with folder
   "privacyReview": "VERIFIED",
   "rightsReview": "VERIFIED",
   "listingComplete": true,
-  "providerFolderId": "INSERT_VERIFIED_DRIVE_FOLDER_ID",
-  "listedParentId": "INSERT_VERIFIED_DRIVE_FOLDER_ID",
+  "providerFolderId": "REPLACE_WITH_ACTUAL_CONNECTOR_READBACK",
+  "listedParentId": "REPLACE_WITH_ACTUAL_CONNECTOR_READBACK",
   "listedFolderPath": "CAPITAL-AI/40_Trust/Audit",
   "parentChainVerified": true,
   "existingNames": []
@@ -49,3 +49,5 @@ Then run `node scripts/platform/drive-artifact-router.mjs metadata.json`. When t
 - **Expected evidence:** `FILE_NAME`, `ROUTE`, `LOCAL_EXPORT`, `DRIVE_UPLOAD`, `DRIVE_PARENT`, `SHA256`, `ACODE_SYNC` are independent. Without provider proof, use `NOT_PROVEN`.
 
 **Rollback:** revert the small routing PR via the existing GitHub flow. No Drive records or production services are changed by this implementation.
+
+**Important:** The JSON above is a template, not a verified listing. Its `REPLACE_...` placeholders intentionally fail folder admission until replaced by an actual connected Google Drive readback; never mark a user-provided placeholder as a verified provider result.
