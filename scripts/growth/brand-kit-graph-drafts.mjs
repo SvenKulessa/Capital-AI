@@ -31,6 +31,10 @@ const validSummary = v => typeof v==='string' && v.length>0 && v.length<=280
 const digest = /^[a-f0-9]{64}$/;
 const tokenUrl = new URL('../../public/branding/asset-pack/meta/social-render-tokens.json',import.meta.url);
 const logoUrl = new URL('../../public/branding/capital-ai-logo.jpg',import.meta.url);
+const ASSET_PROFILE = Object.freeze({
+  X:{path:'social/x-link-card-1200x675.jpg',sha256:'0238503dd58d879f822edb9ac7c8146336cdaf68de12ddb579e5dd96eb90c56a'},
+  INSTAGRAM:{path:'social/instagram-portrait-1080x1350.jpg',sha256:'297761f524292ce90a8704e18e1441c48a1972c8fc8018436d5e0b2f701a4d47'},
+});
 
 /** A crawler's self-declared license/status never admits its own content. */
 export function assessContext(records=[], trustedRights=[]) {
@@ -70,7 +74,8 @@ export function assessContext(records=[], trustedRights=[]) {
 }
 
 /** Only hash-pinned local owner branding; other images need independent grants. */
-export function readBrandKit() {
+export function readBrandKit(channel='X') {
+  if(!Object.hasOwn(ASSET_PROFILE,channel))throw Error('BRAND_PROFILE_CHANNEL_INVALID');
   const tokens=JSON.parse(readFileSync(tokenUrl,'utf8'));
   const logoPath=fileURLToPath(logoUrl);
   const st=lstatSync(logoPath);
@@ -87,7 +92,22 @@ export function readBrandKit() {
     || tokens.universeDesign?.version!=='CAPITAL_AI_UNIVERSE@1'
     || tokens.universeDesign?.paletteRule!=='ALL_SEVEN_COLORS_PER_VISUAL'
     || tokens.publishReady!==false)throw Error('BRAND_PALETTE_INVALID');
+  const manifest=JSON.parse(readFileSync(new URL('../../public/branding/asset-pack/meta/asset-manifest.json',import.meta.url),'utf8'));
+  const profile=ASSET_PROFILE[channel];
+  const items=manifest.assets?.filter(a=>a.path===profile.path&&a.sha256===profile.sha256);
+  if(manifest.publishReady!==false||manifest.source?.sha256!=='6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3'
+    ||manifest.derivation?.thirdPartyVisualAssetsAdded!==false||items?.length!==1||items[0].mime!=='image/jpeg'
+    ||items[0].category!=='social')throw Error('BRAND_PROFILE_PROVENANCE_INVALID');
+  const profileUrl=new URL('../../public/branding/asset-pack/'+profile.path,import.meta.url);
+  const profileStat=lstatSync(fileURLToPath(profileUrl));
+  if(!profileStat.isFile()||profileStat.isSymbolicLink())throw Error('BRAND_PROFILE_PATH_UNSAFE');
+  const profileBytes=readFileSync(profileUrl);
+  if(profileBytes.length!==items[0].bytes||sha(profileBytes)!==profile.sha256
+    ||profileBytes[0]!==255||profileBytes[1]!==216||profileBytes[2]!==255)
+    throw Error('BRAND_PROFILE_SHA_OR_MIME_MISMATCH');
   return {logo:bytes.toString('base64'),logoSha256:sha(bytes),colors,
+    profileBase64:profileBytes.toString('base64'),profileSha256:profile.sha256,
+    profilePath:'public/branding/asset-pack/'+profile.path,
     background:tokens.color.background.$value,foreground:tokens.color.foreground.$value,
     logoRightsRef:'docs/licenses/Capital-AI-BRANDING.md'};
 }
@@ -115,6 +135,9 @@ export function drawBrandedSvg({draft,kit,context,template}) {
     || new Set(kit.colors).size!==7
     || !/^#[a-fA-F0-9]{6}$/.test(kit.background??'')
     || !/^#[a-fA-F0-9]{6}$/.test(kit.foreground??''))throw Error('BRAND_KIT_NOT_TRUSTED');
+  const profile=Buffer.from(kit.profileBase64??'','base64');
+  if(profile.length<64||!digest.test(kit.profileSha256??'')||sha(profile)!==kit.profileSha256)
+    throw Error('BRAND_PROFILE_NOT_VERIFIED');
   const w=template.width,h=template.height,margin=44,gap=14,card=(w-88-28)/3;
   const headline=draft.draftText.split('\n')[1]||'Methodik statt Versprechen';
   const summary=context.accepted[0]?.summary??draft.contentPlan.campaign.objective;
@@ -136,7 +159,8 @@ export function drawBrandedSvg({draft,kit,context,template}) {
     'width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" font-family="sans-serif">'+
     '<title id="title">'+XML(headline)+'</title>'+
     '<desc id="description">Quelle: Datenherkunft, Zeitpunkt, Validierung. Annahmen: Modelllogik, Parameter, Kontext. Grenzen: Unsicherheit, Risikofilter, Einsatzgrenze. Entwurf.</desc>'+
-    '<rect width="'+w+'" height="'+h+'" fill="'+kit.background+'"/>'+orbit+
+    '<rect width="'+w+'" height="'+h+'" fill="'+kit.background+'"/>'+ 
+    '<image x="0" y="0" width="'+w+'" height="'+h+'" opacity=".15" preserveAspectRatio="xMidYMid slice" href="data:image/jpeg;base64,'+kit.profileBase64+'"/>'+orbit+
     '<image x="44" y="36" width="174" height="99" href="data:image/jpeg;base64,'+kit.logo+'"/>'+
     svgText('GROWTH INTELLIGENCE · DRAFT',240,95,23,kit.colors[2])+
     lines(headline).map((s,i)=>svgText(s,44,220+i*70,55,kit.foreground)).join('')+
@@ -152,7 +176,7 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
   const bundle=buildGrowthIntelligenceDraftBundle();
   const draft=bundle.drafts.find(d=>d.channel===channel);
   if(!draft)throw Error('BRAND_SOURCE_DRAFT_MISSING');
-  const kit=readBrandKit(),context=assessContext(records,trustedRights),template=TEMPLATES[channel];
+  const kit=readBrandKit(channel),context=assessContext(records,trustedRights),template=TEMPLATES[channel];
   const learning=evaluateGrowthLearningCandidates(feedback,{evaluatedAt});
   const svg=drawBrandedSvg({draft,kit,context,template}),imageSha=sha(Buffer.from(svg));
   const campaign={...draft.socialPackage.campaign,outputs:['TEXT','IMAGE','ANALYTICS']};
@@ -164,7 +188,7 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
       mimeType:'image/svg+xml',sourceSha:draft.socialPackage.sourceSha,
       sourceDigest:draft.socialPackage.sourceSha,
       contentDigest:sha(JSON.stringify({template,contentId:draft.contentId,
-        logoSha256:kit.logoSha256,contextDigests:context.accepted.map(c=>c.summarySha256)})),
+        logoSha256:kit.logoSha256,profileSha256:kit.profileSha256,contextDigests:context.accepted.map(c=>c.summarySha256)})),
       origin:'FIRST_PARTY_TEMPLATE',creationMethod:'AI_ASSISTED',
       renderer:{id:'CAPITAL_AI_BRAND_CONTEXT_SVG',version:'1.0.0'},thirdPartyAssets:false}};
   const socialPackage=buildDraftContentSocialPackage({campaign,contentId:draft.contentId,
@@ -176,7 +200,8 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
     throw Error('BRAND_PUBLICATION_AUTHORITY_VIOLATION');
   return {contractVersion:CONTRACT,sourceSha256:bundle.sourceSha256,contentId:draft.contentId,channel,
     template:{...template,version:'1.0.0',state:'DRAFT_ONLY'},
-    image:{svg,sha256:imageSha,logoSha256:kit.logoSha256,
+    image:{svg,sha256:imageSha,logoSha256:kit.logoSha256,profileSha256:kit.profileSha256,
+      profilePath:kit.profilePath,
       altText:'Drei Kategorien Quelle, Annahmen, Grenzen mit je drei Unterkategorien.'},
     contentPlan,socialPackage,
     context:{usedIds:context.accepted.map(x=>x.id),rejected:context.rejected,
