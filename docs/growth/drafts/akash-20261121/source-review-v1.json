@@ -1,0 +1,376 @@
+{
+  "contractVersion": "CAPITAL_AI_AKASH_SOURCE_REVIEW@1",
+  "status": "DRAFT_ONLY",
+  "reviewedOn": "2026-11-21",
+  "baselineMainSha": "7dffe0457dc45c28ceb69341bc228bcbd02cd240",
+  "scope": "Evidence-only; no source ingestion, public admission or publication",
+  "source": {
+    "url": "https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push",
+    "publisher": "Solana Foundation",
+    "publishedOn": "2026-11-19",
+    "observationMethod": "Read-only public official article, human-readable text; NOT raw page bytes",
+    "observedFactsGerman": "Akash veröffentlichte den Entwurf für ein Onchain-Orderbuch künftiger GPU-Stunden auf Solana. Ein Pilot ist für März und die ersten Lieferungen für April angekündigt. Umsetzung und Lieferungen sind noch nicht belegt.",
+    "observedFactsSha256": "4dbf2d4c91c8c6258d29f410f19dc231a69fe3caf551a2f24da972da046ab107",
+    "historicalSourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75",
+    "historicalRawSourceAvailable": false,
+    "currentRawSourceSha256": null,
+    "historicalSourceDigestRecomputed": false,
+    "historicalByteComparison": "NOT_PROVEN",
+    "currentVsDraftFactComparison": "CONSISTENT",
+    "comparisonScope": "FACTUAL_SEMANTICS_ONLY_NOT_BYTE_IDENTITY",
+    "vendorPrimaryUrl": "https://akash.network/blog/introducing-akash-compute-forwards/",
+    "vendorStatusUrl": "https://forwards.akash.network/status",
+    "vendorCrossCheck": "Akash bezeichnet Compute Forwards als Entwurf: nichts wird gehandelt; Pilot nur bei erfüllten Audits, rechtlichen, Hardware- und Absicherungs-Gates; Früh-2027 ist Planung, kein Betriebsnachweis.",
+    "vendorStatus": "NOT_LIVE"
+  },
+  "firstParty": {
+    "manifestPath": "docs/growth/drafts/akash-20261120/manifest.json",
+    "rendererPath": "scripts/media/render-akash-editorial.mts",
+    "previewPath": "docs/growth/drafts/akash-20261120/Akash-Vorschau.html",
+    "graphicsPath": "docs/growth/drafts/akash-20261120",
+    "graphicSourceCommitSha": "d6250570ea6778a331a0e23bec057ed223281ed8",
+    "reviewedStoryDigest": "3b476e900a75e32ef9a5daba6ea3fecb93cdf03588677dcb2fb16a18f6394b31",
+    "expectedContentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893",
+    "contentDigestBasis": "SHA256 of JSON.stringify({contentId,reviewedStoryDigest,sourceUrl,sourceDigest,recipe}); separate from historical source digest",
+    "recipe": {
+      "eyebrow": "AKASH COMPUTE FORWARDS",
+      "title": "Künftige GPU-Rechenstunden",
+      "subtitle": "Akash stellt einen Marktentwurf auf Solana vor.",
+      "rows": [
+        {
+          "title": "Entwurf",
+          "lines": [
+            "Laut Solana",
+            "veröffentlicht"
+          ]
+        },
+        {
+          "title": "Pilot",
+          "lines": [
+            "Vorgesehen,",
+            "Voraussetzungen offen"
+          ]
+        },
+        {
+          "title": "Rechenlieferung",
+          "lines": [
+            "Geplant",
+            "Verfügbarkeit offen"
+          ]
+        }
+      ],
+      "note": "Pilotstart abhängig von offenen Prüfungen und Voraussetzungen.",
+      "sourceLabel": "Quelle: Solana · 19.11.2026 · Gegenprüfung: Akash",
+      "altText": "Akash Compute Forwards. Ein Entwurf für künftige GPU-Rechenstunden auf Solana ist veröffentlicht. Ein Pilot ist vorgesehen und an offene Voraussetzungen gebunden. Rechenlieferungen sind geplant. Allgemeine Verfügbarkeit ist nicht nachgewiesen."
+    },
+    "graphicLicenseRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+    "graphicOwnerGrants": "RECORDED_FOR_IDENTIFIED_FIRST_PARTY_IMAGES_ONLY",
+    "graphicsSha256Verification": "TEST_RECALCULATE_FROM_REPO_PNG_BYTES",
+    "sourceRawDigestVerification": "NOT_PROVEN"
+  },
+  "rights": {
+    "sourceTerms": "https://solana.com/de/tos",
+    "sourceBrandGuidelines": "https://solana.com/de/branding",
+    "originalGraphicLicenseOnly": "LicenseRef-CapitalAI-Owned",
+    "officialAttributionLink": "CONDITIONALLY_PERMISSIBLE",
+    "independentlyWrittenFactSummary": "REVIEW_REQUIRED",
+    "copyingSourceArticleOrExternalGraphics": "BLOCKED",
+    "brandReuseWithoutReview": "BLOCKED",
+    "sourceArticleCommercialGrant": "NOT_PROVEN",
+    "editorialReview": "REVIEW_REQUIRED",
+    "publicPublishAllowed": false
+  },
+  "quality": {
+    "independentClaimsReview": "SOLANA_NEWS_AND_AKASH_PRIMARY_CROSSCHECK",
+    "articleSourceByteHash": "NOT_PROVEN",
+    "historicVsCurrentExactArticleBlock": "NOT_PROVEN",
+    "manifestAndGraphicsVerification": "CI_TEST_PENDING",
+    "publicationDisposition": "BLOCKED",
+    "noProviderApiCalls": true,
+    "noAdditionalCosts": true,
+    "noProductionMutation": true
+  },
+  "trustMatrix": {
+    "contractVersion": "CAPITAL_AI_AKASH_TRUST_MATRIX@1",
+    "reviewedOn": "2026-11-21",
+    "authority": "EVIDENCE_ONLY_NOT_RIGHTSHOLDER_OR_EDITORIAL_APPROVAL",
+    "legalOpinion": false,
+    "revisionBindings": {
+      "reviewedPrHeadBeforeMatrix": "7f95deb569730bc30b95d063e068d16618e5187a",
+      "identityRule": "PIN_EXACT_GIT_BLOBS_AND_PNG_SHA256_NOT_MOVING_PR_HEAD",
+      "manifest": {
+        "path": "docs/growth/drafts/akash-20261120/manifest.json",
+        "gitBlobSha": "798fb71dfc5b45c7d623b81097f5c8070e0a2905",
+        "contentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893"
+      },
+      "preview": {
+        "path": "docs/growth/drafts/akash-20261120/Akash-Vorschau.html",
+        "gitBlobSha": "c413cb74853c4ffb59474b09c48bdec864cce31a"
+      },
+      "originalGraphicLicense": {
+        "path": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+        "gitBlobSha": "4a724403401d612e4ec1bdc465742fdc4debaa3b",
+        "sha256": "881d39959c8dd1797c6f10e15f3939f46a01ca9aa2e547e782a5edc9637d308e"
+      },
+      "publicRightsLedger": {
+        "path": "src/features/home/homeEditorialRightsLedger.mjs",
+        "gitBlobSha": "882c0e6cd4e2b5701d1e083cc003ed4414ed7718",
+        "approvedPublicReviews": 0
+      },
+      "graphics": [
+        {
+          "path": "docs/growth/drafts/akash-20261120/akash-landscape.png",
+          "sha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+          "grantId": "owner-akash-landscape-20261120"
+        },
+        {
+          "path": "docs/growth/drafts/akash-20261120/akash-portrait.png",
+          "sha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+          "grantId": "owner-akash-portrait-20261120"
+        }
+      ],
+      "historicalSolanaArticleRawBytes": "NOT_PROVEN",
+      "historicalSourceDigest": "a22788395b6a52862e0bb8bd976679615e0c8eaf1d4a68fc635ae4e7d4e3ac75"
+    },
+    "sources": [
+      {
+        "id": "solana-article",
+        "url": "https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push",
+        "publishedOn": "2026-11-19",
+        "scope": "PUBLIC_FACT_REPORT_NOT_REUSE_LICENSE",
+        "rawPageBytesArchived": false
+      },
+      {
+        "id": "solana-tos",
+        "url": "https://solana.com/de/tos",
+        "publishedOn": null,
+        "scope": "COMMERCIAL_SITE_CONTENT_EXTRACTION_LIMITS",
+        "rawPageBytesArchived": false
+      },
+      {
+        "id": "solana-brand",
+        "url": "https://solana.com/de/branding",
+        "publishedOn": null,
+        "scope": "BRAND_GUIDELINES_NO_BLANKET_LOGO_GRANT",
+        "rawPageBytesArchived": false
+      },
+      {
+        "id": "akash-blog",
+        "url": "https://akash.network/blog/introducing-akash-compute-forwards/",
+        "publishedOn": "2026-11-17",
+        "scope": "ORIGINAL_AUTHOR_FACTS_NOT_REPUBLICATION_GRANT",
+        "rawPageBytesArchived": false
+      },
+      {
+        "id": "akash-status",
+        "url": "https://forwards.akash.network/status",
+        "publishedOn": null,
+        "scope": "NOT_LIVE_AND_PRE_PILOT_GATES",
+        "rawPageBytesArchived": false
+      },
+      {
+        "id": "akash-press",
+        "url": "https://forwards.akash.network/press",
+        "publishedOn": null,
+        "scope": "OFFICIAL_FACTS_NOT_MEDIA_LICENSE",
+        "rawPageBytesArchived": false
+      },
+      {
+        "id": "akash-brand",
+        "url": "https://akash.network/brand/resources/",
+        "publishedOn": null,
+        "scope": "BRAND_ASSETS_NOT_CO_BRANDING_PERMISSION",
+        "rawPageBytesArchived": false
+      },
+      {
+        "id": "akash-homenode-tos",
+        "url": "https://homenode.akash.network/terms-of-service",
+        "publishedOn": "2026-08-07",
+        "scope": "HOMENODE_SERVICE_ONLY_NOT_BLOG_LICENSE",
+        "rawPageBytesArchived": false
+      }
+    ],
+    "rows": [
+      {
+        "id": "solana-article-reuse",
+        "holder": "Solana Foundation",
+        "useCase": "REPRODUCE_TRANSLATE_OR_REPUBLISH_SOLANA_ARTICLE_OR_MEDIA",
+        "rightsEvidence": "NOT_PROVEN",
+        "operationalDecision": "BLOCKED",
+        "sourceIds": [
+          "solana-article",
+          "solana-tos"
+        ],
+        "rationale": "No exact commercial article/graphic grant; site EULA restricts use/copy/republication.",
+        "nextProof": "Independent permission for exact use or checked applicable exception."
+      },
+      {
+        "id": "solana-crawler",
+        "holder": "Solana Foundation",
+        "useCase": "AUTOMATED_SCRAPING_CONTENT_DATABASE",
+        "rightsEvidence": "NOT_PROVEN",
+        "operationalDecision": "BLOCKED",
+        "sourceIds": [
+          "solana-tos"
+        ],
+        "rationale": "Site EULA restricts systematic gathering and data mining; a URL/hash is no access authorization.",
+        "nextProof": "Document lawful, authorized access method."
+      },
+      {
+        "id": "solana-mark",
+        "holder": "Solana Foundation",
+        "useCase": "OFFICIAL_LOGO_MARK_COMMERCIAL_GRAPHIC",
+        "rightsEvidence": "NOT_PROVEN",
+        "operationalDecision": "BLOCKED",
+        "sourceIds": [
+          "solana-brand",
+          "solana-tos"
+        ],
+        "rationale": "Brand kit is not an unrestricted grant; altered or co-branded logos and implied affiliation disallowed.",
+        "nextProof": "Exact-asset brand review; written permission if required."
+      },
+      {
+        "id": "akash-article-reuse",
+        "holder": "Akash / original authors",
+        "useCase": "REPRODUCE_TRANSLATE_OR_REPUBLISH_AKASH_BLOG_OR_BANNER",
+        "rightsEvidence": "NOT_PROVEN",
+        "operationalDecision": "BLOCKED",
+        "sourceIds": [
+          "akash-blog",
+          "akash-homenode-tos"
+        ],
+        "rationale": "No blog-specific commercial reuse grant verified. Homenode terms cover a different service; documentation CC BY 4.0 does not automatically cover the blog.",
+        "nextProof": "Exact source-specific license or permission."
+      },
+      {
+        "id": "akash-mark",
+        "holder": "Akash Network",
+        "useCase": "OFFICIAL_AKASH_LOGO_CO_BRANDING_OR_ENDORSEMENT",
+        "rightsEvidence": "NOT_PROVEN",
+        "operationalDecision": "BLOCKED",
+        "sourceIds": [
+          "akash-brand",
+          "akash-homenode-tos"
+        ],
+        "rationale": "Akash marks are required unmodified and must represent Akash; no evidenced commercial co-branding authorization.",
+        "nextProof": "Review intended mark use and request permission if needed."
+      },
+      {
+        "id": "external-media",
+        "holder": "Solana / Akash / upstream licensors",
+        "useCase": "COPIED_PHOTOS_SCREENS_VIDEO_DIAGRAMS_OR_BANNER",
+        "rightsEvidence": "NOT_PROVEN",
+        "operationalDecision": "BLOCKED",
+        "sourceIds": [
+          "solana-article",
+          "akash-blog",
+          "solana-brand",
+          "akash-brand"
+        ],
+        "rationale": "First-party visual grant does not include any third-party visual bytes or marks.",
+        "nextProof": "Asset-specific origin and reuse license."
+      },
+      {
+        "id": "original-png-graphics",
+        "holder": "CAPITAL-AI graphic owner",
+        "useCase": "FIRST_PARTY_PNG_EXACT_SHA256_AND_CHANNEL_ONLY",
+        "rightsEvidence": "VERIFIED_SCOPED",
+        "operationalDecision": "DRAFT_ASSET_ONLY",
+        "sourceIds": [],
+        "rationale": "Two in-repo PNGs, local renderer and recorded Owner channel grants; no upstream copyright or publication rights conveyed.",
+        "nextProof": "Preserve exact PNG SHA256, owner-grant and valid license notice."
+      },
+      {
+        "id": "plain-link",
+        "holder": "Solana Foundation",
+        "useCase": "NEUTRAL_SOURCE_ATTRIBUTION_LINK",
+        "rightsEvidence": "REVIEW_REQUIRED",
+        "operationalDecision": "DRAFT_ONLY",
+        "sourceIds": [
+          "solana-article",
+          "solana-tos"
+        ],
+        "rationale": "The draft cites a plain source link, not an endorsement or blanket linking permission; EULA also addresses unauthorized linking/framing.",
+        "nextProof": "Review exact link context and permitted use."
+      },
+      {
+        "id": "independent-editorial-text",
+        "holder": "CAPITAL-AI editorial owner / third-party sources",
+        "useCase": "ORIGINAL_GERMAN_SHORT_FACTUAL_SUMMARY",
+        "rightsEvidence": "REVIEW_REQUIRED",
+        "operationalDecision": "DRAFT_ONLY",
+        "sourceIds": [
+          "solana-article",
+          "akash-blog",
+          "akash-status"
+        ],
+        "rationale": "Independent wording still requires accuracy, source-use and rights assessment, and actual editorial approval.",
+        "nextProof": "Exact preview revision and owner/editor decision receipt."
+      },
+      {
+        "id": "claim-and-timing",
+        "holder": "Solana / Akash factual publications",
+        "useCase": "NON_LIVE_DESIGN_AND_PROPOSED_TIMELINE",
+        "rightsEvidence": "VERIFIED_SCOPED",
+        "operationalDecision": "FACTS_FOR_PRIVATE_REVIEW_ONLY",
+        "sourceIds": [
+          "solana-article",
+          "akash-blog",
+          "akash-status",
+          "akash-press"
+        ],
+        "rationale": "Solana says planned March pilot/April delivery; Akash says early-2027 plan subject to audit/legal/hardware gates. No firm launch date, trading or deliveries evidenced.",
+        "nextProof": "Recheck primary status before editorial acceptance."
+      },
+      {
+        "id": "font-licenses",
+        "holder": "CAPITAL-AI / Plus Jakarta Sans upstream",
+        "useCase": "LOCAL_OFL_FONT_GRAPHIC_RENDER",
+        "rightsEvidence": "VERIFIED_SCOPED",
+        "operationalDecision": "DRAFT_ASSET_ONLY",
+        "sourceIds": [],
+        "rationale": "OFL font notice and renderer dependency documented; neither licenses Solana or Akash media.",
+        "nextProof": "Preserve upstream notices and renderer license obligations."
+      },
+      {
+        "id": "public-home-and-social",
+        "holder": "CAPITAL-AI editorial owner",
+        "useCase": "PUBLIC_HOMEPAGE_AND_SOCIAL_PUBLICATION",
+        "rightsEvidence": "NOT_PROVEN",
+        "operationalDecision": "BLOCKED",
+        "sourceIds": [
+          "solana-tos",
+          "solana-brand",
+          "akash-brand"
+        ],
+        "rationale": "Homepage review ledger empty and SocialPackage approvals/deliveries empty; a draft record cannot approve public release.",
+        "nextProof": "Valid separate exact-revision story/source/graphic approvals and channel-authorized publishing evidence."
+      }
+    ],
+    "scopeWarnings": [
+      "No written source/provider permission was retrieved; public URLs are not licenses.",
+      "Akash documentation footer CC BY 4.0/Apache 2.0 does not automatically cover blog articles, logo kit or the Solana article.",
+      "Solana's announced March/April and Akash's tentative early 2027 are proposed dates, not firm promises. Audits and legal gates remain.",
+      "Homenode terms apply to that service, not a general Akash blog license."
+    ],
+    "qualityReview": {
+      "role": "INDEPENDENT_QUALITY_NOT_OWNER_APPROVAL",
+      "status": "PENDING_CURRENT_HEAD_CI",
+      "noSelfApproval": true,
+      "negativeCases": [
+        "ARTICLE_GRANT_FORGED",
+        "BRAND_ENDORSEMENT_FORGED",
+        "LOGO_REUSE_FORGED",
+        "DOCUMENTATION_LICENSE_SCOPE_EXPANDED",
+        "ATTRIBUTION_LINK_AUTO_APPROVED",
+        "PUBLISHING_AUTO_APPROVED",
+        "OWNER_ASSET_BECOMES_SOURCE_LICENSE",
+        "GIT_BLOB_TAMPER",
+        "CURRENT_LIVE_STATUS_FORGED",
+        "HISTORICAL_SOURCE_BYTES_CLAIM"
+      ],
+      "testsMustRejectUntrustedApprovals": true
+    },
+    "publicPublishAllowed": false
+  }
+}
