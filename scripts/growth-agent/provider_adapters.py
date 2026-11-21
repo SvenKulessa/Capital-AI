@@ -29,6 +29,7 @@ ACTIONS_CHECK_URL = re.compile(
 HOLD_TITLE = re.compile(r"\[HOLD(?:\]|\s*:)", re.IGNORECASE)
 OPTIONAL_SKIP = frozenset(("Supabase Preview", "Production Handoff Gate", "publish_candidate"))
 BRANCH_RE = re.compile(r"^capital-ai-(product|market|platform|trust|growth)/[a-z0-9][a-z0-9._-]*-[0-9]{8}$")
+DEPENDABOT_BRANCH_RE = re.compile(r"dependabot/[A-Za-z0-9][A-Za-z0-9._/-]{0,199}\Z")
 HEX40 = re.compile(r"^[a-f0-9]{40}$")
 # Escape dots: DNS labels must match exactly, never wildcard hosts.
 MERGE_URL_RE = re.compile(r"https://api\.github\.com/repos/SvenKulessa/Capital-AI/pulls/[0-9]+/merge")
@@ -112,6 +113,38 @@ class SafeHTTP:
         return self._request("https://capital-ai.online/healthz")
 
 
+def required_workflow_group_verified(http, name, runs, head_sha):
+    """Accept repeated canonical successes only when every run proves provenance."""
+    workflow = REQUIRED_WORKFLOWS.get(name)
+    if workflow is None or not runs or not sha(head_sha):
+        return False
+    workflow_ids = set()
+    check_ids = set()
+    for run in runs:
+        app = run.get("app")
+        run_id = run.get("id")
+        url = run.get("details_url")
+        match = ACTIONS_CHECK_URL.fullmatch(url) if isinstance(url, str) else None
+        if (run.get("name") != name or run.get("head_sha") != head_sha
+                or not isinstance(app, dict) or (app.get("slug"), app.get("id")) != CHECK_SOURCES[name]
+                or run.get("status") != "completed" or run.get("conclusion") != "success"
+                or type(run_id) is not int or run_id in check_ids
+                or match is None or int(match[2]) != run_id):
+            return False
+        workflow_run_id = int(match[1])
+        if workflow_run_id in workflow_ids:
+            return False
+        workflow_run = http.github(f"/actions/runs/{workflow_run_id}")
+        if (not isinstance(workflow_run, dict) or workflow_run.get("id") != workflow_run_id
+                or (workflow_run.get("workflow_id"), workflow_run.get("path")) != workflow
+                or workflow_run.get("head_sha") != head_sha or workflow_run.get("event") != "pull_request"
+                or workflow_run.get("status") != "completed" or workflow_run.get("conclusion") != "success"):
+            return False
+        workflow_ids.add(workflow_run_id)
+        check_ids.add(run_id)
+    return True
+
+
 class GitHubRenderActions:
     """PR-scoped adapter. TrustedAssessment and executor come from trusted code.
 
@@ -142,20 +175,28 @@ class GitHubRenderActions:
             raise ValueError("invalid PR")
         return result
 
-    def _current(self):
+    def _current(self, *, observe_dependabot=False):
         pr = self._pr()
         main = self.http.github("/branches/main")
         head = pr.get("head") or {}
         base = pr.get("base") or {}
         main_sha = (main.get("commit") or {}).get("sha")
         head_sha = head.get("sha")
+        head_ref = head.get("ref")
+        user = pr.get("user")
+        dependabot_readback = (
+            observe_dependabot is True and not self.enable_merge
+            and isinstance(head_ref, str) and DEPENDABOT_BRANCH_RE.fullmatch(head_ref) is not None
+            and isinstance(user, dict) and user.get("login") == "dependabot[bot]" and user.get("type") == "Bot"
+        )
         title = pr.get("title")
         good = (pr.get("state") == "open" and pr.get("draft") is False
                 and (not self.enable_merge or (isinstance(title, str) and bool(title.strip())
                                                 and HOLD_TITLE.search(title) is None))
                 and base.get("ref") == "main" and sha(base.get("sha"))
                 and sha(head_sha) and sha(main_sha)
-                and BRANCH_RE.fullmatch(head.get("ref", "")) is not None
+                and isinstance(head_ref, str)
+                and (BRANCH_RE.fullmatch(head_ref) is not None or dependabot_readback)
                 and head.get("repo", {}).get("full_name") == REPO
                 and (not self.enable_merge or (
                     head_sha == self.approved_head_sha
@@ -165,23 +206,6 @@ class GitHubRenderActions:
             raise ValueError("PR scope not verified")
         return pr, main_sha
 
-    def _required_workflow_matches(self, run, head_sha):
-        workflow = REQUIRED_WORKFLOWS.get(run["name"])
-        if workflow is None:
-            return True
-        url = run.get("details_url")
-        match = ACTIONS_CHECK_URL.fullmatch(url) if isinstance(url, str) else None
-        if match is None or int(match[2]) != run["id"]:
-            return False
-        workflow_run = self.http.github(f"/actions/runs/{match[1]}")
-        return (isinstance(workflow_run, dict)
-                and workflow_run.get("id") == int(match[1])
-                and (workflow_run.get("workflow_id"), workflow_run.get("path")) == workflow
-                and workflow_run.get("head_sha") == head_sha
-                and workflow_run.get("event") == "pull_request"
-                and workflow_run.get("status") == "completed"
-                and workflow_run.get("conclusion") == "success")
-
     def _checks(self, head_sha):
         data = self.http.github(f"/commits/{head_sha}/check-runs?per_page=100")
         runs = data.get("check_runs") if isinstance(data, dict) else None
@@ -190,15 +214,22 @@ class GitHubRenderActions:
                 or data["total_count"] != len(runs)):
             raise ValueError("incomplete GitHub check coverage")
         by_name = {}
+        required_runs = {name: [] for name in REQUIRED_WORKFLOWS}
         ids = set()
         for run in runs:
             if (not isinstance(run, dict) or not isinstance(run.get("name"), str)
                     or type(run.get("id")) is not int or run["id"] <= 0):
                 raise ValueError("invalid check run")
             name, run_id = run["name"], run["id"]
+            if run_id in ids:
+                raise ValueError("repeated GitHub check ID")
+            ids.add(run_id)
+            if name in required_runs:
+                required_runs[name].append(run)
+                continue
             source = CHECK_SOURCES.get(name)
             app = run.get("app")
-            if name in by_name or run_id in ids:
+            if name in by_name:
                 by_name[name] = "duplicate"
             elif run.get("head_sha") != head_sha or (source is not None and
                     (not isinstance(app, dict) or (app.get("slug"), app.get("id")) != source)):
@@ -207,11 +238,10 @@ class GitHubRenderActions:
                 by_name[name] = "pending"
             else:
                 result = run.get("conclusion")
-                if result == "success" and self._required_workflow_matches(run, head_sha):
-                    by_name[name] = "success"
-                else:
-                    by_name[name] = "skipped" if result == "skipped" else "not_success"
-            ids.add(run_id)
+                by_name[name] = result if result in ("success", "skipped") else "not_success"
+        for name, group in required_runs.items():
+            by_name[name] = ("success" if required_workflow_group_verified(self.http, name, group, head_sha)
+                             else "not_success")
         required_ok = all(by_name.get(name) == "success" for name in CHECK_SOURCES)
         applicable_ok = all(status == "success" or (status == "skipped" and name in OPTIONAL_SKIP)
                             for name, status in by_name.items())

@@ -131,7 +131,9 @@
 !server/cads-observability.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/solo2-config.mjs
 !shared/hub-routes.mjs
+!shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -180,6 +182,12 @@
 !scripts/growth/learning-content-draft.mjs
 !scripts/growth/growth-intelligence-drafts.mjs
 !scripts/growth/growth-intelligence-drafts.test.mjs
+!scripts/growth/growth-intelligence-image-drafts.mjs
+!scripts/growth/growth-intelligence-image-drafts.test.mjs
+!scripts/growth/brand-kit-graph-drafts.mjs
+!scripts/growth/brand-kit-graph-drafts.test.mjs
+!scripts/growth/next-round-planner.mjs
+!scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs
@@ -308,6 +316,9 @@
 !docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
+!public/editorial/
+!public/editorial/news/
+!public/editorial/news/*.png
 !public/bootstrap-failure.js
 !public/datenschutz/
 !public/datenschutz/index.html
@@ -489,9 +500,12 @@
 !server/historical-analytics-demo.mjs
 !server/historical-analytics-demo.test.mjs
 !server/auth.test.mjs
+!scripts/solo2-config.mjs
+!scripts/solo2-config.test.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
+!scripts/skill-bundles.mjs
 !scripts/skill-routing-evaluation.mjs
 !scripts/skill-routing-cases.json
 !scripts/skill-routing-challenges.json

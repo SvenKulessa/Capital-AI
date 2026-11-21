@@ -25,9 +25,12 @@
 | `market-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `quant-research` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `ai-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
+| `integration-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `platform-advisory` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `platform-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `platform-observability` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
+| `skill-lifecycle` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
+| `agent-evaluation` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `incident-response` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `legal-compliance` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `trust-advisory` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |

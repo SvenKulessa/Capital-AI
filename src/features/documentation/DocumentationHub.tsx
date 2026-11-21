@@ -1,3 +1,4 @@
+import { ANALYSIS_DOCUMENTATION } from '../../../shared/analysis-documentation.mjs';
 import React from 'react';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { BlogPage } from '../learning/BlogPage';
@@ -23,6 +24,14 @@ interface DocumentationHubProps {
 }
 
 const presentations = [
+  {
+    title: 'Analyse Komponenten',
+    description: 'Fachartikel über Datenherkunft, Analyse, Scoring und überprüfbare Ergebnisse.',
+    href: ANALYSIS_DOCUMENTATION,
+    internal: true,
+    icon: <Layers3 className="h-5 w-5 text-violet-200" />,
+    meta: 'Datenqualität • Scoring • Evidence',
+  },
   {
     title: 'Blueprint-Dokumentation',
     description:

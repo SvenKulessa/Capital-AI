@@ -67,7 +67,7 @@ class FakeHTTP:
                     "base": {"ref": "main", "sha": self.base}}
         if path == "/branches/main":
             return {"commit": {"sha": self.main}}
-        if path in ("/actions/runs/101", "/actions/runs/102"):
+        if path in ("/actions/runs/101", "/actions/runs/102", "/actions/runs/105"):
             run_id = int(path.rsplit("/", 1)[-1])
             workflow_id, file = ((370506106, "build-security") if run_id == 101 else (371617040, "domain-governance"))
             return {"id": run_id, "workflow_id": workflow_id, "path": f".github/workflows/{file}.yml",
@@ -161,7 +161,8 @@ class ProviderAdapterTests(unittest.TestCase):
     def test_duplicate_or_truncated_check_results_fail_closed(self):
         c = FakeHTTP()
         c.checks.append(c.checks[0].copy())
-        self.assertFalse(self.adapter(c)._checks(HEAD)[1])
+        with self.assertRaisesRegex(ValueError, "repeated GitHub check ID"):
+            self.adapter(c)._checks(HEAD)
         class Truncated(FakeHTTP):
             def github(self, path, *, method="GET", body=None):
                 result = super().github(path, method=method, body=body)
@@ -184,6 +185,22 @@ class ProviderAdapterTests(unittest.TestCase):
                 if case == "wrong_codeql":
                     client.checks[2]["app"]["id"] = 1
                 self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+
+    def test_repeat_required_workflow_needs_each_independent_run_to_be_green(self):
+        client = FakeHTTP()
+        duplicate = {**client.checks[1], "id": 5,
+                     "details_url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/105/job/5"}
+        client.checks.append(duplicate)
+        self.assertTrue(self.adapter(client)._checks(HEAD)[1])
+        for result in ("failure", "neutral", "skipped"):
+            with self.subTest(result=result):
+                duplicate["conclusion"] = result
+                self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+        duplicate.update(status="in_progress", conclusion=None)
+        self.assertFalse(self.adapter(client)._checks(HEAD)[1])
+        duplicate.update(status="completed", conclusion="success")
+        duplicate["details_url"] = duplicate["details_url"].replace("/105/", "/102/")
+        self.assertFalse(self.adapter(client)._checks(HEAD)[1])
 
     def test_required_workflow_is_bound_to_job_head_and_workflow_identity(self):
         for override in ({"workflow_id": 1}, {"path": ".github/workflows/other.yml"},

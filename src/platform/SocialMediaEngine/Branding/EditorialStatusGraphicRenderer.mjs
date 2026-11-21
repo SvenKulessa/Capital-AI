@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { Resvg, initWasm } from '@resvg/resvg-wasm';
+import { Resvg } from '@resvg/resvg-wasm';
+import { ensureResvgWasmInitialized } from './ResvgWasmRuntime.mjs';
 
 export const EDITORIAL_STATUS_RENDERER_VERSION = 'CAPITAL_AI_EDITORIAL_STATUS_GRAPHIC@1';
 export const EDITORIAL_STATUS_SIZES = Object.freeze({ landscape: [1440, 960], portrait: [1080, 1350] });
@@ -29,11 +30,10 @@ export async function renderEditorialStatusGraphic(input) {
     return { title: label(row.title, 32), lines: row.lines.map(line => label(line, 38)) };
   });
   resources ??= Promise.all([
-    readFile(new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm'))),
+    ensureResvgWasmInitialized(),
     readFile(new URL('../../../../public/fonts/PlusJakartaSans-Regular.ttf', import.meta.url)),
     readFile(new URL('../../../../public/branding/asset-pack/meta/social-render-tokens.json', import.meta.url), 'utf8'),
-  ]).then(async ([binary, fontBytes, raw]) => {
-    await initWasm(binary);
+  ]).then(async ([, fontBytes, raw]) => {
     const tokens = JSON.parse(raw);
     if (tokens.schemaVersion !== 'CAPITAL_AI_SOCIAL_RENDER_TOKENS@1' || tokens.publishReady !== false) throw new Error('EDITORIAL_GRAPHIC_TOKENS_INVALID');
     const palette = ['cyan', 'violet', 'gold', 'pink', 'rose', 'blue', 'green'].map(name => tokens.color.universe[name].$value);

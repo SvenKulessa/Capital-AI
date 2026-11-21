@@ -3,6 +3,13 @@ export const STRIPE_CATALOG_VERSION = '2026-10-04-vocabulary' as const;
 export type BillingCycle = 'monthly' | 'annual';
 export type PaidTier = 'starter' | 'pro' | 'enterprise';
 
+export const NEWS_DESIGN_OFFER = {
+  label: 'FinTech News Design Studio',
+  pricing: 'Preis auf Anfrage',
+  salesMode: 'INQUIRY_ONLY',
+  deliverables: 'Artikelvorlage, eigene Infografik, Alt-Text und nachvollziehbare Bildherkunft.',
+} as const;
+
 export const PRICING_CATALOG = {
   starter: {
     label: 'Starter',
