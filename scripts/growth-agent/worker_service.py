@@ -17,9 +17,12 @@ from pathlib import Path
 
 from agent_platform import DOMAINS, build_research_graph
 from checkpoint_store import execute_durable_graph
+from offline_task_scope import TrustedOfflineScope
 
 ROOT = Path("/var/lib/capital-ai-agent")
 MAX_TASK_SIZE = 2048
+# Owner-local offline worker: tenant/repo cannot come from untrusted task JSON.
+OFFLINE_SCOPE = TrustedOfflineScope("local-owner", "SvenKulessa/Capital-AI")
 STOP = False
 
 
@@ -74,12 +77,13 @@ def load_task(path: Path, inbox: Path) -> dict:
 
 
 def process(task: dict, *, state_root: Path, repo_root: Path) -> dict:
-    task_hash = hashlib.sha256(json.dumps(task, sort_keys=True).encode()).hexdigest()[:28]
-    thread_id = "research-" + task_hash
+    bound = OFFLINE_SCOPE.bind(task)
+    thread_id = bound.thread_id
     initial = {"task_id": thread_id, "domain": task["domain"], "query": task["query"]}
     return execute_durable_graph(
         lambda saver: build_research_graph(repo_root, checkpointer=saver),
         thread_id, str(state_root / "checkpoints" / (thread_id + ".sqlite3")), initial,
+        binding_digest=bound.binding_digest,
     )
 
 

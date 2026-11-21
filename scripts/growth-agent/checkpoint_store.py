@@ -13,9 +13,11 @@ import sqlite3
 import stat
 
 from langgraph.checkpoint.sqlite import SqliteSaver
+from offline_task_scope import bind_checkpoint
 
 
-def execute_durable_graph(graph_factory, task_id: str, db_path: str, initial_state: dict) -> dict:
+def execute_durable_graph(graph_factory, task_id: str, db_path: str, initial_state: dict,
+                          *, binding_digest: str | None = None) -> dict:
     if (not isinstance(task_id, str)
             or not re.fullmatch(r"[a-zA-Z0-9._:-]{1,96}", task_id)
             or not isinstance(initial_state, dict) or initial_state.get("task_id") != task_id):
@@ -50,6 +52,8 @@ def execute_durable_graph(graph_factory, task_id: str, db_path: str, initial_sta
             os.close(fd)
         conn = sqlite3.connect(path, check_same_thread=False, timeout=5.0)
         try:
+            if binding_digest is not None:
+                bind_checkpoint(conn, binding_digest)
             graph = graph_factory(SqliteSaver(conn))
             config = {"configurable": {"thread_id": task_id}, "recursion_limit": 24}
             snapshot = graph.get_state(config)

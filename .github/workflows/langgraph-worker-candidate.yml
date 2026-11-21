@@ -7,6 +7,8 @@ on:
       - 'deploy/Dockerfile.langgraph-worker.dockerignore'
       - 'scripts/growth-agent/agent_platform.py'
       - 'scripts/growth-agent/checkpoint_store.py'
+      - 'scripts/growth-agent/offline_task_scope.py'
+      - 'scripts/growth-agent/test_offline_task_scope.py'
       - 'scripts/growth-agent/licensed_context_offline_graph.py'
       - 'scripts/growth-agent/test_licensed_context_offline_graph.py'
       - 'scripts/growth-agent/product_opportunity_graph.py'
@@ -108,6 +110,13 @@ jobs:
             -m unittest discover -s /app/scripts/growth-agent \
             -p test_continuous_pr_supervisor.py -v
           echo "PR_CI_WAKE_SUPERVISOR_OFFLINE_TESTED"
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_offline_task_scope.py -v
+          echo "TRUST_OFFLINE_SCOPE_NEGATIVES_TESTED"
       - name: Scan entire candidate for vulnerabilities and secrets
         shell: bash
         run: |
@@ -203,6 +212,17 @@ jobs:
           test "$first" = "$second"
           test "$second" = "$third"
           test "$(checkpoint_count)" = "$before"
+          # Same Task-ID with changed content must NOT inherit a prior checkpoint.
+          printf '%s\n' '{"schema":"CAPITAL_AI_OFFLINE_RESEARCH@1","task_id":"ci-restart-001","domain":"PLATFORM","query":"modified checkpoint payload"}' | sudo tee "$state/inbox/task.json" >/dev/null
+          set +e
+          run_research >/dev/null 2>&1
+          changed_task_rejected=$?
+          set -e
+          test "$changed_task_rejected" -ne 0
+          test "$(checkpoint_count)" = "$before"
+          printf '%s\n' '{"schema":"CAPITAL_AI_OFFLINE_RESEARCH@1","task_id":"ci-restart-001","domain":"PLATFORM","query":"LangGraph checkpoint"}' | sudo tee "$state/inbox/task.json" >/dev/null
+          test "$(sudo stat -c %a "$state/inbox/task.json")" = "600"
+          test "$(sudo stat -c %u "$state/inbox/task.json")" = "10001"
           test "$(sudo stat -c %a "$state/checkpoints")" = "700"
           test "$(sudo stat -c %u "$state/checkpoints")" = "10001"
           test "$(sudo stat -c %a "$state/inbox/task.json")" = "600"
