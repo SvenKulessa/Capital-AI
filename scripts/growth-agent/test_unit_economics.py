@@ -39,6 +39,35 @@ class EconomicsTests(unittest.TestCase):
             with self.subTest(a=a), self.assertRaises(ValueError):
                 ue.calculate(a)
 
+    def test_budget_is_optional_and_binds_unrounded_cogs(self):
+        self.assertEqual(ue.calculate(ue.Assumptions())["hypothetical_budget_status"], "NOT_CONFIGURED")
+        for limit, expected in (("42.76", "EXCEEDS_BUDGET"), ("42.77", "WITHIN_BUDGET"),
+                                ("42.78", "WITHIN_BUDGET")):
+            with self.subTest(limit=limit):
+                actual = ue.calculate(replace(ue.Assumptions(), monthly_cogs_budget_usd=Decimal(limit)))
+                self.assertEqual(actual["hypothetical_budget_status"], expected)
+        rounded_overrun = ue.calculate(replace(ue.Assumptions(),
+                model_input_usd_per_million=Decimal("2.00001"),
+                monthly_cogs_budget_usd=Decimal("42.77")))
+        self.assertEqual(rounded_overrun["monthly_cogs_usd"], "42.77")
+        self.assertEqual(rounded_overrun["hypothetical_budget_status"], "EXCEEDS_BUDGET")
+
+    def test_reject_ambiguous_or_unbounded_assumptions(self):
+        cases = (
+            replace(ue.Assumptions(), input_tokens_per_attempt=True),
+            replace(ue.Assumptions(), output_tokens_per_attempt=False),
+            replace(ue.Assumptions(), input_tokens_per_attempt=10_000_001),
+            replace(ue.Assumptions(), attempts_per_incident=Decimal("101")),
+            replace(ue.Assumptions(), price_usd=Decimal("0.00001")),
+            replace(ue.Assumptions(), model_input_usd_per_million=Decimal("1e99")),
+            replace(ue.Assumptions(), monthly_cogs_budget_usd=True),
+            replace(ue.Assumptions(), monthly_cogs_budget_usd=Decimal("NaN")),
+            replace(ue.Assumptions(), monthly_cogs_budget_usd=Decimal("Infinity")),
+            replace(ue.Assumptions(), monthly_cogs_budget_usd=Decimal("-0.01")),
+        )
+        for case in cases:
+            with self.subTest(case=case), self.assertRaises(ValueError):
+                ue.calculate(case)
 
 if __name__ == "__main__":
     unittest.main()
