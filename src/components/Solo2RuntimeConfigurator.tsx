@@ -5,8 +5,8 @@ import {
 } from '../../shared/solo2-config.mjs';
 
 /**
- * Owner-only catalog child. Profile is an untrusted local draft, not saved to
- * server/localStorage, not passed to any executor, and never contains secrets.
+ * Owner-only catalog child. Profile is an untrusted local draft; it is neither
+ * persisted nor passed to any executor, and must not contain secrets.
  */
 export function Solo2RuntimeConfigurator({
   sourceSha, freshness,
