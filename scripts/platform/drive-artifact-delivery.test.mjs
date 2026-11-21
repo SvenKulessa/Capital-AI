@@ -118,6 +118,8 @@ test('corrupt post-upload bytes never report VERIFIED upload',async()=>{
   const {p,written}=mock();p.readFileBytes=async()=>Buffer.from('tampered bytes');
   const r=await deliverDriveArtifact({request,bytes:content,provider:p,authorization:auth});
   assert.equal(r.status,'HOLD');assert.equal(r.driveUpload,'NOT_PROVEN');
+  assert.equal(r.sha256,'NOT_PROVEN');
+  assert.equal(r.localSha256,hash(content));
   assert.equal(written.length,1);
 });
 test('cross-parent metadata rejects creation',async()=>{
