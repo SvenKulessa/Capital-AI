@@ -149,7 +149,16 @@ export function BuddyStickyNotes({ initialText = '', captureRequest = 0 }: { ini
       } catch (reason) {
         if (controller.signal.aborted) return;
         if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
-          revoke();
+          if (currentUserRef.current) {
+            // Real account switch or logout: fail closed and clear private images.
+            revoke();
+          } else {
+            // First anonymous visit: local capture/annotation is safe without
+            // account storage. No private note read/write is authorized.
+            setUserId(null);
+            setOwnerPromptAllowed(false);
+            setError('Für private Notizen bitte anmelden. Bilder und Markierungen bleiben lokal in dieser Sitzung.');
+          }
         } else {
           // An unavailable backend is not proof of a changed identity.
           // Preserve the draft and any unresolved conflict on network failures.
