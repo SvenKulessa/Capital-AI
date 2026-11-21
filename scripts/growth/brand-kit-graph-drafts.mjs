@@ -279,6 +279,104 @@ export async function buildBrandedPngDraft(options={}) {
     rights:'REVIEW_REQUIRED',publicationState:'DRAFT_ONLY',publicPublishAllowed:false};
 }
 
+
+/** Trusted-server-only, offline, source-hash-bound intake and candidate evaluation. */
+export const LICENSED_CONTEXT_ROUND_VERSION='CAPITAL_AI_LICENSED_CONTEXT_ROUND@1';
+const SOURCE_ID=/^[a-z0-9][a-z0-9_-]{3,79}$/;
+const INJECTION=/ignore\s+(?:all\s+|previous\s+)?instructions|system\s+prompt|developer\s+message|publish\s+now|bypass\s+(?:approval|checks)|<[^>]*>|\u202a|\u202b|\u202c|\u202d|\u202e|\u2066|\u2067|\u2068|\u2069/i;
+function extractSourceSummary(text){
+  if(typeof text!=='string'||text.length<35||text.length>6000
+    ||/[\u0000-\u001f\u007f]/u.test(text)||INJECTION.test(text))return null;
+  const clean=text.normalize('NFKC').replace(/\s+/g,' ').trim();
+  if(clean.length<35||INJECTION.test(clean))return null;
+  const excerpt=clean.slice(0,220).replace(/\s+\S*$/u,'').trim();
+  return excerpt.length>=35&&excerpt.length<=220?excerpt:null;
+}
+/**
+ * trustedScope MUST originate from authenticated server authority, NEVER request
+ * data or crawler text. This module exposes NO network endpoint or provider call.
+ */
+export function buildLicensedContextRound(input,trustedScope){
+  if(!input||typeof input!=='object'||Array.isArray(input)
+    ||Object.keys(input).some(k=>!['tenantId','channel','records','feedback',
+      'evaluatedAt','baseTemplateVersion'].includes(k)))
+    throw Error('LICENSED_INPUT_INVALID');
+  const {tenantId,channel,records=[],feedback=[],evaluatedAt,baseTemplateVersion='1.0.0'}=input;
+  if(typeof tenantId!=='string'||!SOURCE_ID.test(tenantId)
+    ||trustedScope?.kind!=='SERVER_VERIFIED_TENANT_SCOPE'
+    ||trustedScope.authenticated!==true||trustedScope.tenantId!==tenantId)
+    throw Error('LICENSED_TENANT_AUTH_REQUIRED');
+  if(!['X','INSTAGRAM'].includes(channel)||baseTemplateVersion!=='1.0.0'
+    ||typeof evaluatedAt!=='string'||!Number.isFinite(Date.parse(evaluatedAt))
+    ||!Array.isArray(records)||records.length>3||!Array.isArray(feedback)
+    ||feedback.length>80||!Array.isArray(trustedScope.rightsLedger)
+    ||trustedScope.rightsLedger.length>16)
+    throw Error('LICENSED_BATCH_INVALID');
+  if(feedback.some(x=>x?.tenantId!==tenantId))
+    throw Error('LICENSED_FEEDBACK_TENANT_MISMATCH');
+  const accepted=[],grants=[],rejected=[],seen=new Set();
+  for(const row of records){
+    const id=row?.id;
+    if(typeof id!=='string'||!SOURCE_ID.test(id)||seen.has(id)
+      ||row.tenantId!==tenantId){
+      rejected.push({id:'invalid',reason:'LICENSED_SOURCE_TENANT_OR_ID_INVALID'});continue;
+    }
+    seen.add(id);
+    const exactSha=sha(Buffer.from(typeof row.sourceText==='string'?row.sourceText:''));
+    if(!digest.test(row.sourceSha256??'')||row.sourceSha256!==exactSha){
+      rejected.push({id,reason:'LICENSED_SOURCE_SHA_MISMATCH'});continue;
+    }
+    const summary=extractSourceSummary(row.sourceText);
+    if(!summary){rejected.push({id,reason:'LICENSED_SOURCE_TEXT_UNSAFE'});continue;}
+    const matches=trustedScope.rightsLedger.filter(g=>g?.tenantId===tenantId
+      &&g.sourceId===id&&g.sourceUrl===row.sourceUrl
+      &&g.sourceSha256===exactSha&&g.commercialParaphraseAllowed===true
+      &&g.reviewed===true&&typeof g.evidenceRef==='string'
+      &&/^[A-Za-z0-9_.:/#-]{6,220}$/.test(g.evidenceRef));
+    if(matches.length!==1){
+      rejected.push({id,reason:'COMMERCIAL_SOURCE_RIGHTS_NOT_PROVEN'});continue;
+    }
+    const record={id,tool:row.tool,sourceUrl:row.sourceUrl,summary,
+      summarySha256:sha(summary),...(row.tool==='LANGGRAPH'?{graphRunId:row.graphRunId}:{})};
+    const grant={sourceId:id,sourceUrl:row.sourceUrl,summarySha256:sha(summary),
+      commercialParaphraseAllowed:true,reviewed:true,evidenceRef:matches[0].evidenceRef};
+    const verify=assessContext([record],[grant]);
+    if(verify.accepted.length!==1){
+      rejected.push({id,reason:verify.rejected[0]?.reason??'LICENSED_SOURCE_INVALID'});continue;
+    }
+    accepted.push(record);grants.push(grant);
+  }
+  const allowedFeedback=feedback.filter(f=>f?.kind==='user_feedback'
+    &&f?.anonymized===true&&f?.consent===true);
+  const draft=buildBrandedGrowthDraft({channel,records:accepted,
+    trustedRights:grants,feedback:allowedFeedback,evaluatedAt});
+  const image=draft.socialPackage.assets.find(x=>x.kind==='IMAGE');
+  if(draft.context.usedIds.length!==accepted.length||!image
+    ||image.sha256!==draft.image.sha256||draft.socialPackage.approvals.length
+    ||draft.socialPackage.deliveries.length||draft.publicPublishAllowed)
+    throw Error('LICENSED_BRAND_IDENTITY_OR_AUTHORITY_INVALID');
+  const roundSha256=sha(JSON.stringify({tenantId,channel,baseTemplateVersion,
+    ids:accepted.map(x=>x.id),digests:accepted.map(x=>x.summarySha256),
+    feedbackEvidence:draft.learning.templateCandidates.map(x=>x.evidenceIds),
+    imageSha256:image.sha256}));
+  return {
+    contractVersion:LICENSED_CONTEXT_ROUND_VERSION,tenantId,channel,roundSha256,
+    sourceIntake:{accepted:accepted.map(x=>({
+      id:x.id,sourceUrl:x.sourceUrl,tool:x.tool,summarySha256:x.summarySha256,
+      sourceSha256:records.find(row=>row.id===x.id).sourceSha256,
+      rightsEvidenceRef:grants.find(g=>g.sourceId===x.id).evidenceRef,
+      editorialReview:'REVIEW_REQUIRED'})),rejected},
+    draft,templateEvaluation:{
+      baseVersion:baseTemplateVersion,roundSha256,
+      candidates:draft.learning.templateCandidates.map(c=>({
+        ...c,proposedVersion:'1.0.1-candidate.'+roundSha256.slice(0,12)})),
+      rejectedConsentCount:feedback.length-allowedFeedback.length,
+      consentRequired:true,autoPromote:false,weightsChanged:false},
+    graphExecution:'NOT_PROVEN',ragExecution:'NOT_PROVEN',
+    providerCalls:0,publishCalls:0,publicationState:'DRAFT_ONLY',
+    publicPublishAllowed:false};
+}
+
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
   const channel=process.argv[2],output=process.argv[3];
   if(!output) {
