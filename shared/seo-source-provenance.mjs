@@ -23,7 +23,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '4b57c01decdb2bf5408407eeebdb26abf6c548f5f3982388537900c2f9009cd8',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: '5bcd5da4b9672f7e3077a4be5991f4b9d8af871a', contentSha256: '7df235d4e0c6941ff000d723f05b7b5011324def03c77078ea8897177ef1f80c',
+    sourceBlobSha: '6aa8da4597ba971d4fccf1d24c83ec369740b93e', contentSha256: '22d78321820411193eb42b053515f803b034046e451c31c2e148da159c417f65',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: '4e5fa745c9fd2ea2a8e8fc8e7da462b3a7be4793',
@@ -67,10 +67,10 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '0e809eaf86887dbc990b70fc18582bd73b6db821b58594d40aa8b9f7a565027b',
-  'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '8eae7215ac4d99bb718c794b63f0b4058f3128f87048d00674e7a91122f0396d',
+  'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '162ad4ade232deddb9b0d5189f28f5766aeabe27794a76e16666d5fdaac3f49a',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
   'index.html|src/features/home/HomePage.tsx': '2ce3527312ad2a4e9b9b746040722f78b4a90c54fa7e77c850392782b24724a1',
-  'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'dc081c50a4656ab2f699614401138032475a2fc3cc53bda68469f3bac09c1536',
+  'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '20af20e9dfb2739d828fb8bf41146fe6abbedfc0dc46cc4a09d6adcd73a095bd',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
