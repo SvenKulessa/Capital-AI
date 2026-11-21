@@ -71,6 +71,18 @@ Quellnorm und Prüfquellen: §31 UrhG https://www.gesetze-im-internet.de/urhg/__
 
 Rücknahme: diesen konzeptionellen Slice revertieren; keine Änderung an Stripe, Entitlements, OAuth, Social Publisher, Rendering oder vorhandener Asset-Registry notwendig.
 
+## Wirtschaftliches Negativszenario bei saisonalen Rabatten (nicht als Ist-Kosten behaupten)
+Alte **rein hypothetische** Kostenannahmen aus diesem Konzept: Publisher 70 EUR Arbeits-/Supportaufwand + 5 EUR variable Kosten; Studio 230 EUR Aufwand + 12 EUR variabel. Mit den neu autorisierten internen Zielpreisen würden sich folgende **unvalidierte** Deckungsbeiträge ergeben:
+
+| Produkt | Basiszielpreis | 25%-Aktionspreis | 30%-BF-Preis | Deckungsbeitrag BF bei obigen **nur angenommenen** Kosten |
+| --- | ---: | ---: | ---: | ---: |
+| Publisher | EUR 99,00 | EUR 74,25 | EUR 69,30 | **EUR -5,70** |
+| Studio | EUR 290,00 | EUR 217,50 | EUR 203,00 | **EUR -39,00** |
+
+Das ist ausdrücklich **kein nachgewiesener Verlust**, sondern ein Warnsignal: Vor bezahlten Ads und vor Zusage individueller Studio-Leistungen reale direkte Arbeitszeit, Lizenz-/Renderkosten und Supportbedarf messen. Positive Deckung sollte aus echten Auftragsdaten nachgewiesen werden, statt auf die alte 129/390-Kalkulation zu vertrauen.
+
+**Partner-Risiko:** 70 % Reseller-Einkauf vom Basiszielpreis entspricht während des BF-Fensters zufällig exakt dem 30-%-Direktkundenpreis. CAPITAL-AI darf daraus keinen Endkunden-Mindestpreis ableiten. Ein Partnerschaftspilot sollte diesen Preiskonflikt transparent in den Partnergesprächen adressieren, etwa mit klarer Differenzierung von Agenturdienstleistungen und Kundensupport. Kein impliziter Margengarantie-Claim.
+
 ## Owner-Entscheidung · Preis- und Kreativkampagne 2026
 - **Intern bestätigte Basiszielpreise:** Publisher EUR 99 netto, Studio EUR 290 netto; der bisherige Ansatz EUR 129/390 ist ausdrücklich abgelöst. Keine Stripe-, Abrechnungs- oder Kundenpreisaktivierung.
 - **Jahresend-Kampagne:** 21.11.–31.12.2026, 25 % Nachlass auf Basiszielpreis (Publisher EUR 74,25; Studio EUR 217,50). Am Black Friday bis Cyber-Dienstag **27.11.–01.12.2026** zusätzlicher Bonus **5 Prozentpunkte**, also insgesamt **30 %** (EUR 69,30 / EUR 203,00). Während dieses Fensters kein additiver 25-%-Rabatt obendrauf. Zeitbezug Europe/Berlin.
