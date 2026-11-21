@@ -106,6 +106,7 @@ export function resolveAppRoute(rawPath: string): string {
   if (/^\/vocabulary\/[a-z0-9][a-z0-9_-]*$/.test(clean)) {
     return clean;
   }
+  if (clean === '/social' || clean === '/social-hub') return '/social';
   if (clean === '/blog' || /^\/blog\/[a-z0-9][a-z0-9-]*$/.test(clean)) return clean;
   if (clean.startsWith('/control-center/')) {
     const section = clean.slice('/control-center/'.length);
