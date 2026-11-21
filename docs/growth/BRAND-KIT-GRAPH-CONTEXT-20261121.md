@@ -45,3 +45,45 @@ node --import tsx scripts/growth/brand-kit-graph-drafts.mjs X /tmp/capital-ai-br
 Die vorhandene Growth-Intelligence-Testsuite importiert die neuen Positiv-/Negativtests, die bestehende Docker-Build-Stufe erhält beide Dateien via Dockerfile und `.dockerignore`. Prüfungen: Quellenrechte, SHA-256-/Content-Identity, Logo-Provenienz, sieben Farben, XML-/Prompt-Injection, URL-/Graph-IDs, Feedback-Consent, Bilddarstellung, Publisher-Sperren und lokale Resvg-PNG-Bytes.
 
 **Sicherheit und Rollback:** Source-only, fail-closed, kein Secret, OAuth, DB-, Provider- oder Social-Publish-Eingriff. Merge nur nach dem bestehenden Ruleset und aktuellem Head-SHA; kein Status aus Commit-Nachricht oder Skripterfolg ableiten. Revert der PR stellt den vorherigen Zustand wieder her. `CI_VERIFIED` und `PRODUCTION_VERIFIED` sind getrennte Stati.
+
+
+## Quellen- und Feedback-Intake v1 – Offline-Folge-Slice
+
+- Implementierung: `buildLicensedContextRound(input, trustedScope)` in
+  `scripts/growth/brand-kit-graph-drafts.mjs` sowie Positiv-/Negativtests in
+  `scripts/growth/brand-kit-graph-drafts.test.mjs`. Bereits in der bestehenden
+  `test:growth-intelligence`-Kette, `Dockerfile`-COPY und `.dockerignore` enthalten.
+- Eingabe: höchstens drei bereits extrahierte, schlichte UTF-8-Webtexte
+  (kein HTML und keine Live-Crawls). Exakter SHA-256-Text-Hash, Quellenkennung,
+  HTTPS-Adresse und Werkzeug-Typ. Die Kurzfassung ist eine deterministische, **wörtlich-extraktive Textpassage** (keine automatische Paraphrase). Sie wird erneut
+  durch `assessContext` auf Provenance, Source-SHA und Rechte gebunden.
+- **Autorisierung**: Die vertrauenswürdige Server-Seite muss unabhängig vom
+  Request `trustedScope` liefern und eine zuvor authentifizierte Tenant-ID,
+  eine pro Quelle an Tenant/URL/Rohtext-SHA gebundene kommerzielle
+  Paraphrasierungs- **und wörtliche Auszugsberechtigung** im Rechte-Ledger und einen
+  an Tenant/Event/SHA gebundenen Consent-/Anonymisierungsbeleg liefern.
+  Die hier geprüfte Strukturangabe `authenticated:true` allein ist **kein**
+  Authentifizierungsnachweis. Deswegen wurde **keine HTTP-Route** freigeschaltet.
+  Eine fremde oder fehlende Lizenz/Einwilligung führt zu einer Ablehnung.
+- **Sicherheitsgrenzen**: Reject bei manipulierten Hashes, Prompt-Injection,
+  URL-Credentials, ungeeigneten Hosts, doppelten Quellen-IDs,
+  fremden Tenants und fehlenden Graph-Run-Referenzen. Ein LangGraph-Run-ID-Feld
+  beweist keine tatsächliche Ausführung. Fremde Inhalte bleiben Daten;
+  keine Provider-Calls, keine RAG-Vektorsuche, keine neuen Worker.
+- **Ergebnis**: bestehendes first-party Logo/Asset-Pack und Social IMAGE/TEXT
+  mit geprüfter SHA-256-Bindung; grafische Freigabe weiterhin REVIEW_REQUIRED,
+  Publisher DRAFT_ONLY. Feedback erzeugt nur versionierte
+  `1.0.1-candidate.<roundSha256>`-Vorschläge; die produktive Vorlage bleibt
+  `1.0.0`. Kein Auto-Promotion, Weight-Update, Social Publish oder Kostenaufruf.
+- **Nachweise / Reproduktion**:
+  `npm run test:growth-intelligence`,
+  `node --import tsx --test scripts/growth/brand-kit-graph-drafts.test.mjs`,
+  anschließend die bestehenden Docker-/CodeQL-/Domain-Governance-Checks auf
+  demselben Head. Der Rechte-Ledger muss selbst unabhängig aus echten
+  Dokumenten/Verträgen befüllt werden: ein Test-Grünergebnis erteilt
+  keine kommerziellen Rechte. Ebenso bleiben tatsächlicher Live-Crawl,
+  LangGraph-Readback, Produktiv-Auth und RAG weiterhin NOT_PROVEN.
+- **Rollback**: Revert des separaten GROWTH-Folge-PRs. Keine Datenmigration,
+  Credentials, OAuth-Änderung, neuen Pakete, Scheduler oder Deploys.
+
+Der Versionierungs-Hash bindet auch den vollständigen Rohtext-SHA, den getrennten Rechtebeleg, die akzeptierten Feedback-Bytes und den Auswertungszeitpunkt. Der Contract beweist nur die Validierung dieser übergebenen Belege, nicht deren externe Echtheit. Fehlende Auszugsrechte blockieren den Import auch dann, wenn eine Paraphrase erlaubt wäre.
