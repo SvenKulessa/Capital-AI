@@ -211,7 +211,7 @@ export const LEARNING_UNIVERSE_ASSETS = Object.freeze([
     "thirdPartyRedistribution": "NOT_PROVEN",
     "publishApproval": false
   }
-].map(Object.freeze));
+].map(asset => Object.freeze(asset)));
 const knownAssets = new Map(LEARNING_UNIVERSE_ASSETS.map(asset => [asset.id, asset]));
 export function canPreviewLearningUniverseAsset(asset) {
   return Boolean(asset && knownAssets.get(asset.id) === asset &&
