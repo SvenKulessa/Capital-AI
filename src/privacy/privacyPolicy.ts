@@ -126,6 +126,16 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['Supabase Vault', 'private Metadatentabelle ohne anon/authenticated-Zugriff', 'Secret-RPCs nur für service_role', 'serverseitige Session-Verifikation vor Secretzugriff', 'Kraken-Adapter auf read-only Balance begrenzt', 'kein Trading und keine Withdrawals'],
   },
   {
+    id: 'vocabulary-learning-progress', title: 'Vocabulary-Lernfortschritt und Lernabzeichen', lifecycle: 'active',
+    purpose: 'Private Spielstände, Lernkarten, Lernstatistiken und den persönlichen Lernnachweis bereitstellen.',
+    dataCategories: ['Kontozuordnung', 'Fragen und Antwortstatus', 'Lernkartenauswahl', 'Lernabzeichen mit Zeitstempel und Nachweis-ID'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO zur Bereitstellung der vom angemeldeten Nutzer verwendeten Lernfunktion.',
+    recipients: ['CAPITAL-AI Anwendungsserver', 'Supabase-Dienst für das Benutzerkonto'],
+    transfer: 'Der Fortschritt wird im vorhandenen Supabase-Projekt des Kontos gespeichert.',
+    retention: 'Lernfortschritt und Nachweis bleiben bis zur Kontolöschung gespeichert. Der Spielstand enthält die aktuelle Runde und die Ergebnisse der letzten zehn vollständigen Runden.',
+    technicalControls: ['Authentifizierte Anfrage', 'Kontobindung aus der Serversitzung', 'Beschränkter Datenbankzugriff'],
+  },
+  {
     id: 'privacy-requests', title: 'Datenauszug und Datenschutzanfragen', lifecycle: 'active',
     purpose: 'Bereitstellung eines begrenzten Datenauszugs und Bearbeitung von Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch oder Datenübertragbarkeit. Angemeldete Nutzer registrieren eine Anfrage mit Vorgangsnummer; ohne Anmeldung kann ein E-Mail-Entwurf vorbereitet werden.',
     dataCategories: ['verifizierte Benutzer- und Ausstellerkennung', 'Profilname und Sitzungsablauf im Datenauszug', 'Anfragetyp', 'freiwillige Beschreibung im E-Mail-Entwurf', 'vom Nutzer versendete Nachricht', 'Vorgangsnummer, Bearbeitungsstatus, Erstellungs- und Fälligkeitsdatum bei registrierten Anfragen'],

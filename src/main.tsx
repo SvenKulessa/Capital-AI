@@ -5,6 +5,7 @@ import App from './App.tsx';
 import './index.css';
 import './features/learning/learningUniverseOverview.css';
 import './features/learning/learningSimulatorUniverse.css';
+import './features/learning/vocabularyGame.css';
 
 import { captureCheckoutConfirmation } from './utils/checkoutConfirmation';
 captureCheckoutConfirmation();

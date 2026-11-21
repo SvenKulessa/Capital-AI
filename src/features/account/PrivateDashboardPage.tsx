@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { AccountPageShell } from './AccountPageShell';
 import { OwnerAgentOperationsPanel } from '../../components/OwnerAgentOperationsPanel';
+import { VocabularyAchievementPanel } from '../learning/VocabularyGame';
 import { LearningFavoritesPanel } from '../learning/LearningFavorites';
 import { readNotes, saveNotes, NotesClientError, type NotesConflict, type NotesSnapshot } from './privateNotesOcc';
 import { NotesConflictPanel } from './NotesConflictPanel';
 
 const dashboardTabs = [
   { id: 'learning', label: 'Lernfeld' },
+  { id: 'vocabulary', label: 'Vocabulary' },
   { id: 'notes', label: 'Notizen' },
   { id: 'saved', label: 'Gespeicherte Notizen' },
   { id: 'operations', label: 'Owner Operations' },
@@ -216,6 +218,9 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
       </div>
       <div hidden={tab !== 'learning'} id="dashboard-learning" role="tabpanel" aria-labelledby="dashboard-learning-tab">
         <LearningFavoritesPanel />
+      </div>
+      <div hidden={tab !== 'vocabulary'} id="dashboard-vocabulary" role="tabpanel" aria-labelledby="dashboard-vocabulary-tab" className="hub-universe hub-universe--learning">
+        {tab === 'vocabulary' && <VocabularyAchievementPanel key={userId} />}
       </div>
       <div hidden={tab !== 'notes'} id="dashboard-notes" role="tabpanel" aria-labelledby="dashboard-notes-tab">
         <section className="rounded-2xl border border-slate-700 bg-brand-canvas p-5" aria-labelledby="private-notes-heading">

@@ -1,8 +1,9 @@
 import { useState, type KeyboardEvent } from 'react';
+import { VocabularySoloQuiz } from './VocabularyGame';
 import { PortfolioRiskQuiz } from './PortfolioRiskQuiz';
 
-type Category = 'quant' | 'portfolio';
-const categories: readonly Category[] = ['quant', 'portfolio'];
+type Category = 'quant' | 'portfolio' | 'vocabulary';
+const categories: readonly Category[] = ['quant', 'portfolio', 'vocabulary'];
 
 export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
   const [category, setCategory] = useState<Category>('quant');
@@ -10,7 +11,7 @@ export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     const index = categories.indexOf(category);
-    const next = event.key === 'Home' ? categories[0] : event.key === 'End' ? categories[1]
+    const next = event.key === 'Home' ? categories[0] : event.key === 'End' ? categories[categories.length - 1]
       : categories[(index + (event.key === 'ArrowRight' ? 1 : -1) + categories.length) % categories.length];
     setCategory(next);
     document.getElementById('quizzes-tab-' + next)?.focus();
@@ -29,7 +30,7 @@ export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
             aria-controls={'quizzes-panel-' + item} onClick={() => setCategory(item)}
             className={'min-h-11 rounded-t-lg px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-amber-300 ' +
               (item === category ? 'border-b-2 border-amber-300 bg-amber-400/10 text-amber-200' : 'text-slate-300 hover:text-white')}>
-            {item === 'quant' ? 'Quant & Trader' : 'Portfolio-Risiko'}
+            {item === 'quant' ? 'Quant & Trader' : item === 'portfolio' ? 'Portfolio-Risiko' : 'Wörter-Quiz'}
           </button>
         ))}
       </div>
@@ -48,6 +49,9 @@ export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
       <div id="quizzes-panel-portfolio" role="tabpanel" aria-labelledby="quizzes-tab-portfolio"
         hidden={category !== 'portfolio'}>
         <PortfolioRiskQuiz />
+      </div>
+      <div id="quizzes-panel-vocabulary" role="tabpanel" aria-labelledby="quizzes-tab-vocabulary" hidden={category !== 'vocabulary'}>
+        {category === 'vocabulary' && <VocabularySoloQuiz />}
       </div>
     </section>
   );

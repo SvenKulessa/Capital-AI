@@ -1,7 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createEnterpriseTrial } from './enterprise-trial.mjs';
 import { readFile } from 'node:fs/promises';
-import { boundedJson, secureUrl } from './http-security.mjs';
+import { handleVocabularyGame } from './vocabulary-game.mjs';
+import { boundedJson, readJson, secureUrl } from './http-security.mjs';
 
 const DEFAULT_VOCABULARY_PRODUCT_ID = 'prod_VNTsrtlf2ZL8ja';
 const DEFAULT_LEGACY_PRICE_ID = 'price_1UMiuIPKr4joNbEclpn8AwFW';
@@ -69,7 +70,7 @@ async function rpc(fetchImpl, config, name, body) {
     payload = await boundedRpcErrorJson(response);
   } else if (response.status !== 204) {
     try {
-      payload = await boundedJson(response);
+      payload = await boundedJson(response, name === 'capital_ai_vocabulary_game' ? 262144 : undefined);
     } catch {
       payload = null;
     }
@@ -423,6 +424,18 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
         } catch {
           json(res,503,{error:'notes_unavailable'});
         }
+        return true;
+      }
+
+      if (/^\/api\/learning\/word-game(?:\/[a-z]+)?$/.test(url.pathname)) {
+        if (req.method !== 'GET' && !auth?.sameOrigin?.(req)) return json(res, 403, { error: 'forbidden_origin' }), true;
+        const user = await requireUser(req, res, json);
+        if (!user) return true;
+        if (!supabase) return json(res, 503, { error: 'learning_unavailable' }), true;
+        try {
+          await handleVocabularyGame({ req, res, url, json, userId: user.userId, readJson,
+            store: body => rpc(fetchImpl, supabase, 'capital_ai_vocabulary_game', body) });
+        } catch { json(res, 503, { error: 'game_progress_unavailable' }); }
         return true;
       }
 

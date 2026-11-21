@@ -1,4 +1,5 @@
 import React from 'react';
+import { VocabularyAchievementBadge } from '../features/learning/VocabularyGame';
 import { LearningEntitlementBadge } from '../features/learning/LearningEntitlementBadge';
 import { ProfileAvatarUpload } from '../features/account/ProfileAvatarUpload';
 import { VerifiedProfileAvatar } from '../features/account/VerifiedProfileAvatar';
@@ -68,26 +69,16 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
                     Multi-Agent Operations Center öffnen
                   </button>
                 </>}
-                <LearningEntitlementBadge />
-
-                {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).length ? (
-                  <div className="mt-4 flex flex-wrap gap-3" aria-label="Kontobadges">
-                    {session.account.badges.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).map(badge => (
-                      <figure key={badge.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3">
-                        <img
-                          src={badge.asset}
-                          alt={badge.label + ' Badge'}
-                          className="h-14 w-14 rounded-xl object-contain"
-                          width={56}
-                          height={56}
-                        />
-                        <figcaption className="text-xs font-black tracking-wider text-slate-100">{badge.label}</figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-4 text-xs text-slate-300">Für dieses Konto sind keine zusätzlichen Badges hinterlegt.</p>
-                )}
+                <div className="mt-4 flex flex-wrap items-start gap-3" aria-label="Kontobadges">
+                  <LearningEntitlementBadge />
+                  {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).map(badge => (
+                    <figure key={badge.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+                      <img src={badge.asset} alt="" className="h-14 w-14 rounded-xl object-contain" width={56} height={56} />
+                      <figcaption className="text-xs font-black tracking-wider text-slate-100">{badge.label}</figcaption>
+                    </figure>
+                  ))}
+                  <VocabularyAchievementBadge key={session.user?.id} />
+                </div>
               </>
             ) : (
               <p className="mt-3 text-sm text-slate-400">Abo- und Rollenstatus konnte nicht sicher geladen werden.</p>

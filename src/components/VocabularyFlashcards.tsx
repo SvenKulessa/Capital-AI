@@ -1,6 +1,7 @@
 import React from 'react';
 import { VOCABULARY_TERMS, type VocabularyTerm } from '../data/vocabularyData';
 import { VocabularyCard } from '../features/learning/VocabularyCard';
+import { vocabularyGameEndpoint, vocabularyReview } from '../features/learning/vocabularyReview';
 import { useLearningFavorites } from '../features/learning/LearningFavorites';
 
 /** Rotate through the current session deck without growing it. */
@@ -38,14 +39,23 @@ export function VocabularyFlashcards({ onNavigate, terms: suppliedTerms, entitle
   }, [terms]);
 
   const term = terms.find(candidate => candidate.id === deck[0]);
-  const next = () => {
+  const record = (known: boolean, swipe: boolean) => {
+    if (!term || !favorites.loaded || !favorites.authenticated) return;
+    void fetch(vocabularyGameEndpoint, {
+      method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10000),
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(vocabularyReview(term.id, known, swipe)),
+    }).catch(() => {});
+  };
+  const next = (swipe = false) => {
+    record(true, swipe);
     setDeck(current => advanceVocabularyDeck(current));
     setSeen(current => current + 1);
   };
-  const missed = async () => {
+  const missed = async (swipe = false) => {
     if (!term) return;
     if (favorites.pending) return;
     if (!await favorites.add(term.id)) return;
+    record(false, swipe);
     setFeedback(`${term.term} wurde im privaten Lernfeld gespeichert.`);
     setDeck(current => rescheduleMissedVocabulary(current));
     setSeen(current => current + 1);
@@ -80,8 +90,8 @@ export function VocabularyFlashcards({ onNavigate, terms: suppliedTerms, entitle
           pointerStart.current = null;setDrag(0);
           if (!start || start.id!==event.pointerId) return;
           const direction=vocabularySwipeDirection(event.clientX-start.x,event.clientY-start.y);
-          if(direction==='left') void missed();
-          if(direction==='right') {setFeedback(`${term.term}: bekannt. Nächste Karte.`);next();}
+          if(direction==='left') void missed(true);
+          if(direction==='right') {setFeedback(`${term.term}: bekannt. Nächste Karte.`);next(true);}
         }}
         onPointerCancel={() => { pointerStart.current = null;setDrag(0); }}
         onLostPointerCapture={() => { pointerStart.current = null;setDrag(0); }}
@@ -97,7 +107,7 @@ export function VocabularyFlashcards({ onNavigate, terms: suppliedTerms, entitle
           className="min-h-11 rounded-xl border border-rose-400/50 bg-rose-500/10 px-5 py-2 text-sm font-bold text-rose-200 focus-visible:outline-2 focus-visible:outline-rose-200 disabled:opacity-50">
           ← Weiß ich nicht
         </button>
-        <button type="button" disabled={favorites.pending} onClick={next}
+        <button type="button" disabled={favorites.pending} onClick={() => next()}
           className="min-h-11 rounded-xl bg-amber-400 px-5 py-2 text-sm font-bold text-slate-950 hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:opacity-50">
           Ist mir bekannt · Weiter →
         </button>
