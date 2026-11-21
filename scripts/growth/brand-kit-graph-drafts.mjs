@@ -179,6 +179,13 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
   const kit=readBrandKit(channel),context=assessContext(records,trustedRights),template=TEMPLATES[channel];
   const learning=evaluateGrowthLearningCandidates(feedback,{evaluatedAt});
   const svg=drawBrandedSvg({draft,kit,context,template}),imageSha=sha(Buffer.from(svg));
+  // Source summaries are quoted evidence, not instructions or publication-ready claims.
+  const contextLines=context.accepted.slice(0,3).map(entry=>'['+entry.id+'] '+entry.summary);
+  const copyDraft=contextLines.length ? draft.draftText+'\n\n'+
+    'Quellenkontext (redaktionell zu prüfen):\n'+contextLines.join('\n') : draft.draftText;
+  const textAsset=draft.socialPackage.assets.find(a=>a.kind==='TEXT');
+  if(!textAsset||draft.socialPackage.assets.length!==1)throw Error('BRAND_SOURCE_TEXT_ASSET_INVALID');
+  const approvedContextTextAsset={...textAsset,sha256:sha(Buffer.from(copyDraft,'utf8'))};
   const campaign={...draft.socialPackage.campaign,outputs:['TEXT','IMAGE','ANALYTICS']};
   const assetId=draft.contentId+'-universe-3x3-svg';
   const asset={assetId,contentId:draft.contentId,kind:'IMAGE',mimeType:'image/svg+xml',
@@ -192,13 +199,14 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
       origin:'FIRST_PARTY_TEMPLATE',creationMethod:'AI_ASSISTED',
       renderer:{id:'CAPITAL_AI_BRAND_CONTEXT_SVG',version:'1.0.0'},thirdPartyAssets:false}};
   const socialPackage=buildDraftContentSocialPackage({campaign,contentId:draft.contentId,
-    assets:[...draft.socialPackage.assets,asset]});
+    assets:[approvedContextTextAsset,asset]});
   const contentPlan=planContentCampaign(campaign,{originalGraphics:[asset.originalGraphic]});
   if(socialPackage.approvals.length||socialPackage.deliveries.length
     ||contentPlan.publication.publicPublishAllowed
     ||contentPlan.graphicLicenses?.some(x=>x.graphicUseAllowed||x.publicationAllowed))
     throw Error('BRAND_PUBLICATION_AUTHORITY_VIOLATION');
   return {contractVersion:CONTRACT,sourceSha256:bundle.sourceSha256,contentId:draft.contentId,channel,
+    copyDraft,
     template:{...template,version:'1.0.0',state:'DRAFT_ONLY'},
     image:{svg,sha256:imageSha,logoSha256:kit.logoSha256,profileSha256:kit.profileSha256,
       profilePath:kit.profilePath,
