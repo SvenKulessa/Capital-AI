@@ -48,6 +48,8 @@
 }
 .editorial-text { color: var(--editorial-muted); line-height: 1.6; }
 .editorial-context { margin-top: .75rem; color: #e5ecf6; }
+.editorial-graphic--rendered-png img { display: block; width: 100%; height: auto; border-radius: .6rem; }
+.editorial-card--briefing, .editorial-card--comparison { grid-template-rows: auto 1fr auto auto; }
 .editorial-card footer {
   display: flex;
   flex-wrap: wrap;

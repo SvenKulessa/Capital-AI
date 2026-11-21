@@ -131,6 +131,7 @@
 !server/cads-observability.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/solo2-config.mjs
 !shared/hub-routes.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
@@ -314,6 +315,9 @@
 !docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
+!public/editorial/
+!public/editorial/news/
+!public/editorial/news/*.png
 !public/bootstrap-failure.js
 !public/datenschutz/
 !public/datenschutz/index.html
@@ -495,6 +499,8 @@
 !server/historical-analytics-demo.mjs
 !server/historical-analytics-demo.test.mjs
 !server/auth.test.mjs
+!scripts/solo2-config.mjs
+!scripts/solo2-config.test.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
