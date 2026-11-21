@@ -4,10 +4,19 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readCommerceState } from './commerceState';
 import { MonetizationModal } from './MonetizationModal';
+import { NewsDesignCatalog } from './NewsDesignCatalog';
 import { CommerceEntryContent } from '../home/CommerceEntrySection';
 import { LANGUAGES } from '../../i18n/messages';
 
 const signal = new AbortController().signal;
+
+test('news design catalog offers four selectable layouts through a price inquiry', () => {
+  const html = renderToStaticMarkup(<NewsDesignCatalog />);
+  for (const layout of ['Titelbild', 'Kurzbriefing', 'Zeitachse', 'Vergleich']) assert.match(html, new RegExp(layout));
+  assert.match(html, /Preis auf Anfrage/);
+  assert.match(html, /mailto:support@capital-ai.online/);
+  assert.doesNotMatch(html, /checkout|price_[A-Za-z0-9]/i);
+});
 function response(authenticated: unknown, enabled: unknown): typeof fetch {
   return async input => Response.json(String(input).endsWith('/session') ? { authenticated } : { enabled });
 }

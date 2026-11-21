@@ -1,9 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {mkdir, mkdtemp, rm, writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import edition from './homeEditorialEdition.json';
 import {planContentCampaign} from '../../contracts/contentEngine.ts';
-import {projectHomeEditorial} from './homeEditorialAdmission.mjs';
+import {homeRightsAdmitted, projectHomeEditorial} from './homeEditorialAdmission.mjs';
+import {validateHomeEditorialAssets} from './validateHomeEditorialAssets.ts';
+import {buildHomeEditorialDraft} from '../../../scripts/media/home-editorial-draft.mts';
+import {ORIGINAL_GRAPHIC_LICENSE_ID, ORIGINAL_GRAPHIC_LICENSE_VERSION, type OriginalGraphicOwnerGrant} from '../../contracts/originalGraphicLicense.ts';
 import {
   HOME_EDITORIAL_REVIEW_VERSION, HOME_RIGHTS_USE_CASES,
   homeReviewContentSnapshot,
@@ -36,6 +42,63 @@ function fixtureReviews(editionFixture: ReturnType<typeof clone>) {
     }))
   );
 }
+
+test('real render and Content Engine draft bind graphic bytes without granting publication', async () => {
+  const draft = await buildHomeEditorialDraft({
+    candidate: clone().stories[1], sourceBytes: new TextEncoder().encode('Test-only source snapshot'),
+    asOf: day, observedAt: '2026-11-15T12:00:00Z', sourceSha: 'a'.repeat(40), layout: 'timeline',
+    recipe: {format: 'landscape', title: 'Netzwerkstatus', eyebrow: 'TEST',
+      subtitle: 'Stand der Testumgebungen', rows: [
+        {title: 'Testnet', lines: ['Reset geplant']}, {title: 'Devnet', lines: ['Reset geplant']},
+        {title: 'Mainnet', lines: ['Keine Änderung']},
+      ], note: 'Statusbeispiel', sourceLabel: 'Testquelle', altText: 'Testnet und Devnet werden zurückgesetzt.'},
+  });
+  const {story} = draft.manifest;
+  const asset = draft.manifest.provenance.asset;
+  assert.equal(draft.manifest.plan.cadsQuality.technicalStatus, 'PASS');
+  assert.equal(draft.manifest.plan.graphicLicenses?.[0].state, 'REVIEW_REQUIRED');
+  assert.equal(draft.manifest.socialPackage.assets.length, 2);
+  assert.equal(draft.manifest.socialPackage.approvals.length, 0);
+  assert.equal(draft.manifest.publicPublishAllowed, false);
+  assert.equal(asset.sha256, createHash('sha256').update(draft.png).digest('hex'));
+  assert.equal(homeRightsAdmitted(story), false);
+
+  // Fixture-only rights exercise the release guard; no actual owner evidence is generated.
+  const approved = {...story, evidence: {...story.evidence, rights: {
+    story: {...allowed}, source: {...allowed}, graphic: {...allowed},
+  }}};
+  const reviews = (['story', 'source', 'graphic'] as const).map(kind => ({
+    reviewVersion: HOME_EDITORIAL_REVIEW_VERSION, decision: 'APPROVED', storyId: story.id, kind,
+    allowedUse: kind === 'graphic' ? 'FIRST_PARTY_RENDERED_GRAPHIC' : HOME_RIGHTS_USE_CASES[kind],
+    evidenceRef: allowed.evidenceRef, reviewedAt: allowed.reviewedAt, contentSnapshot: homeReviewContentSnapshot(approved),
+    ...(kind === 'graphic' ? {graphicGrantId: 'test-grant'} : {}),
+  }));
+  const grant: OriginalGraphicOwnerGrant = {
+    contractVersion: ORIGINAL_GRAPHIC_LICENSE_VERSION, licenseId: ORIGINAL_GRAPHIC_LICENSE_ID,
+    grantId: 'test-grant', grantedBy: 'OWNER', ownerName: 'Fixture only', authorizationEvidenceRef: 'TEST_ONLY',
+    authorizedAt: '2026-11-14T00:00:00Z', decision: 'LICENSED', asset, allowedChannels: ['WEBSITE'],
+    aiAssistanceDisclosed: true,
+  };
+  const root = await mkdtemp(join(tmpdir(), 'home-editorial-test-'));
+  try {
+    const path = join(root, draft.manifest.targetPath.slice(1));
+    await mkdir(join(root, 'editorial/news'), {recursive: true});
+    await writeFile(path, draft.png);
+    await assert.rejects(validateHomeEditorialAssets([story], day, root, [], []), /OWNER_RIGHTS/);
+    await assert.rejects(validateHomeEditorialAssets([approved], day, root, reviews, []), /OWNER_RIGHTS/);
+    await assert.rejects(validateHomeEditorialAssets([approved], day, root, reviews, [{...grant, decision:'REVOKED'}]), /OWNER_RIGHTS/);
+    await assert.rejects(validateHomeEditorialAssets([approved], day, root, reviews, [{...grant, allowedChannels:['X']}]), /OWNER_RIGHTS/);
+    await validateHomeEditorialAssets([approved], day, root, reviews, [grant]);
+    await assert.rejects(validateHomeEditorialAssets([{...approved, title: 'Geänderter Text'}], day, root, reviews, [grant]), /CONTENT_MISMATCH/);
+    await assert.rejects(validateHomeEditorialAssets([], day, root, [], []), /UNAPPROVED_PUBLIC_ASSET/);
+    const changedBytes = Buffer.from(draft.png);
+    changedBytes[changedBytes.length - 1] ^= 1;
+    await writeFile(path, changedBytes);
+    await assert.rejects(validateHomeEditorialAssets([approved], day, root, reviews, [grant]), /BYTES_MISMATCH/);
+  } finally {
+    await rm(root, {recursive: true, force: true});
+  }
+});
 test('homepage uses actual verified Content Engine plan and keeps publication disabled',()=>{
   const plan = planContentCampaign(edition.contentEngine.campaign);
   assert.equal(plan.contractVersion,'CAPITAL_AI_CONTENT_ENGINE@1');
