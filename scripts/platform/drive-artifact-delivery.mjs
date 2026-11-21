@@ -135,24 +135,24 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
         mimeType:MIME[request.extension],mode:'CREATE_ONLY',sha256:hash
       });
       if(!uploaded || !validId(uploaded.id))return deny('UPLOAD_RESULT_UNVERIFIED',
-        {route:'VERIFIED',sha256:hash});
+        {route:'VERIFIED',localSha256:hash});
       const meta=await provider.getFile(uploaded.id);
       verifyFile(meta,uploaded.id,planned.filename,folderId);
       const remoteBytes=await provider.readFileBytes(uploaded.id);
       if(!bytesOk(remoteBytes)||digest(remoteBytes)!==hash)
         return deny('POST_UPLOAD_CONTENT_MISMATCH',{fileId:uploaded.id,route:'VERIFIED',
-          driveUpload:'NOT_PROVEN',driveParent:'VERIFIED',sha256:hash});
+          driveUpload:'NOT_PROVEN',driveParent:'VERIFIED',localSha256:hash});
       const after=await listComplete(provider,folderId);
       if(after.filter(f=>f.name.toLowerCase()===planned.filename.toLowerCase()).length!==1 ||
          !after.some(f=>f.id===uploaded.id && f.name===planned.filename))
         return deny('POST_UPLOAD_DUPLICATE_OR_MISSING',{fileId:uploaded.id,route:'VERIFIED',
-          driveUpload:'NOT_PROVEN',driveParent:'VERIFIED',sha256:hash});
+          driveUpload:'NOT_PROVEN',driveParent:'VERIFIED',localSha256:hash});
       return {status:'VERIFIED_CREATED',filename:planned.filename,fileId:uploaded.id,
         folderId,sha256:hash,route:'VERIFIED',driveUpload:'VERIFIED',
         driveParent:'VERIFIED',contentReadback:'VERIFIED',deviceSync:'NOT_PROVEN'};
     });
   }catch{
     // Do not leak provider errors/tokens or retry a potentially completed write.
-    return deny('CONNECTOR_OR_EXCLUSIVE_LEASE_FAILED',{sha256:hash});
+    return deny('CONNECTOR_OR_EXCLUSIVE_LEASE_FAILED',{localSha256:hash});
   }
 }
