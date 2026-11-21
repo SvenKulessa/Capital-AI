@@ -35,7 +35,10 @@ test('AES-GCM cookie binds to authenticated account; no secret in JSON or logs',
   const value=cookie.split(';')[0];
   assert.equal((await invoke({cookie:value})).response.body.connected,true);
   assert.equal((await invoke({cookie:value,uid:UID2})).response.body.connected,false);
-  assert.equal((await invoke({cookie:value.replace(/.$/,'x')})).response.body.connected,false);
+  // Alter a significant authenticated byte, not ignored trailing base64url pad bits.
+  const altered=value.replace(/^(.*?=)([A-Za-z0-9_-])/,(_,prefix,head)=>prefix+(head==='A'?'B':'A'));
+  assert.notEqual(altered,value);
+  assert.equal((await invoke({cookie:altered})).response.body.connected,false);
 });
 test('explicit consent required and bounded synthetic provider response',async()=>{
   const saved=await invoke({method:'POST',body:{apiKey:fakeKey}});
