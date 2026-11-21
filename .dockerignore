@@ -133,6 +133,7 @@
 !shared/
 !shared/solo2-config.mjs
 !shared/solo2-commercial-policy.mjs
+!shared/solo2-commercial-policy.test.mjs
 !shared/hub-routes.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
