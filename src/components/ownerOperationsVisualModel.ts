@@ -1,5 +1,5 @@
 import {
-  AGENT_ROLES, agentFromTitle, ga4EventCount, isVerified,
+  AGENT_ROLES, agentFromTitle, ga4EventCount, ga4RealtimeEventCount, isVerified,
   type DashboardReadback, type AgentRole,
 } from './ownerOperationsModel';
 
@@ -94,8 +94,11 @@ export function ownerAgentRows(snapshot: DashboardReadback) {
 export function ownerGa4Metrics(snapshot: DashboardReadback) {
   return {
     views: ga4EventCount(snapshot, 'page_view'),
+    sessionStarts: ga4EventCount(snapshot, 'session_start'),
+    viewedItems: ga4EventCount(snapshot, 'view_item'),
     leads: ga4EventCount(snapshot, 'generate_lead'),
     purchaseEvents: ga4EventCount(snapshot, 'purchase'),
+    realtimeViews: ga4RealtimeEventCount(snapshot, 'page_view'),
     confirmedRevenue: null as null,
   };
 }

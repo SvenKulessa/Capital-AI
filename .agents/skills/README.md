@@ -39,4 +39,25 @@ Die bestehenden Domain-Skill-Tests sowie das reguläre `npm test` führen diese 
 
 ## Additives Ownership-Modell
 
-Die bisherige Liste der zehn gemeinsamen Spezialisten und ihre Routing-Evaluation bleiben für bestehende Chat-Agenten unverändert. Weitere fünf Fach-Skills werden über `registry.json#domains.*.ownedSkills` auffindbar. Die eindeutige, verantwortliche Domain für **alle** Skills liegt in `registry.json#skillGovernance`; andere `leadDomains` bleiben nicht-autorisierende fachliche Nutzung. Die Dokumenttrilogie ist für alle Skills vorgeschrieben. Mit `npm run validate:all` werden Struktur, Ownership, Referenzen und Readiness fail-closed geprüft, ohne weitere GitHub Required Checks.
+Die bisherige Liste der zehn gemeinsamen Spezialisten und ihre Routing-Evaluation bleiben für bestehende Chat-Agenten unverändert. Weitere Fach-Skills werden über `registry.json#domains.*.ownedSkills` auffindbar. Die eindeutige, verantwortliche Domain für **alle** Skills liegt in `registry.json#skillGovernance`; andere `leadDomains` bleiben nicht-autorisierende fachliche Nutzung. Die Dokumenttrilogie ist für alle Skills vorgeschrieben. Mit `npm run validate:all` werden Struktur, Ownership, Referenzen und Readiness fail-closed geprüft, ohne weitere GitHub Required Checks.
+
+## Quelleninventar und Bundle-Katalog
+
+Die Registry enthält versionierte Angebotskandidaten für drei Kundensegmente. Bundles kombinieren feste Kernleistungen, optionale Skills und wählbare Verbindungsprofile. Die Auswahl erzeugt einen prüfbaren Leistungsumfang und weder Checkout noch Zugriff.
+
+| Bundle | Zielgruppe | Angebotsmodell | Verbindungsprofile |
+|---|---|---|---|
+| founder-launch | Founder | Angebot mit festem Pilotumfang | API/Webhook, MCP |
+| b2b-integration | B2B-Teams | Setup- und Abonnement-Angebot | API/Webhook, MCP, A2A |
+| enterprise-orchestration | Enterprise | Vertragsangebot | API/Webhook, MCP, A2A, OIDC-SSO, SCIM |
+
+    node scripts/skill-bundles.mjs --audit
+    node scripts/skill-bundles.mjs --probe
+    node scripts/skill-bundles.mjs --bundle '{"bundleId":"b2b-integration","addOns":["platform-observability"],"connections":["api-webhook","a2a-workflow"]}'
+    node scripts/skill-routing.mjs --plan --domain PLATFORM "Skill Inventar und MCP Adapter prüfen"
+
+Die Verbindungsprofile beschreiben Protokollquellen und Abnahmeschritte. Für einen E2E-Nachweis gehören ein autorisierter Sandbox-Tenant, die konkrete Adapterversion sowie beobachtete Ereignisse vom Identitätsnachweis über die erlaubte Aktion bis zu Widerruf und Rückbau zum Nachweis. A2A-Workflows erfassen außerdem einen beobachteten Task-Abbruch und Trace-Korrelation. Offene kommerzielle Rechte, Daten-/Modelllizenzen, Entitlement-Zuordnung, Preise, Kostenrahmen und Live-Betrieb behalten ihren eigenen Nachweisstatus.
+
+Die vorhandene **Daily Dependency and CVE Watch** protokolliert Erreichbarkeit, Textanker und fällige Quellenreviews im bestehenden Run-Artefakt. Ein gefundener Textanker belegt nur den Abruf. Für ein Review liest die zuständige Domain die offizielle Spezifikation und relevante Release Notes oder Rechtsänderungen, prüft die Anwendbarkeit und aktualisiert Version sowie Prüfdatum im normalen Repository-Workflow. Ein nicht unterstützter Redirect, fehlender Anker, abgelaufener oder fehlender Nachweis bleibt sichtbar. Produktive Implementierung und rechtliche Anwendbarkeit brauchen jeweils eigene Evidence.
+
+**Bewertungsgrundlage.** Die unveränderten 76 kuratierten Aufgaben prüfen das Legacy-Signal-Routing. Zusätzlich decken Regressionstests neue Signale, falsche Bundle-Auswahl, Review-Datumsgrenzen und Quellenfehler ab. Struktur- und Routing-Ergebnisse liefern keine Messwerte zur tatsächlichen Skill-Ausführung. Dafür fordert der Skill agent-evaluation eine belegte Run-ID, die Skill-ID, Zeiten und eine Quellreferenz. Reine Empfehlungen bleiben als solche sichtbar.

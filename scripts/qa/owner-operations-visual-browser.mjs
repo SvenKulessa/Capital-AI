@@ -107,6 +107,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
       ownerTitle:!!root,headline:document.querySelector('h1')?.textContent,
       kpis:root?.querySelectorAll('.ops-mock-kpi').length||0,
       panels:root?.querySelectorAll('.ops-mock-card').length||0,
+      ga4Cards:root?.querySelectorAll('.ops-mock-ga4-metric').length||0,
       agents:root?.querySelectorAll('.ops-mock-agent').length||0,
       donut:!!root?.querySelector('.ops-mock-donut'),
       lineSvg:!!root?.querySelector('.ops-mock-chart-area svg'),
@@ -125,7 +126,7 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
   checks.push(row);
   if(state.scrollWidth>width+2)failures.push(tag+': viewport horizontal overflow');
   if(expected){
-    if(!state.ownerTitle||state.kpis!==4||state.panels!==4||state.agents!==6||!state.donut||(role!=='missing'&&!state.lineSvg))
+    if(!state.ownerTitle||state.kpis!==4||state.panels!==5||state.ga4Cards!==6||state.agents!==6||!state.donut||(role!=='missing'&&!state.lineSvg))
       failures.push(tag+': owner operations visual elements missing');
     if(!state.rootBounds||state.rootBounds.right>width+2)failures.push(tag+': owner operations panel exceeds viewport');
     if(route==='/profile/dashboard' && (!state.ownerTabSelected || state.path!=='/profile/dashboard'))
@@ -139,27 +140,147 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
   }else if(state.ownerTitle||!state.unauthorizedMessage)
     failures.push(tag+': owner-only content displayed for non-owner');
   if(expected){
-    const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
-    await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
-    if(role==='owner'&&width===390){
-      const touch=await evaluate(`(() => {
-        const element=[...document.querySelectorAll('[role="tab"]')].find(e=>e.textContent.includes('Evidence'));
-        if(!element)return null;
-        element.scrollIntoView({block:'center'});
-        const r=element.getBoundingClientRect();
-        return {x:r.x+r.width/2,y:r.y+r.height/2};
+    if(role==='owner'&&width===390&&route==='/profile/dashboard'){
+      // Native touch admission exercises the actual owner navigation route.
+      // Standalone provider fixture receives layout QA but its touch remains NOT_PROVEN.
+      // Chrome 157 evidence: JS scrollY was 2725 but the first real
+      // touchStart hit-tested at 478; touchEnd then observed scrollY 2725.
+      // Flush the compositor input state with a CANCELLED native touch on a
+      // verified non-interactive viewport corner. No click or tab selection.
+      await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
+      const found=await evaluate(`(() => {
+        const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
+        if(!element)return false;
+        element.scrollIntoView({behavior:'instant',block:'center',inline:'nearest'});
+        return true;
       })()`);
-      if(!touch)failures.push(tag+': Evidence tab inaccessible');
+      if(!found)failures.push(tag+': Evidence tab inaccessible');
       else{
-        await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
-        await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[touch]});
-        await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-        await wait(200);
-        const selected=await evaluate("!![...document.querySelectorAll('[role=tab]')].find(e=>e.textContent.includes('Evidence')&&e.getAttribute('aria-selected')==='true')");
-        if(!selected)failures.push(tag+': native touch did not activate Evidence tab');
-        await send('Emulation.setTouchEmulationEnabled',{enabled:false});
+        const neutral=await evaluate(`(() => {
+          // A fixed-position skip-link or overlay can occupy (2,2); resolve
+          // against the actual hit-tested viewport rather than assuming a corner.
+          const candidates=[[8,450],[382,450],[195,16],[195,884],[8,16],[382,884],
+            [20,300],[370,300],[20,650],[370,650]];
+          for(const [x,y] of candidates){
+            if(x>=innerWidth||y>=innerHeight)continue;
+            const hit=document.elementFromPoint(x,y);
+            if(hit && !hit.closest('a,button,input,select,textarea,[role="button"],[role="tab"],[tabindex]:not([tabindex="-1"])'))
+              return {x,y};
+          }
+          return null;
+        })()`);
+        if(!neutral)failures.push(tag+': safe compositor synchronization point unavailable');
+        else{
+          await send('Input.dispatchTouchEvent',{
+            type:'touchStart',touchPoints:[{x:neutral.x,y:neutral.y,radiusX:1,radiusY:1,force:1}],
+          });
+          await send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+          await wait(180);
+        }
+        // On long mobile dashboards the document may continue moving after
+        // scrollIntoView. Admit touch only after both viewport and target box
+        // remain stable across repeated animation frames; never DOM-click.
+        const settled=await evaluate(`(async () => {
+          const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
+          if(!element)return false;
+          let previous='',stableFrames=0;
+          for(let i=0;i<90;i++){
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+            const r=element.getBoundingClientRect();
+            const signature=[scrollX,scrollY,r.left,r.top,r.width,r.height].map(v=>Math.round(v*2)/2).join(':');
+            stableFrames=signature===previous?stableFrames+1:0;
+            if(stableFrames>=12)return true;
+            previous=signature;
+          }
+          return false;
+        })()`);
+        if(!settled)failures.push(tag+': mobile Evidence tab layout never settled before native touch');
+        if(settled){
+          // Chrome 157 can dispatch the touchstart against the *previous* compositor
+          // scroll offset even when scrollY/getBoundingClientRect are already stable.
+          // Flush a viewport-only compositor frame before native input; never click
+          // the tab programmatically or accept the screenshot as touch evidence.
+          await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+          await wait(120);
+        }
+        const touch=settled&&neutral?await evaluate(`(() => {
+          const element=[...document.querySelectorAll('button[role="tab"]')].find(e=>e.textContent.trim()==='Evidence');
+          if(!element)return null;
+          const r=element.getBoundingClientRect();
+          const x=r.left+r.width/2, y=r.top+r.height/2;
+          const hit=document.elementFromPoint(x,y);
+          return {x,y,hit:!!hit && (hit===element || element.contains(hit)),
+            withinViewport:x>=0 && x<innerWidth && y>=0 && y<innerHeight,
+            scrollY:Math.round(window.scrollY)};
+        })()`):null;
+        if(!touch?.withinViewport||!touch.hit)failures.push(tag+': Evidence tab native touch target obscured or outside viewport');
+        else{
+          // Record event *types only*, never session data, to distinguish real
+          // touch-delivery failures from delayed click activation or rerenders.
+          await evaluate(`(() => {
+            window.__qaTouchEvents=[];
+            for(const type of ['pointerdown','pointerup','touchstart','touchend','click']){
+              document.addEventListener(type,event=>{
+                if(window.__qaTouchEvents.length<12)window.__qaTouchEvents.push({
+                  type,role:event.target?.closest?.('[role="tab"]')?.getAttribute('role')||'other',
+                  trusted:event.isTrusted===true,
+                  targetTag:event.target?.tagName||'unknown',
+                  targetClass:typeof event.target?.className==='string'?event.target.className.slice(0,100):null,
+                  targetId:typeof event.target?.id==='string'?event.target.id.slice(0,80):null,
+                  x:Math.round((event.changedTouches?.[0]?.clientX ?? event.clientX ?? -1)*10)/10,
+                  y:Math.round((event.changedTouches?.[0]?.clientY ?? event.clientY ?? -1)*10)/10,
+                  scrollY:Math.round(window.scrollY),
+                  targetTop:Math.round(event.target?.getBoundingClientRect?.().top??-1),
+                  hitRole:document.elementFromPoint(event.changedTouches?.[0]?.clientX ?? event.clientX ?? -1,
+                    event.changedTouches?.[0]?.clientY ?? event.clientY ?? -1)?.closest?.('[role="tab"]')?.getAttribute('role')||'other'
+                });
+              },{capture:true});
+            }
+            return true;
+          })()`);
+          // Input.dispatchTouchEvent gives Chrome 157 explicit viewport-CSS
+          // touchStart/touchEnd, rather than delegating compositor placement to
+          // synthesizeTapGesture. This is still native CDP touch, never DOM .click().
+          // Local isolated Chrome 144 reproduction: synthesizeTapGesture missed the
+          // button click, while dispatchTouchEvent completed it.
+          await send('Input.dispatchTouchEvent',{
+            type:'touchStart',touchPoints:[{x:touch.x,y:touch.y,radiusX:1,radiusY:1,force:1}],
+          });
+          await wait(110);
+          await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+          let selected=false;
+          for(let attempt=0;attempt<20;attempt++){
+            selected=await evaluate("!![...document.querySelectorAll('button[role=tab]')].find(e=>e.textContent.trim()==='Evidence'&&e.getAttribute('aria-selected')==='true')");
+            if(selected)break;
+            await wait(150);
+          }
+          const verifiedNativeTarget=await evaluate(`(() => (
+            (window.__qaTouchEvents||[]).some(e=>e.type==='touchstart' &&
+              e.role==='tab' && e.trusted===true)
+          ))()`);
+          if(!selected||!verifiedNativeTarget){
+            const events=await evaluate("window.__qaTouchEvents||[]");
+            const metrics=await evaluate(`(() => ({innerWidth,innerHeight,scrollX,scrollY,
+              offsetX:visualViewport?.offsetLeft??null,offsetY:visualViewport?.offsetTop??null,
+              pageTop:visualViewport?.pageTop??null,scale:visualViewport?.scale??null}))()`);
+            const cdp=await send('Page.getLayoutMetrics');
+            const view=cdp.cssVisualViewport||{};
+            const layout=cdp.cssLayoutViewport||{};
+            const compositor={visual:{offsetX:view.offsetX,offsetY:view.offsetY,pageX:view.pageX,
+              pageY:view.pageY,scale:view.scale,clientWidth:view.clientWidth,clientHeight:view.clientHeight},
+              layout:{pageX:layout.pageX,pageY:layout.pageY,clientWidth:layout.clientWidth,
+                clientHeight:layout.clientHeight}};
+            failures.push(tag+': native touch did not activate Evidence tab · '+JSON.stringify({selected,verifiedNativeTarget,events,target:touch,metrics,compositor}));
+          }
+          await send('Emulation.setTouchEmulationEnabled',{enabled:false});
+        }
       }
     }
+    // Capture the full-page screenshot after native touch QA: Chrome may change
+    // compositor viewport metrics during captureBeyondViewport, making an
+    // immediately subsequent synthetic tap hit a different composited target.
+    const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,fromSurface:true});
+    await writeFile(join(output,'owner-operations-'+tag+'.png'),Buffer.from(shot.data,'base64'));
     if(role==='owner'&&width===320){
       await evaluate("document.documentElement.style.fontSize='200%'");
       await wait(180);
@@ -241,7 +362,9 @@ async function run() {
   const report={schema:'CAPITAL_AI_OWNER_VISUAL_BROWSER_QA@1',
     source:'BUILT_VITE_PREVIEW_WITH_ISOLATED_API_FIXTURES',realOwnerSession:false,
     productionProviderData:false,realTenantIsolation:'NOT_PROVEN',
-    widths:[320,390,1440],checks,failures,status:failures.length?'FAIL':'PASS'};
+    widths:[320,390,1440],nativeTouchRoute:'/profile/dashboard',
+    standaloneProviderRouteNativeTouch:'NOT_PROVEN',
+    checks,failures,status:failures.length?'FAIL':'PASS'};
   await writeFile(join(output,'audit.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify({status:report.status,checks:checks.length,failures,
     screenshots:['owner-operations-owner-320.png','owner-operations-owner-390.png','owner-operations-owner-1440.png',

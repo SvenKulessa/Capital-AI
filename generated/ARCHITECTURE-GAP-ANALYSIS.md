@@ -5,9 +5,10 @@
 ## Vorhandene Enterprise Fähigkeiten
 
 - Fünf bestehende Domains mit Engineering-/Advisory-Skills und Chat-Agent-Profilen.
-- Zehn geteilte Enterprise-Spezialisten mit deterministischem Signal-Routing und 41 synthetischen Testfällen.
+- Zehn geteilte Enterprise-Spezialisten mit deterministischem Signal-Routing und 76 kuratierten Testfällen.
 - Registry als Single Source of Truth, eindeutige Ownership, dokumentierte Trust Boundaries und Fail-Closed-Anforderungen.
 - Offline-Validierung für strukturelle Konsistenz, Security-Dokumentation, Evidence und Governance.
+- Quelleninventar mit Review-Fälligkeit und Angeboten für Founder, B2B und Enterprise.
 
 ## Fehlende oder nicht nachgewiesene Enterprise Fähigkeiten
 

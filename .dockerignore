@@ -12,6 +12,10 @@
 !.agents/
 !.agents/skills/
 !.agents/skills/**
+!.agents/app.prompt.json
+!.agents/contracts/
+!.agents/contracts/acode-shared-delivery.json
+!.agents/contracts/drive-artifact-routing.json
 !.github/
 !.github/agents/
 !.github/workflows/
@@ -130,7 +134,11 @@
 !server/cads-observability.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/solo2-config.mjs
+!shared/solo2-commercial-policy.mjs
+!shared/solo2-commercial-policy.test.mjs
 !shared/hub-routes.mjs
+!shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -179,6 +187,12 @@
 !scripts/growth/learning-content-draft.mjs
 !scripts/growth/growth-intelligence-drafts.mjs
 !scripts/growth/growth-intelligence-drafts.test.mjs
+!scripts/growth/growth-intelligence-image-drafts.mjs
+!scripts/growth/growth-intelligence-image-drafts.test.mjs
+!scripts/growth/brand-kit-graph-drafts.mjs
+!scripts/growth/brand-kit-graph-drafts.test.mjs
+!scripts/growth/next-round-planner.mjs
+!scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs
@@ -207,6 +221,8 @@
 !scripts/independent-review-manifest.test.mjs
 !scripts/picomatch-runtime-isolation.test.mjs
 !scripts/domain-skills.test.mjs
+!scripts/ten-pr-github-evidence.mjs
+!scripts/ten-pr-github-evidence.test.mjs
 !scripts/solo-maintainer-flow.test.mjs
 !scripts/universe-hero.test.mjs
 !scripts/market-blueprint-demo.test.mjs
@@ -305,6 +321,9 @@
 !docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
+!public/editorial/
+!public/editorial/news/
+!public/editorial/news/*.png
 !public/bootstrap-failure.js
 !public/datenschutz/
 !public/datenschutz/index.html
@@ -328,6 +347,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/branding/learning-universe/
+!public/branding/learning-universe/*.svg
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
 !public/branding/universe/hero-universe-desktop.webp
@@ -338,10 +359,16 @@
 !public/assets/jaja-avatar-transparent.webp
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
+!CAPITAL-AI-PRODUCT/domain.prompt.json
+!CAPITAL-AI-PRODUCT/PROJECT.md
 !CAPITAL-AI-TRUST/
 !CAPITAL-AI-TRUST/badge.svg
+!CAPITAL-AI-TRUST/domain.prompt.json
+!CAPITAL-AI-TRUST/PROJECT.md
 !CAPITAL-AI-MARKET/
 !CAPITAL-AI-MARKET/badge.svg
+!CAPITAL-AI-MARKET/domain.prompt.json
+!CAPITAL-AI-MARKET/PROJECT.md
 !CAPITAL-AI-GROWTH/
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
 !CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
@@ -352,10 +379,14 @@
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
 !CAPITAL-AI-GROWTH/badge.svg
+!CAPITAL-AI-GROWTH/domain.prompt.json
+!CAPITAL-AI-GROWTH/PROJECT.md
 !CAPITAL-AI-GROWTH/growth-intelligence/
 !CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json
 !CAPITAL-AI-PLATFORM/
 !CAPITAL-AI-PLATFORM/badge.svg
+!CAPITAL-AI-PLATFORM/domain.prompt.json
+!CAPITAL-AI-PLATFORM/PROJECT.md
 
 !supabase/
 !supabase/email-templates/
@@ -476,9 +507,18 @@
 !server/historical-analytics-demo.mjs
 !server/historical-analytics-demo.test.mjs
 !server/auth.test.mjs
+!scripts/solo2-config.mjs
+!scripts/solo2-config.test.mjs
+# Offline artifact routing tests/metadata only; no credentials or transfer clients.
+!scripts/platform/
+!scripts/platform/drive-artifact-router.mjs
+!scripts/platform/drive-artifact-router.test.mjs
+!scripts/platform/drive-artifact-delivery.mjs
+!scripts/platform/drive-artifact-delivery.test.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
+!scripts/skill-bundles.mjs
 !scripts/skill-routing-evaluation.mjs
 !scripts/skill-routing-cases.json
 !scripts/skill-routing-challenges.json

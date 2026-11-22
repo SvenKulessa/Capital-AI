@@ -61,7 +61,7 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "fdeb58f4a35103b1818463166f87afca20b9347f",
+      "blobSha": "777e2d34142401f7d1efc6c2e01dd71e4313155e",
       "role": "Current scoring execution boundary",
       "recorrelatedAt": "2026-10-08",
       "recorrelationBaseMain": "e94d47cddde8ae32da749d08bc161daad323b914",

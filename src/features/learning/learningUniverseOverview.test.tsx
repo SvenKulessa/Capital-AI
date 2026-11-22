@@ -6,6 +6,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { LEARNING_ARTICLES } from '../../data/learningArticles';
 import { LearningUniverseOverview } from './LearningUniverseOverview';
+import { LearningSimulatorUniverseStage } from './LearningSimulatorUniverseStage';
+import { LEARNING_EARTH_ATOMS, LEARNING_EARTH_LESSONS, learningEarthLesson, canStartLearningEarth } from './learningSimulatorUniverseModel.mjs';
 import { LEARNING_UNIVERSE_ATOMS, filterLearningUniverseAtoms } from './learningUniverseModel.mjs';
 
 test('seven Learning Hub atoms use the canonical seven-color Universe tokens exactly once', () => {
@@ -54,6 +56,42 @@ test('responsive style contracts include narrow mobile, tablet, focus and reduce
   const css = readFileSync(new URL('./learningUniverseOverview.css', import.meta.url), 'utf8');
   for (const expected of ['max-width: 1199px', 'max-width: 860px', 'max-width: 560px', 'max-width: 360px', 'prefers-reduced-motion: reduce', ':focus-visible']) {
     assert.ok(css.includes(expected), expected);
+  }
+  assert.doesNotMatch(css, /overflow-x:\s*hidden\s*!important/);
+});
+
+
+test('Learning Simulator Universe SSR exposes accessible controls, fallback and canonical seven-color atoms', () => {
+  const html = renderToStaticMarkup(<LearningSimulatorUniverseStage />);
+  assert.match(html, /data-learning-universe-simulator="v1"/);
+  assert.match(html, /JaJa Universe Buddy öffnen/);
+  assert.match(html, /Zum Portfolio-Simulator/);
+  assert.match(html, /hero-universe-globe\.webp/);
+  assert.match(html, /Stilisierte CAPITAL-AI-Erde/);
+  assert.match(html, /Keine Live-Marktdaten/);
+  assert.equal((html.match(/data-universe-atom=/g) ?? []).length, 7);
+  assert.doesNotMatch(html, /<canvas|jaja-figure\.glb|GA4_|GOOGLE_ANALYTICS_/);
+  assert.equal(LEARNING_EARTH_ATOMS.length, 7);
+  assert.deepEqual(new Set(LEARNING_EARTH_ATOMS.map(atom => atom.color)), new Set(Object.values(BRAND_COLORS)));
+});
+
+test('Universe learning prompts remain bounded, synthetic and read-only', () => {
+  assert.equal(LEARNING_EARTH_LESSONS.length, 3);
+  assert.deepEqual(new Set(LEARNING_EARTH_LESSONS.map(x => x.id)).size, 3);
+  assert.equal(learningEarthLesson('untrusted').id, LEARNING_EARTH_LESSONS[0].id);
+  assert.equal(canStartLearningEarth({ requested: true, reducedMotion: true }), false);
+  assert.equal(canStartLearningEarth({ requested: false, reducedMotion: false }), false);
+  assert.equal(canStartLearningEarth({ requested: true, reducedMotion: false }), true);
+});
+
+test('Universe stage CSS is responsive, keyboard-readable, reduced-motion-safe and uses seven brand colors', () => {
+  const css = readFileSync(new URL('./learningSimulatorUniverse.css', import.meta.url), 'utf8');
+  for (const [key, color] of Object.entries(BRAND_COLORS)) {
+    assert.ok(css.includes('--u-' + key + ': ' + color), key);
+    assert.ok(css.includes('.learning-sim-universe-atom--' + key), key);
+  }
+  for (const token of ['max-width: 860px', 'max-width: 390px', 'max-width: 320px', 'prefers-reduced-motion: reduce', ':focus-visible', 'min-height: 44px']) {
+    assert.ok(css.includes(token), token);
   }
   assert.doesNotMatch(css, /overflow-x:\s*hidden\s*!important/);
 });

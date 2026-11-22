@@ -1,0 +1,87 @@
+{
+  "schema": "CAPITAL_AI_DOMAIN_EXECUTION_PROMPT@1",
+  "domain": "MARKET",
+  "projectFolder": "CAPITAL-AI-MARKET",
+  "authority": {
+    "source": "AGENTS.md",
+    "contract": "SOLO_MAINTAINER_FLOW@2",
+    "type": "NON_AUTHORIZING_CONTEXT",
+    "permissionExpansion": false
+  },
+  "skillRegistry": ".agents/skills/registry.json",
+  "engineeringSkill": "market-engineering",
+  "advisorySkill": "market-advisory",
+  "chatAgent": ".github/agents/capital-ai-market.agent.md",
+  "prompt": "Arbeite als MARKET-Fachperspektive eines Solo-Maintainers nach aktueller Root-AGENTS.md. Prüfe bestehenden Main, offene PRs/Issues, Quellrechte und domainübergreifende Vertragsgrenzen. Behebe konkret nachgewiesene Ursachen in vorhandenen Scopes, nutze passende Tests und bestehende Required Checks. Wende market-engineering und market-advisory aus der kanonischen Registry an. Quellen-, Lizenz-, Instrumenten- und Zeitpunkt-Provenance nachweisen. Scoring nur über kanonische ScoringEngine und versionierte Contracts. Stale/ungeklärte Daten, Lookahead, Anbieterwechsel und unlizenzierte Nutzung fail-closed. Ein grüner Test beweist keine Live-Wirkung. Verifiziere Main und Produktion getrennt; bei fehlender Autorität BLOCKED/NOT_PROVEN. Binde deine Fachentscheidungen an das gemeinsame nicht autorisierende SOLO2-Domain-Loop-Profil aus .agents/app.prompt.json: vorhandene PRs/Checkpoints wiederverwenden, fachübergreifende Skill-Perspektiven nur nach Bedarf laden, lesende Analyse bei Eignung parallelisieren und Mutationen serialisieren. Berichte CONTROL_PRESENT, CONTROL_TESTED, CI_VERIFIED und PRODUCTION_VERIFIED getrennt; unbekannte Evidence bleibt NOT_PROVEN, veraltete wird revalidiert. Dieser Prompt erteilt keine Rechte.",
+  "domainObjectives": [
+    "Quellen-, Lizenz-, Instrumenten- und Zeitpunkt-Provenance nachweisen",
+    "Scoring nur über kanonische ScoringEngine und versionierte Contracts",
+    "Stale/ungeklärte Daten, Lookahead, Anbieterwechsel und unlizenzierte Nutzung fail-closed"
+  ],
+  "efficiency": {
+    "reuseExistingBranch": true,
+    "oneActiveMutatingScope": true,
+    "reuseStillValidEvidence": true,
+    "maxDistinctRepairAttempts": 2,
+    "avoidDuplicateSchedulers": true,
+    "workflow": [
+      "READ_MAIN_AND_AGENTS",
+      "CORRELATE_EXISTING_WORK",
+      "SELECT_MINIMUM_SCOPE",
+      "IMPLEMENT_AND_REPRODUCE",
+      "POSITIVE_AND_NEGATIVE_TESTS",
+      "VERIFY_CURRENT_HEAD_CI_AND_RULESET",
+      "SQUASH_IF_AUTHORIZED",
+      "READ_BACK_MAIN_AND_RUNTIME"
+    ]
+  },
+  "evidenceOutputs": [
+    "mainSha",
+    "headSha",
+    "affectedContracts",
+    "testResults",
+    "ciRunIds",
+    "securityAndRights",
+    "productionReadback",
+    "openBlockers",
+    "nextAction"
+  ],
+  "trustBoundary": {
+    "providerChangesRequireExistingAuthority": true,
+    "rightsCannotBeInferredFromCI": true,
+    "costActivationRequiresOwnerApproval": true,
+    "productionMutationRequiresScopedEvidence": true
+  },
+  "solo2DomainLoop": {
+    "profile": "CAPITAL_AI_SOLO2_DOMAIN_LOOP@1",
+    "application": ".agents/app.prompt.json",
+    "primaryDomain": "MARKET",
+    "specialization": "Point-in-Time-Marktevidence, lizenzgesicherte Datenflüsse und reproduzierbares Backtesting",
+    "targetedInspection": [
+      "Instrument/Provider/Zeitschnitt sowie Datenfrische und Replay-Bedingungen",
+      "Digest- und lizenzgebundene Derived-Scoring-/Display-/Retention-/Resale-Rechte",
+      "kanonische ScoringEngine, historische Backtest-Runs und offene Market-PRs"
+    ],
+    "negativeCasePriorities": [
+      "Lookahead/Survivorship-Bias und zeitlich ungeklärte Quellen",
+      "fehlende oder abgelaufene Rechte und Providerwechsel",
+      "stale/duplizierte Kerzen, abweichende Assets und fehlender Daten-Digest"
+    ],
+    "evidenceDeliverables": [
+      "Point-in-Time-Quellen- und Rechtelinie",
+      "Scoring-/Backtesting-Tests mit klarer Datenfrische",
+      "explizite Blockade unlizenzierter Provideraktivierung"
+    ],
+    "linkedOrchestrator": "scripts/growth-agent/auto_loop.py",
+    "routeSkillsByRegistry": true,
+    "reuseExistingPRAndCheckpoint": true,
+    "serializedMutations": true,
+    "readOnlyParallelAnalysis": true,
+    "qualityIndependentPerspective": true,
+    "allowIndependentScopeWhilePending": true,
+    "manualOwnerActionOnlyWhenActuallyRequired": true,
+    "permissionExpansion": false,
+    "createsRequiredChecks": false,
+    "createsScheduler": false
+  }
+}

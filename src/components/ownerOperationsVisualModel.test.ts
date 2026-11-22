@@ -28,6 +28,7 @@ function fixture() {
     render:{status:'VERIFIED_PROVIDER_READ',deployStatus:'live',deployments:[
       {deployId:'dep-fake',deployStatus:'live',sourceCommitSha:sha,finishedAt:'2026-11-19T07:00:00Z'}]},
     ga4:{status:'VERIFIED_PROVIDER_READ',events:[{eventName:'page_view',eventCount:4},{eventName:'purchase',eventCount:0}],
+      realtimeStatus:'VERIFIED_PROVIDER_READ',realtimeEvents:[{eventName:'page_view',eventCount:2}],
       revenue:null,revenueStatus:'NOT_PROVEN_NOT_QUERIED'},
     comparison:{mainVsDeploy:'MATCH_PROVIDER_CLAIMS_ONLY',runtimeBuildIdentity:'NOT_PROVEN_INDEPENDENT_READBACK'},
   };
@@ -36,6 +37,9 @@ function fixture() {
 test('owner visual KPI projections are readback-only and do not infer money or agent health', () => {
   const snapshot=fixture();
   assert.equal(ownerGa4Metrics(snapshot).views,4);
+  assert.equal(ownerGa4Metrics(snapshot).realtimeViews,2);
+  assert.equal(ownerGa4Metrics(snapshot).sessionStarts,null);
+  assert.equal(ownerGa4Metrics(snapshot).viewedItems,null);
   assert.equal(ownerGa4Metrics(snapshot).purchaseEvents,0);
   assert.equal(ownerGa4Metrics(snapshot).confirmedRevenue,null);
   assert.deepEqual(ownerAgentRows(snapshot).filter(r=>r.prCount===1).map(r=>r.agent),['PLATFORM','GROWTH']);

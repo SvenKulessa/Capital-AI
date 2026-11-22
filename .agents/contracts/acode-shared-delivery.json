@@ -1,0 +1,32 @@
+{
+  "schema": "CAPITAL_AI_ACODE_SHARED_DELIVERY@1",
+  "driveFolderId": "1j3VADFmrFfBuPVv9lFGpRsWM5ygAfusv",
+  "driveFolder": "CAPITAL-AI-ACODE-CHATGPT-EXCHANGE/shared",
+  "androidFolder": "/public/CAPITAL-AI-ACODE-CHATGPT-EXCHANGE/shared",
+  "filenameConvention": "YYYY-MM-DD_BEREICH_URSPRUNG_THEMA_vN.erweiterung",
+  "generatedBy": "CHATGPT",
+  "allowedDomains": [
+    "TRUST",
+    "SECURITY",
+    "PLATFORM",
+    "PRODUCT",
+    "GROWTH",
+    "MARKET"
+  ],
+  "allowedExtensions": [
+    "sh",
+    "py",
+    "js",
+    "mjs"
+  ],
+  "delivery": {
+    "target": "EXISTING_DRIVE_SHARED_FOLDER",
+    "requireExactParentReadback": true,
+    "forbidOverwrite": true,
+    "forbidSecrets": true,
+    "forbidAutoExecution": true,
+    "forbidSecondSync": true,
+    "syncOwner": "EXISTING_ACODEX_STARTUP_DRIVE_PULL",
+    "initialStatus": "NOT_PROVEN"
+  }
+}

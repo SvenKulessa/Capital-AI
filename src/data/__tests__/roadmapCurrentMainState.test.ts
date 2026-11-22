@@ -497,3 +497,34 @@ test('owner lineage export is unavailable for stale, tampered, missing or oversi
     'future timestamp is not accepted beyond clock skew');
   assert.equal(serializeRoadmapOwnerLineageEvidence(valid, Number.NaN), null);
 });
+
+test('2026-11-20 roadmap reconciliation keeps merged code and production evidence separate', () => {
+  const byId = (id: string) => {
+    const found = WORK_PACKAGES.find(item => item.id === id);
+    assert.ok(found, id);
+    return found;
+  };
+  const agent = byId('CA-PLATFORM-SELF-HEAL');
+  assert.notEqual(agent.evidenceState, 'VERIFIED');
+  assert.equal(agent.progressPercent, null);
+  assert.ok(agent.evidenceRefs.includes('scripts/growth-agent/checkpoint_store.py'));
+  assert.match(agent.nextStep, /kein 24\/7-Dienst/i);
+  const market = byId('AP-FIN-01');
+  assert.equal(market.evidenceState, 'OFFEN');
+  assert.equal(market.progressPercent, null);
+  assert.ok(market.evidenceRefs.includes('src/contracts/capBp001AdmissionReview.ts'));
+  assert.match(market.nextStep, /market_integrity_gate bleibt blocked/);
+  const growth = byId('PRODUCTION-WEB-01-GROWTH');
+  assert.equal(growth.evidenceState, 'OFFEN');
+  assert.equal(growth.progressPercent, null);
+  assert.ok(growth.evidenceRefs.includes('src/components/OwnerGa4ConfigView.tsx'));
+  assert.match(growth.nextStep, /kein authentifizierter GA4-Runtime-Readback/);
+  const backup = byId('CA-PLATFORM-DR-RECOVERY');
+  assert.notEqual(backup.evidenceState, 'VERIFIED');
+  assert.equal(backup.progressPercent, null);
+  assert.ok(backup.evidenceRefs.includes('scripts/platform/backup-reader-contract-test.sh'));
+  assert.match(backup.nextStep, /Auth\/Storage\/Vault-Restore/);
+  // Historical 105-package reconciliation remains an immutable baseline.
+  assert.equal(ROADMAP_RECONCILIATION.reviewedAt, '2026-10-06');
+  assert.equal(ROADMAP_RECONCILIATION.packageCount, 105);
+});
