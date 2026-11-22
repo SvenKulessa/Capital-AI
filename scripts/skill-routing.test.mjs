@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { normalizeSkillText, selectSpecialists, selectSkillPlan } from './skill-routing.mjs';
 import { evaluateSpecialistRouting } from './skill-routing-evaluation.mjs';
+import { composeSkillBundle, probeSkillSources, skillSourceAudit, validateSkillCatalog } from './skill-bundles.mjs';
 
 const readJson = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const registry = readJson('../.agents/skills/registry.json');
@@ -161,4 +162,95 @@ test('CLI plan exposes the bounded skill plan while legacy output stays unchange
   assert.ok(plan.skills.includes('revenue-engineering'));
   const legacy = selectSpecialists('SEO checkout GA4',{domain:'GROWTH',registry});
   assert.deepEqual(legacy.skills,['analytics-intelligence']);
+});
+
+test('integration, lifecycle and evaluation match specific signals in the existing plan', () => {
+  const plan = selectSkillPlan('MCP Adapter, Skill Inventar und RAG Evaluation', {
+    domain: 'PLATFORM', registry, asOf: '2026-11-21',
+  });
+  for (const id of ['integration-engineering', 'skill-lifecycle', 'agent-evaluation']) {
+    assert.ok(plan.skills.includes(id));
+    assert.equal(plan.sourceReviews.find(skill => skill.id === id).reviewState, 'RECORDED');
+  }
+  const ordinary = selectSkillPlan('MCPAdapterfoo', { domain: 'PRODUCT', registry });
+  assert.ok(!ordinary.skills.includes('integration-engineering'));
+});
+
+test('skill source inventory exposes deadlines and future or unmapped evidence', () => {
+  const before = skillSourceAudit(registry, '2026-11-20');
+  assert.equal(before.sources.openapi.reviewState, 'NOT_PROVEN');
+  const during = skillSourceAudit(registry, '2026-11-21');
+  assert.equal(during.sources.openapi.reviewState, 'RECORDED');
+  assert.equal(during.sources.openapi.dueAt, '2026-12-21');
+  assert.equal(skillSourceAudit(registry, '2026-12-21').sources.openapi.reviewState, 'REVIEW_DUE');
+  assert.equal(during.skills.length, Object.keys(registry.skillGovernance).length);
+  const withoutMapping = structuredClone(registry);
+  delete withoutMapping.skillSourceInventory.skillSources['agent-evaluation'];
+  assert.equal(skillSourceAudit(withoutMapping, '2026-11-21').skills.find(s => s.id === 'agent-evaluation').reviewState, 'NOT_PROVEN');
+  assert.throws(() => skillSourceAudit(registry, '2026-02-30'), /invalid as-of date/);
+});
+
+test('different audiences get configurable offers without enabling purchase or access', () => {
+  const founder = composeSkillBundle(registry, {
+    bundleId: 'founder-launch', addOns: ['seo-engineering'], connections: ['mcp-tools'],
+  });
+  assert.equal(founder.audience, 'FOUNDER');
+  assert.ok(founder.skills.some(skill => skill.id === 'seo-engineering'));
+  assert.ok(founder.skills.some(skill => skill.id === 'integration-engineering'));
+  assert.ok(founder.connectionProfiles[0].verificationSteps.includes('protocol-negotiation'));
+  assert.equal(founder.sources.mcp.observedVersion, '2026-07-28');
+  assert.equal(founder.commercialRights, 'NOT_PROVEN');
+  assert.equal(founder.billingEnabled, false);
+  assert.equal(founder.quoteAmount, null);
+  assert.equal(founder.accessGranted, false);
+  const b2b = composeSkillBundle(registry, {
+    bundleId: 'b2b-integration', connections: ['api-webhook', 'a2a-workflow'],
+  });
+  assert.equal(b2b.audience, 'B2B');
+  assert.deepEqual(b2b.connectionProfiles.map(item => item.runtimeState), ['NOT_PROVEN', 'NOT_PROVEN']);
+  const enterprise = composeSkillBundle(registry, {
+    bundleId: 'enterprise-orchestration', connections: ['scim-provisioning'],
+  });
+  assert.equal(enterprise.audience, 'ENTERPRISE');
+  assert.ok(enterprise.connectionProfiles[0].verificationSteps.includes('deprovisioning'));
+});
+
+test('invalid bundle and source references fail closed', () => {
+  for (const spec of [
+    { bundleId: 'constructor' },
+    { bundleId: 'founder-launch', addOns: ['trust-engineering'] },
+    { bundleId: 'founder-launch', connections: ['scim-provisioning'] },
+    { bundleId: 'founder-launch', connections: ['mcp-tools', 'mcp-tools'] },
+  ]) assert.throws(() => composeSkillBundle(registry, spec), /Skill catalog/);
+  const badUrl = structuredClone(registry);
+  badUrl.skillSourceInventory.sources.openapi.url = 'https://spec.openapis.org@127.0.0.1/';
+  assert.throws(() => validateSkillCatalog(badUrl), /source openapi/);
+  const orphan = structuredClone(registry);
+  orphan.skillSourceInventory.skillSources['skill-lifecycle'] = ['unknown-ref'];
+  assert.throws(() => validateSkillCatalog(orphan), /source mapping/);
+  const invalid = structuredClone(registry);
+  invalid.skillBundleCatalog.bundles['founder-launch'].baseSkills.push('missing-skill');
+  assert.throws(() => validateSkillCatalog(invalid), /bundle founder-launch/);
+});
+
+test('source probe reports missing anchors, redirects and errors without updating review evidence', async () => {
+  const records = registry.skillSourceInventory.sources;
+  const report = await probeSkillSources(registry, {
+    asOf: '2026-12-21',
+    fetchImpl: async (url, options) => {
+      assert.equal(options.redirect, 'manual');
+      assert.equal(options.credentials, 'omit');
+      const record = Object.values(records).find(entry => entry.url === url);
+      assert.ok(record);
+      if (url === records.openapi.url) return new Response(record.searchAnchor);
+      if (url === records.mcp.url) return Response.redirect('https://127.0.0.1/');
+      if (url === records.a2a.url) throw new Error('unavailable');
+      return new Response('anchor missing');
+    },
+  });
+  assert.equal(report.sources.openapi.probe.state, 'ANCHOR_OBSERVED');
+  assert.equal(report.sources.openapi.reviewState, 'REVIEW_DUE');
+  assert.deepEqual(report.sources.mcp.probe, { state: 'REVIEW_SOURCE', httpStatus: 302 });
+  assert.equal(report.sources.a2a.probe.state, 'NOT_PROVEN');
+  assert.equal(report.sources.wcag.probe.state, 'REVIEW_SOURCE');
 });

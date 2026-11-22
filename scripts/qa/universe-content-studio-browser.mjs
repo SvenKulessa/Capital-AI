@@ -121,6 +121,7 @@ try {
     }
     await until(() => evaluate('!document.querySelector("[aria-labelledby=cookie-consent-v3-title]")'), 'COOKIE_DISMISSED_' + viewport.width);
     await evaluate('document.querySelector("[aria-labelledby=capital-universe-profile]").scrollIntoView({block:"center"})');
+    await until(() => evaluate('!!document.querySelector("[data-hero-buddy=agent] > button")'), 'JAJA_READY_' + viewport.width);
     await pause(220);
     const dom = await evaluate(inspect);
     // Persist the evidence even when a geometry assertion fails.

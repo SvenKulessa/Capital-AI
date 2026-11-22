@@ -3,7 +3,7 @@ export const renderReports = function renderReports(s, e) {
  const rows=[...e.results].sort((a,b)=>domains.indexOf(a.domainOwner)-domains.indexOf(b.domainOwner)||a.id.localeCompare(b.id));
  const cat=rows.map(r=>`| ${r.domainOwner} | \`${r.id}\` | ${r.escalationOwner} | ${r.kpis.join('; ')} | ${r.result} | ${r.governanceLevel} |`).join('\n');
  const matrix=rows.map(r=>`| \`${r.id}\` | ${r.documentation} | ${r.security} | ${r.governance} | ${r.maintainability} | ${r.scalability} | ${r.readiness} | ${r.result} |`).join('\n');
- const additions=['accessibility-advisory','accessibility-engineering','platform-observability','seo-engineering','revenue-engineering'];
+ const additions=['accessibility-advisory','accessibility-engineering','platform-observability','seo-engineering','revenue-engineering','integration-engineering','skill-lifecycle','agent-evaluation'];
  const inventory=`# CAPITAL-AI Skill Inventory
 
 > Deterministischer Registry-Snapshot. Strukturstatus: **${e.status}**; keine attestierte Live-Funktion.
@@ -43,13 +43,13 @@ Eine fehlgeschlagene Pflichtvalidierung oder ein Score unter 85/100 bzw. Governa
 
 ${additions.map(id=>`- \`${id}\` — Domain Owner: ${s.registry.skillGovernance[id].domainOwner}`).join('\n')}
 
-Acht weitere angeforderte Spezialisten existierten bereits; sie wurden vertragsseitig erweitert, nicht ersetzt. Die zehn Legacy-Spezialisten, zehn Domain-Skills und \`visual-chat\` bleiben erhalten.
+Das bestehende Inventar wurde um Integrationen, Skill-Lifecycle und Agenten-Evaluation erweitert. Die zehn Legacy-Spezialisten, zehn Domain-Skills und \`visual-chat\` bleiben erhalten.
 
 ## Geänderte Dateien
 
-- \`AGENTS.md\`, \`README.md\`, \`.agents/skills/README.md\`, \`.agents/skills/registry.json\`, \`package.json\`
-- \`.github/workflows/build-security.yml\` im **bestehenden** Required Check
-- \`.agents/skills/<skill>/{SKILL.md,RESPONSIBILITIES.md,INTERFACES.md}\`; alte \`SKILL.md\` unverändert
+- \`AGENTS.md\`, \`README.md\`, \`.agents/skills/README.md\`, \`.agents/skills/registry.json\`
+- Skill-Validierung im bestehenden Docker Security Gate und Quelleninventar in der täglichen Dependency and CVE Watch
+- \`.agents/skills/<skill>/{SKILL.md,RESPONSIBILITIES.md,INTERFACES.md}\`; Rollenverträge für SOLO_MAINTAINER_FLOW@2
 - \`.agents/validation/\` einschließlich Negativtests; vier Dateien unter \`generated/\`
 
 ## Registry Änderungen
@@ -104,9 +104,10 @@ ${matrix}
 ## Vorhandene Enterprise Fähigkeiten
 
 - Fünf bestehende Domains mit Engineering-/Advisory-Skills und Chat-Agent-Profilen.
-- Zehn geteilte Enterprise-Spezialisten mit deterministischem Signal-Routing und 41 synthetischen Testfällen.
+- Zehn geteilte Enterprise-Spezialisten mit deterministischem Signal-Routing und 76 kuratierten Testfällen.
 - Registry als Single Source of Truth, eindeutige Ownership, dokumentierte Trust Boundaries und Fail-Closed-Anforderungen.
 - Offline-Validierung für strukturelle Konsistenz, Security-Dokumentation, Evidence und Governance.
+- Quelleninventar mit Review-Fälligkeit und Angeboten für Founder, B2B und Enterprise.
 
 ## Fehlende oder nicht nachgewiesene Enterprise Fähigkeiten
 

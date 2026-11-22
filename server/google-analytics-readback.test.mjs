@@ -8,6 +8,8 @@ import {
 import {
   buildGoogleAnalyticsReadback,
   createGoogleAnalyticsReadback,
+  safeGa4FailureReason,
+  diagnoseGa4RuntimeConfig,
 } from './google-analytics-readback.mjs';
 
 const ownerId = '11111111-1111-4111-8111-111111111111';
@@ -137,6 +139,8 @@ test('GA4 readback binds the configured property and exposes only aggregated eve
     'run_realtime_report',
     'run_report',
   ]);
+  const sevenDayCall = calls.find(entry => entry.tool === 'run_report');
+  assert.deepEqual(sevenDayCall?.args.date_ranges, [{ start_date: '6daysAgo', end_date: 'today' }]);
   const serialized = JSON.stringify(snapshot);
   assert.doesNotMatch(serialized, /secret-account-list-must-not-leak/);
   assert.doesNotMatch(serialized, /999999999/);
@@ -239,7 +243,7 @@ test('GA4 property detail checks reject a longer numeric property identifier', a
   assert.deepEqual(calls.map(entry => entry.tool), ['get_account_summaries', 'get_property_details']);
 });
 
-test('GA4 readback does not invent event counts from malformed numeric values', async () => {
+test('GA4 readback rejects malformed counts rather than inventing measured zero', async () => {
   const client = fakeClient();
   const original = client.callTool;
   client.callTool = async (tool, args) => {
@@ -253,8 +257,117 @@ test('GA4 readback does not invent event counts from malformed numeric values', 
     }
     return original(tool, args);
   };
-  const snapshot = await buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' });
-  assert.equal(snapshot.realtime.events[0].eventCount, 0);
-  assert.equal(snapshot.sevenDay.events[0].eventCount, 0);
-  assert.equal(snapshot.eventEvidence.status, 'NO_PAGE_VIEW_OBSERVED');
+  await assert.rejects(
+    () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
+    /GA4_INVALID_EVENT_COUNT/,
+  );
+});
+
+
+test('GA4 readback fails closed when provider omits an event count', async () => {
+  const client = fakeClient();
+  const original = client.callTool;
+  client.callTool = async (tool, args) => {
+    if (tool === 'run_realtime_report') return { rows: [{ dimension_values: [{ value: 'page_view' }], metric_values: [] }] };
+    return original(tool, args);
+  };
+  await assert.rejects(
+    () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
+    /GA4_INVALID_EVENT_COUNT/,
+  );
+});
+
+test('owner-safe GA4 reasons never disclose raw provider errors or user content', async () => {
+  assert.equal(safeGa4FailureReason(new Error('GA4_PROPERTY_NOT_ACCESSIBLE')), 'GA4_PROPERTY_NOT_ACCESSIBLE');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_TIMEOUT_tools/call')), 'GA4_MCP_REQUEST_TIMEOUT');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_REQUIRED_TOOL_MISSING_run_report')), 'GA4_REQUIRED_TOOL_MISSING');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED')), 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED');
+  assert.equal(safeGa4FailureReason(new Error('GA4_MCP_SERVICE_ACCOUNT_JSON_KEY=private')), 'GA4_READBACK_FAILED');
+  assert.equal(safeGa4FailureReason(new Error('contact owner@example.test')), 'GA4_READBACK_FAILED');
+  assert.equal(safeGa4FailureReason({ message:'GA4_PROPERTY_NOT_ACCESSIBLE' }), 'GA4_READBACK_FAILED');
+});
+
+test('authenticated GA4 503 returns only the safe reason code', async () => {
+  const h = harness({ vars: { ...env, GOOGLE_ANALYTICS_PROPERTY_NUMBER: '' } });
+  const result = await h.request();
+  assert.equal(result.status, 503);
+  assert.equal(result.body.reason, 'GA4_PROPERTY_NUMBER_NOT_CONFIGURED');
+  assert.equal(result.body.status, 'EVIDENCE_UNAVAILABLE');
+  assert.doesNotMatch(JSON.stringify(result.body), /owner@example.test|123456789/);
+});
+
+test('unauthorized requests never expose GA4 diagnostics or start the provider', async () => {
+  const calls = [];
+  const h = harness({ identity: null, client: fakeClient(calls), vars: { ...env, GOOGLE_ANALYTICS_PROPERTY_NUMBER: '' } });
+  const result = await h.request();
+  assert.equal(result.status, 404);
+  assert.equal(result.body.reason, undefined);
+  assert.equal(calls.length, 0);
+});
+
+test('owner-only runtime config diagnostic returns only fixed codes and booleans without MCP calls', async () => {
+  let calls = 0;
+  const h = harness({
+    vars: {
+      ...env,
+      GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON: '{"broken":"SECRET_VALUE"',
+      GOOGLE_ANALYTICS_CLOUD_PROJECT: 'test-project',
+      RENDER_API_KEY: 'SENSITIVE_RENDER_API_KEY',
+    },
+    client: {
+      listTools: async () => { calls++; throw Error('must not run MCP'); },
+      close: () => { calls++; },
+    },
+  });
+  const result = await h.request('GET', '/api/profile/google-analytics-config-diagnostic');
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body, {
+    schema: 'CAPITAL_AI_GA4_OWNER_CONFIG_DIAGNOSTIC@1',
+    status: 'CONFIG_DIAGNOSTIC_ONLY',
+    JSON_VALID: false,
+    PROJECT_MATCH: null,
+    reason: 'GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON',
+  });
+  assert.equal(result.headers['cache-control'], 'private, no-store, max-age=0');
+  assert.equal(calls, 0);
+  assert.doesNotMatch(JSON.stringify(result.body), /SECRET_VALUE|RENDER_API_KEY|test-project|email|private_key/);
+});
+
+test('owner config diagnostic fails closed for unauthorized, unverified, wrong role, unsafe method and query', async () => {
+  const route = '/api/profile/google-analytics-config-diagnostic';
+  assert.equal((await harness({identity: null}).request('GET', route)).status, 404);
+  assert.equal((await harness({identity: {userId: ownerId, email: 'owner@example.test', emailVerified: false}}).request('GET', route)).status, 404);
+  assert.equal((await harness({role: false}).request('GET', route)).status, 404);
+  assert.equal((await harness().request('POST', route)).status, 405);
+  assert.equal((await harness().request('GET', route + '?include=private_key')).status, 400);
+  assert.equal((await harness().request('GET', '/api/profile/ga4-config-diagnostic')).handled, false);
+});
+
+test('GA4 config diagnostic checks JSON syntax, shape, and project binding without leaking any values', () => {
+  const secret = 'SYNTHETIC_PRIVATE_KEY_NEVER_OUTPUT';
+  const account = JSON.stringify({
+    type: 'service_account', project_id: 'test-project',
+    client_email: 'secret@example.invalid', private_key: secret,
+  });
+  assert.deepEqual(diagnoseGa4RuntimeConfig({
+    GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON: account,
+    GOOGLE_ANALYTICS_CLOUD_PROJECT: 'test-project',
+  }), {JSON_VALID:true, PROJECT_MATCH:true, reason:'GA4_CONFIG_VALID'});
+  assert.deepEqual(diagnoseGa4RuntimeConfig({
+    GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON: account,
+    GOOGLE_ANALYTICS_CLOUD_PROJECT: 'wrong-project',
+  }), {JSON_VALID:true, PROJECT_MATCH:false, reason:'GA4_MCP_PROJECT_MISMATCH'});
+  const tests = [
+    [{}, 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED'],
+    [{GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON: '{invalid'}, 'GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON'],
+    [{GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON: JSON.stringify(account)}, 'GA4_MCP_SERVICE_ACCOUNT_INVALID'],
+    [{GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON: JSON.stringify({type:'authorized_user'})}, 'GA4_MCP_SERVICE_ACCOUNT_INVALID'],
+    [{GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON: account}, 'GA4_MCP_CLOUD_PROJECT_NOT_CONFIGURED'],
+  ];
+  for (const [values, reason] of tests) {
+    const output = diagnoseGa4RuntimeConfig(values);
+    assert.equal(output.reason, reason);
+    assert.deepEqual(Object.keys(output).sort(), ['JSON_VALID', 'PROJECT_MATCH', 'reason'].sort());
+    assert.doesNotMatch(JSON.stringify(output), /SYNTHETIC_PRIVATE_KEY|secret@example|test-project|private_key/);
+  }
 });

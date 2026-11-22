@@ -115,6 +115,17 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
   const rows = ownerEvidenceRows(snapshot);
   const counts = ownerEvidenceCounts(rows);
   const events = ownerGa4Metrics(snapshot);
+  const ga4Rows = isVerified(ga4)
+    ? (ga4?.events ?? []).filter(row => Number.isSafeInteger(row.eventCount) && row.eventCount >= 0) : [];
+  const ga4Cards = [
+    { label: 'page_view', count: events.views },
+    { label: 'session_start', count: events.sessionStarts },
+    { label: 'view_item', count: events.viewedItems },
+    { label: 'generate_lead', count: events.leads },
+    { label: 'purchase (Event)', count: events.purchaseEvents },
+    { label: 'page_view (Echtzeit)', count: events.realtimeViews },
+  ];
+  const maxGa4 = Math.max(1, ...ga4Rows.map(row => row.eventCount));
   const active = isSnapshotStale(snapshot, Date.now());
   const prValue = isVerified(gh) && gh.openPrCountStatus === 'VERIFIED' ? pretty(gh.openPrCount) : '–';
   const renderLive = isVerified(render) && render.deployStatus === 'live';
@@ -125,7 +136,7 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
         <h3><Crown aria-hidden="true"/> Owner Operations Center</h3>
         <p>Zentrale Übersicht für Provider, Deployments, Evidence und Multi-Agent Operations.</p>
       </div>
-      <span className="ops-mock-owner-badge"><LockKeyhole aria-hidden="true" className="h-4 w-4"/> Nur für Owner</span>
+      <span className="ops-mock-owner-badge"><LockKeyhole aria-hidden="true" className="h-4 w-4"/> Owner-Bereich · angemeldet</span>
       <div className="ops-mock-orbit" aria-hidden="true"><OrbitMascot/></div>
     </header>
     <div className="ops-mock-kpis">
@@ -158,6 +169,30 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
         <AgentCards snapshot={snapshot}/>
       </section>
     </div>
+    <section className="ops-mock-card ops-mock-ga4" aria-labelledby="ops-ga4-analysis-title">
+      <h4 id="ops-ga4-analysis-title"><ChartColumnIncreasing aria-hidden="true"/> GA4 · Website und Conversion</h4>
+      <p className="ops-mock-subtitle">
+        {isVerified(ga4) ? ga4?.property : 'NOT_PROVEN · Serverseitiger Property-Readback fehlt'}
+        {' · '}7 Kalendertage einschließlich heute · Ereignisse sind keine Zahlungen.
+      </p>
+      <div className="ops-mock-ga4-grid">
+        {ga4Cards.map(({ label, count }) => <div key={label} className="ops-mock-ga4-metric">
+          <span>{label}</span>
+          <strong>{pretty(count)}</strong>
+          <small>{count === null ? 'NOT_PROVEN' : 'GA4-Provider-Ereignisse'}</small>
+        </div>)}
+      </div>
+      {ga4Rows.length > 0 ? <div className="ops-mock-ga4-bars" role="group" aria-label="GA4 Ereignisverteilung über sieben Kalendertage">
+        {ga4Rows.map(row => <div key={row.eventName} className="ops-mock-ga4-bar-row">
+          <span>{row.eventName}</span>
+          <div className="ops-mock-ga4-bar-track"><div className="ops-mock-ga4-bar-fill" style={{width: (row.eventCount / maxGa4 * 100) + '%'}} /></div>
+          <strong>{pretty(row.eventCount)}</strong>
+        </div>)}
+      </div> : <p className="ops-mock-ga4-empty" role="status">
+        {isVerified(ga4) ? 'Keine erlaubten GA4-Ereignisse übermittelt.' : 'GA4 nicht aus Render bestätigt. Externe ChatGPT-Verbindungen liefern keine automatischen Render-Berechtigungen.'}
+      </p>}
+      <p className="ops-mock-ga4-foot">Nur freigegebene Ereignistypen · keine Personendaten, keine Umsatzschätzung · fehlende Messwerte bleiben NOT_PROVEN.</p>
+    </section>
     <p className="ops-mock-readonly"><Info aria-hidden="true" className="h-5 w-5 shrink-0"/>
       <span><strong>Read-only:</strong> Geschützter Snapshot aus GitHub, Render und GA4.
       Keine synthetischen Kennzahlen, keine Zahlungs- oder Vertragsnachweise.

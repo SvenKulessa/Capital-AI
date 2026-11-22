@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { saveCookieConsent } from '../privacy/cookieConsentV3';
 import { PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
 import { buildInstagramLearningTrackingUrl } from '../contracts/instagramCampaignTracking.ts';
-import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, trackVerifiedLearningPurchase, trackCommerceEvent, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
+import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, trackReceivedGovernanceSprintInquiry, trackVerifiedLearningPurchase, trackCommerceEvent, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
 
 test('basic consent mode loads only after opt-in, sanitizes public events and revokes without further events', async () => {
   const oldWindow = globalThis.window, oldDocument = globalThis.document, oldFetch = globalThis.fetch;
@@ -52,6 +52,24 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     assert.equal(events.filter((c: any[]) => c[1] === 'page_view').length, 2);
     assert.equal(events.find((c: any[]) => c[1] === 'page_view')[2].page_referrer, 'https://www.google.de/');
     assert.doesNotMatch(JSON.stringify(events), /private@example|private-token|private-search|5cf37f93|value|currency/);
+    // The public NOINDEX B2B route remains measurable only with analytics opt-in.
+    // A receipt is local-only deduplication evidence and must never be transmitted.
+    w.location.pathname = '/governance-evidence-sprint';
+    sendPageView('/governance-evidence-sprint?utm_source=private@example.test');
+    const b2bReceipt = '3d70e92c-36bf-4b75-95ad-5339d40fd6a3';
+    const beforeB2b = commands().filter((c: any[]) => c[1] === 'generate_lead').length;
+    trackReceivedGovernanceSprintInquiry('forged-receipt');
+    trackReceivedGovernanceSprintInquiry(b2bReceipt);
+    trackReceivedGovernanceSprintInquiry(b2bReceipt);
+    const b2bEvents = commands().filter((c: any[]) =>
+      c[1] === 'generate_lead' && c[2]?.lead_type === 'governance_evidence_sprint_inquiry');
+    assert.equal(b2bEvents.length, 1, 'exactly one event after verified SMTP receipt');
+    assert.equal(commands().filter((c: any[]) => c[1] === 'generate_lead').length, beforeB2b + 1);
+    assert.equal(b2bEvents[0][2].page_location, 'https://capital-ai.online/governance-evidence-sprint');
+    assert.deepEqual(Object.keys(b2bEvents[0][2]).sort(),
+      ['lead_type','page_location','page_referrer','send_to']);
+    assert.doesNotMatch(JSON.stringify(b2bEvents), /3d70e92c|private@example|utm_source|email|message|value|currency/i);
+    w.location.pathname = '/learning';
     const purchase = {transactionId:'b'.repeat(64), value:20, currency:'EUR'};
     trackVerifiedLearningPurchase(purchase);trackVerifiedLearningPurchase(purchase);
     trackVerifiedLearningPurchase({...purchase, transactionId:'cs_private'});
@@ -73,13 +91,17 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     const privateCount = commands().length;
     trackCommerceEvent('begin_checkout', item);
     trackReceivedLearningInquiry('e4f044bc-1103-467d-9810-ea98f93fdca3');
+    trackReceivedGovernanceSprintInquiry('0fc4e399-8470-4fc8-bede-fbe5a22d102d');
     assert.equal(commands().length, privateCount);
     w.location.pathname = '/learning';
     stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: false, marketing: false });
     listeners.get(CONSENT_CHANGED_EVENT)!();await settle();const count = commands().length;
     trackVerifiedLearningPurchase({transactionId:'d'.repeat(64), value:25, currency:'EUR'});
     sendPageView('/learning');trackReceivedLearningInquiry('b4f044bc-1103-467d-9810-ea98f93fdca3');
-    assert.equal(commands().length, count);assert.equal(reloads, 1);assert.equal(removed, 1);
+    w.location.pathname = '/governance-evidence-sprint';
+    trackReceivedGovernanceSprintInquiry('c70f9f48-9d26-475f-9a95-f41cc0527825');
+    assert.equal(commands().length, count);
+    w.location.pathname = '/learning';assert.equal(reloads, 1);assert.equal(removed, 1);
     assert.ok(writes.some(value => value.includes('Max-Age=0')));assert.equal(w['ga-disable-G-0542DT2HCE'], true);
     // A failed persistent revocation must not reload and immediately restore the old saved grant.
     stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: true, marketing: false });

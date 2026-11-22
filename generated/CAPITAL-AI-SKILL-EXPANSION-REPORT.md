@@ -9,28 +9,31 @@
 - `platform-observability` — Domain Owner: PLATFORM
 - `seo-engineering` — Domain Owner: GROWTH
 - `revenue-engineering` — Domain Owner: GROWTH
+- `integration-engineering` — Domain Owner: PLATFORM
+- `skill-lifecycle` — Domain Owner: PLATFORM
+- `agent-evaluation` — Domain Owner: TRUST
 
-Acht weitere angeforderte Spezialisten existierten bereits; sie wurden vertragsseitig erweitert, nicht ersetzt. Die zehn Legacy-Spezialisten, zehn Domain-Skills und `visual-chat` bleiben erhalten.
+Das bestehende Inventar wurde um Integrationen, Skill-Lifecycle und Agenten-Evaluation erweitert. Die zehn Legacy-Spezialisten, zehn Domain-Skills und `visual-chat` bleiben erhalten.
 
 ## Geänderte Dateien
 
-- `AGENTS.md`, `README.md`, `.agents/skills/README.md`, `.agents/skills/registry.json`, `package.json`
-- `.github/workflows/build-security.yml` im **bestehenden** Required Check
-- `.agents/skills/<skill>/{SKILL.md,RESPONSIBILITIES.md,INTERFACES.md}`; alte `SKILL.md` unverändert
+- `AGENTS.md`, `README.md`, `.agents/skills/README.md`, `.agents/skills/registry.json`
+- Skill-Validierung im bestehenden Docker Security Gate und Quelleninventar in der täglichen Dependency and CVE Watch
+- `.agents/skills/<skill>/{SKILL.md,RESPONSIBILITIES.md,INTERFACES.md}`; Rollenverträge für SOLO_MAINTAINER_FLOW@2
 - `.agents/validation/` einschließlich Negativtests; vier Dateien unter `generated/`
 
 ## Registry Änderungen
 
 - Das Schema `CAPITAL_AI_DOMAIN_SKILLS@1` und Legacy-Routing bleiben kompatibel.
 - Additiv: `skillGovernanceVersion`, `skillGovernance`, `domains.*.ownedSkills`.
-- **26** eindeutig verantwortete Skills; Registry ist die Single Source of Truth.
+- **29** eindeutig verantwortete Skills; Registry ist die Single Source of Truth.
 
 ## Domain Änderungen
 
 - **PRODUCT:** product-engineering, product-advisory, mobile-engineering, customer-success, accessibility-audit, accessibility-advisory, accessibility-engineering, visual-chat
 - **MARKET:** market-engineering, market-advisory, quant-research, data-engineering, analytics-intelligence
-- **PLATFORM:** platform-engineering, platform-advisory, ai-engineering, platform-observability
-- **TRUST:** trust-engineering, trust-advisory, legal-compliance, incident-response
+- **PLATFORM:** platform-engineering, platform-advisory, ai-engineering, platform-observability, integration-engineering, skill-lifecycle
+- **TRUST:** trust-engineering, trust-advisory, legal-compliance, incident-response, agent-evaluation
 - **GROWTH:** growth-engineering, growth-advisory, sales-enterprise, seo-engineering, revenue-engineering
 
 ## Governance Bewertung
@@ -63,9 +66,12 @@ Dreiteilige Skill-Verträge und dreizehn Pflichtabschnitte pro Skill über Valid
 | `market-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `quant-research` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `ai-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
+| `integration-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `platform-advisory` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `platform-engineering` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `platform-observability` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
+| `skill-lifecycle` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
+| `agent-evaluation` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `incident-response` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `legal-compliance` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |
 | `trust-advisory` | 10 | 10 | 10 | 9 | 8 | 98 | DOCUMENTED |

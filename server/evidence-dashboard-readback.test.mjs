@@ -8,10 +8,24 @@ const origin = 'https://capital-ai.online';
 const env = { GITHUB_TOKEN: 'github-private-fixture', RENDER_API_KEY: 'render-private-fixture' };
 const serviceId = 'srv-dau1rp893c1s73cdhm1g';
 const ownerId = 'tea-d90o4rj7uimc739i86ug';
+const ts7Path = 'docs/security/evidence/dependency-decisions/typescript-7.0.2.json';
+const ts7Evidence = {
+  schema: 'CAPITAL_AI_SH_SUPPLY_CHAIN_DEPENDENCY_RECOVERY@1',
+  dependency: { name: 'typescript', currentVersion: '6.0.3', candidateVersion: '7.0.2' },
+  decision: { state: 'BLOCKED', classification: 'BINARY_AFFECTED',
+    reasonCode: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY',
+    evaluatedAt: '2026-11-19T06:10:46.574Z', reviewOnOrAfter: '2026-12-03' },
+  fingerprint: { nativeArtifact: { binarySha256: 'sha256:' + 'f'.repeat(64) } },
+};
+function ts7Fixture(record = ts7Evidence) {
+  return { type: 'file', path: ts7Path, encoding: 'base64', sha: 'c'.repeat(40),
+    content: Buffer.from(JSON.stringify(record)).toString('base64') };
+}
 function fixture(url) {
   const s = String(url);
   if (s.endsWith('/commits/main')) return { sha };
   if (s.includes('/pulls?')) return [{ number: 7, state: 'open', title: '[CAPITAL-AI-PLATFORM] Evidence', draft: false, head: { sha }, updated_at: '2026-11-19T03:30:00Z' }];
+  if (s.includes('/contents/' + ts7Path + '?ref=' + sha)) return ts7Fixture();
   if (s.includes('/check-runs?')) return { total_count: 2, check_runs: [
     { name: 'Docker Security Gate', head_sha: sha, status: 'completed', conclusion: 'success' },
     { name: 'Domain Governance', head_sha: sha, status: 'completed', conclusion: 'success' },
@@ -20,7 +34,7 @@ function fixture(url) {
   if (s.endsWith('/deploys?limit=5')) return [{ deploy: { id: 'dep-test', status: 'live', commit: { id: sha }, finishedAt: '2026-11-19T03:30:00Z' } }];
   throw Error('unexpected path');
 }
-function setup({ allowed = true, role = true, ga4Broken = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
+function setup({ allowed = true, role = true, ga4Broken = false, ga4FailureCode = null, invalidRealtime = false, vars = env, provider = fixture, now = () => 1800000000000 } = {}) {
   const calls = [];
   let ga4Calls = 0;
   const ga4Readback = {
@@ -28,7 +42,11 @@ function setup({ allowed = true, role = true, ga4Broken = false, vars = env, pro
     load: async () => {
       ga4Calls++;
       if (ga4Broken) throw Error('confidential_ga4_password');
-      return { status: 'PROVIDER_READ_VERIFIED', property: { resourceName: 'properties/123456789' }, sevenDay: { events: [
+      if (ga4FailureCode) throw Error(ga4FailureCode);
+      return { status: 'PROVIDER_READ_VERIFIED', property: { resourceName: 'properties/123456789' }, realtime: { events: [
+        { eventName: 'page_view', eventCount: invalidRealtime ? 'INVALID' : 2 },
+        { eventName: 'private-user-id', eventCount: 1 },
+      ] }, sevenDay: { events: [
         { eventName: 'page_view', eventCount: 13 },
         { eventName: 'purchase', eventCount: 0 },
         { eventName: 'user@example.test', eventCount: 10 },
@@ -82,7 +100,7 @@ test('allows only GET without query parameters and sets private no-store respons
 test('binds provider URLs, identity and properties; produces only verified projections', async () => {
   const h = setup();
   const { body } = await h.request();
-  assert.equal(h.calls.length, 5);
+  assert.equal(h.calls.length, 6);
   assert.ok(h.calls.every(c => c.options.method === 'GET' && c.options.redirect === 'error' && c.options.cache === 'no-store'));
   assert.ok(h.calls.every(c => c.url.startsWith('https://api.github.com/repos/SvenKulessa/Capital-AI/') || c.url.startsWith(`https://api.render.com/v1/services/${serviceId}`)));
   assert.equal(body.github.mainSha, sha);
@@ -93,24 +111,66 @@ test('binds provider URLs, identity and properties; produces only verified proje
   assert.equal(body.render.sourceCommitSha, sha);
   assert.equal(body.comparison.mainVsDeploy, 'MATCH_PROVIDER_CLAIMS_ONLY');
   assert.equal(body.ga4.events.length, 2);
+  assert.equal(body.ga4.period, 'LAST_7_CALENDAR_DAYS_INCLUDING_TODAY');
+  assert.equal(body.ga4.realtimeStatus, 'VERIFIED_PROVIDER_READ');
+  assert.deepEqual(body.ga4.realtimeEvents, [{ eventName: 'page_view', eventCount: 2 }]);
   assert.equal(body.ga4.revenue, null);
   assert.equal(body.ga4.revenueStatus, 'NOT_PROVEN_NOT_QUERIED');
   assert.equal(body.baseline.status, 'HISTORICAL_REFERENCE_ONLY');
   assert.equal(body.baseline.valuesImported, false);
-  assert.doesNotMatch(JSON.stringify(body), /fixture|user@example.test|github-private|render-private|6998|3525/);
+  assert.doesNotMatch(JSON.stringify(body), /fixture|user@example.test|github-private|render-private|6998|3525|private-user-id/);
+});
+
+test('projects only sha-pinned BLOCKED TypeScript evidence; no live scan assertion', async () => {
+  const h = setup();
+  const { body } = await h.request();
+  const t = body.github.typescript;
+  assert.equal(t.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(t.state, 'BLOCKED');
+  assert.equal(t.classification, 'BINARY_AFFECTED');
+  assert.equal(t.currentVersion, '6.0.3');
+  assert.equal(t.candidateVersion, '7.0.2');
+  assert.equal(t.reviewOnOrAfter, '2026-12-03');
+  assert.equal(t.binarySha256, 'sha256:' + 'f'.repeat(64));
+  assert.equal(t.evidenceScope, 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION');
+  assert.equal(t.evidenceUrl, 'https://github.com/SvenKulessa/Capital-AI/blob/' + sha + '/' + ts7Path);
+  assert.ok(h.calls.some(c => c.url.endsWith('/contents/' + ts7Path + '?ref=' + sha)));
+});
+
+test('TypeScript evidence fails closed on missing, manipulated or cross-path provider data', async () => {
+  const cases = [
+    () => new Response('missing', { status: 404 }),
+    () => ts7Fixture({ ...ts7Evidence, decision: { ...ts7Evidence.decision, state: 'APPROVED' } }),
+    () => ts7Fixture({ ...ts7Evidence, dependency: { ...ts7Evidence.dependency, currentVersion: ['6.0.3'] } }),
+    () => ts7Fixture({ ...ts7Evidence, fingerprint: { nativeArtifact: { binarySha256: [ts7Evidence.fingerprint.nativeArtifact.binarySha256] } } }),
+    () => ts7Fixture({ ...ts7Evidence, decision: { ...ts7Evidence.decision, reviewOnOrAfter: '2026-02-31' } }),
+    () => ts7Fixture({ ...ts7Evidence, fingerprint: { nativeArtifact: { binarySha256: 'not-a-digest' } } }),
+    () => ({ ...ts7Fixture(), path: 'docs/security/evidence/foreign.json' }),
+    () => ({ ...ts7Fixture(), encoding: 'utf-8' }),
+    () => ({ ...ts7Fixture(), content: '*invalid*' }),
+    () => ({ ...ts7Fixture(), content: 'a'.repeat(100000) }),
+  ];
+  for (const make of cases) {
+    const h = setup({ provider: url => String(url).includes('/contents/' + ts7Path) ? make() : fixture(url) });
+    const { body } = await h.request();
+    assert.deepEqual(body.github.typescript, { status: 'NOT_PROVEN', reason: 'TS7_EVIDENCE_UNAVAILABLE' });
+    assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal(body.github.ci.status, 'VERIFIED_PROVIDER_READ');
+  }
 });
 
 test('uses five-minute cache and deduplicates concurrent reads', async () => {
   let time = 1800000000000;
   const h = setup({ now: () => time });
   await Promise.all([h.request(), h.request()]);
-  assert.equal(h.calls.length, 5);
+  assert.equal(h.calls.length, 6);
   time += 299_999;
   await h.request();
-  assert.equal(h.calls.length, 5);
+  assert.equal(h.calls.length, 6);
   time += 2;
   await h.request();
-  assert.equal(h.calls.length, 10);
+  assert.equal(h.calls.length, 12);
 });
 
 test('does not let missing Render credential erase independently verified GitHub/GA4 evidence', async () => {
@@ -120,7 +180,7 @@ test('does not let missing Render credential erase independently verified GitHub
   assert.equal(body.ga4.status, 'VERIFIED_PROVIDER_READ');
   assert.deepEqual(body.render, { status: 'NOT_PROVEN', reason: 'RENDER_CREDENTIAL_NOT_CONFIGURED' });
   assert.equal(body.comparison.mainVsDeploy, 'NOT_PROVEN');
-  assert.equal(h.calls.length, 3);
+  assert.equal(h.calls.length, 4);
 });
 
 test('rejects wrong Render workspace and keeps raw errors/secrets private', async () => {
@@ -136,7 +196,7 @@ test('rejects unknown GitHub SHA, truncated PR listing, GA4 failure and incomple
   const { body } = await invalid.request();
   assert.equal(body.github.status, 'NOT_PROVEN');
   assert.equal(body.ga4.status, 'NOT_PROVEN');
-  assert.equal(body.ga4.reason, 'PROVIDER_READ_FAILED');
+  assert.equal(body.ga4.reason, 'GA4_READBACK_FAILED');
   const truncated = setup({ provider: url => String(url).includes('/pulls?') ? Array.from({ length: 100 }, (_, i) => ({ number: i + 1, state: 'open' })) : fixture(url) });
   const res = await truncated.request();
   assert.equal(res.body.github.openPrCount, null);
@@ -184,4 +244,85 @@ test('bounded PR and deployment projections exclude credentials and user data', 
   assert.equal(body.render.deployments.length, 1);
   assert.equal(body.render.deployments[0].finishedAt, '2026-11-19T03:30:00.000Z');
   assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|owner@example.test/);
+});
+
+test('rejects malformed realtime counts without inventing GA4 events or breaking other providers', async () => {
+  const h = setup({ invalidRealtime: true });
+  const { body } = await h.request();
+  assert.equal(body.ga4.status, 'NOT_PROVEN');
+  assert.equal(body.ga4.reason, 'GA4_PROVIDER_RESPONSE_INVALID');
+  assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+  assert.doesNotMatch(JSON.stringify(body), /private-user-id/);
+});
+
+test('owner-only GA4 diagnostics identify known boundary failures without exposing raw errors', async () => {
+  const allowed = [
+    ['GA4_PROPERTY_NUMBER_NOT_CONFIGURED', 'GA4_PROPERTY_NUMBER_NOT_CONFIGURED'],
+    ['GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED', 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED'],
+    ['GA4_MCP_PROJECT_MISMATCH', 'GA4_MCP_PROJECT_MISMATCH'],
+    ['GA4_MCP_PROCESS_START_FAILED', 'GA4_MCP_PROCESS_START_FAILED'],
+    ['GA4_MCP_TIMEOUT_tools/call', 'GA4_MCP_REQUEST_TIMEOUT'],
+    ['GA4_PROPERTY_NOT_ACCESSIBLE', 'GA4_PROPERTY_NOT_ACCESSIBLE'],
+    ['GA4_PROPERTY_DETAILS_NOT_BOUND', 'GA4_PROPERTY_DETAILS_NOT_BOUND'],
+    ['GA4_READBACK_TIMEOUT', 'GA4_READBACK_TIMEOUT'],
+    ['GA4_EVENT_COUNT_INVALID', 'GA4_PROVIDER_RESPONSE_INVALID'],
+  ];
+  for (const [input, expected] of allowed) {
+    const h = setup({ ga4FailureCode: input });
+    const { body } = await h.request();
+    assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: expected });
+    assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal((await setup({ allowed: false, ga4FailureCode: input }).request()).status, 404);
+  }
+  const secret = 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED token=confidential-live-token';
+  const { body } = await setup({ ga4FailureCode: secret }).request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_READBACK_FAILED' });
+  assert.doesNotMatch(JSON.stringify(body), /confidential-live-token|SERVICE_ACCOUNT_NOT_CONFIGURED/);
+});
+
+test('AcodeX P1-v2 is archived owner-only evidence, never a live device probe', async () => {
+  const h = setup();
+  const denied = setup({ allowed: false });
+  assert.equal((await denied.request()).status, 404);
+  assert.equal(denied.calls.length, 0);
+  const { body } = await h.request();
+  const archive = body.acodex;
+  assert.equal(archive.classification, 'HISTORICAL_REFERENCE_ONLY');
+  assert.equal(archive.provenance, 'OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK');
+  assert.equal(archive.archiveStatus, 'VERIFIED');
+  assert.equal(archive.currentDeviceStatus, 'NOT_PROVEN');
+  assert.equal(archive.baselineUtc, '2026-11-18T23:11:25Z');
+  assert.equal(archive.expectedStartUtc, '2026-11-19T00:41:03Z');
+  assert.equal(archive.latestSuccessUtc, '2026-11-19T00:41:28Z');
+  assert.equal(archive.checkedUtc, '2026-11-19T00:43:05Z');
+  for (const code of ['healthExit', 'outerExit', 'guardAuditExit', 'newOAuthFailures', 'newPullFailures'])
+    assert.equal(archive[code], 0);
+  assert.equal(archive.lockClear, true);
+  assert.equal(archive.evidence.v11.sha256, '89b2215cf85420928c70271dffa38ee4ad51ccd07d1832b4bb35192e28c892a3');
+  assert.equal(archive.evidence.v1.sha256, '991b97eef4f31a69ece605347d9b6aeebc8405f0fcd30ee7e96d03869c5e5afd');
+  assert.equal(archive.evidence.standard.sha256, 'be03a2c479eddc1a40d4bad133e34b41e20039aa27ee5a776b05a24571d9eb17');
+  assert.equal(h.calls.length, 6);
+  assert.ok(h.calls.every(c => {
+    const url = new URL(c.url);
+    return url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname);
+  }));
+  assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|password|secret_value/i);
+});
+
+test('owner evidence reports an allowlisted GA4 property failure without leaking source data', async () => {
+  const h = setup({ ga4FailureCode: 'GA4_PROPERTY_NOT_ACCESSIBLE' });
+  const { body } = await h.request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_PROPERTY_NOT_ACCESSIBLE' });
+  assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+  assert.doesNotMatch(JSON.stringify(body), /service.account|private.key|owner@example.test/);
+});
+
+test('unknown GA4 error strings remain opaque in owner evidence', async () => {
+  const h = setup({ ga4FailureCode: 'private_key=DO_NOT_EXPOSE' });
+  const { body } = await h.request();
+  assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_READBACK_FAILED' });
+  assert.doesNotMatch(JSON.stringify(body), /DO_NOT_EXPOSE/);
 });

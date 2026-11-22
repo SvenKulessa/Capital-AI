@@ -2,6 +2,10 @@ import { contentVocabularyContext } from '../../shared/vocabulary-lookup.mjs';
 import { z } from 'zod';
 import { assessCadsContentCampaign } from '../../packages/benchmark-core/growth-quality.mjs';
 import {
+  OriginalGraphicLicensePlanSchema, planOriginalGraphicLicense,
+  type OriginalGraphicAsset, type OriginalGraphicOwnerGrant,
+} from './originalGraphicLicense.ts';
+import {
   getGrowthCapabilityPolicy,
   type GrowthCapability,
   type GrowthMarketingChannel,
@@ -92,6 +96,7 @@ export const ContentEnginePlanSchema = z.object({
   campaign: ContentCampaignBriefSchema,
   vocabularyContext: ContentVocabularyContextSchema.optional(),
   modules: z.array(ContentEngineModulePlanSchema),
+  graphicLicenses: z.array(OriginalGraphicLicensePlanSchema).optional(),
   visualIdentity: z.object({
     id: z.literal('CAPITAL_AI_UNIVERSE@1'),
     palette: z.tuple([
@@ -174,7 +179,10 @@ function moduleState(module: ContentEngineModuleId): ContentEngineModulePlan {
   };
 }
 
-export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
+export function planContentCampaign(rawBrief: unknown, options: {
+  originalGraphics?: readonly OriginalGraphicAsset[];
+  graphicOwnerGrants?: readonly OriginalGraphicOwnerGrant[];
+} = {}): ContentEnginePlan {
   const campaign = ContentCampaignBriefSchema.parse(rawBrief);
   const cadsQuality = assessCadsContentCampaign(campaign);
   if (cadsQuality.technicalStatus !== 'PASS') {
@@ -195,11 +203,22 @@ export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
 
   modules.add('PUBLISHER');
 
+  const graphicLicenses = options.originalGraphics?.flatMap(asset => {
+    if (!campaign.outputs.includes('IMAGE') || asset.sourceSha !== campaign.sourceSha) {
+      throw new Error('CONTENT_GRAPHIC_CAMPAIGN_MISMATCH');
+    }
+    const grants = options.graphicOwnerGrants?.filter(grant => grant.asset.assetId === asset.assetId) ?? [];
+    // Ambiguous records, including a grant plus a revocation, require review.
+    const grant = grants.length === 1 ? grants[0] : undefined;
+    return campaign.channels.map(channel => planOriginalGraphicLicense({ asset, channel }, grant));
+  });
+
   return ContentEnginePlanSchema.parse({
     contractVersion: CONTENT_ENGINE_CONTRACT_VERSION,
     campaign,
     vocabularyContext:contentVocabularyContext([campaign.objective,...campaign.audience].join(" ")),
     modules: [...modules].map(moduleState),
+    ...(graphicLicenses ? { graphicLicenses } : {}),
     visualIdentity: CONTENT_ENGINE_UNIVERSE,
     cadsQuality,
     publication: {

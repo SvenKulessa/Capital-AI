@@ -70,7 +70,9 @@
         "platform-engineering",
         "platform-advisory",
         "ai-engineering",
-        "platform-observability"
+        "platform-observability",
+        "integration-engineering",
+        "skill-lifecycle"
       ]
     },
     "TRUST": {
@@ -91,7 +93,8 @@
         "trust-engineering",
         "trust-advisory",
         "legal-compliance",
-        "incident-response"
+        "incident-response",
+        "agent-evaluation"
       ]
     },
     "GROWTH": {
@@ -837,6 +840,51 @@
         "OWASP ASVS",
         "FinTech Governance"
       ]
+    },
+    "integration-engineering": {
+      "domainOwner": "PLATFORM",
+      "escalationOwner": "CAPITAL-AI-PLATFORM",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "Anteil geprüfter Adapterverträge",
+        "Anteil bestandener Widerrufstests"
+      ],
+      "frameworks": [
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "skill-lifecycle": {
+      "domainOwner": "PLATFORM",
+      "escalationOwner": "CAPITAL-AI-PLATFORM",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "Anteil der Skills mit Grundlagenquellen",
+        "Zahl fälliger Quellenreviews"
+      ],
+      "frameworks": [
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "agent-evaluation": {
+      "domainOwner": "TRUST",
+      "escalationOwner": "CAPITAL-AI-TRUST",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "Anteil belegter Skill-Ausführungen",
+        "Fehlrouting- und Abstentionsrate"
+      ],
+      "frameworks": [
+        "DevSecOps",
+        "Evidence-First"
+      ]
     }
   },
   "taskSkillRouting": {
@@ -861,8 +909,428 @@
         "entitlements",
         "kaufpfad",
         "umsatz attribution",
-        "revenue attribution"
+        "revenue attribution",
+        "b2b",
+        "lead funnel",
+        "leadgen",
+        "monetarisierung",
+        "campaign roi"
+      ],
+      "integration-engineering": [
+        "mcp adapter",
+        "mcp server",
+        "model context protocol",
+        "a2a",
+        "agent2agent",
+        "openapi",
+        "webhook adapter",
+        "scim provisioning",
+        "e2e integration"
+      ],
+      "skill-lifecycle": [
+        "skill inventar",
+        "skill registry",
+        "skill katalog",
+        "skill bundle",
+        "skills bewerten",
+        "skill lebenszyklus",
+        "skill aktualitaet",
+        "quelleninventar"
+      ],
+      "agent-evaluation": [
+        "agent evaluation",
+        "agenten evaluation",
+        "skill ausfuehrung",
+        "skill telemetry",
+        "routing evaluation",
+        "rag evaluation",
+        "manuelle stopps"
       ]
+    }
+  },
+  "promptContracts": {
+    "schema": "CAPITAL_AI_PROMPT_CONTRACT_REFS@1",
+    "application": ".agents/app.prompt.json",
+    "domains": {
+      "PRODUCT": "CAPITAL-AI-PRODUCT/domain.prompt.json",
+      "MARKET": "CAPITAL-AI-MARKET/domain.prompt.json",
+      "PLATFORM": "CAPITAL-AI-PLATFORM/domain.prompt.json",
+      "TRUST": "CAPITAL-AI-TRUST/domain.prompt.json",
+      "GROWTH": "CAPITAL-AI-GROWTH/domain.prompt.json"
+    },
+    "authority": "AGENTS.md",
+    "mode": "NON_AUTHORIZING_CONTEXT"
+  },
+  "skillSourceInventory": {
+    "schema": "CAPITAL_AI_SKILL_SOURCE_INVENTORY@1",
+    "sources": {
+      "mcp": {
+        "url": "https://modelcontextprotocol.io/specification/versioning",
+        "observedVersion": "2026-07-28",
+        "searchAnchor": "2026-07-28",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "a2a": {
+        "url": "https://a2a-protocol.org/latest/specification/",
+        "observedVersion": "1.0.0",
+        "searchAnchor": "v1.0.0/specification",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "openapi": {
+        "url": "https://spec.openapis.org/oas/latest.html",
+        "observedVersion": "3.2.1",
+        "searchAnchor": "OpenAPI Specification v3.2.1",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "oauth-bcp": {
+        "url": "https://www.rfc-editor.org/rfc/rfc9700.html",
+        "observedVersion": "RFC 9700",
+        "searchAnchor": "Best Current Practice for OAuth 2.0 Security",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 90
+      },
+      "scim": {
+        "url": "https://www.rfc-editor.org/rfc/rfc7644.html",
+        "observedVersion": "RFC 7644",
+        "searchAnchor": "System for Cross-domain Identity Management",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 90
+      },
+      "opentelemetry": {
+        "url": "https://opentelemetry.io/docs/specs/otel/",
+        "observedVersion": "1.62.0",
+        "searchAnchor": "OpenTelemetry Specification 1.62.0",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "nist-ai-rmf": {
+        "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+        "observedVersion": "AI RMF 1.0",
+        "searchAnchor": "AI Risk Management Framework",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 90
+      },
+      "stripe-entitlements": {
+        "url": "https://docs.stripe.com/billing/entitlements",
+        "observedVersion": "unversioned-documentation",
+        "searchAnchor": "Entitlements",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "wcag": {
+        "url": "https://www.w3.org/TR/WCAG22/",
+        "observedVersion": "WCAG 2.2",
+        "searchAnchor": "Web Content Accessibility Guidelines",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 90
+      },
+      "google-search": {
+        "url": "https://developers.google.com/search/docs/fundamentals/seo-starter-guide",
+        "observedVersion": "unversioned-documentation",
+        "searchAnchor": "SEO Starter Guide",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "ga4-retention": {
+        "url": "https://support.google.com/analytics/answer/11004084",
+        "observedVersion": "unversioned-documentation",
+        "searchAnchor": "Retention overview report",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "mifid-ii": {
+        "url": "https://eur-lex.europa.eu/eli/dir/2014/65/oj/eng",
+        "observedVersion": "Directive 2014/65/EU (original publication)",
+        "searchAnchor": "2014/65/EU",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 90
+      },
+      "gdpr": {
+        "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng",
+        "observedVersion": "Regulation (EU) 2016/679 (original publication)",
+        "searchAnchor": "2016/679",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 90
+      },
+      "fama-french": {
+        "url": "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html",
+        "observedVersion": "CIZ methodology from January 2025",
+        "searchAnchor": "Fama/French",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 30
+      },
+      "oidc": {
+        "url": "https://openid.net/specs/openid-connect-core-1_0.html",
+        "observedVersion": "Core 1.0 incorporating errata set 2",
+        "searchAnchor": "OpenID Connect Core 1.0",
+        "reviewedAt": "2026-11-21",
+        "reviewIntervalDays": 90
+      }
+    },
+    "skillSources": {
+      "integration-engineering": [
+        "mcp",
+        "a2a",
+        "openapi",
+        "oauth-bcp",
+        "scim",
+        "oidc"
+      ],
+      "skill-lifecycle": [
+        "mcp",
+        "a2a",
+        "nist-ai-rmf"
+      ],
+      "ai-engineering": [
+        "mcp",
+        "a2a",
+        "nist-ai-rmf"
+      ],
+      "platform-engineering": [
+        "openapi",
+        "opentelemetry"
+      ],
+      "platform-advisory": [
+        "openapi"
+      ],
+      "data-engineering": [
+        "openapi"
+      ],
+      "trust-engineering": [
+        "oauth-bcp",
+        "scim",
+        "oidc"
+      ],
+      "trust-advisory": [
+        "oauth-bcp",
+        "nist-ai-rmf"
+      ],
+      "platform-observability": [
+        "opentelemetry"
+      ],
+      "agent-evaluation": [
+        "opentelemetry",
+        "nist-ai-rmf"
+      ],
+      "analytics-intelligence": [
+        "opentelemetry",
+        "ga4-retention"
+      ],
+      "incident-response": [
+        "opentelemetry"
+      ],
+      "revenue-engineering": [
+        "stripe-entitlements"
+      ],
+      "accessibility-advisory": [
+        "wcag"
+      ],
+      "accessibility-audit": [
+        "wcag"
+      ],
+      "accessibility-engineering": [
+        "wcag"
+      ],
+      "product-engineering": [
+        "wcag"
+      ],
+      "product-advisory": [
+        "wcag"
+      ],
+      "mobile-engineering": [
+        "wcag"
+      ],
+      "visual-chat": [
+        "wcag"
+      ],
+      "seo-engineering": [
+        "google-search"
+      ],
+      "growth-engineering": [
+        "google-search"
+      ],
+      "growth-advisory": [
+        "google-search",
+        "ga4-retention"
+      ],
+      "customer-success": [
+        "ga4-retention",
+        "gdpr"
+      ],
+      "market-advisory": [
+        "mifid-ii"
+      ],
+      "market-engineering": [
+        "mifid-ii",
+        "fama-french"
+      ],
+      "legal-compliance": [
+        "mifid-ii",
+        "gdpr"
+      ],
+      "sales-enterprise": [
+        "gdpr",
+        "stripe-entitlements"
+      ],
+      "quant-research": [
+        "fama-french"
+      ]
+    }
+  },
+  "skillBundleCatalog": {
+    "schema": "CAPITAL_AI_SKILL_BUNDLE_CATALOG@1",
+    "connectionProfiles": {
+      "api-webhook": {
+        "sourceRefs": [
+          "openapi",
+          "oauth-bcp"
+        ],
+        "verificationSteps": [
+          "contract-version",
+          "tenant-authorization",
+          "webhook-signature-and-idempotency",
+          "revocation"
+        ]
+      },
+      "mcp-tools": {
+        "sourceRefs": [
+          "mcp",
+          "oauth-bcp"
+        ],
+        "verificationSteps": [
+          "protocol-negotiation",
+          "tool-scope",
+          "tenant-isolation",
+          "revocation"
+        ]
+      },
+      "a2a-workflow": {
+        "sourceRefs": [
+          "a2a",
+          "oauth-bcp",
+          "opentelemetry"
+        ],
+        "verificationSteps": [
+          "agent-discovery",
+          "protocol-negotiation",
+          "task-cancellation",
+          "tenant-isolation",
+          "trace-correlation"
+        ]
+      },
+      "scim-provisioning": {
+        "sourceRefs": [
+          "scim",
+          "oauth-bcp"
+        ],
+        "verificationSteps": [
+          "tenant-isolation",
+          "provisioning-idempotency",
+          "deprovisioning",
+          "revocation"
+        ]
+      },
+      "oidc-sso": {
+        "sourceRefs": [
+          "oidc",
+          "oauth-bcp"
+        ],
+        "verificationSteps": [
+          "issuer-audience-binding",
+          "tenant-authorization",
+          "session-termination",
+          "revocation"
+        ]
+      }
+    },
+    "bundles": {
+      "founder-launch": {
+        "audience": "FOUNDER",
+        "version": "1.0.0",
+        "offerModel": "FIXED_SCOPE_QUOTE",
+        "baseSkills": [
+          "product-advisory",
+          "growth-advisory",
+          "customer-success",
+          "skill-lifecycle"
+        ],
+        "addOnSkills": [
+          "agent-evaluation",
+          "revenue-engineering",
+          "seo-engineering",
+          "accessibility-advisory"
+        ],
+        "connectionProfiles": [
+          "api-webhook",
+          "mcp-tools"
+        ],
+        "deliverables": [
+          "validierter Anwendungsfall",
+          "versionierter Integrationsplan",
+          "reproduzierbare Pilot-Abnahme"
+        ]
+      },
+      "b2b-integration": {
+        "audience": "B2B",
+        "version": "1.0.0",
+        "offerModel": "SETUP_AND_SUBSCRIPTION_QUOTE",
+        "baseSkills": [
+          "integration-engineering",
+          "data-engineering",
+          "agent-evaluation",
+          "revenue-engineering",
+          "skill-lifecycle"
+        ],
+        "addOnSkills": [
+          "platform-observability",
+          "customer-success",
+          "accessibility-engineering"
+        ],
+        "connectionProfiles": [
+          "api-webhook",
+          "mcp-tools",
+          "a2a-workflow"
+        ],
+        "deliverables": [
+          "versionierte Adapterverträge",
+          "Sandbox-Nachweise inklusive Widerruf",
+          "Entitlement- und Betriebsplan"
+        ]
+      },
+      "enterprise-orchestration": {
+        "audience": "ENTERPRISE",
+        "version": "1.0.0",
+        "offerModel": "CONTRACT_QUOTE",
+        "baseSkills": [
+          "integration-engineering",
+          "trust-engineering",
+          "legal-compliance",
+          "platform-observability",
+          "agent-evaluation",
+          "skill-lifecycle"
+        ],
+        "addOnSkills": [
+          "incident-response",
+          "data-engineering",
+          "accessibility-engineering",
+          "revenue-engineering"
+        ],
+        "connectionProfiles": [
+          "api-webhook",
+          "mcp-tools",
+          "a2a-workflow",
+          "scim-provisioning",
+          "oidc-sso"
+        ],
+        "deliverables": [
+          "Tenant- und Identitätsmodell",
+          "Audit- und Stopp-Nachweise",
+          "Integrationsabnahme mit Rollback und Entzug"
+        ]
+      }
     }
   }
 }

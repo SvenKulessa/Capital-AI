@@ -45,7 +45,7 @@ export const ROADMAP_TOOL_WORKSTREAMS: readonly RoadmapWorkstream[] = [
     purpose: 'Lizenz- und Entitlement-gebundene Blueprint-Auslieferung',
     skills: ['product-engineering', 'market-engineering', 'legal-compliance'],
     sourcePaths: ['src/features/analysis/AnalysisComponentExplorer.tsx', 'server/blueprint-commerce.mjs'],
-    destination: '/architecture-hub', destinationLabel: 'Architektur-Hub öffnen',
+    destination: '/dokumentation', destinationLabel: 'Dokumentation öffnen',
     nextGate: 'SKU, Rechte, Kundenauslieferung und Checkout-Evidence vor Verkauf verifizieren',
     revenuePath: 'Blueprint-Anfrage, bis SKU-/Lizenz-/Lieferrechte nachgewiesen sind',
   },
