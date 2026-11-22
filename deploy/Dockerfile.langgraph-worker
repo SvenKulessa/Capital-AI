@@ -1,0 +1,62 @@
+# Candidate ONLY, no Render service, release or paid activation.
+# The CI resolves both BellSoft glibc Python 3.14 variants to immutable OCI digests
+# before passing them into these build args. Omission fails the Docker build.
+ARG PYTHON_BUILD_BASE
+ARG PYTHON_BASE
+FROM ${PYTHON_BUILD_BASE} AS dependencies
+
+WORKDIR /app
+COPY scripts/growth-agent/requirements.offline-worker.lock /tmp/requirements.offline-worker.lock
+# Install from the fully pinned existing dependency set into an isolated target.
+# No Debian or builder package manager is included in the runtime stage.
+RUN python3 -m pip install --no-cache-dir --only-binary=:all: --disable-pip-version-check \
+      --target /opt/worker-packages \
+      -r /tmp/requirements.offline-worker.lock \
+    && PYTHONPATH=/opt/worker-packages python3 -c \
+      'import sqlite_vec; from langgraph.checkpoint.sqlite import SqliteSaver; import langgraph.graph' \
+    && mkdir -p /var/lib/capital-ai-agent/checkpoints \
+       /var/lib/capital-ai-agent/inbox /var/lib/capital-ai-agent/approvals \
+    && chown -R 10001:10001 /var/lib/capital-ai-agent \
+    && chmod 0700 /var/lib/capital-ai-agent /var/lib/capital-ai-agent/checkpoints \
+       /var/lib/capital-ai-agent/inbox /var/lib/capital-ai-agent/approvals
+
+FROM ${PYTHON_BASE}
+# BellSoft's runtime layer still includes pip/setuptools bootstrap with vendored
+# vulnerable libraries. The offline application never needs install/build tools.
+# Remove only those unused bootstrap packages, not Python/SQLite/worker libraries.
+# Use Python exec-form RUN: the distroless image intentionally has no shell.
+USER 0:0
+RUN ["python3","-c","from pathlib import Path\nimport shutil\nimport sysconfig\nroots = [Path(\"/usr/lib/python3.14/site-packages\"), Path(\"/usr/local/lib/python3.14/site-packages\")]\npatterns = (\"pip\", \"pip-*.dist-info\", \"setuptools\", \"setuptools-*.dist-info\", \"wheel\", \"wheel-*.dist-info\", \"pkg_resources\", \"pkg_resources-*.dist-info\")\nfor root in roots:\n    if not root.is_dir() or root.is_symlink():\n        continue\n    for pattern in patterns:\n        for path in root.glob(pattern):\n            if path.is_symlink():\n                raise RuntimeError(\"unexpected runtime bootstrap symlink\")\n            if path.is_dir():\n                shutil.rmtree(path)\n            elif path.is_file():\n                path.unlink()\nstdlib = Path(sysconfig.get_path(\"stdlib\"))\nensurepip = stdlib / \"ensurepip\"\nif ensurepip.is_symlink():\n    raise RuntimeError(\"unexpected ensurepip symlink\")\nif ensurepip.is_dir():\n    shutil.rmtree(ensurepip)\nimport importlib.util\nassert importlib.util.find_spec(\"pip\") is None\nassert importlib.util.find_spec(\"setuptools\") is None\nassert importlib.util.find_spec(\"wheel\") is None\n"]
+LABEL org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI" \
+      capital-ai.component="offline-langgraph-worker" \
+      capital-ai.activation="disabled-by-default"
+
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/opt/worker-packages \
+    LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
+    LANGGRAPH_STRICT_MSGPACK=true \
+    CAPITAL_AI_OFFLINE_WORKER_ENABLED=false
+
+WORKDIR /app
+COPY --from=dependencies /opt/worker-packages /opt/worker-packages
+COPY --from=dependencies --chown=10001:10001 --chmod=0700 \
+     /var/lib/capital-ai-agent/ /var/lib/capital-ai-agent/
+COPY scripts/growth-agent /app/scripts/growth-agent
+COPY AGENTS.md /app/AGENTS.md
+# Read-only public repository metadata; prompts never grant worker privileges.
+COPY .agents/app.prompt.json /app/.agents/app.prompt.json
+COPY .agents/skills/registry.json /app/.agents/skills/registry.json
+COPY CAPITAL-AI-PRODUCT/domain.prompt.json /app/CAPITAL-AI-PRODUCT/domain.prompt.json
+COPY CAPITAL-AI-MARKET/domain.prompt.json /app/CAPITAL-AI-MARKET/domain.prompt.json
+COPY CAPITAL-AI-PLATFORM/domain.prompt.json /app/CAPITAL-AI-PLATFORM/domain.prompt.json
+COPY CAPITAL-AI-TRUST/domain.prompt.json /app/CAPITAL-AI-TRUST/domain.prompt.json
+COPY CAPITAL-AI-GROWTH/domain.prompt.json /app/CAPITAL-AI-GROWTH/domain.prompt.json
+COPY docs/architecture/EXECUTION-FIRST-LANGGRAPH.md /app/docs/architecture/EXECUTION-FIRST-LANGGRAPH.md
+COPY docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md /app/docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md
+
+USER 10001:10001
+STOPSIGNAL SIGTERM
+# The mounted /var/lib/capital-ai-agent must be independently initialized and
+# tested UID 10001 / 0700. Service startup fails unless an actual mount exists.
+# Offline mode remains disabled and rejects ALL provider credentials.
+ENTRYPOINT ["python3", "/app/scripts/growth-agent/worker_service.py", "--serve"]

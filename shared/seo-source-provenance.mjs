@@ -1,6 +1,8 @@
 export const SEO_PROVENANCE_GENERATED_AT_MAIN_SHA = '6add02eac321c8b4dfc40fca8f904afb0adcd186';
 
 export const SEO_SOURCE_ARTIFACTS = Object.freeze({
+  'src/i18n/landingSectionCopy.ts': Object.freeze({ sourceBlobSha: '0b845b24a15f710b02bc5740ac5a00a53a8e112b', contentSha256: 'b3ae90f8714804da050cb8e62734b6fd0efc5eb3f0ba0b3050c7a2251407a904' }),
+  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: 'da1bc882303fde14c0a1520807db2c31bf710167', contentSha256: 'd9da6e11f978d171c59e785f929e61e2bd6dbd19539b1e146c0d0941825b0adb' }),
   'shared/architecture-governance-vocabulary.mjs': Object.freeze({ sourceBlobSha: '086dce314dc661a0e169667e7ebc1bd8ec3a1631', contentSha256: 'f87c8d3f79133e4aa056ce7ffe1ee14e7f4283ac66a4b1f01e2744e2143ad646' }),
   'src/components/ContactForm.tsx': Object.freeze({ sourceBlobSha: 'a9253f4c2c8d775bbafa2977a7e62c4b2f8943db', contentSha256: '61ce8299bf918d853a14f054280395f232394a1071a5eae1e6d571adef47dde4' }),
   'shared/researched-vocabulary.json': Object.freeze({ sourceBlobSha: 'cf4e634f349481e2062e699d897fd5631249744c', contentSha256: '88a076f2f0e003ac0acfed62bfd6fd3cff50c8c64329054f402ec02abf7d5120' }),
@@ -9,7 +11,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'src/data/vocabularyOffer.ts': Object.freeze({ sourceBlobSha: 'ef2ef444280b56dcf9fa5182e09f3ac8d03fbf25', contentSha256: 'adc8faec932b2dcc29ff2fb4c836a1044c474d83dd405a025efae386d894b274' }),
 
   'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '571f55e1bedebd631d0d74015c9aef7e665b5661', contentSha256: 'bbfc951ce10f2d22eb3aec8d0bda6a5d65a61948c4f13ea467be2775196e7f33' }),
-  'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: 'fd85f3de2efecafa34c07f9cf5e132b565e03dd9', contentSha256: '2d501a6635fa025d96806a81235ae92368d86faff8b4a01083e91f528d713690' }),
+  'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: '170aad95b29221e9c7e37687bcc9ac0ecb9f9130', contentSha256: '5aa1e9ba51032ff43f9e849a6a4e96d01515f64f95d5ed5d942191654c97d592' }),
 
   'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: 'f5d0b669403b45157538b48a4eca432ce3f13a26', contentSha256: '13a1c4cc8a3aa3b699bf0f7bb7044e2e1081881c9a038855ed5753341fa0fad2' }),
   'index.html': Object.freeze({
@@ -17,11 +19,11 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: 'c385d667c66cc02ca92dbaf3becb2ee6f535fed884984a76d725b5c4b5b54d59',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: 'c530033e4882182d3619ba5040db71a6ee7c8c95',
-    contentSha256: '4bc8f47b23362e7e282494065cc3bd5dcdb6f8e6e31607dde6389aa72f46e00e',
+    sourceBlobSha: 'ec3ad8a9f45e519643a2e5c188f51a395a39c211',
+    contentSha256: '3a663e1dc174166ff556fcf837b7b8e61932074b601f5653b39ca922082ff3b7',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: '05604f09429f309467fa9251ca28fa2dfe01c193', contentSha256: 'bc97a21178ec31c2e247c0591161a395a402bcbd0693af59c9cfa0eaff757864',
+    sourceBlobSha: '6aa8da4597ba971d4fccf1d24c83ec369740b93e', contentSha256: '22d78321820411193eb42b053515f803b034046e451c31c2e148da159c417f65',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: '4e5fa745c9fd2ea2a8e8fc8e7da462b3a7be4793',
@@ -64,10 +66,11 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '0fdbaf01298830facf680c3c6c37bdeca30d5bf26994cd2c0da2e26c49dea801',
+  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '0e809eaf86887dbc990b70fc18582bd73b6db821b58594d40aa8b9f7a565027b',
+  'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '162ad4ade232deddb9b0d5189f28f5766aeabe27794a76e16666d5fdaac3f49a',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
-  'index.html|src/features/home/HomePage.tsx': '3f05d016cf415360a4df66eefd5ee8dfd10ec2220a11ff30618eeb72efe6b77d',
-  'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'c65373efc03ac581d3e3127f8479f29b0f9fb46e6eba17e631ca3863da5d7f0d',
+  'index.html|src/features/home/HomePage.tsx': 'eea046eacd3484b3be4ba44d52871e7e1ce5213730aef2c337ce7826eb130ccd',
+  'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '20af20e9dfb2739d828fb8bf41146fe6abbedfc0dc46cc4a09d6adcd73a095bd',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',

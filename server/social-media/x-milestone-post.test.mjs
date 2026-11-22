@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCipheriv, randomBytes, createHash } from 'node:crypto';
-import { createXMilestonePost, MILESTONE_CONTENT_KEY, MILESTONE_TEXT } from './x-milestone-post.mjs';
+import { readFileSync } from 'node:fs';
+import { createXMilestonePost, MILESTONE_CONTENT_KEY, MILESTONE_TEXT,
+  LAUNCH_TEXT, LAUNCH_CONTENT_KEY, LAUNCH_MEDIA_SHA256, assertPinnedLaunchMedia } from './x-milestone-post.mjs';
 
 const USER='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
 const KEY='ab'.repeat(32), ACCOUNT='123456789012345678';
@@ -14,6 +16,10 @@ const ENV={
   SOCIAL_X_PAID_WRITE_APPROVED:'true',
   SOCIAL_X_PAID_READ_APPROVED:'true',
   SOCIAL_X_TOKEN_ENCRYPTION_KEY:KEY,
+  SOCIAL_X_PUBLISH_TOKEN_ENCRYPTION_KEY:KEY,
+  SOCIAL_X_PUBLISH_OAUTH_ENABLED:'true',
+  SOCIAL_X_PUBLISH_OAUTH_CLIENT_ID:'synthetic-publish-client',
+  SOCIAL_X_PUBLISH_OAUTH_CLIENT_SECRET:'synthetic-publish-secret',
   SOCIAL_X_OAUTH_CONNECT_ENABLED:'true',
   SOCIAL_OAUTH_CALLBACK_ENABLED:'true',
   SOCIAL_X_OAUTH_CLIENT_ID:'synthetic-x-client',
@@ -34,21 +40,23 @@ const json=(res,code,body)=>{res.code=code;res.body=body};
 function seal(value,kind='access'){
   const iv=randomBytes(12);
   const c=createCipheriv('aes-256-gcm',Buffer.from(KEY,'hex'),iv);
-  c.setAAD(Buffer.from(JSON.stringify(['capital-social-x-v1',USER,kind])));
+  c.setAAD(Buffer.from(JSON.stringify(['capital-social-x-publish-v1',USER,kind])));
   const bytes=Buffer.concat([c.update(value,'utf8'),c.final()]);
   return 'v1.'+[iv,c.getAuthTag(),bytes].map(x=>x.toString('base64url')).join('.');
 }
 function providerResult(status,payload){
   return {ok:status>=200&&status<300,status,text:async()=>JSON.stringify(payload)};
 }
-function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=3600000}={}){
+function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=3600000,launchMediaLoader}={}){
   const receipt=new Map(),calls=[];
   let accessCipher=seal('synthetic-ACCESS-OLD-TOKEN');
   let expiresAt=new Date(Date.now()+expires).toISOString();
   const auth={sameOrigin:req=>req.headers['sec-fetch-site']==='same-origin',
     verify:async()=>owner?{userId:USER,emailVerified:true}:null,
     authorizeIamRole:async()=>owner,internalAccessToken:async()=> 'synthetic-jwt-'+'j'.repeat(80)};
-  const edgeFactory=()=>({
+  const edgeFactory=({channel})=>{
+    assert.equal(channel,'X_PUBLISH');
+    return ({
     async invoke(op,ctx){
       calls.push(op);
       if(op==='x_credentials')return {accountId:ACCOUNT,handle:'CapitalAIOnline',
@@ -74,20 +82,20 @@ function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=
     async refreshClaim(_user,leaseId){
       calls.push('refresh_claim');
       return {leaseId,refreshCipher:seal('synthetic-REFRESH-OLD-TOKEN','refresh'),
-        accountId:ACCOUNT,scopes:['tweet.read','tweet.write','users.read','offline.access']};
+        accountId:ACCOUNT,scopes:['tweet.read','tweet.write','users.read','offline.access','media.write']};
     },
     async refreshFinish(_user,_lease,_prev,newAccess,_newRefresh,expiry){
       calls.push('refresh_finish');accessCipher=newAccess;expiresAt=expiry;
-      return {refreshed:true,channel:'X',expiresAt:expiry};
+      return {refreshed:true,channel:'X_PUBLISH',expiresAt:expiry};
     },
-    async refreshEnd(){calls.push('refresh_end');return {channel:'X',status:'reconnect_required'};},
-  });
+    async refreshEnd(){calls.push('refresh_end');return {channel:'X_PUBLISH',status:'reconnect_required'};},
+  }); };
   let writeCount=0,readCount=0;
   const fetchImpl=async (url,options)=>{
     const path=String(url);
     if(path.endsWith('/2/oauth2/token'))return providerResult(200,{
       access_token:'synthetic-ACCESS-NEW-TOKEN',refresh_token:'synthetic-REFRESH-NEW-TOKEN',
-      token_type:'bearer',expires_in:3600,scope:'tweet.read tweet.write users.read offline.access'});
+      token_type:'bearer',expires_in:3600,scope:'tweet.read tweet.write users.read offline.access media.write'});
     if(path.endsWith('/2/users/me'))return providerResult(200,{data:{id:ACCOUNT}});
     if(path.endsWith('/2/tweets') && options?.method==='POST'){
       writeCount++;
@@ -102,7 +110,7 @@ function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=
     }
     throw Error('unexpected provider URI '+path);
   };
-  const handler=createXMilestonePost({env:{...ENV,...flags},auth,fetchImpl,edgeFactory});
+  const handler=createXMilestonePost({env:{...ENV,...flags},auth,fetchImpl,edgeFactory,launchMediaLoader});
   return {handler,calls,receipt,stats:()=>({writeCount,readCount})};
 }
 
@@ -203,4 +211,76 @@ test('expiring X access token rotates through existing OAuth lease before claim'
   assert.ok(f.calls.includes('refresh_claim'));
   assert.ok(f.calls.includes('refresh_finish'));
   assert.deepEqual(f.stats(),{writeCount:1,readCount:1});
+});
+
+
+test('X launch copy is source-and-image-bound, short, and avoids financial performance claims', () => {
+  assert.ok(LAUNCH_TEXT.length > 50 && LAUNCH_TEXT.length <= 280);
+  assert.equal(LAUNCH_CONTENT_KEY, createHash('sha256').update(
+    'capital-ai-x-launch-v1\n' + LAUNCH_TEXT + '\n' + LAUNCH_MEDIA_SHA256).digest('hex'));
+  assert.match(LAUNCH_TEXT,/Learning Hub/);
+  assert.match(LAUNCH_TEXT,/Analytics Hub/);
+  assert.match(LAUNCH_TEXT,/Studio Hub/);
+  assert.match(LAUNCH_TEXT,/Content Engine/);
+  assert.doesNotMatch(LAUNCH_TEXT,/profitabel|garantiert|live-ki|auto.?publishing/i);
+  // CI verifies that the exact submitted image bytes are checked into the repo.
+  const original=readFileSync(new URL('../../public/branding/social/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg',import.meta.url));
+  assert.equal(createHash('sha256').update(original).digest('hex'),LAUNCH_MEDIA_SHA256);
+  assert.equal(assertPinnedLaunchMedia(original),original);
+  assert.throws(()=>assertPinnedLaunchMedia(Buffer.from('fake-image')),
+    /x_launch_image_invalid/);
+  const mismatched=Buffer.concat([
+    Buffer.from([255,216,255,224]),
+    Buffer.alloc(24,1),
+    Buffer.from([255,217]),
+  ]);
+  assert.throws(()=>assertPinnedLaunchMedia(mismatched),/x_launch_image_sha_mismatch/);
+});
+
+test('X launch page and status are isolated from original milestone receipt',async()=>{
+  const f=fixture({owner:false}),resp=response();
+  const root='https://capital-ai.online/api/social-media/x/milestone/launch';
+  await f.handler.handle(request('GET'),resp,new URL(root),json);
+  assert.equal(resp.code,200);
+  assert.match(resp.data,/X-Launch mit Infografik/);
+  assert.match(resp.data,/Studio Hub/);
+  assert.match(resp.data,/branding\/social\/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg/);
+  assert.match(resp.data,/alt="CAPITAL-AI Universe:/);
+  const js=response();
+  await f.handler.handle(request('GET'),js,
+    new URL('https://capital-ai.online/x-milestone-launch.js'),json);
+  assert.equal(js.code,200);
+  assert.ok(js.data.includes('/milestone/launch/status'));
+  assert.ok(js.data.includes('/milestone/launch/publish'));
+  const denied=response();
+  await f.handler.handle(request('GET'),denied,new URL(root+'/status'),json);
+  assert.equal(denied.code,403);
+  assert.deepEqual(f.stats(),{writeCount:0,readCount:0});
+});
+
+test('X launch refuses media writes without scope, approval or exact pinned image and never claims',async()=>{
+  const root='https://capital-ai.online/api/social-media/x/milestone/launch';
+  for(const config of [
+    {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'false'},
+    {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',SOCIAL_X_MEDIA_UPLOAD_ENABLED:'false'},
+    {SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'false'},
+  ]) {
+    const f=fixture({flags:{...config,SOCIAL_X_MEDIA_OAUTH_CONSENT_ENABLED:'true'}}),r=response();
+    await f.handler.handle(request(),r,new URL(root+'/publish'),json);
+    assert.equal(r.code,403);
+    assert.deepEqual(f.calls,[]);
+    assert.equal(f.receipt.size,0);
+  }
+  const goodFlags={SOCIAL_X_MILESTONE_MEDIA_ENABLED:'true',
+    SOCIAL_X_MEDIA_UPLOAD_ENABLED:'true',SOCIAL_X_PAID_MEDIA_APPROVED:'true'};
+  const f=fixture({flags:goodFlags,
+    launchMediaLoader:async()=>{throw Error('x_launch_image_not_provisioned');}}),r=response();
+  await f.handler.handle(request(),r,new URL(root+'/publish'),json);
+  assert.equal(r.code,503); // pinned asset missing from repo; no X usage
+  assert.equal(f.receipt.size,0);
+  assert.deepEqual(f.stats(),{writeCount:0,readCount:0});
+  const cross=fixture({flags:goodFlags}),wrong=response();
+  await cross.handler.handle(request('POST',false),wrong,new URL(root+'/publish'),json);
+  assert.equal(wrong.code,403);
+  assert.deepEqual(cross.calls,[]);
 });

@@ -168,9 +168,12 @@ test('private YouTube page scripts are copied into the frontend build and shippe
 
 test('shared stable Alpine crypto-base enforces the fixed CVE-2026-4738 zlib floor', () => {
   const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
-  assert.match(dockerfile, /^FROM node:26\.13\.0-alpine@sha256:[a-f0-9]{64} AS crypto-base$/m);
+  assert.match(dockerfile, /^FROM node:26\.13\.1-alpine@sha256:[a-f0-9]{64} AS crypto-base$/m);
   assert.match(dockerfile, /'zlib>=1\.4-r0'/);
   assert.doesNotMatch(dockerfile, /'zlib>=1\.3\.2-r1'/);
+  // OpenSSL source/image findings in Run 44514448456 require Alpine 3.24's fixed 3.5.9-r1 revision.
+  assert.match(dockerfile, /'libcrypto3>=3\.5\.9-r1'/);
+  assert.match(dockerfile, /'libssl3>=3\.5\.9-r1'/);
   assert.match(dockerfile, /apk info -v zlib/);
   assert.doesNotMatch(dockerfile, /dl-cdn\.alpinelinux\.org\/alpine\/edge|--repository(?:\s|=)/);
   for (const stage of ['build', 'production-deps', 'runtime']) {
@@ -188,7 +191,7 @@ test('runtime Node license is exact to the digest-pinned base version and upstre
   assert.equal(reachable(licensePath), true, 'Exact Node LICENSE must be inside the Docker allowlist');
   const bytes = readFileSync(resolve(root, licensePath));
   assert.match(bytes.toString('utf8'), /^Node\.js is licensed for use as follows:/);
-  // Upstream: https://github.com/nodejs/node/blob/v26.13.0/LICENSE (immutable Git blob).
+  // Upstream: https://github.com/nodejs/node/blob/v26.13.1/LICENSE (immutable Git blob).
   assert.equal(createHash('sha1').update('blob ' + bytes.length + '\0').update(bytes).digest('hex'),
     'fc7b8c7d2111e12c10dca5b54e8ded99f6bf1d56');
 });

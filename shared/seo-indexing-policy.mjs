@@ -1,3 +1,5 @@
+import { ANALYSIS_DOCUMENTATION } from './analysis-documentation.mjs';
+import { SUPPORTED_LOCALES, localizedLandingPath } from './locale-policy.mjs';
 import { HUB_ROUTES, DOCUMENT_ROUTES } from './hub-routes.mjs';
 
 // Image eligibility is separate from the HTML route inventory and XML sitemap.
@@ -23,6 +25,7 @@ export const SEO_INDEXING_STATES = Object.freeze({
 
 const routes = [
   { path: '/blueprints', classification: 'NOINDEX', contentType: 'offer', reason: 'Öffentliches Blueprint-Angebot; Suchindexierung separat prüfen.' },
+  { path: '/governance-evidence-sprint', classification: 'NOINDEX', contentType: 'b2b-offer', reason: 'Manuell erbrachtes B2B-Pilotangebot; indexierbarer SSR-Content und Angebotsfreigabe separat prüfen.' },
   { path: '/checkout/confirmation', classification: 'NOINDEX', contentType: 'confirmation', reason: 'Öffentliche Zahlungsbestätigung ohne Search-Promotion.' },
   ...HUB_ROUTES.map(route => ({path:route.path,classification:'NOINDEX',contentType:'hub-subpage',reason:'Eigenständiger Hub-Abschnitt ohne Search-Promotion.'})),
   ...Object.keys(DOCUMENT_ROUTES).map(path => ({path,classification:'NOINDEX',contentType:'documentation-static',reason:'Technische Dokumentation ohne Search-Promotion.'})),
@@ -48,12 +51,12 @@ const routes = [
   { path: '/.well-known/change-password', classification: 'NOINDEX', contentType: 'account-security', reason: 'Temporärer Discovery-Redirect für Passwortmanager zur kanonischen Sicherheitsseite; keine Search-Landingpage.' },
   { path: '/.well-known/mta-sts.txt', classification: 'NOINDEX', contentType: 'mail-security', reason: 'MTA-STS Policy-Endpunkt; operativer Standardpfad, keine Search-Landingpage.' },
 
-  { path: '/de', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/en', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/it', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/fr', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/pt', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
-  { path: '/es', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+  ...SUPPORTED_LOCALES.map(locale => ({
+    path: localizedLandingPath(locale),
+    classification: 'INDEX',
+    contentType: 'localized-landing',
+    reason: 'Öffentlicher Sprach-Einstieg mit vollständigem Hauptinhalt im HTTP-HTML.',
+  })),
 
   { path: '/login', classification: 'NOINDEX', contentType: 'auth', reason: 'Öffentlicher Auth-Einstieg ohne eigenständigen Suchwert.' },
   { path: '/architecture', classification: 'NOINDEX', contentType: 'product-doc', reason: 'Öffentlich erreichbar, aber noch nicht gegen SEO-Manifest/Claim-Evidence gehärtet.' },
@@ -62,6 +65,7 @@ const routes = [
   { path: '/studio', classification: 'NOINDEX', contentType: 'product-tool', reason: 'Interaktiver Studio-Hub; kein freigegebener SEO-Landingpage-Contract.' },
   { path: '/marketscreener', classification: 'NOINDEX', contentType: 'product-tool', reason: 'Interaktiver Screener; Datenrechte, Crawl-Fallback und Metadata werden separat gehärtet.' },
   { path: '/marketscreener/dokumentation', classification: 'NOINDEX', contentType: 'documentation', reason: 'Öffentliche synthetische Blueprint-Demos; eigenständige crawlbare Produkt-/Methodik-Landingpage mit belastbaren Angebotsangaben und Canonical noch nicht vollständig.' },
+  { path: ANALYSIS_DOCUMENTATION, classification: 'NOINDEX', contentType: 'documentation', reason: 'Dokumentationsartikel ohne Search-Promotion.' },
   { path: '/dokumentation', classification: 'NOINDEX', contentType: 'documentation', reason: 'Öffentlicher Dokumentations-Hub; Promotion erst nach eigenständiger crawlbarer Metadata/Canonical-Abnahme.' },
   { path: '/pricing', classification: 'NOINDEX', contentType: 'product-state', reason: 'Öffentlicher Tarif-Fallback vorhanden; vollständige Preis-, Checkout- und Entitlement-Belege für eine eigenständige Commerce-Landingpage fehlen noch.' },
 
@@ -89,7 +93,7 @@ export const SEO_ROUTE_POLICY = Object.freeze(routes.map((route) => Object.freez
 const exactRoutes = new Map(
   SEO_ROUTE_POLICY
     .filter((route) => !route.dynamic)
-    .map((route) => [route.path, route]),
+    .map((route) => [normalize(route.path), route]),
 );
 
 const DEFAULT_BLOCKED_POLICY = Object.freeze({

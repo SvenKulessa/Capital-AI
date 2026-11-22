@@ -34,7 +34,8 @@ export function reconcileRecipeLock(lock, inventory) {
         !safeName.test(recipe.version || '') ||
         !sha40.test(recipe.aportsCommit || '') ||
         !sha40.test(recipe.apkbuildGitBlob || '') ||
-        recipe.path !== 'main/' + recipe.sourcePackage + '/APKBUILD' ||
+        (recipe.path !== 'main/' + recipe.sourcePackage + '/APKBUILD' &&
+         recipe.path !== 'community/' + recipe.sourcePackage + '/APKBUILD') ||
         seen.has(recipe.sourcePackage)) throw new Error('Invalid/duplicate recipe identity');
     seen.add(recipe.sourcePackage);
     const found = index.get(recipe.sourcePackage);

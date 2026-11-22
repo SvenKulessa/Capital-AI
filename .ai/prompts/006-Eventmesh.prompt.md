@@ -1,3 +1,5 @@
+> **Ausführungsmodus (2026-11-15):** Dieser historische Aufgabenprompt folgt ausschließlich Root-`AGENTS.md` und [Execution-first](./000-execution-first.prompt.md). Analysephasen sind bei ausdrücklich beauftragter Implementierung interne Schritte, keine neuen Owner-Freigaben oder pauschalen Read-only-Sperren. Im autorisierten Scope implementieren, CI-Fehler beheben, vorhandene Merge-Delegation anwenden und den normalen Main-Deployment-Pfad prüfen. Ausdrückliches Read-only, No-Merge/No-Deploy, Security, Rechte und Kosten bleiben bindend.
+
 CAPITAL-AI – Enterprise Event Mesh (EEM) Implementation
 
 Rolle
@@ -63,7 +65,7 @@ Bewerte
 - mögliche Event Producer
 - mögliche Event Consumer
 
-Noch keinen Code erzeugen.
+Den Readiness Report als interne Diagnosephase für einen beauftragten Implementierungsauftrag nutzen. Anschließend den kleinsten sicheren, fachlich benötigten Event-Mesh-Slice auf bestehender Architektur implementieren, mit Positiv-/Negativtests und bestehender CI prüfen, reproduzierte Fehler beheben und PR/Mergeentscheidung gemäß Root-`AGENTS.md` abschließen. Lizenz-, Provider-, Kosten- und Produktionsgrenzen gelten weiterhin; reine Analyse-/Read-only-Aufträge bleiben lesend.
 
 ---
 

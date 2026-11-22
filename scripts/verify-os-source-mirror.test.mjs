@@ -75,3 +75,56 @@ test('missing archives, invalid image provenance and synthetic publication permi
   const falseLicense = lock(); falseLicense.status.redistributionApproved = true;
   assert.throws(() => reconcileRecipeLock(falseLicense, inventory()), /does not match/);
 });
+
+
+test('current Alpine community recipes are valid while foreign or traversal paths fail closed', () => {
+  const packages = [
+    { sourcePackage: 'clamav', version: '1.4.7-r0', aportsCommit: 'a'.repeat(40) },
+    { sourcePackage: 'libmspack', version: '0.11_alpha-r1', aportsCommit: 'b'.repeat(40) },
+  ];
+  for (const entry of packages) {
+    const subject = lock();
+    const target = inventory();
+    subject.recipes = [{ ...subject.recipes[0],
+      sourcePackage: entry.sourcePackage,
+      version: entry.version,
+      aportsCommit: entry.aportsCommit,
+      path: 'community/' + entry.sourcePackage + '/APKBUILD' }];
+    target.packages = [{ name: entry.sourcePackage, version: entry.version, sourcePackage: entry.sourcePackage }];
+    target.sourceRecipeLocators = [{ package: entry.sourcePackage, aportsCommit: entry.aportsCommit }];
+    assert.deepEqual(reconcileRecipeLock(subject, target), { sourceCount: 1, binaryCount: 1 });
+    for (const path of [
+      'testing/' + entry.sourcePackage + '/APKBUILD',
+      'community/../' + entry.sourcePackage + '/APKBUILD',
+      'community/other/APKBUILD',
+      '/community/' + entry.sourcePackage + '/APKBUILD',
+      'community/' + entry.sourcePackage + '/APKBUILD/extra',
+    ]) {
+      subject.recipes[0].path = path;
+      assert.throws(() => reconcileRecipeLock(subject, target), /Invalid\/duplicate recipe identity|does not match/);
+    }
+  }
+});
+
+
+test('current 34-recipe aports lock is source-image-bound and never authorizes distribution', async () => {
+  const { readFileSync } = await import('node:fs');
+  const path = new URL('../docs/security/evidence/os-aports-recipe-lock-03dcdb64-20261119.json', import.meta.url);
+  const current = JSON.parse(readFileSync(path, 'utf8'));
+  assert.equal(current.schema, 'CAPITAL_AI_OS_RECIPE_LOCK@1');
+  assert.equal(current.sourceSha, '03dcdb6426f30ca0b2b575060773d7ea84480fd0');
+  assert.equal(current.testedMergeSha, current.sourceSha);
+  assert.equal(current.binaryPackageCount, 50);
+  assert.equal(current.sourceRecipeCount, 34);
+  assert.equal(current.recipes.length, 34);
+  assert.equal(new Set(current.recipes.map(r => r.sourcePackage)).size, 34);
+  assert.equal(current.recipes.reduce((sum, r) => sum + r.declaredSha512Entries, 0), 228);
+  assert.deepEqual(current.recipes.filter(r => r.path.startsWith('community/')).map(r => r.sourcePackage).sort(), ['clamav', 'libmspack']);
+  assert.deepEqual(current.recipes.filter(r => r.declaredSha512Entries === 0).map(r => r.sourcePackage), ['alpine-base']);
+  assert.ok(current.recipes.every(r => /^[0-9a-f]{40}$/.test(r.aportsCommit) &&
+    /^[0-9a-f]{40}$/.test(r.apkbuildGitBlob) &&
+    ['main/', 'community/'].some(prefix => r.path === prefix + r.sourcePackage + '/APKBUILD') &&
+    r.verifiedSourceBytes === false && r.copyrightNoticesReviewed === false));
+  assert.equal(current.status.redistributionApproved, false);
+  assert.equal(current.publishedOCIManifestDigest, null);
+});

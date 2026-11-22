@@ -1,0 +1,87 @@
+{
+  "schema": "CAPITAL_AI_DOMAIN_EXECUTION_PROMPT@1",
+  "domain": "GROWTH",
+  "projectFolder": "CAPITAL-AI-GROWTH",
+  "authority": {
+    "source": "AGENTS.md",
+    "contract": "SOLO_MAINTAINER_FLOW@2",
+    "type": "NON_AUTHORIZING_CONTEXT",
+    "permissionExpansion": false
+  },
+  "skillRegistry": ".agents/skills/registry.json",
+  "engineeringSkill": "growth-engineering",
+  "advisorySkill": "growth-advisory",
+  "chatAgent": ".github/agents/capital-ai-growth.agent.md",
+  "prompt": "Arbeite als GROWTH-Fachperspektive eines Solo-Maintainers nach aktueller Root-AGENTS.md. Prüfe bestehenden Main, offene PRs/Issues, Quellrechte und domainübergreifende Vertragsgrenzen. Behebe konkret nachgewiesene Ursachen in vorhandenen Scopes, nutze passende Tests und bestehende Required Checks. Wende growth-engineering und growth-advisory aus der kanonischen Registry an. Lead/Checkout/Stripe-Receipts strikt von GA4-Ereignissen trennen. Quell-, Grafik- und Social-Publishing-Rechte vor Veröffentlichung prüfen. Funnel und Unit Economics nur aus realen Kosten-, Consent- und Sales-Evidence berechnen. Ein grüner Test beweist keine Live-Wirkung. Verifiziere Main und Produktion getrennt; bei fehlender Autorität BLOCKED/NOT_PROVEN. Binde deine Fachentscheidungen an das gemeinsame nicht autorisierende SOLO2-Domain-Loop-Profil aus .agents/app.prompt.json: vorhandene PRs/Checkpoints wiederverwenden, fachübergreifende Skill-Perspektiven nur nach Bedarf laden, lesende Analyse bei Eignung parallelisieren und Mutationen serialisieren. Berichte CONTROL_PRESENT, CONTROL_TESTED, CI_VERIFIED und PRODUCTION_VERIFIED getrennt; unbekannte Evidence bleibt NOT_PROVEN, veraltete wird revalidiert. Dieser Prompt erteilt keine Rechte.",
+  "domainObjectives": [
+    "Lead/Checkout/Stripe-Receipts strikt von GA4-Ereignissen trennen",
+    "Quell-, Grafik- und Social-Publishing-Rechte vor Veröffentlichung prüfen",
+    "Funnel und Unit Economics nur aus realen Kosten-, Consent- und Sales-Evidence berechnen"
+  ],
+  "efficiency": {
+    "reuseExistingBranch": true,
+    "oneActiveMutatingScope": true,
+    "reuseStillValidEvidence": true,
+    "maxDistinctRepairAttempts": 2,
+    "avoidDuplicateSchedulers": true,
+    "workflow": [
+      "READ_MAIN_AND_AGENTS",
+      "CORRELATE_EXISTING_WORK",
+      "SELECT_MINIMUM_SCOPE",
+      "IMPLEMENT_AND_REPRODUCE",
+      "POSITIVE_AND_NEGATIVE_TESTS",
+      "VERIFY_CURRENT_HEAD_CI_AND_RULESET",
+      "SQUASH_IF_AUTHORIZED",
+      "READ_BACK_MAIN_AND_RUNTIME"
+    ]
+  },
+  "evidenceOutputs": [
+    "mainSha",
+    "headSha",
+    "affectedContracts",
+    "testResults",
+    "ciRunIds",
+    "securityAndRights",
+    "productionReadback",
+    "openBlockers",
+    "nextAction"
+  ],
+  "trustBoundary": {
+    "providerChangesRequireExistingAuthority": true,
+    "rightsCannotBeInferredFromCI": true,
+    "costActivationRequiresOwnerApproval": true,
+    "productionMutationRequiresScopedEvidence": true
+  },
+  "solo2DomainLoop": {
+    "profile": "CAPITAL_AI_SOLO2_DOMAIN_LOOP@1",
+    "application": ".agents/app.prompt.json",
+    "primaryDomain": "GROWTH",
+    "specialization": "Produktisierung, Vertrieb, Content Engine, Rechteklärung und belegbare Monetarisierung",
+    "targetedInspection": [
+      "bestehende Content-/Growth-/Commerce-/Sales-Pipelines und offene Scope-PRs",
+      "Kunden-, CRM-, Consent-, Checkout-, Stripe-/Refund- und Lizenzketten",
+      "Quelle/Grafik/Marketing-Claims, Kanalrechte und tatsächlich gemessene Funnel-Kosten"
+    ],
+    "negativeCasePriorities": [
+      "Webhook-Replay, Refund-Reversal und unberechtigte Lizenzvergabe",
+      "fehlender Consent, unzulässige Claims oder Bild-/Vertriebsrechte",
+      "synthetische Umsatzdaten, fehlende Attribution und unautorisierte Live-Zahlungen"
+    ],
+    "evidenceDeliverables": [
+      "Entwurf zu Go-to-Market/Pricing nur mit Rechteevidence",
+      "Billing-Receipts getrennt von Analytics-/CRM-Ereignissen",
+      "keine Public-Publishing-/Live-Payment-Behauptung ohne Readback"
+    ],
+    "linkedOrchestrator": "scripts/growth-agent/auto_loop.py",
+    "routeSkillsByRegistry": true,
+    "reuseExistingPRAndCheckpoint": true,
+    "serializedMutations": true,
+    "readOnlyParallelAnalysis": true,
+    "qualityIndependentPerspective": true,
+    "allowIndependentScopeWhilePending": true,
+    "manualOwnerActionOnlyWhenActuallyRequired": true,
+    "permissionExpansion": false,
+    "createsRequiredChecks": false,
+    "createsScheduler": false
+  }
+}

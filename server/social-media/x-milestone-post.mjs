@@ -2,6 +2,8 @@
 // This reuses the existing Social Media Engine X transport and rotating OAuth2
 // resolver; it is NOT a second publisher, scheduler or autonomous outreach bot.
 import { createHash } from 'node:crypto';
+import { lstat, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { createSocialXEdgeClient } from './x-edge-client.mjs';
 import { resolveOwnerXCredentials } from './x-article-test.mjs';
 import { createSocialProviderPublishTransport } from './provider-publish.mjs';
@@ -11,17 +13,62 @@ const POST = BASE + '/publish';
 const STATUS = BASE + '/status';
 const SCRIPT = '/x-milestone-post.js';
 const EXPECTED_HANDLE = 'CapitalAIOnline';
+const PUBLISH_CHANNEL = 'X_PUBLISH';
 const XID = /^[0-9]{1,25}$/;
+
+const LAUNCH = BASE + '/launch';
+const LAUNCH_POST = LAUNCH + '/publish';
+const LAUNCH_STATUS = LAUNCH + '/status';
+const LAUNCH_SCRIPT = '/x-milestone-launch.js';
+const LAUNCH_MEDIA_PATH = 'public/branding/social/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg';
+export const LAUNCH_MEDIA_SHA256 = '802e27775aa484b03ce5ff39e803b9903250ad1bd149c4cc5c5c4af467f9889a';
+export const LAUNCH_TEXT = [
+  '🚀 Finanzdaten überall. Aber was bedeuten sie? 🌌', '',
+  'Willkommen bei CAPITAL-AI:',
+  '📚 Learning Hub · Wissen',
+  '📊 Analytics Hub · Methoden',
+  '🔎 Studio Hub · Daten verstehen',
+  '🎬 Content Engine · Inhalte', '',
+  'Das ist erst der Anfang … 👀',
+  '👉 https://capital-ai.online/learning', '', '#FinTech',
+].join('\n');
+export const LAUNCH_CONTENT_KEY = createHash('sha256')
+  .update('capital-ai-x-launch-v1\n' + LAUNCH_TEXT + '\n' + LAUNCH_MEDIA_SHA256)
+  .digest('hex');
+if (LAUNCH_TEXT.length > 280) throw Error('X_LAUNCH_POST_TOO_LONG');
+
+export function assertPinnedLaunchMedia(bytes) {
+  // The owner-supplied final asset is JPEG; never transcode or rewrite its bytes.
+  const validJpeg = Buffer.isBuffer(bytes) && bytes.length >= 24
+    && bytes.length <= 5*1024*1024
+    && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+    && bytes[bytes.length-2] === 0xff && bytes[bytes.length-1] === 0xd9;
+  if (!validJpeg) throw Error('x_launch_image_invalid');
+  if (createHash('sha256').update(bytes).digest('hex') !== LAUNCH_MEDIA_SHA256)
+    throw Error('x_launch_image_sha_mismatch');
+  return bytes;
+}
+async function loadPinnedLaunchMedia() {
+  // No user URL, remote fetch, supplied path, symlink or filesystem traversal.
+  const file = resolve(process.cwd(), LAUNCH_MEDIA_PATH);
+  let info;
+  try { info = await lstat(file); }
+  catch { throw Error('x_launch_image_not_provisioned'); }
+  if (!info.isFile() || info.isSymbolicLink() || info.size > 5*1024*1024)
+    throw Error('x_launch_image_invalid');
+  return assertPinnedLaunchMedia(await readFile(file));
+}
+
 
 export const MILESTONE_TEXT = "🚀 Weniger Content-Rauschen, mehr Kontext: CAPITAL-AI verbindet Content Adapter + Social Media Engine. Quellen & Rechte prüfen → Posts/Shorts entwerfen → Freigabe → Nachweis. Start: Daten- und Screener-Blueprints. 🧪 Pilot; keine Anlageberatung. https://capital-ai.online/";
 export const MILESTONE_CONTENT_KEY = createHash('sha256').update(MILESTONE_TEXT, 'utf8').digest('hex');
 if (MILESTONE_TEXT.length > 280) throw Error('X_MILESTONE_POST_TOO_LONG');
 function must(ok, code) { if (!ok) throw Error(code); }
 
-async function boundedProviderRead(fetchImpl, postId, bearer) {
+async function boundedProviderRead(fetchImpl, postId, bearer, launch = false) {
   let response;
   try {
-    response = await fetchImpl('https://api.x.com/2/tweets/' + postId + '?tweet.fields=author_id', {
+    response = await fetchImpl('https://api.x.com/2/tweets/' + postId + (launch ? '?tweet.fields=author_id,attachments' : '?tweet.fields=author_id'), {
       method: 'GET', headers: { Authorization: 'Bearer ' + bearer, Accept: 'application/json' },
       redirect: 'error', signal: AbortSignal.timeout(13000),
     });
@@ -34,14 +81,28 @@ async function boundedProviderRead(fetchImpl, postId, bearer) {
   return result;
 }
 
-export async function publishXMilestone({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
-  // Refresh/account binding comes BEFORE the unique claim, to avoid consuming
-  // the only attempt on an expired-but-recoverable grant.
+export async function publishXMilestone({
+  edge, identity, jwt, env, fetchImpl, edgeFactory,
+  launch = false, launchMediaLoader = loadPinnedLaunchMedia,
+}) {
+  let mediaBytes = null;
+  if (launch) {
+    must(env.SOCIAL_X_MILESTONE_MEDIA_ENABLED === 'true', 'x_launch_media_disabled');
+    must(env.SOCIAL_X_MEDIA_UPLOAD_ENABLED === 'true'
+      && env.SOCIAL_X_PAID_MEDIA_APPROVED === 'true',
+      'x_launch_media_cost_approval_missing');
+    // Validate exact bytes and scope BEFORE claim and before provider API requests.
+    mediaBytes = assertPinnedLaunchMedia(await launchMediaLoader());
+    const scope = await edge.invoke('x_credentials', { userId: identity.userId });
+    must(scope?.mediaWriteApproved === true, 'x_media_write_scope_missing');
+  }
+  // Existing rotating owner OAuth and account identity are resolved before claim.
   const credentials = await resolveOwnerXCredentials({
     edge, identity, jwt, env, fetchImpl, edgeFactory,
   });
+  const contentText = launch ? LAUNCH_TEXT : MILESTONE_TEXT;
   const context = { userId: identity.userId, accountId: credentials.accountId,
-    contentKey: MILESTONE_CONTENT_KEY };
+    contentKey: launch ? LAUNCH_CONTENT_KEY : MILESTONE_CONTENT_KEY };
   const previous = await edge.invoke('milestone_status', context);
   if (previous.found) return { ...previous, retryPublish: false,
     note: 'existing_receipt_no_automatic_replay',
@@ -57,14 +118,17 @@ export async function publishXMilestone({ edge, identity, jwt, env, fetchImpl, e
       SOCIAL_X_PUBLISH_ENABLED: 'true' }, fetchImpl,
   });
   const receipt = await transport.submit({ channel: 'X',
-    accessToken: credentials.accessToken, metadata: { caption: MILESTONE_TEXT } });
+    accessToken: credentials.accessToken, metadata: { caption: contentText },
+    ...(launch ? { mediaBytes, mediaSha256: LAUNCH_MEDIA_SHA256 } : {}) });
   const postId = receipt?.providerDeliveryId;
   must(receipt?.channel === 'X' && XID.test(postId || ''), 'x_milestone_receipt_invalid');
   await edge.invoke('milestone_record', { ...context, stage: 'post', postId });
   // A provider response is not equivalent to a verified publication.
-  const read = await boundedProviderRead(fetchImpl, postId, credentials.accessToken);
+  const read = await boundedProviderRead(fetchImpl, postId, credentials.accessToken, launch);
   must(read?.data?.id === postId && read?.data?.author_id === credentials.accountId
-    && typeof read?.data?.text === 'string' && read.data.text.length > 0,
+    && typeof read?.data?.text === 'string' && read.data.text.length > 0
+    && (!launch || (Array.isArray(read?.data?.attachments?.media_keys)
+      && read.data.attachments.media_keys.length === 1)),
     'x_milestone_readback_mismatch');
   await edge.invoke('milestone_record', { ...context, stage: 'verify', postId });
   return { found: true, status: 'VERIFIED_PUBLISHED', postId,
@@ -164,23 +228,63 @@ publish.addEventListener('click',async()=>{
 status.addEventListener('click',probe);
 probe();
 `;
+
+const LAUNCH_PAGE_HTML = `<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAPITAL-AI · X-Launch mit Infografik</title>
+<style>
+body{margin:0;padding:24px;background:#081025;color:#f5f6ff;font:16px/1.6 system-ui}
+main{max-width:760px;margin:auto}h1{color:#f9bf21}a{color:#f9bf21}
+button{font:inherit;padding:12px 16px;min-height:48px;border:0;border-radius:8px;
+background:#f9bf21;color:#091027;margin:8px 8px 8px 0;cursor:pointer}
+button:disabled{opacity:.48;cursor:not-allowed}
+pre,blockquote{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #52617b;
+padding:16px;border-radius:10px}a:focus-visible,button:focus-visible{outline:3px solid #63e4db}
+</style></head><body><main><h1>CAPITAL-AI · Erster X-Launch</h1>
+<p>Ein Owner-only-Einmalauftrag mit SHA-256-gebundener Infografik.</p>
+<blockquote>${LAUNCH_TEXT}</blockquote>
+<img src="/branding/social/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg"
+alt="CAPITAL-AI Universe: Learning Hub, Analytics Hub, Studio Hub und Content Engine um einen digitalen Globus."
+width="760" height="428" style="display:block;max-width:100%;height:auto">
+<p>Kein Upload ohne <code>media.write</code>, identische JPEG-Bytes, Owner-Session,
+ausdrückliche X-Kostenfreigabe und gültige bestehende One-shot-Receipt-Prüfung.</p>
+<p>Finanzbildung, keine individuelle Anlageberatung, keine Erfolgsgarantie.</p>
+<p><a href="/login">Als Owner anmelden</a></p>
+<button id="publish" type="button" disabled>Einmalig mit Bild auf X veröffentlichen</button>
+<button id="status" type="button">Owner-Receipt prüfen (kein X-API-Aufruf)</button>
+<pre id="result" role="status" aria-live="polite">Owner-Status wird geprüft.</pre>
+</main><script src="/x-milestone-launch.js" defer></script></body></html>`;
+const LAUNCH_SCRIPT_SOURCE = SCRIPT_SOURCE
+  .replaceAll('/api/social-media/x/milestone/status', '/api/social-media/x/milestone/launch/status')
+  .replaceAll('/api/social-media/x/milestone/publish', '/api/social-media/x/milestone/launch/publish');
 export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetch,
-  edgeFactory = createSocialXEdgeClient } = {}) {
+  edgeFactory = createSocialXEdgeClient, launchMediaLoader = loadPinnedLaunchMedia } = {}) {
   async function handle(req, res, url, json) {
-    if (![BASE, POST, STATUS, SCRIPT].includes(url.pathname)) return false;
+    if (![BASE, POST, STATUS, SCRIPT, LAUNCH, LAUNCH_POST, LAUNCH_STATUS,
+      LAUNCH_SCRIPT].includes(url.pathname)) return false;
+    const isLaunch = [LAUNCH, LAUNCH_POST, LAUNCH_STATUS, LAUNCH_SCRIPT].includes(url.pathname);
+    const isPost = [POST, LAUNCH_POST].includes(url.pathname);
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    if ((url.pathname === POST && req.method !== 'POST')
-      || (url.pathname !== POST && req.method !== 'GET')) {
+    if ((isPost && req.method !== 'POST')
+      || (!isPost && req.method !== 'GET')) {
       json(res, 405, { error: 'method_not_allowed' }); return true;
     }
-    if (url.pathname === POST && (!auth?.sameOrigin?.(req)
+    if (isPost && (!auth?.sameOrigin?.(req)
       || req.headers?.['sec-fetch-site'] !== 'same-origin')) {
       json(res, 403, { error: 'same_origin_required' }); return true;
     }
     // Public read-only preview fixes direct links without an Owner session.
     // The paid POST and the DB receipt/status remain owner-authenticated.
+    if (url.pathname === LAUNCH_SCRIPT) {
+      res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+      res.end(LAUNCH_SCRIPT_SOURCE); return true;
+    }
+    if (url.pathname === LAUNCH) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(LAUNCH_PAGE_HTML); return true;
+    }
     if (url.pathname === SCRIPT) {
       res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
       res.end(SCRIPT_SOURCE); return true;
@@ -195,23 +299,27 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
       json(res, 403, { error: 'owner_authorization_required' }); return true;
     }
     if (env.SOCIAL_X_EDGE_STORE_ENABLED !== 'true'
+      || env.SOCIAL_X_PUBLISH_OAUTH_ENABLED !== 'true'
       || env.SOCIAL_X_MILESTONE_POST_ENABLED !== 'true') {
       json(res, 503, { error: 'x_milestone_not_enabled' }); return true;
     }
-    if (url.pathname === POST && (env.SOCIAL_X_PAID_WRITE_APPROVED !== 'true'
-      || env.SOCIAL_X_PAID_READ_APPROVED !== 'true')) {
+    if (isPost && (env.SOCIAL_X_PAID_WRITE_APPROVED !== 'true'
+      || env.SOCIAL_X_PAID_READ_APPROVED !== 'true'
+      || (isLaunch && (env.SOCIAL_X_MILESTONE_MEDIA_ENABLED !== 'true'
+        || env.SOCIAL_X_MEDIA_UPLOAD_ENABLED !== 'true'
+        || env.SOCIAL_X_PAID_MEDIA_APPROVED !== 'true')))) {
       json(res, 403, { error: 'x_milestone_cost_approval_missing' }); return true;
     }
     try {
       const jwt = await auth?.internalAccessToken?.(req, res);
-      const edge = edgeFactory({ env, fetchImpl, channel: 'X', userAccessToken: jwt });
-      if (url.pathname === STATUS) {
+      const edge = edgeFactory({ env, fetchImpl, channel: PUBLISH_CHANNEL, userAccessToken: jwt });
+      if ([STATUS, LAUNCH_STATUS].includes(url.pathname)) {
         const account = await edge.invoke('x_credentials', { userId: identity.userId });
         must(account?.handle === EXPECTED_HANDLE && XID.test(account?.accountId || ''),
           'x_wrong_connected_account');
         const receipt = await edge.invoke('milestone_status', {
           userId: identity.userId, accountId: account.accountId,
-          contentKey: MILESTONE_CONTENT_KEY,
+          contentKey: isLaunch ? LAUNCH_CONTENT_KEY : MILESTONE_CONTENT_KEY,
         });
         json(res, 200, { ...receipt, retryPublish: false,
           ...(XID.test(receipt.postId || '') ? {
@@ -221,6 +329,7 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
       }
       const receipt = await publishXMilestone({
         edge, identity, jwt, env, fetchImpl, edgeFactory,
+        launch: isLaunch, launchMediaLoader,
       });
       json(res, receipt.status === 'VERIFIED_PUBLISHED' ? 200 : 409, receipt);
     } catch (error) {
@@ -229,7 +338,7 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
         'x_refresh_not_available'];
       json(res, 503, { error: exposed.includes(error?.message)
         ? error.message : 'x_milestone_result_unconfirmed',
-        retryPublish: false, statusUrl: STATUS });
+        retryPublish: false, statusUrl: isLaunch ? LAUNCH_STATUS : STATUS });
     }
     return true;
   }

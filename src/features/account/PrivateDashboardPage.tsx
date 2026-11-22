@@ -1,31 +1,33 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { AccountPageShell } from './AccountPageShell';
+import { OwnerAgentOperationsPanel } from '../../components/OwnerAgentOperationsPanel';
 import { LearningFavoritesPanel } from '../learning/LearningFavorites';
+import { readNotes, saveNotes, NotesClientError, type NotesConflict, type NotesSnapshot } from './privateNotesOcc';
+import { NotesConflictPanel } from './NotesConflictPanel';
 
-type NotesResponse = { notes: string; userId: string };
 const dashboardTabs = [
   { id: 'learning', label: 'Lernfeld' },
   { id: 'notes', label: 'Notizen' },
   { id: 'saved', label: 'Gespeicherte Notizen' },
+  { id: 'operations', label: 'Owner Operations' },
 ] as const;
 type DashboardTab = (typeof dashboardTabs)[number]['id'];
 const changedSessionMessage = 'Deine Anmeldung hat sich geändert. Lade die Seite erneut, bevor du Notizen bearbeitest.';
 
-function isNotesResponse(value: unknown, userId: string): value is NotesResponse {
-  if (!value || typeof value !== 'object') return false;
-  const body = value as Partial<NotesResponse>;
-  return body.userId === userId && typeof body.notes === 'string';
-}
-
-function PrivateDashboardContent({ userId }: { userId: string }) {
+function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner: boolean }) {
   const [tab, setTab] = useState<DashboardTab>('learning');
+  const visibleTabs = isOwner ? dashboardTabs : dashboardTabs.filter(item => item.id !== 'operations');
   const [text, setText] = useState('');
   const [savedText, setSavedText] = useState('');
   const [loaded, setLoaded] = useState(false);
+  const [revision, setRevision] = useState<string | null>(null);
+  const [conflict, setConflict] = useState<NotesConflict | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [writeLocked, setWriteLocked] = useState(false);
   const revoked = useRef(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -33,25 +35,23 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
     setText('');
     setSavedText('');
     setLoaded(false);
+    setRevision(null);
+    setConflict(null);
     setStatus('');
     setError('');
-    fetch('/api/profile/notes', {
-      credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
-    }).then(async response => {
-      if (!response.ok) throw new Error('NOTES_UNAVAILABLE');
-      const body: unknown = await response.json();
-      if (!isNotesResponse(body, userId)) throw new Error('NOTES_IDENTITY_MISMATCH');
-      return body;
-    }).then(body => {
+    setWriteLocked(false);
+    readNotes(userId, controller.signal).then(body => {
       if (!controller.signal.aborted && !revoked.current) {
         setText(body.notes);
         setSavedText(body.notes);
+        setRevision(body.revision);
         setLoaded(true);
       }
     }).catch(() => {
       if (!controller.signal.aborted && !revoked.current) {
         setText('');
         setSavedText('');
+        setRevision(null);
         setLoaded(false);
         setError('Notizen konnten nicht sicher geladen werden. Bitte lade die Seite erneut.');
       }
@@ -76,6 +76,8 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
         if (!controller.signal.aborted) {
           revoked.current = true;
           setLoaded(false);
+          setRevision(null);
+          setConflict(null);
           setText('');
           setSavedText('');
           setStatus('');
@@ -97,40 +99,97 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!loaded || busy || revoked.current) return;
+    if (!loaded || savingRef.current || revoked.current || revision === null || conflict || writeLocked) return;
+    savingRef.current = true;
     setBusy(true);
     setError('');
     setStatus('');
+    const submitted = text;
+    const base: NotesSnapshot = { userId, notes: savedText, revision };
     try {
-      const response = await fetch('/api/profile/notes', {
-        method: 'PUT',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: text, expectedUserId: userId }),
-        signal: AbortSignal.timeout(10000),
-      });
-      if (response.status === 409 || response.status === 401) throw new Error('SESSION_CHANGED');
-      if (!response.ok) throw new Error('SAVE_FAILED');
-      const body: unknown = await response.json();
-      if (!isNotesResponse(body, userId) || body.notes !== text || revoked.current) {
-        throw new Error('SESSION_CHANGED');
+      const result = await saveNotes(base, submitted);
+      if (revoked.current) return;
+      if (result.kind === 'conflict') {
+        setConflict(result.conflict);
+        setTab('notes');
+        setError('Notizen wurden in einem anderen Fenster geändert. Dein Entwurf bleibt erhalten.');
+        return;
       }
-      setSavedText(body.notes);
+      setRevision(result.snapshot.revision);
+      setSavedText(result.snapshot.notes);
+      // A new edit made during the request must not be overwritten.
+      setText(current => current === submitted ? result.snapshot.notes : current);
       setStatus('Notizen gespeichert.');
     } catch (reason) {
-      if (reason instanceof Error && reason.message === 'SESSION_CHANGED') {
-        revoked.current = true;
-        setLoaded(false);
-        setText('');
-        setSavedText('');
-        setError(changedSessionMessage);
+      if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
+        revokeSession();
+      } else if (!revoked.current && reason instanceof NotesClientError &&
+                 reason.code === 'NOTES_WRITE_LOCKED') {
+        setWriteLocked(true);
+        setError('Notizen sind serverseitig schreibgeschützt. Dein Entwurf bleibt hier zum Kopieren erhalten.');
       } else if (!revoked.current) {
-        setError('Speichern fehlgeschlagen. Deine Eingabe bleibt erhalten.');
+        setError('Speichern nicht bestätigt. Deine Eingabe bleibt erhalten. Bitte Serverstand prüfen.');
       }
     } finally {
+      savingRef.current = false;
       setBusy(false);
     }
+  }
+
+  function revokeSession() {
+    revoked.current = true;
+    setLoaded(false);
+    setRevision(null);
+    setConflict(null);
+    setText('');
+    setSavedText('');
+    setStatus('');
+    setWriteLocked(false);
+    setError(changedSessionMessage);
+  }
+
+  async function mergeConflict(merged: string) {
+    if (!conflict || savingRef.current || revoked.current || writeLocked) return;
+    savingRef.current = true;
+    setBusy(true);
+    setError('');
+    const base: NotesSnapshot = { userId, notes: conflict.serverNotes, revision: conflict.serverRevision };
+    try {
+      const result = await saveNotes(base, merged);
+      if (revoked.current) return;
+      if (result.kind === 'conflict') {
+        setConflict(result.conflict);
+        setError('Weitere Änderung erkannt. Bitte neue Serverfassung prüfen.');
+      } else {
+        setRevision(result.snapshot.revision);
+        setSavedText(result.snapshot.notes);
+        setText(result.snapshot.notes);
+        setConflict(null);
+        setStatus('Zusammenführung gespeichert.');
+      }
+    } catch (reason) {
+      if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
+        revokeSession();
+      } else if (reason instanceof NotesClientError && reason.code === 'NOTES_WRITE_LOCKED') {
+        setWriteLocked(true);
+        setError('Zusammenführung ist serverseitig gesperrt. Bitte kopiere deinen Entwurf.');
+      } else {
+        setError('Zusammenführung nicht bestätigt. Dein Entwurf bleibt erhalten.');
+      }
+    } finally {
+      savingRef.current = false;
+      setBusy(false);
+    }
+  }
+
+  function acceptServer() {
+    if (!conflict || revoked.current || savingRef.current) return;
+    setText(conflict.serverNotes);
+    setSavedText(conflict.serverNotes);
+    setRevision(conflict.serverRevision);
+    setConflict(null);
+    setStatus('Serverfassung übernommen.');
+    setError('');
   }
 
   return (
@@ -139,14 +198,14 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
         onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
           event.preventDefault();
-          const index = dashboardTabs.findIndex(item => item.id === tab);
-          const next = event.key === 'Home' ? dashboardTabs[0].id :
-            event.key === 'End' ? dashboardTabs[dashboardTabs.length - 1].id :
-            dashboardTabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + dashboardTabs.length) % dashboardTabs.length].id;
+          const index = visibleTabs.findIndex(item => item.id === tab);
+          const next = event.key === 'Home' ? visibleTabs[0].id :
+            event.key === 'End' ? visibleTabs[visibleTabs.length - 1].id :
+            visibleTabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + visibleTabs.length) % visibleTabs.length].id;
           setTab(next);
           document.getElementById('dashboard-' + next + '-tab')?.focus();
         }}>
-        {dashboardTabs.map(item => (
+        {visibleTabs.map(item => (
           <button key={item.id} type="button" id={'dashboard-' + item.id + '-tab'}
             role="tab" tabIndex={tab === item.id ? 0 : -1}
             aria-selected={tab === item.id} aria-controls={'dashboard-' + item.id}
@@ -165,16 +224,18 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
             <label htmlFor="private-notes" className="block text-base text-slate-300">
               Gedanken und Lernnotizen (maximal 10.000 Zeichen)
             </label>
-            <textarea id="private-notes" rows={10} maxLength={10000} disabled={!loaded || busy}
+            <textarea id="private-notes" rows={10} maxLength={10000} disabled={!loaded || busy || !!conflict}
               value={text} onChange={event => { setText(event.target.value); setStatus(''); }}
               className="w-full rounded-xl border border-slate-500 bg-slate-950 p-4 text-base leading-7 text-white focus-visible:outline-2 focus-visible:outline-brand-gold" />
-            <button disabled={!loaded || busy}
+            <button disabled={!loaded || busy || writeLocked || !!conflict}
               className="min-h-11 rounded-xl bg-brand-gold px-5 py-3 font-semibold text-black disabled:opacity-50">
               {busy ? 'Speichern …' : 'Notizen speichern'}
             </button>
             {!loaded && !error && <p role="status" className="text-slate-300">Notizen werden geladen …</p>}
             {status && <p role="status" className="text-emerald-200">{status}</p>}
             {error && <p role="alert" className="text-rose-200">{error}</p>}
+            {conflict && <NotesConflictPanel conflict={conflict} busy={busy || writeLocked}
+              onUseServer={acceptServer} onMerge={text => void mergeConflict(text)} />}
           </form>
         </section>
       </div>
@@ -193,6 +254,10 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
           </button>
         </section>
       </div>
+      {isOwner && tab === 'operations' && <div id="dashboard-operations" role="tabpanel" aria-labelledby="dashboard-operations-tab">
+        <OwnerAgentOperationsPanel userId={userId} />
+      </div>}
+
     </div>
   );
 }
@@ -201,7 +266,8 @@ export function PrivateDashboardPage({ onNavigate }: { onNavigate: (path: string
   return (
     <AccountPageShell active="/profile/dashboard" title="Privates Dashboard"
       description="Dein persönliches Lernfeld sowie bearbeitete und gespeicherte Notizen." onNavigate={onNavigate}>
-      {session => <PrivateDashboardContent key={session.user!.id} userId={session.user!.id} />}
+      {session => <PrivateDashboardContent key={session.user!.id} userId={session.user!.id}
+        isOwner={session.account?.available === true && session.account.iamRole === 'owner'} />}
     </AccountPageShell>
   );
 }

@@ -1,9 +1,10 @@
-FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS crypto-base
+FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS crypto-base
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
-# Use the patched zlib from the base image's existing stable Alpine 3.24 branch.
+# Use patched OpenSSL, zlib and libxml2 packages from stable Alpine 3.24.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
-RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' 'zlib>=1.4-r0' \
-    && apk info -v zlib
+# Fail closed when patched OpenSSL or libxml2 (CVE-2026-86144) is unavailable.
+RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
+    && apk info -v zlib libcrypto3 libssl3 libxml2
 
 FROM crypto-base AS build
 WORKDIR /app
@@ -40,7 +41,18 @@ COPY AGENTS.md ./AGENTS.md
 # The offline branding/3D regression tests inspect these two non-secret build contracts.
 # Include them in build only; the final runtime image receives neither file.
 COPY Dockerfile .dockerignore ./
+# Offline isolation tests verify the actual dedicated production manifests, without installing them in build.
+COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runtime/
 COPY .agents/skills ./.agents/skills
+# Scoped build-only machine-readable prompts for the existing offline test suite.
+COPY .agents/app.prompt.json ./.agents/app.prompt.json
+# Build-only offline Drive routing contract (the runtime image does not receive these files).
+COPY .agents/contracts/acode-shared-delivery.json .agents/contracts/drive-artifact-routing.json ./.agents/contracts/
+COPY CAPITAL-AI-PRODUCT/domain.prompt.json CAPITAL-AI-PRODUCT/PROJECT.md ./CAPITAL-AI-PRODUCT/
+COPY CAPITAL-AI-MARKET/domain.prompt.json CAPITAL-AI-MARKET/PROJECT.md ./CAPITAL-AI-MARKET/
+COPY CAPITAL-AI-PLATFORM/domain.prompt.json CAPITAL-AI-PLATFORM/PROJECT.md ./CAPITAL-AI-PLATFORM/
+COPY CAPITAL-AI-TRUST/domain.prompt.json CAPITAL-AI-TRUST/PROJECT.md ./CAPITAL-AI-TRUST/
+COPY CAPITAL-AI-GROWTH/domain.prompt.json CAPITAL-AI-GROWTH/PROJECT.md ./CAPITAL-AI-GROWTH/
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
 COPY src ./src
@@ -50,6 +62,8 @@ COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
 COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
 COPY CAPITAL-AI-GROWTH/badge.svg ./CAPITAL-AI-GROWTH/badge.svg
+# DRAFT_ONLY Growth Intelligence source snapshot; required for offline contract tests.
+COPY CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json ./CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json
 COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY packages/benchmark-core ./packages/benchmark-core
@@ -61,6 +75,8 @@ COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
 COPY public/branding/universe ./public/branding/universe
+# MediaKit v5 first-party Learning Universe vectors (hash-bound in registry).
+COPY public/branding/learning-universe ./public/branding/learning-universe
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
@@ -80,29 +96,39 @@ COPY public/downloads/market-screener-hub-open-source.html ./public/downloads/ma
 COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/learning-simulator.test.mjs server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/founder-access.mjs server/founder-access.test.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.mjs server/blueprint-commerce.test.mjs server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/purchase-receipt.mjs server/purchase-receipt.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.mjs server/tool-catalog-assessment.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs server/chat-buddy-learn.test.mjs ./server/
-COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/historical-analytics-demo.test.mjs ./server/
+COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/account-avatar.test.mjs server/profile-avatar-upload.test.mjs server/profile-avatar-clamav.test.mjs server/historical-analytics-demo.test.mjs ./server/
+COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
+COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
 COPY server/oauth-consent.mjs server/oauth-consent.test.mjs ./server/
+COPY scripts/agent-operations-pilot-migration.test.mjs ./scripts/
 COPY scripts/oauth-client-isolation.test.mjs ./scripts/
 COPY supabase/migrations/20261113152000_oauth_client_default_deny.sql ./supabase/migrations/
 COPY server/social-media/crypto-signal-sources.mjs server/social-media/crypto-signal-workflow.mjs ./server/social-media/
 COPY server/social-media/crypto-signal-workflow.test.mjs ./server/social-media/
-COPY server/social-media/youtube-token-resolver.mjs server/social-media/youtube-private-upload.mjs server/social-media/youtube-oauth-start.mjs server/social-media/youtube-oauth-exchange.mjs server/social-media/youtube-account-status.mjs server/social-media/provider-adapter.mjs server/social-media/youtube-runtime.test.mjs server/social-media/youtube-oauth.test.mjs server/social-media/provider-adapter.test.mjs server/social-media/provider-store.mjs server/social-media/provider-store.test.mjs server/social-media/provider-readback.mjs server/social-media/provider-readback.test.mjs server/social-media/oauth-callback.mjs server/social-media/oauth-callback.test.mjs server/social-media/x-oauth-start.mjs server/social-media/x-oauth-start.test.mjs server/social-media/x-oauth-exchange.mjs server/social-media/x-oauth-exchange.test.mjs server/social-media/x-account-status.mjs server/social-media/x-account-status.test.mjs server/social-media/x-edge-client.mjs server/social-media/x-edge-client.test.mjs server/social-media/x-edge-vault.test.mjs server/social-media/owner-token-refresh.mjs server/social-media/owner-token-refresh.test.mjs server/social-media/x-article-test.mjs server/social-media/x-article-test.test.mjs server/social-media/x-milestone-post.mjs server/social-media/x-milestone-post.test.mjs server/social-media/x-url-context.mjs server/social-media/x-url-context.test.mjs server/social-media/asset-readback.mjs server/social-media/asset-readback.test.mjs server/social-media/provider-external-readback.mjs server/social-media/provider-external-readback.test.mjs server/social-media/provider-publish.mjs server/social-media/provider-publish.test.mjs server/social-media/instagram-carousel.mjs server/social-media/instagram-carousel.test.mjs server/social-media/instagram-oauth-start.mjs server/social-media/instagram-oauth-exchange.mjs server/social-media/instagram-account-status.mjs server/social-media/instagram-oauth.test.mjs server/social-media/facebook-oauth-start.mjs server/social-media/facebook-oauth-exchange.mjs server/social-media/facebook-account-status.mjs server/social-media/facebook-oauth.test.mjs server/social-media/provider-execution.mjs server/social-media/google-neural2-tts.mjs server/social-media/google-neural2-tts.test.mjs ./server/social-media/
+COPY server/social-media/youtube-token-resolver.mjs server/social-media/youtube-private-upload.mjs server/social-media/youtube-oauth-start.mjs server/social-media/youtube-oauth-exchange.mjs server/social-media/youtube-account-status.mjs server/social-media/provider-adapter.mjs server/social-media/youtube-runtime.test.mjs server/social-media/youtube-oauth.test.mjs server/social-media/provider-adapter.test.mjs server/social-media/provider-store.mjs server/social-media/provider-store.test.mjs server/social-media/provider-readback.mjs server/social-media/provider-readback.test.mjs server/social-media/oauth-callback.mjs server/social-media/oauth-callback.test.mjs server/social-media/x-oauth-start.mjs server/social-media/x-oauth-start.test.mjs server/social-media/x-oauth-exchange.mjs server/social-media/x-oauth-exchange.test.mjs server/social-media/x-account-status.mjs server/social-media/x-account-status.test.mjs server/social-media/x-publish-account-status.mjs server/social-media/x-publish-isolation.test.mjs server/social-media/x-edge-client.mjs server/social-media/x-edge-client.test.mjs server/social-media/x-edge-vault.test.mjs server/social-media/owner-token-refresh.mjs server/social-media/owner-token-refresh.test.mjs server/social-media/x-article-test.mjs server/social-media/x-article-test.test.mjs server/social-media/x-milestone-post.mjs server/social-media/x-milestone-post.test.mjs server/social-media/x-url-context.mjs server/social-media/x-url-context.test.mjs server/social-media/asset-readback.mjs server/social-media/asset-readback.test.mjs server/social-media/provider-external-readback.mjs server/social-media/provider-external-readback.test.mjs server/social-media/provider-publish.mjs server/social-media/provider-publish.test.mjs server/social-media/instagram-carousel.mjs server/social-media/instagram-carousel.test.mjs server/social-media/instagram-oauth-start.mjs server/social-media/instagram-oauth-exchange.mjs server/social-media/instagram-account-status.mjs server/social-media/instagram-oauth.test.mjs server/social-media/facebook-oauth-start.mjs server/social-media/facebook-oauth-exchange.mjs server/social-media/facebook-account-status.mjs server/social-media/facebook-oauth.test.mjs server/social-media/provider-execution.mjs server/social-media/google-neural2-tts.mjs server/social-media/google-neural2-tts.test.mjs ./server/social-media/
 COPY scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/stripe-subscription-sync-migration.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs scripts/refresh-seo-source-provenance.mjs scripts/merge-milestone.mjs scripts/merge-milestone-pr-plan.mjs scripts/merge-milestone.test.mjs scripts/seo-metadata.test.mjs scripts/seo-production-readback.mjs scripts/seo-production-readback.test.mjs scripts/locale-policy.test.mjs scripts/finance-source-target-manifest.test.mjs scripts/validate-finance-source-target-manifest.mjs scripts/social-engine-completion-gate.test.mjs scripts/validate-social-engine-completion-gate.mjs ./scripts/
 COPY supabase/email-templates ./supabase/email-templates
+COPY supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql ./supabase/migration-candidates/
 COPY supabase/migrations/20261013042915_learning_simulator_private_scenarios.sql supabase/migrations/20261013030655_youtube_private_upload_jobs.sql supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql supabase/migrations/20261005155500_fix_registration_consent_null.sql supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql supabase/migrations/20261009104641_enforce_subscription_price_authority.sql supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql supabase/migrations/20261007214554_provider_query_guard.sql supabase/migrations/20261008181500_private_user_analysis_bindings.sql ./supabase/migrations/
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs scripts/solo-maintainer-flow.test.mjs ./scripts/
+COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs ./scripts/
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
+# Shared SOLO2 profile: CLI and negative tests execute in the existing offline build stage.
+COPY scripts/solo2-config.mjs scripts/solo2-config.test.mjs ./scripts/
+COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.mjs scripts/platform/drive-artifact-delivery.test.mjs ./scripts/platform/
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
+COPY scripts/skill-bundles.mjs ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs
 COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs
 COPY scripts/qa/screener-blueprint-reset-browser.mjs ./scripts/qa/screener-blueprint-reset-browser.mjs
+COPY scripts/qa/profile-avatar-freshclam-staging.sh scripts/qa/profile-avatar-freshclam-staging.test.mjs ./scripts/qa/
 COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
 COPY scripts/masterclass-templates.test.mjs ./scripts/masterclass-templates.test.mjs
 COPY supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql ./supabase/migrations/
@@ -112,7 +138,10 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
-COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs ./scripts/growth/
+COPY scripts/growth/growth-intelligence-image-drafts.mjs scripts/growth/growth-intelligence-image-drafts.test.mjs scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs scripts/growth/next-round-planner.mjs scripts/growth/next-round-planner.test.mjs ./scripts/growth/
+# Offline branded-context drafts and tests (alongside canonical Growth image drafts).
+COPY scripts/growth/brand-kit-graph-drafts.mjs scripts/growth/brand-kit-graph-drafts.test.mjs ./scripts/growth/
+COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs scripts/growth/home-editorial-edition.mjs scripts/growth/home-editorial-edition.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
 COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measurement.test.mjs scripts/generate-cookie-storage-notice.mjs ./scripts/
@@ -122,6 +151,7 @@ COPY supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery
 COPY supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql ./supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql
 COPY scripts/youtube-private-receipt-recovery-db.sql ./scripts/youtube-private-receipt-recovery-db.sql
 COPY supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql supabase/migrations/20261013153200_x_article_test_once.sql ./supabase/migrations/
+COPY supabase/migrations/20261117122000_x_publish_oauth_client_isolation.sql ./supabase/migrations/
 COPY supabase/functions/capital-social-x-vault/index.ts ./supabase/functions/capital-social-x-vault/index.ts
 COPY supabase/migrations/20261011231207_capital_ai_private_blueprint_bucket_fail_closed.sql ./supabase/migrations/
 COPY supabase/migrations/20261012194631_capital_ai_private_blueprint_commerce_tables_v1.sql supabase/migrations/20261012194652_capital_ai_private_blueprint_rpc_shell_v1.sql supabase/migrations/20261012194709_capital_ai_private_blueprint_rpc_full_v1.sql supabase/migrations/20261013002248_blueprint_contract_confirmation_receipt_20261013.sql ./supabase/migrations/
@@ -131,7 +161,7 @@ COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL
 COPY CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json ./CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 COPY CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json ./CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
 COPY CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json ./CAPITAL-AI-GROWTH/
-COPY server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
+COPY server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
 COPY docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md ./docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
@@ -144,7 +174,8 @@ COPY docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.jso
 COPY scripts/ecb-reference-admission.test.mjs ./scripts/ecb-reference-admission.test.mjs
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 # Offline createApp integration tests require the same runtime module closure.
-COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
@@ -152,12 +183,15 @@ COPY .github/workflows/daily-dependency-security-watch.yml .github/workflows/mer
 COPY scripts/daily-dependency-watch.test.mjs ./scripts/
 # Source-only independent review test must exist in the offline build stage.
 COPY scripts/independent-review-manifest.mjs scripts/independent-review-manifest.test.mjs ./scripts/
-RUN --network=none node --test scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
-    && node --test scripts/mail-templates.test.mjs server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
+# The root npm test suite includes picomatch runtime isolation checks in this build stage.
+COPY scripts/picomatch-runtime-isolation.test.mjs ./scripts/
+RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/evidence-dashboard-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
+    && node --test scripts/mail-templates.test.mjs server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs server/account-avatar.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
     && node --import tsx --test src/i18n/messages.test.ts src/i18n/landingSectionCopy.test.ts src/i18n/legalAvailability.test.ts src/i18n/accountWorkspaceCopy.test.ts src/i18n/authCopy.test.ts \
     && node --test server/founder-access.test.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.test.mjs server/historical-analytics-demo.test.mjs server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs \
+    && node --test server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs scripts/agent-operations-pilot-migration.test.mjs \
     && node --test server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --import tsx --test scripts/merge-milestone.test.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.test.mjs \
@@ -172,12 +206,18 @@ RUN --network=none node --test scripts/daily-dependency-watch.test.mjs scripts/s
 FROM crypto-base AS production-deps
 WORKDIR /runtime
 COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
+RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
+    && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
+    && rm -rf /root/.npm
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-RUN apk add --no-cache 'python3>=3.14.8-r0'
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'clamav-daemon=1.4.7-r0' 'freshclam=1.4.7-r0' \
+    && mkdir -p /run/clamav /var/lib/clamav \
+    && chown -R 1000:1000 /run/clamav /var/lib/clamav \
+    && chmod 0700 /run/clamav /var/lib/clamav
+COPY deploy/profile-avatar/clamd.conf deploy/profile-avatar/freshclam.conf ./deploy/profile-avatar/
 COPY ["Chat Buddy/README.md", "./Chat Buddy/README.md"]
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
@@ -186,9 +226,17 @@ COPY docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md ./docs/licenses/C
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
 COPY --from=build /app/packages/benchmark-core ./packages/benchmark-core
 COPY --from=build /app/contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
-COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+# Render's nonsecret Git commit is a separate, unattested build claim.
+# Never impersonate the GitHub Actions builder or OCI attestation.
+ARG RENDER_GIT_COMMIT
+COPY scripts/write-runtime-identity.mjs /tmp/write-runtime-identity.mjs
+RUN node /tmp/write-runtime-identity.mjs render-git "${RENDER_GIT_COMMIT:-}" \
+    && rm /tmp/write-runtime-identity.mjs
 COPY server/purchase-receipt.mjs ./server/
-COPY server/render-owner-dashboard.mjs ./server/
+COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
+COPY .agents/skills/registry.json ./.agents/skills/registry.json
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt
@@ -196,19 +244,23 @@ COPY server/oauth-consent.mjs ./server/
 COPY server/social-media/crypto-signal-sources.mjs server/social-media/crypto-signal-workflow.mjs ./server/social-media/
 COPY src/contracts/contentEngine.ts src/contracts/contentSocialPackage.ts src/contracts/growthAiPromotion.ts ./src/contracts/
 COPY server/prompt-injection-guard.mjs ./server/
-COPY server/social-media/youtube-token-resolver.mjs server/social-media/youtube-private-upload.mjs server/social-media/youtube-oauth-start.mjs server/social-media/youtube-oauth-exchange.mjs server/social-media/youtube-account-status.mjs server/social-media/provider-adapter.mjs server/social-media/provider-store.mjs server/social-media/oauth-callback.mjs server/social-media/x-oauth-start.mjs server/social-media/x-oauth-exchange.mjs server/social-media/x-account-status.mjs server/social-media/x-edge-client.mjs server/social-media/owner-token-refresh.mjs server/social-media/x-article-test.mjs server/social-media/x-milestone-post.mjs server/social-media/x-url-context.mjs server/social-media/provider-readback.mjs server/social-media/provider-external-readback.mjs server/social-media/provider-publish.mjs server/social-media/asset-readback.mjs server/social-media/instagram-carousel.mjs server/social-media/instagram-oauth-start.mjs server/social-media/instagram-oauth-exchange.mjs server/social-media/instagram-account-status.mjs server/social-media/facebook-oauth-start.mjs server/social-media/facebook-oauth-exchange.mjs server/social-media/facebook-account-status.mjs server/social-media/provider-execution.mjs ./server/social-media/
+COPY server/social-media/youtube-token-resolver.mjs server/social-media/youtube-private-upload.mjs server/social-media/youtube-oauth-start.mjs server/social-media/youtube-oauth-exchange.mjs server/social-media/youtube-account-status.mjs server/social-media/provider-adapter.mjs server/social-media/provider-store.mjs server/social-media/oauth-callback.mjs server/social-media/x-oauth-start.mjs server/social-media/x-oauth-exchange.mjs server/social-media/x-account-status.mjs server/social-media/x-publish-account-status.mjs server/social-media/x-edge-client.mjs server/social-media/owner-token-refresh.mjs server/social-media/x-article-test.mjs server/social-media/x-milestone-post.mjs server/social-media/x-url-context.mjs server/social-media/provider-readback.mjs server/social-media/provider-external-readback.mjs server/social-media/provider-publish.mjs server/social-media/asset-readback.mjs server/social-media/instagram-carousel.mjs server/social-media/instagram-oauth-start.mjs server/social-media/instagram-oauth-exchange.mjs server/social-media/instagram-account-status.mjs server/social-media/facebook-oauth-start.mjs server/social-media/facebook-oauth-exchange.mjs server/social-media/facebook-account-status.mjs server/social-media/provider-execution.mjs ./server/social-media/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/repository-tool-catalog.mjs server/tool-update-discovery.mjs server/tool-catalog-assessment.mjs ./server/
 COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY --from=build /app/supabase/email-templates/capital-ai-auth-email-shell.html ./supabase/email-templates/capital-ai-auth-email-shell.html
+COPY src/i18n/messages.ts src/i18n/landingSectionCopy.ts ./src/i18n/
 COPY shared ./shared
-COPY docs/licenses/node-v26.13.0-LICENSE.txt ./licenses/Node-LICENSE.txt
+COPY docs/licenses/node-v26.13.1-LICENSE.txt ./licenses/Node-LICENSE.txt
 COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapter-MIT.txt
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app /opt/ga4-mcp
 USER 1000:1000
+# Isolated real clamd EICAR protocol test; test-only DB is removed in the same layer.
+RUN --mount=type=bind,source=scripts/qa/profile-avatar-clamd-smoke.mjs,target=/tmp/profile-avatar-clamd-smoke.mjs,readonly \
+    node /tmp/profile-avatar-clamd-smoke.mjs
 EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD ["node", "-e", "fetch('http://127.0.0.1:'+process.env.PORT+'/healthz',{signal:AbortSignal.timeout(3000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
 CMD ["node", "server/index.mjs"]

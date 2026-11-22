@@ -12,6 +12,10 @@
 !.agents/
 !.agents/skills/
 !.agents/skills/**
+!.agents/app.prompt.json
+!.agents/contracts/
+!.agents/contracts/acode-shared-delivery.json
+!.agents/contracts/drive-artifact-routing.json
 !.github/
 !.github/agents/
 !.github/workflows/
@@ -83,6 +87,12 @@
 !server/benchmark-store.mjs
 !server/benchmark-store.test.mjs
 !server/auth.mjs
+!server/account-avatar.mjs
+!server/account-avatar.test.mjs
+!server/profile-avatar-upload.mjs
+!server/profile-avatar-upload.test.mjs
+!server/profile-avatar-clamav.mjs
+!server/profile-avatar-clamav.test.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
 !server/subscription-entitlements.mjs
@@ -96,6 +106,9 @@
 !server/private-provider-query.test.mjs
 !server/render-owner-dashboard.mjs
 !server/render-owner-dashboard.test.mjs
+!server/evidence-dashboard-readback.mjs
+!server/acodex-p1-v2-archive.mjs
+!server/evidence-dashboard-readback.test.mjs
 !server/google-analytics-mcp.mjs
 !server/google-analytics-readback.mjs
 !server/google-analytics-readback.test.mjs
@@ -121,7 +134,11 @@
 !server/cads-observability.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/solo2-config.mjs
+!shared/solo2-commercial-policy.mjs
+!shared/solo2-commercial-policy.test.mjs
 !shared/hub-routes.mjs
+!shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
@@ -147,6 +164,9 @@
 !shared/locale-policy.mjs
 !deploy/
 !deploy/runtime/
+!deploy/profile-avatar/
+!deploy/profile-avatar/clamd.conf
+!deploy/profile-avatar/freshclam.conf
 !deploy/runtime/package.json
 !deploy/runtime/package-lock.json
 !deploy/social-media/
@@ -165,6 +185,14 @@
 !scripts/growth/
 !scripts/growth/screener-learning-loop.test.mjs
 !scripts/growth/learning-content-draft.mjs
+!scripts/growth/growth-intelligence-drafts.mjs
+!scripts/growth/growth-intelligence-drafts.test.mjs
+!scripts/growth/growth-intelligence-image-drafts.mjs
+!scripts/growth/growth-intelligence-image-drafts.test.mjs
+!scripts/growth/brand-kit-graph-drafts.mjs
+!scripts/growth/brand-kit-graph-drafts.test.mjs
+!scripts/growth/next-round-planner.mjs
+!scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
 !scripts/growth/pr-merge-social-batch.mjs
@@ -173,6 +201,8 @@
 !scripts/growth/news-to-learning.mjs
 !scripts/growth/news-to-learning.test.mjs
 !scripts/growth/news-to-learning.integration.test.mjs
+!scripts/growth/home-editorial-edition.mjs
+!scripts/growth/home-editorial-edition.test.mjs
 !scripts/generate-chart-learning.tsx
 
 !public/learning/
@@ -189,13 +219,19 @@
 !scripts/daily-dependency-watch.test.mjs
 !scripts/independent-review-manifest.mjs
 !scripts/independent-review-manifest.test.mjs
+!scripts/picomatch-runtime-isolation.test.mjs
 !scripts/domain-skills.test.mjs
+!scripts/ten-pr-github-evidence.mjs
+!scripts/ten-pr-github-evidence.test.mjs
 !scripts/solo-maintainer-flow.test.mjs
 !scripts/universe-hero.test.mjs
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
 !scripts/qa/
 !scripts/qa/screener-blueprint-reset-browser.mjs
+!scripts/qa/profile-avatar-clamd-smoke.mjs
+!scripts/qa/profile-avatar-freshclam-staging.sh
+!scripts/qa/profile-avatar-freshclam-staging.test.mjs
 !scripts/cads-growth-quality.test.mjs
 !scripts/masterclass-templates.test.mjs
 !scripts/static-legal-routes.test.mjs
@@ -285,6 +321,9 @@
 !docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
+!public/editorial/
+!public/editorial/news/
+!public/editorial/news/*.png
 !public/bootstrap-failure.js
 !public/datenschutz/
 !public/datenschutz/index.html
@@ -308,6 +347,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/branding/learning-universe/
+!public/branding/learning-universe/*.svg
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
 !public/branding/universe/hero-universe-desktop.webp
@@ -318,10 +359,16 @@
 !public/assets/jaja-avatar-transparent.webp
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
+!CAPITAL-AI-PRODUCT/domain.prompt.json
+!CAPITAL-AI-PRODUCT/PROJECT.md
 !CAPITAL-AI-TRUST/
 !CAPITAL-AI-TRUST/badge.svg
+!CAPITAL-AI-TRUST/domain.prompt.json
+!CAPITAL-AI-TRUST/PROJECT.md
 !CAPITAL-AI-MARKET/
 !CAPITAL-AI-MARKET/badge.svg
+!CAPITAL-AI-MARKET/domain.prompt.json
+!CAPITAL-AI-MARKET/PROJECT.md
 !CAPITAL-AI-GROWTH/
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
 !CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
@@ -332,8 +379,14 @@
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
 !CAPITAL-AI-GROWTH/badge.svg
+!CAPITAL-AI-GROWTH/domain.prompt.json
+!CAPITAL-AI-GROWTH/PROJECT.md
+!CAPITAL-AI-GROWTH/growth-intelligence/
+!CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json
 !CAPITAL-AI-PLATFORM/
 !CAPITAL-AI-PLATFORM/badge.svg
+!CAPITAL-AI-PLATFORM/domain.prompt.json
+!CAPITAL-AI-PLATFORM/PROJECT.md
 
 !supabase/
 !supabase/email-templates/
@@ -358,6 +411,7 @@
 !supabase/migrations/20261008181500_private_user_analysis_bindings.sql
 !supabase/migrations/20261008113000_social_provider_store.sql
 !supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
+!supabase/migrations/20261117122000_x_publish_oauth_client_isolation.sql
 !supabase/migrations/20261013153200_x_article_test_once.sql
 !supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql
 !supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql
@@ -389,6 +443,8 @@
 !server/social-media/x-oauth-exchange.test.mjs
 !server/social-media/x-account-status.mjs
 !server/social-media/x-account-status.test.mjs
+!server/social-media/x-publish-account-status.mjs
+!server/social-media/x-publish-isolation.test.mjs
 !server/social-media/x-edge-client.mjs
 !server/social-media/x-edge-client.test.mjs
 !server/social-media/x-edge-vault.test.mjs
@@ -429,6 +485,7 @@
 !server/learning-simulator.mjs
 !server/learning-simulator.test.mjs
 !server/learning-inquiry.test.mjs
+!scripts/write-runtime-identity.mjs
 !scripts/activate-learning-measurement.mjs
 !scripts/activate-learning-measurement.test.mjs
 !scripts/generate-cookie-storage-notice.mjs
@@ -447,14 +504,24 @@
 
 # Exact new hub/owner dependencies and isolated build validation inputs.
 !shared/account-display.mjs
+!shared/account-avatar-policy.mjs
 !shared/analytics-demo.mjs
 !shared/hub-branding.mjs
 !server/historical-analytics-demo.mjs
 !server/historical-analytics-demo.test.mjs
 !server/auth.test.mjs
+!scripts/solo2-config.mjs
+!scripts/solo2-config.test.mjs
+# Offline artifact routing tests/metadata only; no credentials or transfer clients.
+!scripts/platform/
+!scripts/platform/drive-artifact-router.mjs
+!scripts/platform/drive-artifact-router.test.mjs
+!scripts/platform/drive-artifact-delivery.mjs
+!scripts/platform/drive-artifact-delivery.test.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
+!scripts/skill-bundles.mjs
 !scripts/skill-routing-evaluation.mjs
 !scripts/skill-routing-cases.json
 !scripts/skill-routing-challenges.json
@@ -487,3 +554,22 @@
 !server/oauth-consent.test.mjs
 !scripts/oauth-client-isolation.test.mjs
 !supabase/migrations/20261113152000_oauth_client_default_deny.sql
+# Rights-gated MARKET news lifecycle and isolated QA; retain main account-avatar dependencies
+!shared/news-lifecycle.mjs
+!shared/news-archive-rights.mjs
+!scripts/growth/news-lifecycle-cli.mjs
+!scripts/growth/news-lifecycle.test.mjs
+!scripts/growth/news-lifecycle-materialize.mjs
+!scripts/growth/news-lifecycle-transaction.mjs
+!scripts/growth/news-lifecycle-transaction.test.mjs
+!scripts/growth/news-lifecycle-home-admission.mjs
+!scripts/qa/news-archive-browser.mjs
+
+# Isolated Agent Operations pilot (source-only and default-OFF)
+!server/agent-operations-pilot.mjs
+!server/agent-operations-pilot.test.mjs
+!server/agent-operations-pilot-store.mjs
+!server/agent-operations-pilot-store.test.mjs
+!scripts/agent-operations-pilot-migration.test.mjs
+!supabase/migration-candidates/
+!supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql

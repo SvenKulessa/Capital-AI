@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Nur veraltete PR-Läufe abbrechen; Main-/Merge-Queue-/Dispatch-Läufe laufen vollständig durch.
+  cancel-in-progress: ${{ startsWith(github.event_name, 'pull_request') }}
 jobs:
   seo-http-readback:
     name: Anonymous HTTP and SEO evidence
@@ -27,7 +31,12 @@ jobs:
       - name: Offline regression, including negative cases
         run: node --test scripts/seo-production-readback.test.mjs
       - name: Anonymous production HTTP readback
-        run: node scripts/seo-production-readback.mjs --origin https://capital-ai.online --output public-seo-readback.json
+        run: |
+          args=()
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            args+=(--allow-locale-preview)
+          fi
+          node scripts/seo-production-readback.mjs --origin https://capital-ai.online --output public-seo-readback.json "${args[@]}"
       - name: Preserve sanitized checks without response bodies
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

@@ -8,6 +8,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
+import { createProfileAvatarUpload } from './profile-avatar-upload.mjs';
+import { startProfileAvatarClamav } from './profile-avatar-clamav.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
 import { createCryptoSignalWorkflow } from './social-media/crypto-signal-workflow.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
@@ -24,6 +26,7 @@ import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-e
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
 import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
+import { createXPublishAccountStatus } from './social-media/x-publish-account-status.mjs';
 import { createSocialOwnerTokenRefresh } from './social-media/owner-token-refresh.mjs';
 import { createXArticleTest } from './social-media/x-article-test.mjs';
 import { createXMilestonePost } from './social-media/x-milestone-post.mjs';
@@ -34,6 +37,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
+import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
 import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
@@ -53,7 +57,9 @@ import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
 import { PUBLIC_SEARCH_FOCUS } from '../shared/public-search-focus.mjs';
 import { seoContentForPath } from '../shared/seo-content-manifest.mjs';
 import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
-import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
+import { resolveLocale, localeFromLandingPath, localizedLandingPath, landingAlternatesForPath } from '../shared/locale-policy.mjs';
+import { LANGUAGES, messages } from '../src/i18n/messages.ts';
+import { sectionMessages } from '../src/i18n/landingSectionCopy.ts';
 import {
   isSeoIndexable,
   isSeoPublicImage,
@@ -71,6 +77,7 @@ import { createPurchaseReceipt } from './purchase-receipt.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
+import { createAgentOperationsPilot } from './agent-operations-pilot.mjs';
 import { createCadsMarketplace } from './cads-marketplace.mjs';
 import { createBenchmarkStore } from './benchmark-store.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
@@ -91,11 +98,16 @@ const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
 const embeddedSourceSha = '__CAPITAL_AI_SOURCE_SHA_UNBOUND__';
 const embeddedBuilder = '__CAPITAL_AI_BUILDER_UNBOUND__';
+const embeddedRenderGitSha = '__CAPITAL_AI_RENDER_GIT_SHA_UNBOUND__';
 const buildIdentity =
   /^[0-9a-f]{40}$/.test(embeddedSourceSha) &&
   embeddedBuilder === 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml'
     ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
     : { bound: false, sourceSha: null };
+// A Render build-argument SHA is separate from GitHub Actions builder identity.
+const renderGitBuildIdentity = /^[0-9a-f]{40}$/.test(embeddedRenderGitSha) && !buildIdentity.bound
+  ? { sourceSha: embeddedRenderGitSha, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED' }
+  : { sourceSha: null, evidence: 'NOT_PROVEN' };
 const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = SECURITY_HEADERS;
 const publicVocabularyEntries = vocabularyMetadata;
@@ -174,26 +186,35 @@ function injectSeoMetadata(html, pathname) {
   return body;
 }
 
-// Non-indexable until complete locale-specific body content, legal review and crawl acceptance.
-const LOCALE_LANDING_PREVIEWS = Object.freeze({
-  de: ['CAPITAL-AI | Marktanalyse und BYOK', 'Marktanalyse, transparente Modelle und persönliche Datenprovider-Einstellungen.'],
-  en: ['CAPITAL-AI | Market Intelligence and BYOK', 'Explore market analysis, transparent scoring tools and personal data-provider settings.'],
-  it: ['CAPITAL-AI | Analisi dei mercati e BYOK', 'Esplora analisi dei mercati, strumenti di scoring trasparenti e impostazioni dei tuoi dati.'],
-  fr: ['CAPITAL-AI | Analyse de marché et BYOK', 'Découvrez les analyses de marché, des outils de notation transparents et vos fournisseurs de données.'],
-  pt: ['CAPITAL-AI | Análise de mercados e BYOK', 'Explore análises de mercado, ferramentas transparentes de scoring e preferências de fontes de dados.'],
-  es: ['CAPITAL-AI | Análisis de mercados y BYOK', 'Explora análisis de mercados, herramientas de puntuación transparentes y ajustes de proveedores de datos.'],
-});
-function localizeNonIndexableLandingHtml(html, locale) {
-  const [title, description] = LOCALE_LANDING_PREVIEWS[locale];
-  const ogLocale = ({de:'de_DE',en:'en_US',it:'it_IT',fr:'fr_FR',pt:'pt_PT',es:'es_ES'})[locale];
+function localizedLandingHtml(html, locale) {
+  const copy = messages[locale];
+  const sections = sectionMessages[locale];
+  const languages = LANGUAGES.map(({ code, name }) =>
+    `<li><a href="${localizedLandingPath(code)}" lang="${code}" hreflang="${code}"${code === locale ? ' aria-current="page"' : ''}>${escapeHtml(name)}</a></li>`).join('');
+  const snapshot = `<main class="localized-landing"><header>
+    <p>CAPITAL-AI</p>
+    <h1>${escapeHtml(copy.hero1)} ${escapeHtml(copy.hero2)}</h1>
+    <p>${escapeHtml(copy.heroDescription)}</p>
+    <a href="/learning">${escapeHtml(copy.heroOpenLearning)}</a>
+  </header><section>
+    <h2>${escapeHtml(copy.pillarAi)}</h2>
+    <p>${escapeHtml(sections.hubMarketDescription)}</p>
+    <a href="/marketscreener">${escapeHtml(copy.heroAnalysisDemo)}</a>
+  </section><nav aria-label="${escapeHtml(copy.language)}"><ul>${languages}</ul></nav>
+  <footer><a href="/impressum" hreflang="de">${escapeHtml(copy.imprint)}</a>
+    <a href="/datenschutz" hreflang="de">${escapeHtml(copy.privacy)}</a>
+    <a href="/agb" hreflang="de">${escapeHtml(copy.terms)}</a>
+  </footer></main>`;
   return html
-    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
-    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
-    .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
-    .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
-    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, `$1${ogLocale}$2`)
-    .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
-    .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`);
+    .replace(/\s*<link rel="alternate" type="text\/markdown" href="\/index\.md"\s*\/?>/, '')
+    .replace(/\s*<noscript>[\s\S]*?<\/noscript>/, '')
+    .replace('<div id="root"></div>', () => `<div id="root">${snapshot}</div>`);
+}
+
+function injectLandingAlternates(html, pathname) {
+  const links = landingAlternatesForPath(pathname).map(([language, url]) =>
+    `<link rel="alternate" hreflang="${language}" href="${url}">`).join('');
+  return links ? html.replace('</head>', () => links + '</head>') : html;
 }
 
 function applySeoIndexingPolicy(html, pathname) {
@@ -243,10 +264,13 @@ function injectPublicSeoSnapshot(html, pathname) {
   const editorial = article
     ? `<p>Eigene Redaktion · <time datetime="${escapeHtml(article.date)}">${escapeHtml(article.date)}</time></p><p>${escapeHtml(article.intro)}</p><figure><img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.imageAlt)}" width="1200" height="630" style="max-width:100%;height:auto"><figcaption>Eigene Illustration; keine realen Kursdaten.</figcaption></figure>` + article.sections.map(section => `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.body)}</p></section>`).join('') + `<p>Technische und didaktische Information; keine Anlageberatung.</p><h2>Quellen</h2><ul>` + article.sources.map(source => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label)}</a></li>`).join('') + '</ul><p><a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a></p>'
     : pathname === '/blog' ? BLOG_ARTICLES.map(item => `<section><h2><a href="${escapeHtml(item.path)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description)}</p></section>`).join('') : '';
+  const hero = pathname === '/'
+    ? `<h1>${escapeHtml(messages.de.hero1)} ${escapeHtml(messages.de.hero2)}</h1><p>${escapeHtml(messages.de.heroDescription)}</p><p><a href="/learning">${escapeHtml(messages.de.heroOpenLearning)}</a></p>`
+    : `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>`;
   const snapshot =
     '<a href="#capital-ai-public-snapshot" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-amber-400 focus:text-black focus:font-bold focus:rounded-xl focus:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-500">Zum Hauptinhalt springen</a>' +
     `<main id="capital-ai-public-snapshot" lang="de"><article>` +
-    `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>` +
+    hero +
     `${focus}${editorial}${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
     '</article></main>';
   return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);
@@ -342,6 +366,7 @@ export function createApp(root = defaultRoot, options = {}) {
     : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
+  const profileAvatarUpload = createProfileAvatarUpload({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth, scan: options.profileAvatarScan, transcode: options.profileAvatarTranscode });
   const oauthConsent = createOAuthConsent({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const learningInquiry = createLearningInquiry({ ...options, auth });
   const learningSimulator = createLearningSimulator({ ...options, auth });
@@ -349,6 +374,11 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, auth,
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
+  });
+  const socialXPublishOAuthStart = createSocialXOAuthStart({
+    env: options.env || process.env, auth, channel: 'X_PUBLISH',
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialPublishOAuthStore || null,
   });
   const youtubePrivateUpload = createYouTubePrivateUpload({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeOAuthStart = createSocialYouTubeOAuthStart({
@@ -376,11 +406,18 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
   });
   const xExchange = createSocialXOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
+  const xPublishExchange = createSocialXOAuthExchange({
+    env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+    channel: 'X_PUBLISH',
+  });
   const youtubeExchange = createSocialYouTubeOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeAccountStatus = createSocialYouTubeAccountStatus({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialXAccountStatus = createSocialXAccountStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const socialXPublishAccountStatus = createXPublishAccountStatus({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialOwnerTokenRefresh = createSocialOwnerTokenRefresh({
@@ -394,6 +431,12 @@ export function createApp(root = defaultRoot, options = {}) {
   });
   const xUrlContext = createXUrlContext({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const socialPublishOAuthCallback = createSocialOAuthCallback({
+    env: options.env || process.env, auth,
+    fetchImpl: options.fetchImpl || fetch, publishOnly: true,
+    store: options.socialPublishOAuthStore || null,
+    exchangeCode: options.socialPublishOAuthCodeExchange || xPublishExchange,
   });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
@@ -416,6 +459,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
+  const evidenceDashboardReadback = createEvidenceDashboardReadback({ env: options.env || process.env, ga4Readback: googleAnalyticsReadback, fetchImpl: options.fetchImpl || fetch });
   const tinyfishOwnerReadback = createTinyfishOwnerReadback({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).MARKET_BROKER_PAUSED === 'false' &&
@@ -477,6 +521,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
   const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
   const cryptoSignals = createCryptoSignalWorkflow({ auth, env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
+  const agentOperationsPilot = createAgentOperationsPilot({ auth, env: runtimeEnv });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -501,9 +546,11 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await profileAvatarUpload.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await cryptoSignals.handle(req, res, url, json)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await socialXPublishOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
     if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
   if (await socialFacebookOAuthStart.handle(req, res, url, json)) return;
@@ -512,10 +559,12 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
   if (await socialXAccountStatus.handle(req, res, url, json)) return;
+  if (await socialXPublishAccountStatus.handle(req, res, url, json)) return;
   if (await socialOwnerTokenRefresh.handle(req, res, url, json)) return;
   if (await xArticleTest.handle(req, res, url, json)) return;
   if (await xMilestonePost.handle(req, res, url, json)) return;
   if (await xUrlContext.handle(req, res, url, json)) return;
+  if (await socialPublishOAuthCallback.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
@@ -523,6 +572,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
   if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
+  if (await evidenceDashboardReadback.handle(req, res, url, json)) return;
   if (await tinyfishOwnerReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
@@ -537,9 +587,10 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;
   if (await cadsCommerce.handle(req, res, url, json)) return;
+  if (await agentOperationsPilot.handle(req, res, url, json)) return;
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
-  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
+  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, renderGitBuildIdentity, runtimeIdentity });
   if (url.pathname === '/metrics') {
     if (!metricsAuthorized(req)) {
       writeAuditEvent({ eventType: 'observability.metrics.denied', requestId: requestContext.requestId, result: 'DENIED' });
@@ -657,6 +708,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
+  const pathLocale = localeFromLandingPath(publicPath);
+  const seoCanonicalPath = pathLocale ? localizedLandingPath(pathLocale) : publicPath;
   const documentRedirect = Object.entries(DOCUMENT_ROUTES).find(([, legacy]) => legacy === publicPath);
   if (documentRedirect) { res.writeHead(301, { Location: documentRedirect[0] + url.search }); res.end(); return; }
   const hubTarget = canonicalHubTarget(url.pathname + url.search);
@@ -682,8 +735,8 @@ export function createApp(root = defaultRoot, options = {}) {
       return;
     }
   }
-  if (isSeoIndexable(publicPath) && url.pathname !== publicPath) {
-    res.writeHead(301, { ...headers, Location: publicPath + url.search, 'Cache-Control': 'no-store' });
+  if (isSeoIndexable(publicPath) && url.pathname !== seoCanonicalPath) {
+    res.writeHead(301, { ...headers, Location: seoCanonicalPath + url.search, 'Cache-Control': 'no-store' });
     return res.end();
   }
   const markdownPath = publicPath === '/' && (req.headers.accept || '').split(',').some(type => type.trim().split(';')[0] === 'text/markdown') ? '/index.md' : publicPath;
@@ -713,10 +766,12 @@ export function createApp(root = defaultRoot, options = {}) {
   if (publicPath === '/sitemap.xml' || publicPath === '/sitemap-main.xml') {
     const paths = [...new Set([...seoIndexableStaticPaths(), ...publicVocabularyEntries.filter(entry => isSeoIndexable(entry.path)).map(entry => entry.path)])];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' +
       paths.map(route => {
         const lastmod = seoContentForPath(route)?.sitemapLastmod;
-        return `<url><loc>https://capital-ai.online${escapeXml(route)}</loc>${lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : ''}</url>`;
+        const alternates = landingAlternatesForPath(route).map(([language, url]) =>
+          `<xhtml:link rel="alternate" hreflang="${language}" href="${url}" />`).join('');
+        return `<url><loc>https://capital-ai.online${escapeXml(route)}</loc>${lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : ''}${alternates}</url>`;
       }).join('') +
       '</urlset>';
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
@@ -748,7 +803,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (path.relative(root, asset).split(path.sep).some(part => part.startsWith('.'))) return json(res, 404, { error: 'not_found' });
   try {
     // Missing legal documents must return 404 rather than silently expose the SPA bootstrap.
-    const file = staticLegalRoute.has(publicPath) ? asset : await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
+    const file = pathLocale ? path.join(root, 'index.html') : staticLegalRoute.has(publicPath) ? asset : await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
       path.extname(asset) || url.pathname.startsWith('/api/') ? asset : path.join(root, 'index.html'));
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
@@ -781,15 +836,19 @@ export function createApp(root = defaultRoot, options = {}) {
         const footer = '<footer style="padding:2rem;text-align:center"><a href="/impressum/">Impressum</a> · <a href="/agb/">AGB</a> · <a href="/datenschutz/">Datenschutz</a> · <a href="/pricing">Preiskatalog</a><p><a href="/?cookie-preferences=1">Cookie-Einstellungen ändern oder Einwilligung widerrufen</a></p></footer>';
         body = Buffer.from(body.toString('utf8').replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, '').replace(/(<body[^>]*>)/i, '$1' + navigation).replace('</body>', footer + '</body>'));
       }
-      body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
+      body = Buffer.from(injectSeoMetadata(body.toString('utf8'), seoCanonicalPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPricingFallback(body.toString('utf8'), publicPath));
       body = Buffer.from(injectBlueprintPreview(body.toString('utf8'), publicPath));
-      const pathLocale = localeFromLandingPath(publicPath);
-      if (pathLocale && publicPath !== '/') {
-        body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
+      if (pathLocale) {
+        if (!body.includes('<div id="root"></div>')) {
+          res.writeHead(404, { 'X-Robots-Tag': 'noindex, nofollow' });
+          return res.end();
+        }
+        body = Buffer.from(localizedLandingHtml(body.toString('utf8'), pathLocale));
       }
+      body = Buffer.from(injectLandingAlternates(body.toString('utf8'), publicPath));
       const { locale, source } = (staticLegalRoute.has(publicPath) || publicPath === '/blog' || Boolean(blogArticleForPath(publicPath)))
         ? {locale:'de',source:'document'} // These legal documents currently contain German text only.
         : pathLocale
@@ -805,7 +864,7 @@ export function createApp(root = defaultRoot, options = {}) {
     const documentHeaders = path.extname(file) === '.html'
       ? { ...headers, 'Content-Security-Policy': contentSecurityPolicyForHtml(body.toString('utf8')), 'Content-Security-Policy-Report-Only': strictContentSecurityPolicyForHtml(body.toString('utf8')) }
       : headers;
-    res.writeHead(200, { ...documentHeaders, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    res.writeHead(200, { ...documentHeaders, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;
@@ -816,6 +875,7 @@ export function createApp(root = defaultRoot, options = {}) {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const server = createApp();
+  const stopProfileAvatarClamav = startProfileAvatarClamav();
   await infrastructure.start();
   let unsubscribePubsubProbe = null;
   try { unsubscribePubsubProbe = await infrastructure.subscribeQuotes(() => {}); } catch { /* health remains fail-closed */ }
@@ -825,7 +885,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   reconnect?.unref();
   server.listen(Number(process.env.PORT || 10000), '0.0.0.0');
   const shutdown = () => {
-    if (reconnect) clearInterval(reconnect); stop(); server.close(() => { void Promise.resolve(unsubscribePubsubProbe?.()).finally(() => infrastructure.close()).finally(() => process.exit(0)); });
+    if (reconnect) clearInterval(reconnect); stopProfileAvatarClamav(); stop(); server.close(() => { void Promise.resolve(unsubscribePubsubProbe?.()).finally(() => infrastructure.close()).finally(() => process.exit(0)); });
     setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000).unref();
   };
   process.once('SIGTERM', shutdown);

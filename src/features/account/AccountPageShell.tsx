@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, LogOut } from 'lucide-react';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
+import { VerifiedProfileAvatar } from './VerifiedProfileAvatar';
 
 export interface AccountBadge {
   id: string;
@@ -21,6 +22,7 @@ export interface AccountSession {
     subject: string;
     email: string;
     name: string;
+    avatarUrl?: string | null;
   } | null;
   account?: {
     available: boolean;
@@ -53,10 +55,18 @@ async function readSession(signal?: AbortSignal): Promise<AccountSession> {
   if (!response.ok || !body || typeof body.authenticated !== 'boolean') {
     throw new Error('SESSION_UNAVAILABLE');
   }
-  return body as AccountSession;
+  const session = body as AccountSession;
+  if (session.authenticated && session.user?.id) {
+    try {
+      const avatar = await fetch('/api/profile/logo', { credentials: 'same-origin', cache: 'no-store', signal });
+      if (avatar.ok) session.user.avatarUrl = '/api/profile/avatar/current';
+    } catch { /* Provider photo remains the fallback on unavailable private storage. */ }
+  }
+  return session;
 }
 
 export function AccountPageShell({
+  active,
   title,
   description,
   onNavigate,
@@ -139,6 +149,7 @@ export function AccountPageShell({
               <h1 className="mt-1 text-2xl font-black">{title}</h1>
               <p className="mt-1 max-w-2xl text-sm text-slate-400">{description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <VerifiedProfileAvatar avatarUrl={session.user?.avatarUrl} name={session.user?.name} size="small" />
                 <span className="font-bold text-white">{session.user?.name || tr.accountUser}</span>
                 {accountDisplay(session) && (
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-mono text-amber-200">
@@ -157,6 +168,12 @@ export function AccountPageShell({
               >
                 <ArrowLeft className="h-4 w-4" /> {tr.accountLanding}
               </button>
+              {active === '/profile/dashboard' && (
+                <button type="button" onClick={() => onNavigate('/profile')}
+                  className="inline-flex min-h-11 items-center rounded-xl border border-violet-400/40 px-4 text-xs font-bold text-violet-100 hover:bg-violet-500/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-200">
+                  Profilbild verwalten
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => void logout()}

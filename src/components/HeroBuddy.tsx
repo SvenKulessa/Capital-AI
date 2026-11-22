@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { EyeOff, Move, Settings, StickyNote, X } from 'lucide-react';
+import { Camera, EyeOff, Move, PenLine, Settings, StickyNote, X } from 'lucide-react';
 import { clampHeroBuddyPoint } from './heroBuddyPosition';
+import { HERO_BUDDY_EVENT, takePendingHeroBuddyOpen } from './heroBuddyEvents';
+export { HERO_BUDDY_EVENT, openHeroBuddy } from './heroBuddyEvents';
 import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
 type HeroBuddyProps = {
@@ -16,17 +18,16 @@ type BuddyMessage = { id: string; role: 'buddy' | 'user'; text: string };
 type AssistReason = 'hesitation' | 'repeat' | 'oscillation' | 'dwell';
 
 const JaJa3DAvatar = lazy(() => import('./JaJa3DAvatar'));
+const ChatNextStepActions = lazy(() => import('./ChatNextStepActions').then(module => ({ default: module.ChatNextStepActions })));
 // Private note editor is not part of the initial home bundle. Open it only on demand.
 const BuddyStickyNotes = lazy(() => import('./BuddyStickyNotes').then(module => ({ default: module.BuddyStickyNotes })));
 const DISCLAIMER = 'JaJa erklärt Zusammenhänge. Keine Anlageberatung.';
-export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
 export const HERO_BUDDY_HIDDEN_KEY = 'capital_ai_hero_buddy_hidden_v1';
 const HERO_BUDDY_POSITION_KEY = 'capital_ai_hero_buddy_position_v1';
 const HERO_BUDDY_FLOATING_KEY = 'capital_ai_hero_buddy_floating_v1';
 type BuddyPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 const BUDDY_POSITIONS: BuddyPosition[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 
-export function openHeroBuddy() { window.dispatchEvent(new Event(HERO_BUDDY_EVENT)); }
 const COOLDOWN_MS = 90_000;
 
 type BuddyKeyState = 'missing' | 'blocked' | 'ready' | 'unused';
@@ -70,6 +71,7 @@ function lineFor(reason: AssistReason) {
 export function HeroBuddy(props: HeroBuddyProps) {
   const [open, setOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [captureRequest, setCaptureRequest] = useState(0);
   const [noteSource, setNoteSource] = useState('');
   const [avatarLoaded, setAvatarLoaded] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
@@ -161,12 +163,14 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
     const openFromHero = () => {
+      takePendingHeroBuddyOpen();
       window.localStorage.removeItem(HERO_BUDDY_HIDDEN_KEY);
       setHidden(false);
       setOpen(true);
       setSpeech(null);
     };
     window.addEventListener(HERO_BUDDY_EVENT, openFromHero);
+    if (takePendingHeroBuddyOpen()) openFromHero();
     return () => window.removeEventListener(HERO_BUDDY_EVENT, openFromHero);
   }, []);
 
@@ -312,6 +316,16 @@ export function HeroBuddy(props: HeroBuddyProps) {
               <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="font-bold text-amber-300">JaJa · Chat Buddy</p>
                 <div className="flex items-center gap-1">
+                  <button type="button" aria-label="JaJa CAM: Screenshot aufnehmen" title="Screenshot oder Bild wählen"
+                    onClick={()=>{setNotesOpen(true);setCaptureRequest(value=>value+1);}}
+                    className="min-h-10 min-w-10 rounded-md p-2 text-cyan-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan-300">
+                    <Camera className="h-4 w-4" />
+                  </button>
+                  <button type="button" aria-label="JaJa Stift: Bereiche markieren" title="Screenshot markieren"
+                    onClick={()=>{setNotesOpen(true);setCaptureRequest(value=>value+1);}}
+                    className="min-h-10 min-w-10 rounded-md p-2 text-rose-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-rose-300">
+                    <PenLine className="h-4 w-4" />
+                  </button>
                   <button type="button" aria-expanded={settingsOn} aria-label="Einstellungen" title="Einstellungen" onClick={() => setSettingsOn((value) => !value)} className="rounded-md p-1 text-slate-400 hover:text-white">
                     <Settings className="h-4 w-4" />
                   </button>
@@ -337,7 +351,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
                     <button type="button" onClick={() => setNotesOpen(false)} aria-label="Notizen schließen" className="rounded p-2 text-slate-200"><X className="h-4 w-4" /></button>
                   </div>
                   <Suspense fallback={<p role="status" className="py-3 text-sm text-slate-300">Private Notizen werden geladen …</p>}>
-                    <BuddyStickyNotes initialText={noteSource} />
+                    <BuddyStickyNotes initialText={noteSource} captureRequest={captureRequest} />
                   </Suspense>
                 </section>
               )}
@@ -379,6 +393,9 @@ export function HeroBuddy(props: HeroBuddyProps) {
                   </div>
                 ))}
               </div>
+              <Suspense fallback={null}>
+              <ChatNextStepActions task={[...messages].reverse().find(message => message.role === 'user')?.text ?? ''} compact />
+              </Suspense>
               <div className="mt-2 flex flex-wrap gap-1">
                 {actions.map((action) => (
                   <button key={action.label} type="button" onClick={action.run} className="rounded-full border border-slate-700 px-2 py-1 text-[10px] text-slate-300">{action.label}</button>
@@ -447,7 +464,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
           setOpen(value => !value);
           setSpeech(null);
         }}
-        className="relative flex h-28 w-24 shrink-0 touch-none items-center justify-center border-0 bg-transparent p-0 drop-shadow-lg sm:h-36 sm:w-32 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+        className={`relative flex ${open ? 'h-28 w-24' : 'h-12 w-12 rounded-full bg-slate-950/90 ring-1 ring-amber-300/40'} shrink-0 touch-none items-center justify-center border-0 p-0 drop-shadow-lg sm:h-36 sm:w-32 sm:bg-transparent sm:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300`}
       >
         {!reducedMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window ? (
           <Suspense fallback={<BuddyMark pulse={false} speaking={false} />}>

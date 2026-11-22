@@ -2,12 +2,28 @@ import { contentVocabularyContext } from '../../shared/vocabulary-lookup.mjs';
 import { z } from 'zod';
 import { assessCadsContentCampaign } from '../../packages/benchmark-core/growth-quality.mjs';
 import {
+  OriginalGraphicLicensePlanSchema, planOriginalGraphicLicense,
+  type OriginalGraphicAsset, type OriginalGraphicOwnerGrant,
+} from './originalGraphicLicense.ts';
+import {
   getGrowthCapabilityPolicy,
   type GrowthCapability,
   type GrowthMarketingChannel,
 } from './growthAiPromotion.ts';
 
 export const CONTENT_ENGINE_CONTRACT_VERSION = 'CAPITAL_AI_CONTENT_ENGINE@1' as const;
+
+/** Art direction travels with every campaign plan, not with publisher authority. */
+export const CONTENT_ENGINE_UNIVERSE = Object.freeze({
+  id: 'CAPITAL_AI_UNIVERSE@1' as const,
+  palette: ['cyan', 'violet', 'gold', 'pink', 'rose', 'blue', 'green'] as const,
+  artDirection: 'ORIGINAL_COSMIC_FINTECH' as const,
+  motifs: ['orbital-rings', 'constellation-network', 'luminous-data-grid', 'spectral-hud'] as const,
+  visualRule: 'ALL_SEVEN_COLORS_PER_VISUAL' as const,
+  accessibility: 'COLOR_IS_DECORATIVE' as const,
+  franchiseAssets: 'NOT_PERMITTED' as const,
+  publication: 'DRAFT_ONLY' as const,
+});
 
 export const ContentEngineModuleIdSchema = z.enum([
   'COPY',
@@ -80,6 +96,23 @@ export const ContentEnginePlanSchema = z.object({
   campaign: ContentCampaignBriefSchema,
   vocabularyContext: ContentVocabularyContextSchema.optional(),
   modules: z.array(ContentEngineModulePlanSchema),
+  graphicLicenses: z.array(OriginalGraphicLicensePlanSchema).optional(),
+  visualIdentity: z.object({
+    id: z.literal('CAPITAL_AI_UNIVERSE@1'),
+    palette: z.tuple([
+      z.literal('cyan'), z.literal('violet'), z.literal('gold'),
+      z.literal('pink'), z.literal('rose'), z.literal('blue'), z.literal('green'),
+    ]),
+    artDirection: z.literal('ORIGINAL_COSMIC_FINTECH'),
+    motifs: z.tuple([
+      z.literal('orbital-rings'), z.literal('constellation-network'),
+      z.literal('luminous-data-grid'), z.literal('spectral-hud'),
+    ]),
+    visualRule: z.literal('ALL_SEVEN_COLORS_PER_VISUAL'),
+    accessibility: z.literal('COLOR_IS_DECORATIVE'),
+    franchiseAssets: z.literal('NOT_PERMITTED'),
+    publication: z.literal('DRAFT_ONLY'),
+  }).strict().optional(),
   cadsQuality: z.object({
     schemaVersion: z.literal('CAPITAL_AI_CADS_GROWTH_QUALITY@1'),
     benchmarkEvidenceSchema: z.literal('CAPITAL_AI_BENCHMARK_EVIDENCE@1'),
@@ -146,7 +179,10 @@ function moduleState(module: ContentEngineModuleId): ContentEngineModulePlan {
   };
 }
 
-export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
+export function planContentCampaign(rawBrief: unknown, options: {
+  originalGraphics?: readonly OriginalGraphicAsset[];
+  graphicOwnerGrants?: readonly OriginalGraphicOwnerGrant[];
+} = {}): ContentEnginePlan {
   const campaign = ContentCampaignBriefSchema.parse(rawBrief);
   const cadsQuality = assessCadsContentCampaign(campaign);
   if (cadsQuality.technicalStatus !== 'PASS') {
@@ -167,11 +203,23 @@ export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
 
   modules.add('PUBLISHER');
 
+  const graphicLicenses = options.originalGraphics?.flatMap(asset => {
+    if (!campaign.outputs.includes('IMAGE') || asset.sourceSha !== campaign.sourceSha) {
+      throw new Error('CONTENT_GRAPHIC_CAMPAIGN_MISMATCH');
+    }
+    const grants = options.graphicOwnerGrants?.filter(grant => grant.asset.assetId === asset.assetId) ?? [];
+    // Ambiguous records, including a grant plus a revocation, require review.
+    const grant = grants.length === 1 ? grants[0] : undefined;
+    return campaign.channels.map(channel => planOriginalGraphicLicense({ asset, channel }, grant));
+  });
+
   return ContentEnginePlanSchema.parse({
     contractVersion: CONTENT_ENGINE_CONTRACT_VERSION,
     campaign,
     vocabularyContext:contentVocabularyContext([campaign.objective,...campaign.audience].join(" ")),
     modules: [...modules].map(moduleState),
+    ...(graphicLicenses ? { graphicLicenses } : {}),
+    visualIdentity: CONTENT_ENGINE_UNIVERSE,
     cadsQuality,
     publication: {
       adapter: 'SOCIAL_MEDIA_ENGINE',
@@ -187,5 +235,13 @@ export function channelsForCampaign(plan: ContentEnginePlan): readonly GrowthMar
 
 /** Read-only website projection of approved editorial source; grants no publish authority. */
 export function presentBlogArticle<T extends { title: string; intro: string; sections: readonly { title: string; body: string }[] }>(source: T) {
-  return { ...source, presentation: { layout: 'SCI_FI_LETTER' as const, greeting: '✉️ CAPITAL AI · Wissen & Lernen', sectionMark: '✦', illustrationFormat: 'SVG' as const } };
+  return { ...source, presentation: {
+    layout: 'SCI_FI_LETTER' as const,
+    universeIdentity: CONTENT_ENGINE_UNIVERSE.id,
+    sevenColorFamilies: CONTENT_ENGINE_UNIVERSE.palette,
+    illustrationRequired: true as const,
+    greeting: '✉️ CAPITAL AI · Wissen & Lernen',
+    sectionMark: '✦',
+    illustrationFormat: 'SVG' as const,
+  } };
 }

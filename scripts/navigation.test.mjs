@@ -27,14 +27,17 @@ test('aliases and trailing slash normalize without losing query or hash', () => 
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
 });
 
-test('Architecture Intelligence has a dedicated public route and deep-link tabs', () => {
-  assert.equal(resolveAppRoute('/architecture-hub'), '/architecture-hub');
-  assert.equal(resolveAppRoute('/financial-intelligence'), '/architecture-hub');
-  assert.equal(resolveNavigationTarget('/architecture-hub?tab=explainability'), '/architecture-hub?tab=explainability');
-  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+test('analysis articles are routed through Documentation and legacy Studio and Learning tabs are retired', () => {
+  const target = '/dokumentation/analyse-komponenten';
+  assert.equal(resolveAppRoute(target), target);
+  assert.equal(resolveAppRoute('/architecture-hub'), target);
+  assert.equal(resolveAppRoute('/financial-intelligence'), target);
+  assert.equal(resolveNavigationTarget('/architecture-hub?tab=explainability'), target);
+  assert.equal(resolveNavigationTarget('/studio?tab=intelligence'), '/studio');
+  assert.equal(resolveNavigationTarget('/learning?tab=intelligence-catalogs'), '/learning');
   const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
-  assert.match(routes, /IntelligenceArchitectureHub/);
-  assert.match(catalog, /path: '\/architecture-hub'/);
+  assert.match(catalog, /id: 'analysis-components', name: 'Analyse Komponenten'/);
+  assert.doesNotMatch(catalog, /Financial Intelligence Kataloge|path: '\/architecture-hub'/);
 });
 
 test('Market Screener documentation aliases keep the dedicated blueprint documentation hub', () => {
@@ -482,7 +485,7 @@ test('compact navigation halves chrome spacing but keeps readable typography and
   assert.match(css, /\.hub-tab \{[\s\S]*?min-height: 28px;[\s\S]*?font-size: \.75rem;/);
   assert.match(css, /\.hub-tab-strip \.hub-tab svg \{ width: \.75rem; height: \.75rem;/);
   assert.match(css, /\.hub-sidebar-card, \.hub-asset-card, \.hub-subclass-card \{ min-height: 44px; \}/);
-  assert.match(header, /hub-sidebar-card min-h-11/);
+  assert.match(header, /hub-sidebar-card min-h-14/);
   assert.match(header, /hub-asset-card min-h-11/);
   assert.match(header, /hub-subclass-card min-h-11/);
   assert.match(home, /hub-directory-card hub-switch flex min-h-11/);
@@ -498,7 +501,7 @@ test('brand catalog exposes agreed hub names and leaves native responsive keyboa
   const nav = readFileSync(new URL('../src/components/HubNavigationPanel.tsx',import.meta.url),'utf8');
   assert.match(catalog,/name: 'Analytics Hub'/);
   assert.match(catalog,/name: 'Learning Hub'/);
-  assert.match(catalog,/name: 'Dokumentation Hub'/);
+  assert.match(catalog,/name: 'Dokumentation'/);
   assert.match(nav,/ResizeObserver/);
   assert.match(nav,/hub-tab-strip/);
   assert.match(nav,/prefers-reduced-motion/);
@@ -536,7 +539,12 @@ test('private dashboard separates unsaved editor text from last acknowledged not
   assert.match(dashboard, /setSavedText\(body\.notes\)/);
   assert.match(dashboard, /savedText\.trim\(\)/);
   assert.match(dashboard, /key=\{session\.user!\.id\}/);
-  assert.match(dashboard, /isNotesResponse\(body, userId\)/);
+  // OCC v2 validates both the server revision and the acknowledged snapshot.
+  assert.match(dashboard, /readNotes\(userId, controller\.signal\)/);
+  assert.match(dashboard, /setRevision\(body\.revision\)/);
+  assert.match(dashboard, /saveNotes\(base, submitted\)/);
+  assert.match(dashboard, /result\.kind === 'conflict'/);
+  assert.match(dashboard, /NotesConflictPanel/);
 });
 
 
@@ -575,4 +583,62 @@ test('roadmap OSS tooling navigator connects existing skills, live catalog paths
   assert.match(markup, /Kandidat, nicht installiert/);
   assert.match(markup, /\/studio\?tab=content/);
   assert.doesNotMatch(markup, /type="submit"/);
+});
+
+
+test('mobile account drawer collapses by default and preserves authorized actions', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /const \[isDrawerAccountExpanded, setIsDrawerAccountExpanded\] = useState\(false\)/);
+  assert.match(header, /id="drawer-account-toggle"/);
+  assert.match(header, /aria-expanded=\{isDrawerAccountExpanded\}/);
+  assert.match(header, /aria-controls="drawer-account-links"/);
+  assert.match(header, /setIsDrawerAccountExpanded\(expanded => !expanded\)/);
+  assert.match(header, /id="drawer-account-links"[^>]*hidden=\{!isDrawerAccountExpanded\}/);
+  assert.match(header, /setIsDrawerAccountExpanded\(false\);\s*setIsMenuOpen\(true\)/);
+  for (const path of [
+    '/profile', '/profile/security', '/profile/rights',
+    '/profile/subscription', '/profile/dashboard',
+  ]) {
+    assert.ok(header.includes(`path: '${path}' as const`), `Missing account route: ${path}`);
+  }
+  assert.match(header, /onClick=\{\(\) => void logout\(\)\}/);
+  assert.match(header, /authSession\?\.authenticated \? \(/);
+  assert.match(header, /min-h-14 w-full items-center justify-between gap-2 rounded-xl px-2 py-2/);
+  assert.match(header, /aria-label=\{nav\.hubs\}|\{nav\.hubs\}/);
+  assert.match(header, /hub-sidebar-card min-h-14/);
+});
+
+test('homepage MARKET readiness stays below editorial news, uses real routes and avoids price claims', () => {
+  const homepage = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  const hero = homepage.indexOf('<Hero onExploreProduct={onStartProductTour} />');
+  const editorial = homepage.indexOf('<HomeEditorialNews />');
+  const readiness = homepage.indexOf('id="market-transparency-title"');
+  const search = homepage.indexOf('<HomeSearchFocus />');
+  assert.ok(hero >= 0 && editorial > hero && readiness > editorial && search > readiness);
+  const section = homepage.slice(readiness, search);
+  assert.match(section, /Finanzmärkte verstehen/);
+  assert.match(section, /keine verifizierten Live-Kurse oder Handlungssignale/);
+  assert.match(section, /href="\/learning"/);
+  assert.match(section, /href="\/screener"/);
+  assert.doesNotMatch(section, /href="\/marketscreener\/news-archiv"/);
+  assert.match(section, /grid gap-3 md:grid-cols-3/);
+});
+
+test('profile menu shares all five private routes on the right and authenticated drawer', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const menu = header.slice(header.indexOf('id="header-account-navigation"'), header.indexOf('id="header-login-btn"'));
+  const drawer = header.slice(header.indexOf('id="drawer-account-toggle"'), header.indexOf('id="drawer-login-btn"'));
+  for (const route of ['/profile', '/profile/security', '/profile/rights', '/profile/subscription', '/profile/dashboard']) {
+    assert.ok(menu.includes(`path: '${route}' as const`), 'missing desktop route ' + route);
+    assert.ok(drawer.includes(`path: '${route}' as const`), 'missing mobile route ' + route);
+  }
+  assert.match(menu, /onClick=\{\(\) => void logout\(\)\}/);
+  assert.match(drawer, /onClick=\{\(\) => void logout\(\)\}/);
+  assert.match(header, /const isOwner = verifiedOwner\(authSession\)/);
+  assert.match(header, /hub.id !== 'control-center' \|\| isOwner/);
+  assert.match(header, /<ProfileAvatar url=\{authSession\.user\?\.avatarUrl\}/);
+  assert.match(header, /referrerPolicy="no-referrer"/);
+  assert.match(header, /minHeight: '3.5rem'/);
+  assert.match(header, /hub-sidebar-card min-h-14/);
+  assert.match(header, /drawer-account-toggle/);
 });

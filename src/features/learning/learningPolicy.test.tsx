@@ -108,7 +108,7 @@ test('no unlicensed videos are marketed as available and public learning CTA sta
   assert.doesNotMatch(html, /iframe|VideoObject|Kostenlos: ein freigegebenes Video/);
 });
 test('anonymous glossary surfaces render every canonical definition, including Quant level',()=>{
- const page=renderToStaticMarkup(<LearningPortalPage/>);
+ const page=renderToStaticMarkup(<LearningPortalPage initialTab="glossar" />);
  const modal=renderToStaticMarkup(<MarketVocabularyModal isOpen onClose={()=>{}}/>);
  for(const html of [page,modal]) {
    assert.equal((html.match(/data-vocabulary-category=/g)??[]).length,VOCABULARY_TERMS.length);
@@ -200,11 +200,49 @@ test('PR 522: Buddy note text is human-readable, account-scoped via existing API
   assert.throws(() => formatBuddyNote('🟦', false, ''), /INVALID_TEXT/);
   const buddy = readFileSync(new URL('../../components/HeroBuddy.tsx', import.meta.url), 'utf8');
   const notes = readFileSync(new URL('../../components/BuddyStickyNotes.tsx', import.meta.url), 'utf8');
+  const heroSource = readFileSync(new URL('../../components/HeroBuddy.tsx', import.meta.url), 'utf8');
   const learning = readFileSync(new URL('./LearningPortalPage.tsx', import.meta.url), 'utf8');
-  assert.match(buddy, /export function openHeroBuddy\(\)/);
+  // Public HeroBuddy API stays exported; its implementation moves to a tiny lazy-safe event bridge.
+  const buddyEvents = readFileSync(new URL('../../components/heroBuddyEvents.ts', import.meta.url), 'utf8');
+  assert.match(buddy, /export \{ HERO_BUDDY_EVENT, openHeroBuddy \} from '\.\/heroBuddyEvents';/);
+  assert.match(buddyEvents, /export function openHeroBuddy\(\)/);
+  assert.match(buddyEvents, /takePendingHeroBuddyOpen/);
   assert.match(buddy, /Als Notiz übernehmen/);
-  assert.match(notes, /expectedUserId: userId/);
-  assert.match(notes, /readAuthorizedNotes/);
+  const occClient = readFileSync(new URL('../account/privateNotesOcc.ts', import.meta.url), 'utf8');
+  // The OCC editor must be absent from the initial home bundle, yet remain accessible on demand.
+  assert.match(heroSource, /lazy\(\(\) => import\('\.\/BuddyStickyNotes'\)/);
+  assert.match(heroSource, /<Suspense fallback=\{<p role="status"/);
+  assert.doesNotMatch(heroSource, /^import \{ BuddyStickyNotes \} from/m);
+  assert.match(notes, /saveNotes\(snapshot, updated\)/);
+  assert.match(notes, /verifiedNotesUser/);
+  assert.match(occClient, /expectedUserId: snapshot\.userId/);
+  assert.match(occClient, /expectedRevision: snapshot\.revision/);
+  assert.match(occClient, /verifyNotesSession/);
   assert.doesNotMatch(notes, /localStorage/);
   assert.match(learning, /api\/learning\/vocabulary\/quiz\/consume/);
+});
+
+test('owner-only frontend prompt selection and screen capture remain local and fail closed', async () => {
+  const {readFileSync} = await import('node:fs');
+  const {buildFrontendDesignPrompt, FRONTEND_FEATURES} = await import('../../components/buddyFrontendPrompt.mjs');
+  const brief = buildFrontendDesignPrompt({notes:['Globus beibehalten'],featureIds:['responsive','universe'],images:['markierung.png']});
+  assert.match(brief,/CSS Grid/);
+  assert.match(brief,/Globus beibehalten/);
+  assert.match(brief,/markierung.png/);
+  assert.throws(()=>buildFrontendDesignPrompt({notes:[],featureIds:['responsive']}));
+  assert.ok(FRONTEND_FEATURES.every(feature=>feature.label&&feature.spec));
+  const buddy = readFileSync(new URL('../../components/BuddyStickyNotes.tsx',import.meta.url),'utf8');
+  const capture = readFileSync(new URL('../../components/BuddyCapturePanel.tsx',import.meta.url),'utf8');
+  const hero = readFileSync(new URL('../../components/HeroBuddy.tsx',import.meta.url),'utf8');
+  assert.match(buddy,/session\.account\?\.available === true && session\.account\?\.iamRole === 'owner'/);
+  assert.match(buddy,/ownerPromptAllowed&&<section aria-label="Owner Frontend-Prompt"/);
+  assert.match(buddy,/setSelectedLines/);
+  assert.match(buddy,/clearPrivateImages/);
+  assert.doesNotMatch(buddy,/window\.localStorage|localStorage\.setItem/);
+  assert.match(capture,/navigator\.mediaDevices\.getDisplayMedia/);
+  assert.match(capture,/getTracks\(\)\.forEach\(track=>track\.stop\(\)\)/);
+  assert.match(capture,/new Set\(\['image\/png','image\/jpeg','image\/webp'\]\)/);
+  assert.match(hero,/JaJa CAM: Screenshot aufnehmen/);
+  assert.match(hero,/JaJa Stift: Bereiche markieren/);
+  assert.match(buddy,/Kein automatischer Export/);
 });

@@ -1,0 +1,59 @@
+/* First-party CAPITAL-AI Universe: seven canonical atoms, no external fonts or media. */
+.learning-sim-universe {
+  --u-cyan: #67E8F9; --u-violet: #B794F4; --u-gold: #F9BF21;
+  --u-pink: #F9A8D4; --u-rose: #F87171; --u-blue: #60A5FA; --u-green: #4ADE80;
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  gap: clamp(12px, 3vw, 32px); align-items: center;
+  width: 100%; min-width: 0; overflow: clip;
+  padding: clamp(16px, 3vw, 32px); border: 1px solid #49628a;
+  border-radius: 22px; color: #f6f8ff;
+  background: radial-gradient(circle at 80% 35%, #49337555, transparent 50%), #080f23;
+}
+.learning-sim-universe *, .learning-sim-universe *::before,
+.learning-sim-universe *::after { box-sizing: border-box; min-width: 0; }
+.learning-sim-universe-copy { display: grid; gap: 14px; align-content: center; }
+.learning-sim-universe-eyebrow { color: var(--u-cyan); letter-spacing: .14em; font-weight: 750; font-size: .77rem; }
+.learning-sim-universe h2 { font-size: clamp(1.45rem, 3vw, 2.5rem); line-height: 1.17; font-weight: 800; text-wrap: balance; color: white; }
+.learning-sim-universe-copy > p:not(.learning-sim-universe-eyebrow) { line-height: 1.6; color: #e3eafa; }
+.learning-sim-universe-lessons { display: flex; flex-wrap: wrap; gap: 8px; }
+.learning-sim-universe-lesson { border: 1px solid #7785ba; padding: 10px 12px; min-height: 44px; border-radius: 10px; background: #132344; color: #f6f8ff; font-weight: 600; }
+.learning-sim-universe-lesson[aria-pressed="true"] { border-color: var(--u-gold); background: #5b4380; }
+.learning-sim-universe-detail { border-left: 3px solid var(--u-green); padding: 10px 12px; background: #142442; border-radius: 8px; min-height: 94px; }
+.learning-sim-universe-detail p { line-height: 1.5; margin-top: 5px; color: #ebf2ff; }
+.learning-sim-universe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.learning-sim-universe-actions :is(a, button) { display: inline-flex; align-items: center; padding: 10px 13px; min-height: 44px; border-radius: 9px; color: #0d1526; background: var(--u-gold); text-decoration: none; font-weight: 750; border: 1px solid #ffe092; }
+.learning-sim-universe-actions button { background: var(--u-cyan); border-color: #a9f5ff; }
+.learning-sim-universe-disclaimer { font-size: .83rem; color: #e2eaf8; }
+.learning-sim-universe-visual { display: grid; justify-items: center; gap: 12px; width: 100%; }
+.learning-sim-universe-atoms { display: flex; justify-content: center; gap: clamp(5px, 1vw, 12px); width: 100%; }
+.learning-sim-universe-atom { width: clamp(13px, 2vw, 23px); height: clamp(13px, 2vw, 23px); border-radius: 50%; border: 1px solid #ffffff99; }
+.learning-sim-universe-atom--cyan { background: var(--u-cyan); }
+.learning-sim-universe-atom--violet { background: var(--u-violet); }
+.learning-sim-universe-atom--gold { background: var(--u-gold); }
+.learning-sim-universe-atom--pink { background: var(--u-pink); }
+.learning-sim-universe-atom--rose { background: var(--u-rose); }
+.learning-sim-universe-atom--blue { background: var(--u-blue); }
+.learning-sim-universe-atom--green { background: var(--u-green); }
+.learning-sim-universe-earth { position: relative; isolation: isolate; width: min(100%, 320px); aspect-ratio: 1; }
+.learning-sim-universe-earth img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.learning-sim-universe-visual-status { min-height: 44px; color: #e7edfc; text-align: center; font-size: .84rem; }
+.learning-sim-universe-earth-toggle { min-height: 44px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--u-violet); color: #fff; background: #41336c; font-weight: 750; }
+.learning-sim-universe-earth-toggle:disabled { opacity: .65; cursor: not-allowed; }
+.learning-sim-universe :is(a, button):focus-visible { outline: 3px solid var(--u-gold); outline-offset: 3px; }
+@media (max-width: 860px) {
+  .learning-sim-universe { grid-template-columns: minmax(0, 1fr); }
+  .learning-sim-universe-visual { max-width: 520px; margin-inline: auto; }
+}
+@media (max-width: 390px) {
+  .learning-sim-universe { padding: 12px; gap: 10px; }
+  .learning-sim-universe-earth { width: min(100%, 242px); }
+  .learning-sim-universe-actions :is(a,button) { width: 100%; justify-content: center; }
+}
+@media (max-width: 320px) {
+  .learning-sim-universe h2 { font-size: 1.35rem; }
+  .learning-sim-universe-lesson { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .learning-sim-universe *, .learning-sim-universe *::before,
+  .learning-sim-universe *::after { animation: none !important; transition: none !important; }
+}

@@ -1,4 +1,6 @@
+import { ANALYSIS_DOCUMENTATION } from '../../../shared/analysis-documentation.mjs';
 const BlueprintOfferPage = lazy(() => import('../../features/pricing/BlueprintOfferPage').then(module => ({ default: module.BlueprintOfferPage })));
+const GovernanceEvidenceSprintPage = lazy(() => import('../../features/home/GovernanceEvidenceSprintPage').then(module => ({ default: module.GovernanceEvidenceSprintPage })));
 const CheckoutConfirmationPage = lazy(() => import('../../features/pricing/CheckoutConfirmationPage').then(module => ({ default: module.CheckoutConfirmationPage })));
 import { BrandLogo } from '../../components/BrandLogo';
 const AccountRightsPage = lazy(() => import('../../features/account/AccountRightsPage').then(module => ({default:module.AccountRightsPage})));
@@ -63,10 +65,8 @@ const PersonalWorkspacePage = lazy(() =>
     default: module.PersonalWorkspacePage,
   })),
 );
-const IntelligenceArchitectureHub = lazy(() =>
-  import('../../features/architecture/IntelligenceArchitectureHub').then((module) => ({
-    default: module.IntelligenceArchitectureHub,
-  })),
+const AnalysisComponentsPage = lazy(() =>
+  import('../../features/documentation/AnalysisComponentsPage').then(module => ({ default: module.AnalysisComponentsPage })),
 );
 const ArchitecturePage = lazy(() =>
   import('../../components/ArchitecturePage').then((module) => ({
@@ -204,9 +204,7 @@ export function AppRoutes({
     );
   }
 
-  if (currentRoute === '/architecture-hub') {
-    return <IntelligenceArchitectureHub onNavigate={navigateTo} />;
-  }
+  if (currentRoute === ANALYSIS_DOCUMENTATION) return <AnalysisComponentsPage />;
 
   if (currentRoute === '/architecture') {
     return (
@@ -290,6 +288,7 @@ export function AppRoutes({
     );
   }
 
+  if (currentRoute === '/governance-evidence-sprint') return <GovernanceEvidenceSprintPage />;
   if (currentRoute === '/blueprints') return <BlueprintOfferPage />;
   if (currentRoute === '/checkout/confirmation') return <CheckoutConfirmationPage />;
 

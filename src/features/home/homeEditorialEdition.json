@@ -1,0 +1,228 @@
+{
+  "date": "2026-11-15",
+  "label": "15. November 2026",
+  "stories": [
+    {
+      "id": "polygon",
+      "topic": "Polygon · Stablecoins",
+      "title": "SoFiUSD: Polygon als zusätzliches Netzwerk",
+      "summary": "Polygon meldet, dass SoFiUSD nun auch auf Polygon unterstützt wird. Für SoFi-Mitglieder nennt die Quelle Kauf, Verkauf, Verwahrung und Umtausch innerhalb der SoFi-App. Ethereum und Solana werden als weitere Netzwerke aufgeführt.",
+      "context": "SoFiUSD ist laut Originalbeitrag kein Bankguthaben. Der Stablecoin selbst ist weder durch FDIC noch SIPC versichert.",
+      "graphic": {
+        "kind": "network",
+        "caption": "Von Polygon genannte Netzwerke",
+        "center": "SoFiUSD",
+        "labels": [
+          "Polygon",
+          "Solana",
+          "Ethereum"
+        ]
+      },
+      "source": {
+        "name": "Polygon",
+        "url": "https://polygon.technology/blog/sofiusd-lands-on-polygon",
+        "date": "2026-11-12",
+        "label": "12. November 2026"
+      },
+      "editorial": {
+        "relevance": 5,
+        "impact": 4
+      },
+      "evidence": {
+        "news": {
+          "sourceKind": "OFFICIAL_LINK_METADATA",
+          "observedAt": "2026-11-15",
+          "eventAt": null
+        },
+        "graphic": {
+          "assetId": "home-polygon-vector-v1",
+          "mediaType": "STRUCTURED_VECTOR"
+        },
+        "rights": {
+          "story": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "source": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "graphic": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          }
+        },
+        "freshness": {
+          "maxAgeDays": 14
+        },
+        "priceData": null
+      }
+    },
+    {
+      "id": "xrpl",
+      "topic": "XRP Ledger · Testumgebungen",
+      "title": "XRP Ledger plant Reset seiner Testnetze",
+      "summary": "Für den 25. November ist ein Reset von Testnet und Devnet angekündigt. Konten, Guthaben und andere Ledger-Daten der beiden Testnetze werden gelöscht. Laut Ankündigung läuft das Mainnet weiter.",
+      "context": "Getrennte Umgebungen erlauben Wallet- und Zahlungstests ohne echtes Geld.",
+      "graphic": {
+        "kind": "status",
+        "caption": "Welche Netzwerke sind betroffen?",
+        "rows": [
+          {
+            "label": "Testnet",
+            "outcome": "Reset geplant"
+          },
+          {
+            "label": "Devnet",
+            "outcome": "Reset geplant"
+          },
+          {
+            "label": "Mainnet",
+            "outcome": "Läuft weiter"
+          }
+        ]
+      },
+      "source": {
+        "name": "XRP Ledger",
+        "url": "https://xrpl.org/blog/2026/testnet-devnet-reset",
+        "date": "2026-11-09",
+        "label": "9. November 2026"
+      },
+      "editorial": {
+        "relevance": 5,
+        "impact": 4
+      },
+      "evidence": {
+        "news": {
+          "sourceKind": "OFFICIAL_LINK_METADATA",
+          "observedAt": "2026-11-15",
+          "eventAt": null
+        },
+        "graphic": {
+          "assetId": "home-xrpl-vector-v1",
+          "mediaType": "STRUCTURED_VECTOR"
+        },
+        "rights": {
+          "story": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "source": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "graphic": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          }
+        },
+        "freshness": {
+          "maxAgeDays": 14
+        },
+        "priceData": null
+      }
+    },
+    {
+      "id": "solana",
+      "topic": "Solana · Zahlungsabläufe",
+      "title": "Polygon bindet Solana an seinen Open Money Stack an",
+      "summary": "Polygon beschreibt einen Zahlungsablauf, der Bankeinzahlungen, Stablecoins auf Solana und Auszahlungen über seine Dienste verbindet.",
+      "context": "Der Ablauf zeigt, an welcher Stelle Bankgeld in einen Token umgewandelt wird.",
+      "graphic": {
+        "kind": "flow",
+        "caption": "Der Zahlungsablauf laut Polygon",
+        "labels": [
+          "Bankeinzahlung",
+          "Stablecoin auf Solana",
+          "Auszahlung"
+        ]
+      },
+      "source": {
+        "name": "Polygon",
+        "url": "https://polygon.technology/blog/polygon-oms-supports-solana",
+        "date": "2026-10-29",
+        "label": "29. Oktober 2026"
+      },
+      "editorial": {
+        "relevance": 4,
+        "impact": 3
+      },
+      "evidence": {
+        "news": {
+          "sourceKind": "OFFICIAL_LINK_METADATA",
+          "observedAt": "2026-11-15",
+          "eventAt": null
+        },
+        "graphic": {
+          "assetId": "home-solana-vector-v1",
+          "mediaType": "STRUCTURED_VECTOR"
+        },
+        "rights": {
+          "story": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "source": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          },
+          "graphic": {
+            "decision": "REVIEW_REQUIRED",
+            "websiteAllowed": false,
+            "evidenceRef": null,
+            "reviewedAt": null
+          }
+        },
+        "freshness": {
+          "maxAgeDays": 14
+        },
+        "priceData": null
+      }
+    }
+  ],
+  "contentEngine": {
+    "contractVersion": "CAPITAL_AI_CONTENT_ENGINE@1",
+    "publicationAuthority": "SOCIAL_MEDIA_ENGINE_ONLY",
+    "publicPublishAllowed": false,
+    "campaign": {
+      "campaignId": "home-editorial-20261115",
+      "productId": "capital-ai-learning-hub",
+      "sourceSha": "2b6077c49cba0862286cfd99078481a57e637b099f28ac3c83840b427a0def5e",
+      "canonicalUrl": "https://capital-ai.online/",
+      "locale": "de-DE",
+      "objective": "Offizielle Meldungen zu Finanzinfrastruktur und Zahlungsnetzwerken quellengebunden einordnen.",
+      "audience": [
+        "Finanzinteressierte",
+        "FinTech-Lernende"
+      ],
+      "channels": [
+        "WEBSITE"
+      ],
+      "outputs": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "sourceUrls": [
+        "https://polygon.technology/blog/sofiusd-lands-on-polygon",
+        "https://xrpl.org/blog/2026/testnet-devnet-reset",
+        "https://polygon.technology/blog/polygon-oms-supports-solana"
+      ]
+    }
+  }
+}

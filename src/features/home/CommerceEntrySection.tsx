@@ -4,7 +4,7 @@ import { PRICING_CATALOG, displayPriceEur } from '../../data/pricingCatalog';
 import { VOCABULARY_OFFER } from '../../data/vocabularyOffer';
 
 export const COMMERCE_ENTRY_COPY: Record<Locale, readonly [string, string, string, string, string, string, string, string]> = {
-  de: ['Was erwartet dich im Learning Hub?', 'Starte mit dem öffentlichen Glossar oder einer Beispielrechnung. Kostenpflichtige Lernangebote sind separat gekennzeichnet.', 'Mit kostenlosen Lerninhalten starten', 'Lerne, wie ein Spread entsteht und wie Faktoren in einen Score eingehen.', 'Learning Hub öffnen', 'Analysewerkzeuge vergleichen', 'Analysefunktionen nach Tarif vergleichen. Providerdaten und KI-Modelle werden separat abgerechnet.', 'Tarife ansehen'],
+  de: ['Wo möchtest du anfangen?', 'Starte mit dem Thema, das dich gerade beschäftigt. Die Analysewerkzeuge findest du im Tarifvergleich.', 'Finanzwissen vertiefen', 'Schlag einen Begriff nach oder arbeite dich mit einem Guide in eine Methode ein.', 'Learning Hub öffnen', 'Analysewerkzeuge vergleichen', 'Sieh, welche Funktionen im jeweiligen Tarif enthalten sind. Anbieterdaten und KI-Modelle werden separat abgerechnet.', 'Tarife ansehen'],
   en: ['Build knowledge. Compare tools.', 'Explore learning resources, then choose the right scope for your analysis tools.', 'Explore learning resources', 'Discover financial terms, methods and guides.', 'Open learning portal', 'Compare analysis tools', 'Compare checks by plan. Provider data and AI models are billed separately.', 'View plans'],
   it: ['Impara. Confronta gli strumenti.', 'Esplora le risorse formative e scegli gli strumenti di analisi adatti a te.', 'Scopri le risorse formative', 'Esplora termini finanziari, metodi e guide.', 'Apri il portale formativo', 'Confronta gli strumenti di analisi', 'Confronta le verifiche per piano. Dati dei provider e modelli IA sono fatturati separatamente.', 'Vedi i piani'],
   fr: ['Apprenez. Comparez les outils.', 'Découvrez les ressources pédagogiques puis choisissez vos outils d’analyse.', 'Découvrir les ressources', 'Explorez les termes financiers, méthodes et guides.', 'Ouvrir le portail pédagogique', 'Comparer les outils d’analyse', 'Comparez les contrôles par offre. Les données fournisseurs et modèles IA sont facturés séparément.', 'Voir les offres'],
@@ -48,5 +48,23 @@ export function CommerceEntryContent({ locale, onNavigate }: { locale: Locale; o
 
 export function CommerceEntrySection({ onNavigate }: { onNavigate: (path: string) => void }) {
   const { locale } = useLocale();
-  return <CommerceEntryContent locale={locale} onNavigate={onNavigate} />;
+  return (
+    <>
+      <CommerceEntryContent locale={locale} onNavigate={onNavigate} />
+      <section aria-labelledby="governance-sprint-cta" className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+        <div className="rounded-2xl border border-cyan-300/25 bg-slate-950/80 p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">CAPITAL-AI · B2B-Angebot</p>
+          <h2 id="governance-sprint-cta" className="mt-2 text-xl font-bold text-white">Governance &amp; Evidence Sprint</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-200">
+            Ein begrenzter, manuell erbrachter CI-/Security-Evidence-Review mit Musterbericht,
+            klaren Grenzen und unverbindlicher Anfrage. Kein automatischer Tenant-Scan oder Zertifikat.
+          </p>
+          <a href="/governance-evidence-sprint"
+            className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-cyan-300/60 px-4 py-3 text-sm font-semibold text-cyan-100 hover:bg-cyan-950/70 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200">
+            B2B-Angebot und Musterbericht ansehen
+          </a>
+        </div>
+      </section>
+    </>
+  );
 }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { type OriginalGraphicOwnerGrant } from './originalGraphicLicense.ts';
 import {
   ContentSocialPackageManifestSchema,
   findContentSocialApproval,
@@ -49,6 +50,7 @@ export function buildSocialPublisherHandoff(
   assetId: string,
   adapterStates: Readonly<Record<SocialPublisherChannel, SocialPublisherAdapterState>> =
     CURRENT_SOCIAL_PUBLISHER_ADAPTERS,
+  graphicOwnerGrants: readonly OriginalGraphicOwnerGrant[] = [],
 ): SocialPublisherHandoff {
   const manifest = ContentSocialPackageManifestSchema.parse(manifestInput);
   const channel = SocialPublisherChannelSchema.parse(channelInput);
@@ -60,7 +62,7 @@ export function buildSocialPublisherHandoff(
   const asset = manifest.assets.find((candidate) => candidate.assetId === assetId);
   if (!asset) throw new Error('CONTENT_SOCIAL_PUBLISHER_ASSET_NOT_FOUND');
 
-  const approval = findContentSocialApproval(manifest, assetId, channel);
+  const approval = findContentSocialApproval(manifest, assetId, channel, graphicOwnerGrants);
   if (!approval) {
     throw new Error('CONTENT_SOCIAL_PUBLISHER_APPROVAL_REQUIRED');
   }

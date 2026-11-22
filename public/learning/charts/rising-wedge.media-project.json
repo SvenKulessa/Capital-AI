@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/rising-wedge.svg",
-      "sha256": "464238c390f19f097a5fa559f9a73dd7e39aa94ce39b8bb020125c9c1d83733b",
+      "sha256": "a482bad6ca0f816013e40d04fd36a4421402ee9b14169bd45156b6b22bc4c435",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

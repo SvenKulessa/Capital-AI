@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/descending-triangle.svg",
-      "sha256": "4859304d320c61e87a84e3679bb67b76c24bbbf764f8de1a51f7188e48112ee7",
+      "sha256": "6e5e4d13552a23e7988fb5734858b67edb346428a3824606e382129fdd4c3155",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/falling-wedge.svg",
-      "sha256": "bbfd00dc408933dbfb770424baea303714af468c429f149f283afe928625ea0a",
+      "sha256": "0b1a0321ac18656edba7f36947461dc62ca22991a2ce6e2cb5d52f9eb3aa7644",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

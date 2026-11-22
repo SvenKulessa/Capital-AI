@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/triple-top.svg",
-      "sha256": "7e1c92bfd2082247f75f4a89de90fdcaa9c32a85652e98f5e147df0d174a35f0",
+      "sha256": "1f53137b7b67b3a70a1c362e0d5a01f51ec03b09f3c2bfcf53d95401bd8ae7ca",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

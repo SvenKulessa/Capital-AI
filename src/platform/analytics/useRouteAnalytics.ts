@@ -1,3 +1,5 @@
+import { localeFromLandingPath, localizedLandingPath } from '../../../shared/locale-policy.mjs';
+import { isLocale, localizedLandingMetadata } from '../../i18n/messages';
 import { useEffect, useState } from 'react';
 import { hubRouteForPath } from '../../../shared/hub-routes.mjs';
 import { APP_NAVIGATION_EVENT } from '../../utils/appNavigation';
@@ -31,6 +33,11 @@ const DEFAULT_METADATA: StaticRouteMetadata = {
 };
 
 const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
+  '/governance-evidence-sprint': {
+    title: 'Governance & Evidence Sprint | CAPITAL-AI',
+    description: 'Begrenzter B2B-Review für CI-, Supply-Chain- und Governance-Evidence. Transparentes Muster, klare Grenzen und unverbindliche Kontaktanfrage.',
+    canonicalPath: '/governance-evidence-sprint',
+  },
   '/login': {
     title: 'Capital-AI | Terminal Anmeldung & Login',
     description:
@@ -144,6 +151,14 @@ export function useRouteAnalytics(currentRoute: string) {
   }, []);
 
   useEffect(() => {
+    const locale = localeFromLandingPath(pathname);
+    if (locale && isLocale(locale)) {
+      const canonicalPath = localizedLandingPath(locale);
+      const meta = localizedLandingMetadata(locale);
+      updatePageSEO({ ...meta, canonicalPath });
+      trackPageView(canonicalPath, meta.title);
+      return;
+    }
     const hubRoute = hubRouteForPath(pathname);
     if (hubRoute) {
       const title = `${hubRoute.title} | CAPITAL-AI`;

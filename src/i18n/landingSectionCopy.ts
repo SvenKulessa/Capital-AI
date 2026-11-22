@@ -41,8 +41,8 @@ export type SectionKey = typeof sectionKeys[number];
 export const sectionMessages: Record<Locale, Record<SectionKey, string>> = {
   de: {
     "hubOverline": "Plattformnavigation",
-    "hubTitle": "Hubs & Inhalte",
-    "hubDescription": "Hub aufklappen und einen Reiter direkt öffnen. Alle Bereiche sind auch über die Hauptnavigation erreichbar.",
+    "hubTitle": "Hubs und Inhalte",
+    "hubDescription": "Wähle einen Hub, um seine Themen zu sehen.",
     "hubSections": "Bereiche",
     "hubTabs": "Reiter",
     "hubOpen": "öffnen",
@@ -67,8 +67,8 @@ export const sectionMessages: Record<Locale, Record<SectionKey, string>> = {
     "publisherReason": "Übergabe an die Social Media Engine nach deren Cutover.",
     "contractOriginal": "Vertragsbegründung im deutschen Original",
     "campaignRule": "Ein Campaign Brief wählt nur die Module aus, die für den gewünschten Output nötig sind. Provider-, Rechte- und Publication-Regeln bleiben in den bestehenden Contracts.",
-    "campaignOutput": "Kampagnen-Ausgabe",
-    "socialLater": "Social Media Engine → später",
+    "campaignOutput": "Kanäle für Entwürfe",
+    "socialLater": "Social Media Engine geplant",
     "modules": "Module",
     "channels": "Kanäle",
     "status": "Status",

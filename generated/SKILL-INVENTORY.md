@@ -18,9 +18,12 @@
 | MARKET | `market-engineering` | CAPITAL-AI-MARKET | Scoring-Contract-Regressionen; Daten-Provenance-Quote | DOCUMENTED | G2 |
 | MARKET | `quant-research` | CAPITAL-AI-MARKET | Out-of-sample-Qualität; Backtest-Bias-Findings | DOCUMENTED | G2 |
 | PLATFORM | `ai-engineering` | CAPITAL-AI-PLATFORM | adversariale Evaluations-Findings; Modell-/Retrieval-Provenance | DOCUMENTED | G2 |
+| PLATFORM | `integration-engineering` | CAPITAL-AI-PLATFORM | Anteil geprüfter Adapterverträge; Anteil bestandener Widerrufstests | DOCUMENTED | G2 |
 | PLATFORM | `platform-advisory` | CAPITAL-AI-PLATFORM | bewertete Architekturtrade-offs; nicht gedeckte SLO-Risiken | DOCUMENTED | G2 |
 | PLATFORM | `platform-engineering` | CAPITAL-AI-PLATFORM | reproduzierbare Builds; SLO-/Deployment-Fehler | DOCUMENTED | G2 |
 | PLATFORM | `platform-observability` | CAPITAL-AI-PLATFORM | SLO-Burn-Rate; MTTD und MTTR je nach tatsächlicher Incident-Datenlage | DOCUMENTED | G2 |
+| PLATFORM | `skill-lifecycle` | CAPITAL-AI-PLATFORM | Anteil der Skills mit Grundlagenquellen; Zahl fälliger Quellenreviews | DOCUMENTED | G2 |
+| TRUST | `agent-evaluation` | CAPITAL-AI-TRUST | Anteil belegter Skill-Ausführungen; Fehlrouting- und Abstentionsrate | DOCUMENTED | G2 |
 | TRUST | `incident-response` | CAPITAL-AI-TRUST | MTTD/MTTR soweit beobachtet; getestete Restore-Prozeduren | DOCUMENTED | G2 |
 | TRUST | `legal-compliance` | CAPITAL-AI-TRUST | verifizierte regulatorische Scope-Entscheidungen; offene Datenlizenz-Gaps | DOCUMENTED | G2 |
 | TRUST | `trust-advisory` | CAPITAL-AI-TRUST | nachgewiesene Risiko-Entscheidungen; unbehandelte High-Risks | DOCUMENTED | G2 |
@@ -31,4 +34,4 @@
 | GROWTH | `sales-enterprise` | CAPITAL-AI-GROWTH | qualifizierte Leads mit Evidenz; nachgewiesene Angebot-zu-Auftrag-Konversion | DOCUMENTED | G2 |
 | GROWTH | `seo-engineering` | CAPITAL-AI-GROWTH | gültige indexierbare kanonische Seiten; organische Klicks nur bei verifizierter Datenquelle | DOCUMENTED | G2 |
 
-Es gibt **26** Registry-Skills mit genau einer verantwortlichen Domain. Governance Owner aller Skills: `CAPITAL-AI-TRUST`. Fachübergreifende Nutzung verändert Ownership nicht.
+Es gibt **29** Registry-Skills mit genau einer verantwortlichen Domain. Governance Owner aller Skills: `CAPITAL-AI-TRUST`. Fachübergreifende Nutzung verändert Ownership nicht.

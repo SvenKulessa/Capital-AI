@@ -51,8 +51,8 @@ export { MARKET_ASSETS } from '../services/marketDataStore';
 const MODULE_CATALOG: CoreModule[] = [
   {
     id: 'market-screener',
-    title: 'Multi Asset Market Screener',
-    description: 'Marktübersicht mit Quellenstatus; weitere Anlageklassen nach Datenanbindung.',
+    title: 'Markt-Screener',
+    description: 'Sieh, welche Marktdaten verfügbar sind. Weitere Anlageklassen kommen mit neuen Datenquellen hinzu.',
     iconType: 'screener',
     tagline: 'Cross-Sectional Multi-Asset Ranking in Sub-45ms',
     brandColor: '#06B6D4', // Cyan
@@ -74,10 +74,10 @@ const MODULE_CATALOG: CoreModule[] = [
   },
   {
     id: 'learning-portal',
-    title: 'Learning Platform',
-    description: 'Interaktives Glossar, Formel-Guides & Quant Skill-Check.',
+    title: 'Learning Hub',
+    description: 'Nutze das interaktive Glossar, vertiefe Formeln mit Guides und prüfe dein Wissen im Quant Skill-Check.',
     iconType: 'book',
-    tagline: 'Vom Einsteiger zum versierten Marktbeobachter & Quant',
+    tagline: 'Von Finanzbegriffen zu Analysemethoden',
     brandColor: '#F9BF21', // Gold
     accentColor: '#FDE047',
     details: {
@@ -98,7 +98,7 @@ const MODULE_CATALOG: CoreModule[] = [
   {
     id: 'pipeline-builder',
     title: 'Pipeline Builder',
-    description: 'Modulare Datenpipeline für TradingView & Python.',
+    description: 'Sieh, wie modulare Datenpipelines für TradingView und Python aufgebaut sind.',
     iconType: 'builder',
     tagline: 'Institutionelle Enterprise Marktdaten-Pipeline konfigurieren',
     brandColor: '#10B981', // Emerald
@@ -448,6 +448,10 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
 
 
 export const CORE_MODULES: CoreModule[] = MODULE_CATALOG.map(module => ({ ...module,
-  tagline: ['learning-portal', 'vocabulary'].includes(module.id) ? module.tagline : 'Datenversorgung und Methodik prüfen',
+  tagline: module.id === 'market-screener'
+    ? 'Märkte und verfügbare Quellen'
+    : module.id === 'pipeline-builder'
+      ? 'Datenpipelines für Marktanalysen'
+      : ['learning-portal', 'vocabulary'].includes(module.id) ? module.tagline : 'Datenversorgung und Methodik prüfen',
   details: { ...module.details, sampleMetrics: [], newsItems: [], features: module.details.features.map(feature => 'Geplant: ' + feature),
     useCase: 'Geplantes Modul. Datenversorgung und Validierung ausstehend. ' + module.details.useCase.replace(/Sub-45ms[^.]*|sub-45ms[^.]*|BaFin MaRisk[^.]*|40 €[^.]*|100.000 Echtzeit[^.]*/g, 'Validierung ausstehend') } }));

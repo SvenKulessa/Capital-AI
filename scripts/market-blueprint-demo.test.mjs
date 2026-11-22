@@ -49,7 +49,7 @@ test('public blueprint UI remains in documentation while home focuses on the tou
   const rules = readFileSync(new URL('features/home/marketBlueprintRules.ts', root), 'utf8');
 
   assert.doesNotMatch(home, /<MarketBlueprintShowcase/);
-  assert.match(home, /Produkt entdecken/);
+  assert.match(home, /CAPITAL-AI entdecken/);
   assert.match(documentation, /<MarketBlueprintShowcase variant="documentation"/);
   assert.match(card, /DEMO · Illustrativer Verlauf/);
   assert.match(card, /Synthetischer Index ohne Einheit/);

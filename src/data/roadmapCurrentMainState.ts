@@ -524,9 +524,11 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "evidenceRefs": [
       "src/contracts/analysisComponentRegistry.ts",
       "server/scorer-proxy.mjs",
-      "docs/architecture/ANALYSIS-FOUNDATION.md"
+      "docs/architecture/ANALYSIS-FOUNDATION.md",
+      "src/contracts/capBp001AdmissionReview.ts",
+      "docs/market-data/CAP-BP-001-ADMISSION-EVIDENCE-20261119.md"
     ],
-    "nextStep": "50-Komponenten-Registry schrittweise mit realen point-in-time Features, Datenrechten, DQ- und Scoring-Evidence aktivieren; produktive Rankings bleiben bis dahin fail-closed."
+    "nextStep": "CAP-BP-001 Blueprint und Admission-Inspektion (#825/#839) liegen als synthetische, fail-closed Code-Evidence im Main. market_integrity_gate bleibt blocked; produktive kanonische Tick-/Exchange-Contracts, kommerzielle Datenrechte, Point-in-Time-Historie, Replay und Runtime-Scoring sind NOT_PROVEN. Die 50-Komponenten-Pipeline nicht aus dem Blueprint heraus aktivieren."
   },
   "AP-FIN-03": {
     "status": "aktiv",
@@ -612,12 +614,17 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "nextStep": "Paid Billing/Entitlement Runtime ist implementiert. Der initiale Standalone-Handoff nach capital-ai-online/CADS ist gemergt. Nächstes Ziel: den accepted PR-#220-Delta source-bound ins Org-Repo synchronisieren und danach Organization-App, Verified Publisher, Financial Onboarding, aktuelle GitHub-Paid-Listing-Voraussetzungen, reale USD-Preise/Plan-IDs sowie Install/OAuth/Purchase/Changed/Cancelled/Delete-Smokes schließen."
   },
   "CA-PLATFORM-SELF-HEAL": {
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
     "evidenceRefs": [
       "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md",
       "docs/platform/GOOGLE-CLOUD-OPERATOR-OIDC.md",
-      ".github/workflows/google-cloud-admin.yml"
+      ".github/workflows/google-cloud-admin.yml",
+      "scripts/growth-agent/worker_service.py",
+      "scripts/growth-agent/checkpoint_store.py",
+      "scripts/architecture/strategy-2026-pr-live.mjs"
     ],
-    "nextStep": "DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY als fail-closed Controller mit Retry-Budget und Escalation implementieren. Arbeitsschritt Google-Administration: Cloud-, Admin-Console- und Workspace-Operator mit eigenen Identitäten über den Federation Pool planen. Je Operator erlaubte API-Operationen, Zielressourcen, Rollen und Scopes festlegen, im Testbereich abnehmen und Rücknahme prüfen. Workspace-Delegation gesondert durch den Super-Admin freigeben lassen."
+    "nextStep": "Main enthaelt aus PR #777 einen offline/default-off LangGraph-Worker mit privatem SQLite-Checkpointing, aus #786 synthetische Agent Operations und aus #844 lesende PR-Korrelation. Kein 24/7-Dienst, keine GitHub-/Render-Schreibberechtigung und keine produktive Auto-Reparatur sind damit nachgewiesen. Bounded DETECT/REPAIR/VERIFY und Federation-Operatorrechte getrennt mit echten Check-/Runtime-Receipts abnehmen."
   },
   "CA-PLATFORM-COMPONENT-INVENTORY": {
     "status": "aktiv",
@@ -660,9 +667,11 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "evidenceRefs": [
       "shared/seo-content-manifest.mjs",
       "shared/seo-metadata.mjs",
-      "scripts/seo-content-manifest.test.mjs"
+      "scripts/seo-content-manifest.test.mjs",
+      "server/google-analytics-readback.mjs",
+      "src/components/OwnerGa4ConfigView.tsx"
     ],
-    "nextStep": "Kanonische Inhalte, strukturierte Metadaten und Social-/Search-Handoffs weiter gegen veröffentlichte Production-Oberflächen korrelieren."
+    "nextStep": "GA4-Konfigurationsdiagnose (#841/#842) ist im Main, aber kein authentifizierter GA4-Runtime-Readback und keine consentgebundenen generate_lead-/purchase- oder Kundenumsatz-Receipts sind belegt. #819/#824/#849/#850 bleiben unabgenommene PR-Implementierungen, keine produktiven KPIs. Live-Provider, Consent, Attribution, Checkout und Deployment-SHA getrennt verifizieren."
   },
   "PRODUCTION-WEB-01-TRUST": {
     "status": "aktiv",
@@ -715,6 +724,17 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "scripts/social-tool-license-evidence.test.mjs"
     ],
     "nextStep": "Tool-/Modell-/Persona-/Musik-/Distributionsrechte pro tatsächlich ausgeliefertem Asset und Providerpfad abschließen."
+  },
+  "CA-PLATFORM-DR-RECOVERY": {
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "docs/architecture/INFRASTRUCTURE-BACKUP-RECOVERY.md",
+      "scripts/platform/backup-reader-contract-test.sh",
+      "docs/platform/SUPABASE-BACKUP-READER-CONTRACT.md",
+      "docs/platform/SUPABASE-STREAM-BACKUP-P0.md"
+    ],
+    "nextStep": "Isolierte PostgreSQL-17-Backup-Reader- und FK/RLS-Negativtests liefern nur synthetische Vertragsanwendung. Issue #664 bleibt offen: produktive Leserrolle, restriktionssicherer pg_net/cron-Pfad, Auth/Storage/Vault-Restore, GCS-Generation sowie vollstaendiges isoliertes Recovery-/RTO-/RPO-Receipt sind NOT_PROVEN. Kein produktiver GRANT, Dump oder Restore ohne getrennte Autorisierung."
   },
   "CA-PLATFORM-SOC-FOUNDATION": {
     "status": "aktiv",

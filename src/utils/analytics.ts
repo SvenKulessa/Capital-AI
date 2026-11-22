@@ -1,3 +1,4 @@
+import { landingAlternatesForPath } from '../../shared/locale-policy.mjs';
 import { isSeoIndexable, robotsDirectiveFor } from '../../shared/seo-indexing-policy.mjs';
 
 type AnalyticsModule = typeof import('./consentedAnalytics.ts');
@@ -18,6 +19,12 @@ export function trackPageView(_pagePath: string, _pageTitle: string) {
 }
 export function trackReceivedLearningInquiry(receipt: string) {
   if (typeof window !== 'undefined') void analyticsModule().then(module => module.trackReceivedLearningInquiry(receipt));
+}
+export function trackReceivedGovernanceSprintInquiry(receipt: string) {
+  if (typeof window !== 'undefined') {
+    void analyticsModule().then(module => module.trackReceivedGovernanceSprintInquiry(receipt))
+      .catch(() => { /* Optional analytics must never change the form result. */ });
+  }
 }
 export function trackLoginClick(_source: string = 'header') {}
 
@@ -76,6 +83,14 @@ export function updatePageSEO({
     document.head.appendChild(robotsTag);
   }
   robotsTag.setAttribute('content', robotsDirectiveFor(pathname));
+  document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
+  for (const [language, href] of landingAlternatesForPath(pathname)) {
+    const link = document.createElement('link');
+    link.setAttribute('rel', 'alternate');
+    link.setAttribute('hreflang', language);
+    link.setAttribute('href', href);
+    document.head.appendChild(link);
+  }
 
   if (!isSeoIndexable(pathname)) {
     document.querySelector('link[rel="canonical"]')?.remove();

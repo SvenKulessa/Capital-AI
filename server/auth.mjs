@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { accountAvatarForVerifiedUser } from './account-avatar.mjs';
 import { secureUrl, boundedJson, createLimiter } from './http-security.mjs';
 import { createAuthSecurity, hasVerifiedTotpFactor } from './auth-security.mjs';
 import { normalizeStoredPaidTier } from './subscription-entitlements.mjs';
@@ -523,6 +524,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
             subject: stored.user.id,
             email: stored.user.email,
             name: stored.user.name,
+            avatarUrl: accountAvatarForVerifiedUser(stored._authUser),
           },
           account,
         });

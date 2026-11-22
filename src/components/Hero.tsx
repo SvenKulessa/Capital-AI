@@ -2,7 +2,7 @@ import { ProductDisclaimer } from './ProductDisclaimer';
 import React, { useState } from 'react';
 import { BrandGlobe } from './BrandGlobe';
 import { ArrowRight, BarChart3, BookOpen, Play } from 'lucide-react';
-import { openHeroBuddy } from './HeroBuddy';
+import { openHeroBuddy } from './heroBuddyEvents';
 import { motion, useReducedMotion } from 'motion/react';
 import { useLocale } from '../i18n/LocaleProvider';
 
@@ -86,7 +86,7 @@ export const Hero: React.FC<HeroProps> = ({ onExploreProduct }) => {
             <ArrowRight aria-hidden="true" />
           </button>
           <button id="hero-buddy-support-btn" type="button" onClick={openHeroBuddy} className="flex min-h-12 items-center justify-between rounded-2xl border border-brand-marketing/70 px-5 py-3 text-pink-100">
-            Hero Buddy <img src="/assets/jaja-avatar-transparent.webp" alt="" width={32} height={36} className="h-9 w-8 object-contain" />
+            {t('assistant')} <img src="/assets/jaja-avatar-transparent.webp" alt="" width={32} height={36} className="h-9 w-8 object-contain" />
           </button>
         </div>
         <ProductDisclaimer />

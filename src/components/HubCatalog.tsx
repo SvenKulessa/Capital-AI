@@ -1,3 +1,4 @@
+import { ANALYSIS_DOCUMENTATION } from '../../shared/analysis-documentation.mjs';
 import { HUB_BRANDING } from '../../shared/hub-branding.mjs';
 import { canonicalHubTarget } from '../../shared/hub-routes.mjs';
 /** Shared public and owner-only hub navigation catalog. */
@@ -66,11 +67,12 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(245, 176, 20, 0.45)',
     accentBg: 'bg-amber-500/15 border-amber-400/50 text-amber-300',
     icon: <LineChart className="w-5 h-5 text-amber-400" />,
-    badge: '7 Module',
+    badge: '8 Module',
     description: 'Cross-Sectional Ranking, Buffett Value Investing, Enterprise Scorer und AI Newsfeed.',
     mainPath: '/marketscreener',
     subpages: [
       { id: 'overview', name: 'Übersicht', icon: <Compass className="h-4 w-4 text-amber-300" />, shortDesc: 'Übersicht', path: '/marketscreener?tab=overview' },
+      { id: 'newsArchive', name: 'News-Archiv', icon: <Newspaper className="h-4 w-4 text-amber-300" />, shortDesc: 'Nachrichten nach Kategorie und Datum mit BI-Metadaten', path: '/marketscreener?tab=newsArchive' },
       { id: 'scorer', name: 'Enterprise Scorer', icon: <Zap className="h-4 w-4 text-amber-300" />, shortDesc: 'Enterprise Scorer', path: '/marketscreener?tab=scorer' },
       { id: 'terminal', name: 'Screener', icon: <LineChart className="h-4 w-4 text-amber-300" />, shortDesc: 'Screener', path: '/marketscreener?tab=terminal' },
       { id: 'binance', name: 'Krypto-Kursverlauf', icon: <LineChart className="h-4 w-4 text-amber-300" />, shortDesc: 'Krypto-Kursverlauf', path: '/marketscreener?tab=binance' },
@@ -92,13 +94,6 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     description: '5-Ebenen Ingestion-Architektur, BaFin WORM Spezifikation, Pipeline Builder & Benchmark Lab.',
     mainPath: '/studio',
     subpages: [
-      {
-        id: 'intelligence',
-        name: 'Financial Intelligence Architecture',
-        icon: <Layers className="h-4 w-4 text-cyan-300" />,
-        shortDesc: 'Architecture Hub, Blueprint Explorer, Komponenten, Lernreise und Score-Erklärungen',
-        path: '/architecture-hub',
-      },
       {
         id: 'architecture',
         name: 'Pipeline Architektur',
@@ -182,10 +177,17 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(249, 191, 33, 0.45)',
     accentBg: 'bg-amber-400/15 border-amber-400/50 text-amber-300',
     icon: <BookOpen className="w-5 h-5 text-[#F9BF21]" />,
-    badge: '5 Lernbereiche',
-    description: 'Umfassendes Finanz- & Krypto-Lexikon, praxiserprobte Faustformeln, Guides und Skill-Check.',
+    badge: '7 Lernbereiche',
+    description: 'Sieben Finanzthemen mit interaktiven Lernangeboten, Glossar, Lernwegen, Quiz und Simulator.',
     mainPath: '/learning',
     subpages: [
+      {
+        id: 'overview',
+        name: 'Übersicht',
+        icon: <Compass className="h-4 w-4 text-violet-300" />,
+        shortDesc: 'Sieben Lernbereiche, Suche, Lernwege und veröffentlichte Lernimpulse',
+        path: '/learning?tab=overview',
+      },
       {
         id: 'glossar',
         name: 'Market Vocabulary & Glossar',
@@ -230,10 +232,6 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         path: '/learning?tab=quiz',
       },
       { id: 'quizzes', name: 'Quizzes & Portfolio-Risiko', icon: <GraduationCap className="h-4 w-4 text-amber-300" />, shortDesc: 'Quant Tagesquiz mit Login sowie Portfolio-Risiko-Lernquiz mit Lernabzeichen', path: '/learning?tab=quizzes' },
-      { id: 'intelligence-catalogs', name: 'Financial Intelligence Kataloge',
-        icon: <Layers className="h-4 w-4 text-cyan-300" />,
-        shortDesc: 'Datenquellen, Formeln, Scoring, Blueprints und Evidence nachlesen',
-        path: '/architecture-hub?tab=catalogs' },
       { id: 'simulator', name: 'Portfolio-Simulator', icon: <Gauge className="h-4 w-4 text-amber-300" />, shortDesc: 'Synthetische Portfoliorisiken berechnen und Szenarien vergleichen', path: '/learning?tab=simulator' },
       { id:'patterns',name:'Chart-Lernatlas',icon:<LineChart className="h-4 w-4 text-cyan-300"/>,shortDesc:'Charts verstehen',path:'/learning?tab=patterns' },
       { id:'news',name:'Lernimpulse',icon:<Newspaper className="h-4 w-4 text-cyan-300"/>,shortDesc:'Aktuelle Lernimpulse',path:'/learning?tab=news' },
@@ -242,8 +240,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
   },
   documentation: {
     id: 'documentation',
-    name: 'Dokumentation Hub',
-    shortTitle: 'Dokumentation Hub',
+    name: 'Dokumentation',
+    shortTitle: 'Dokumentation',
     color: '#8B5CF6',
     glowColor: 'rgba(139, 92, 246, 0.45)',
     accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',
@@ -254,6 +252,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     subpages: [
       { id: 'hub', name: 'Dokumentations-Hub', icon: <BookOpen className="w-4 h-4 text-violet-300" />,
         shortDesc: 'Alle Präsentationen und Architekturressourcen', path: '/dokumentation' },
+      { id: 'analysis-components', name: 'Analyse Komponenten', icon: <Layers className="w-4 h-4 text-violet-300" />,
+        shortDesc: 'Fachartikel zu Datenqualität, Scoring und Evidenz', path: ANALYSIS_DOCUMENTATION },
       { id: 'blogs', name: 'Blogs', icon: <Newspaper className="h-4 w-4 text-violet-300" />, shortDesc: 'Wissen und Lernen', path: '/dokumentation?tab=blogs' },
       { id: 'blueprints', name: 'Blueprint-Dokumentation', icon: <FileCode className="w-4 h-4 text-cyan-400" />,
         shortDesc: 'Datenkonzept-Blueprints mit BYOK-Kontext', path: '/marketscreener/dokumentation' },

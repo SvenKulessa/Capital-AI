@@ -1,0 +1,33 @@
+name: X Draft Safety Checks
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/x-chunked-upload-test.yml'
+      - 'scripts/growth/x-articles-consolidation.test.mjs'
+      - 'scripts/growth/review-gate-x-publish.mjs'
+      - 'scripts/growth/create-first-x-article-draft.mjs'
+      - 'src/services/x/**'
+      - 'src/data/xDraftTemplates.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Nur veraltete PR-Läufe abbrechen; Main-/Merge-Queue-/Dispatch-Läufe laufen vollständig durch.
+  cancel-in-progress: ${{ startsWith(github.event_name, 'pull_request') }}
+jobs:
+  draft-safety:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Run offline X draft/secret/publishing negative tests
+        run: node --experimental-strip-types --test scripts/growth/x-articles-consolidation.test.mjs

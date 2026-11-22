@@ -40,7 +40,7 @@
       "kind": "image",
       "sourceType": "local-file",
       "reference": "public/learning/charts/diamond-bottom.svg",
-      "sha256": "bdc1889c290c5ffe83cb0c08df9098a77e696b42e9423d0a5d7c801ae8df7bea",
+      "sha256": "dd663039b721da97adc1a8e4a3c05a910d6aaa86a62421c53f4045ad336df315",
       "mimeType": "image/svg+xml",
       "width": 1200,
       "height": 675

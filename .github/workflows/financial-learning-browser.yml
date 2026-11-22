@@ -13,21 +13,34 @@ on:
       - 'src/components/Hero.tsx'
       - 'src/platform/SocialMediaEngine/Visualization/BrandGlobe*'
       - 'scripts/brand-globe-browser.mjs'
+      - 'scripts/qa/universe-content-studio-browser.mjs'
+      - 'scripts/growth/universe-media-contract.test.mjs'
+      - 'src/features/studio/ContentStudioPanel.tsx'
+      - 'src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts'
+      - 'src/platform/SocialMediaEngine/Branding/ScreenerBlueprintBadgeRenderer.mjs'
       - 'scripts/scorer-methodology-browser.mjs'
       - 'src/components/HubCatalog.tsx'
       - 'src/components/EcosystemRoadmapPanel.tsx'
       - 'scripts/qa/ecosystem-roadmap-browser.mjs'
+      - 'scripts/qa/chat-followup-browser.mjs'
+      - 'src/components/ChatNextStepActions.tsx'
+      - 'src/contracts/chatNextStepPrompts.ts'
       - 'scripts/qa/screener-blueprint-reset-browser.mjs'
       - 'server/learning-simulator.mjs'
       - 'server/auth.test.mjs'
       - 'shared/hub-routes.mjs'
       - 'scripts/product-accessibility-browser.mjs'
       - 'scripts/qa/course-inquiry-browser.mjs'
+      - 'scripts/qa/news-archive-browser.mjs'
       - 'src/components/ContactForm.tsx'
       - '.github/workflows/financial-learning-browser.yml'
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Nur veraltete PR-Läufe abbrechen; Main-/Merge-Queue-/Dispatch-Läufe laufen vollständig durch.
+  cancel-in-progress: ${{ startsWith(github.event_name, 'pull_request') }}
 jobs:
   simulator-browser:
     name: Simulator Chromium Mobile Accessibility
@@ -45,6 +58,13 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           npm run build
+      - name: Universe Media CADS and asset identity regression
+        run: |
+          node --import tsx --test \
+            scripts/growth/universe-media-contract.test.mjs \
+            scripts/media/screener-blueprint-badges.test.mjs \
+            scripts/cads-growth-quality.test.mjs
+
       - name: Start isolated BFF without external services
         env:
           PORT: '17871'
@@ -72,6 +92,13 @@ jobs:
           "$CHROME_BIN" --version
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/product-accessibility-browser.mjs http://127.0.0.1:17871 \
             | tee artifacts-browser-result.json
+      - name: Universe Content Studio mobile and desktop visual QA
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/universe-content-studio-browser.mjs
+
       - name: Screener Blueprint YAML reset regression (synthetic)
         run: |
           set -euo pipefail
@@ -95,6 +122,17 @@ jobs:
             sudo apt-get install -y --no-install-recommends ffmpeg
           fi
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/scorer-methodology-browser.mjs
+      - name: Analytics news overview and archive viewport QA
+        env:
+          CAPITAL_AI_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          if [ -z "$CHROME_BIN" ]; then
+            echo 'Chromium unavailable: archive viewport QA NOT_PROVEN'
+            exit 1
+          fi
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/news-archive-browser.mjs http://127.0.0.1:17871
       - name: Homepage globe responsive, rotation, pause and failure QA
         run: |
           set -euo pipefail
@@ -108,12 +146,20 @@ jobs:
           CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
           test -n "$CHROME_BIN"
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/ecosystem-roadmap-browser.mjs | tee ecosystem-roadmap-browser-result.json
+      - name: Chat-Folgeprompts 320/390/1440, Clipboard und Fallback
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/chat-followup-browser.mjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
         if: always()
         with:
           name: financial-learning-browser-qa
           path: |
             artifacts/simulator-browser/*.png
+            artifacts/chat-followup-browser/*.png
+            artifacts/chat-followup-browser/result.json
             artifacts/scorer-browser/*.png
             artifacts/scorer-browser/*.mp4
             artifacts/scorer-browser/result.json
@@ -122,7 +168,11 @@ jobs:
             ecosystem-roadmap-browser-result.json
             artifacts/globe-browser/*.png
             artifacts/globe-browser/result.json
+            artifacts/universe-content-studio/*.png
+            artifacts/universe-content-studio/result.json
             artifacts/course-inquiry-browser/result.json
+            artifacts/news-archive-browser/*.png
+            artifacts/news-archive-browser/result.json
             simulator-server.log
           if-no-files-found: warn
           retention-days: 7

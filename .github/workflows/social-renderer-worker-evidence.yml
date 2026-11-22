@@ -29,6 +29,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Universe-Farbspektrum prüfen (Node, offline)
+        run: node --test scripts/growth/universe-brand.test.mjs
+
       - name: FFmpeg-Dockerfile-Konfigurationsregression
         run: node --test scripts/social-renderer-dockerfile.test.mjs
 
@@ -75,13 +78,20 @@ jobs:
           FFMPEG_SHA256: ${{ steps.inputs.outputs.ffmpeg_sha256 }}
         run: |
           set -euo pipefail
-          docker build \
+          # Stream only committed COPY inputs instead of the root filesystem
+          # context (whose BuildKit session transfer repeatedly returned HTTP 431).
+          git archive --format=tar "$GITHUB_SHA" \
+            deploy/social-media/Dockerfile.renderer \
+            deploy/social-media/renderer-requirements.txt \
+            scripts/media \
+            public/branding/asset-pack/meta/social-render-tokens.json \
+          | docker build \
             --file deploy/social-media/Dockerfile.renderer \
             --build-arg "PYTHON_BASE=$PYTHON_BASE" \
             --build-arg "FFMPEG_VERSION=$FFMPEG_VERSION" \
             --build-arg "FFMPEG_SHA256=$FFMPEG_SHA256" \
             --tag "capital-ai-social-renderer:$GITHUB_SHA" \
-            .
+            -
 
       - name: LGPL-Profil und benötigte Renderer-Capabilities verifizieren
         run: |
@@ -167,6 +177,19 @@ jobs:
               ffmpeg -hide_banner -version >/dev/null
               ffprobe -hide_banner -version >/dev/null
             '
+
+      - name: Universe-Renderer Regression im isolierten Container
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=96m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --mount type=bind,source="$PWD",target=/workspace,readonly \
+            --entrypoint python \
+            "capital-ai-social-renderer:$GITHUB_SHA" \
+            /workspace/scripts/media/test_universe_branding.py
 
       - name: Trivy, SBOM und Runtime-Lizenzinventar erzeugen
         run: |

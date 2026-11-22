@@ -7,6 +7,10 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Nur veraltete PR-Läufe abbrechen; Main-/Merge-Queue-/Dispatch-Läufe laufen vollständig durch.
+  cancel-in-progress: ${{ startsWith(github.event_name, 'pull_request') }}
 jobs:
   label_frontend:
     name: Classify frontend change

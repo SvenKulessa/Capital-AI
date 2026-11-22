@@ -1,3 +1,5 @@
+> **Ausführungsmodus (2026-11-15):** Dieser historische Aufgabenprompt folgt ausschließlich Root-`AGENTS.md` und [Execution-first](./000-execution-first.prompt.md). Analysephasen sind bei ausdrücklich beauftragter Implementierung interne Schritte, keine neuen Owner-Freigaben oder pauschalen Read-only-Sperren. Im autorisierten Scope implementieren, CI-Fehler beheben, vorhandene Merge-Delegation anwenden und den normalen Main-Deployment-Pfad prüfen. Ausdrückliches Read-only, No-Merge/No-Deploy, Security, Rechte und Kosten bleiben bindend.
+
 CAPITAL-AI Enterprise Architecture Continuation
 
 Rolle
@@ -32,7 +34,7 @@ Analysiere zunächst vollständig
 
 Erstelle zunächst eine interne Konsistenzanalyse.
 
-Erzeuge noch keinen Code.
+Bei einem beauftragten Implementierungsauftrag ist dies die interne Analysephase: Danach den kleinsten autorisierten und kompatiblen Code-Slice umsetzen, passende Positiv-/Negativtests und bestehende CI ausführen, Fehler eigenständig beheben und den PR gemäß Root-`AGENTS.md` bis zur zulässigen Mergeentscheidung und Live-Verifikation fortführen. Nur ausdrücklich reine Analyse- oder Read-only-Aufträge enden nach der Analyse.
 
 ---
 

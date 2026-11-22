@@ -106,7 +106,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
 
         <div className="relative p-5 sm:p-7 lg:p-9">
           <div className="max-w-3xl">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/[0.07] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200">
+            <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/[0.07] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200">
               <Sparkles className="h-3.5 w-3.5" />
               CAPITAL-AI Content Engine
             </div>
@@ -201,7 +201,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
                       transition={{ duration: 0.3, delay: index * 0.035 }}
                       className="group rounded-xl border border-white/[0.08] bg-white/[0.025] p-3 transition-colors hover:bg-white/[0.045]"
                     >
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-slate-100">
                           <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-black/20 text-amber-200">
                             <ModuleIcon module={modulePlan.module} />
@@ -216,7 +216,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
                           {tSection(({READY_FOR_DRAFT:'statusReady', RESTRICTED:'statusRestricted', BLOCKED:'statusBlocked', INTEGRATION_PENDING:'statusPending'} as const)[modulePlan.state])}
                         </span>
                       </div>
-                      <p className="mt-2 line-clamp-2 text-[10.5px] leading-relaxed text-slate-500">
+                      <p className="mt-2 text-xs leading-relaxed text-slate-300">
                         {modulePlan.module === 'PUBLISHER'
                           ? tSection('publisherReason')
                           : <span lang="de" title={locale === 'de' ? undefined : tSection('contractOriginal')}>{modulePlan.reason}</span>}
@@ -266,7 +266,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
                   <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">{tSection('channels')}</p>
                 </div>
                 <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2.5 text-center">
-                  <p className="text-lg font-black text-amber-300">DRAFT</p>
+                  <p className="break-words text-sm font-black text-amber-300 sm:text-lg">{locale === 'de' ? 'Entwurf' : 'DRAFT'}</p>
                   <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">{tSection('status')}</p>
                 </div>
               </div>
