@@ -65,6 +65,7 @@ jobs:
             scripts/registry-cve-gate.test.mjs \
             scripts/assert-ghcr-publication-rights.test.mjs \
             scripts/platform/ghcr-render-cutover-plan.test.mjs \
+            scripts/platform/runtime-license-coverage.test.mjs \
             scripts/production-handoff.test.mjs \
             scripts/write-runtime-identity.test.mjs \
             scripts/post-merge-followup.test.mjs \
@@ -415,6 +416,11 @@ jobs:
       - name: Runtime-Lizenzinventar am exportierten Image
         if: always() && hashFiles('security-reports/image.tar') != ''
         run: docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/image-licenses.json --exit-code 0
+      - name: Runtime SBOM, Lizenzscanner und Notice-Hashes am exportierten CI-Image korrelieren
+        if: always() && hashFiles('security-reports/image.tar') != ''
+        run: |
+          set -euo pipefail
+          node scripts/platform/runtime-license-coverage.mjs security-reports > security-reports/runtime-license-coverage.json
       - name: Runtime ohne Schreibrechte und Linux-Capabilities prüfen
         run: |
           docker run -d --name capital-ai-smoke --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:10000:10000 capital-ai:${{ github.sha }}
@@ -454,6 +460,7 @@ jobs:
             security-reports/os-alpine-release.txt
             security-reports/runtime-node-license.txt
             security-reports/runtime-font-ofl.txt
+            security-reports/runtime-license-coverage.json
             security-reports/smoke-health.json
             security-reports/smoke-state.json
             security-reports/image-id.txt
