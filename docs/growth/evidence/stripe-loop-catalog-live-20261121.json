@@ -1,0 +1,345 @@
+{
+  "contract": "CAPITAL_AI_STRIPE_CATALOG_SNAPSHOT@1",
+  "mode": "live",
+  "observedAt": "2026-11-21T14:19:33.311Z",
+  "sourceMainSha": "a69a81cca53f7460224e94eaa896d6a2099043ae",
+  "products": [
+    {
+      "id": "prod_UkBbAKhGcIiPjB",
+      "name": "CAPITAL-AI PRO",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_UkbTpHwl9ymVl2",
+      "name": "AIFINANCIAL Enterprise",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_Umo6fgTlYKQuhE",
+      "name": "CAPITAL-AI STARTER",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_Uoqvrk0B73EiPk",
+      "name": "CAPITAL-AI STARTER Jahresabonnement",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_UorDwKawLDkyg8",
+      "name": "CAPITAL-AI PRO Jahresabonnement",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_UorHuyI1MG1mrT",
+      "name": "CAPITAL-AI ENTERPRISE Jahresabonnement",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_UorJOKkqCwktpe",
+      "name": "CAPITAL-AI FOUNDER",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_VMtsmoPBqTHdww",
+      "name": "CAPITAL-AI STARTER 2026",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_VMtsNeuSad0Dvx",
+      "name": "CAPITAL-AI PRO 2026",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_VMtsvVRz0nORcx",
+      "name": "CAPITAL-AI ENTERPRISE 2026",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_VNTsrtlf2ZL8ja",
+      "name": "Capital-AI Learning Portal",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_VQG0KpZcNt08so",
+      "name": "Capital-AI Owner",
+      "active": true,
+      "livemode": true
+    },
+    {
+      "id": "prod_VQPR1vMN76D6pf",
+      "name": "CAPITAL-AI Blueprint CAP-BP-002 — Data Quality Scorer",
+      "active": false,
+      "livemode": true
+    },
+    {
+      "id": "prod_VQPRXoyoJLA17V",
+      "name": "CAPITAL-AI Blueprint CAP-BP-001 — Market Integrity Gate",
+      "active": false,
+      "livemode": true
+    }
+  ],
+  "prices": [
+    {
+      "id": "price_1TkhEdPKr4joNbEcm1krUCug",
+      "productId": "prod_UkBbAKhGcIiPjB",
+      "active": false,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 2900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1Tl6GnPKr4joNbEckzqM3SoC",
+      "productId": "prod_UkbTpHwl9ymVl2",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 10900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TlC77PKr4joNbEcXE1qYuQ4",
+      "productId": "prod_UkBbAKhGcIiPjB",
+      "active": false,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 1900,
+      "recurring": null
+    },
+    {
+      "id": "price_1TnEUEPKr4joNbEctWTgogW6",
+      "productId": "prod_Umo6fgTlYKQuhE",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 700,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TpDbCPKr4joNbEcP8VflNNG",
+      "productId": "prod_UorJOKkqCwktpe",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 2500000,
+      "recurring": null
+    },
+    {
+      "id": "price_1TpDDNPKr4joNbEcGm7ngSmp",
+      "productId": "prod_Uoqvrk0B73EiPk",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 7560,
+      "recurring": {
+        "interval": "year",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TpDOhPKr4joNbEc50cS0PKr",
+      "productId": "prod_UkBbAKhGcIiPjB",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 2900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TpDVYPKr4joNbEck8SdA1sK",
+      "productId": "prod_UorDwKawLDkyg8",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 24800,
+      "recurring": {
+        "interval": "year",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TpDZ1PKr4joNbEckxXITdTc",
+      "productId": "prod_UorHuyI1MG1mrT",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 128000,
+      "recurring": {
+        "interval": "year",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1UMA4qPKr4joNbEcvJXFWw45",
+      "productId": "prod_VMtsmoPBqTHdww",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 700,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1UMA4wPKr4joNbEc1tgkxagi",
+      "productId": "prod_VMtsmoPBqTHdww",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 7560,
+      "recurring": {
+        "interval": "year",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1UMA4yPKr4joNbEckWSj3cJE",
+      "productId": "prod_VMtsNeuSad0Dvx",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 2900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1UMA50PKr4joNbEcrj0Lm79I",
+      "productId": "prod_VMtsNeuSad0Dvx",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 24800,
+      "recurring": {
+        "interval": "year",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1UMA51PKr4joNbEcbtWNCcCc",
+      "productId": "prod_VMtsvVRz0nORcx",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 10900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1UMA53PKr4joNbEc3E3XyzgG",
+      "productId": "prod_VMtsvVRz0nORcx",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 128000,
+      "recurring": {
+        "interval": "year",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1UMiuIPKr4joNbEclpn8AwFW",
+      "productId": "prod_VNTsrtlf2ZL8ja",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 1900,
+      "recurring": null
+    },
+    {
+      "id": "price_1UOqkoPKr4joNbEcRaagaZT4",
+      "productId": "prod_VNTsrtlf2ZL8ja",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 2500,
+      "recurring": null
+    },
+    {
+      "id": "price_1UPoyMPKr4joNbEcbHllSBQ5",
+      "productId": "prod_VQPRXoyoJLA17V",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 5000,
+      "recurring": null
+    },
+    {
+      "id": "price_1UPoyOPKr4joNbEcnxUWvnFK",
+      "productId": "prod_VQPR1vMN76D6pf",
+      "active": true,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 5000,
+      "recurring": null
+    },
+    {
+      "id": "price_1UPYcJPKr4joNbEcxdm8MmFj",
+      "productId": "prod_VQPRXoyoJLA17V",
+      "active": false,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 5000,
+      "recurring": null
+    },
+    {
+      "id": "price_1UPYcLPKr4joNbEcu5nYfpyp",
+      "productId": "prod_VQPR1vMN76D6pf",
+      "active": false,
+      "livemode": true,
+      "currency": "eur",
+      "unitAmountMinor": 5000,
+      "recurring": null
+    }
+  ],
+  "evidence": [
+    {
+      "provider": "authorized Stripe plugin",
+      "operation": "GET /v1/products and GET /v1/prices",
+      "paginationComplete": true,
+      "scope": "CATALOG_READ_ONLY",
+      "redaction": "all metadata and customer data omitted"
+    }
+  ],
+  "status": "VERIFIED"
+}

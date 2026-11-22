@@ -13,6 +13,9 @@
 !.agents/skills/
 !.agents/skills/**
 !.agents/app.prompt.json
+!.agents/contracts/
+!.agents/contracts/acode-shared-delivery.json
+!.agents/contracts/drive-artifact-routing.json
 !.github/
 !.github/agents/
 !.github/workflows/
@@ -132,6 +135,8 @@
 !server/scorer-proxy.mjs
 !shared/
 !shared/solo2-config.mjs
+!shared/solo2-commercial-policy.mjs
+!shared/solo2-commercial-policy.test.mjs
 !shared/hub-routes.mjs
 !shared/analysis-documentation.mjs
 !shared/x-url-context.mjs
@@ -352,6 +357,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/branding/learning-universe/
+!public/branding/learning-universe/*.svg
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
 !public/branding/universe/hero-universe-desktop.webp
@@ -512,9 +519,16 @@
 !server/auth.test.mjs
 !scripts/solo2-config.mjs
 !scripts/solo2-config.test.mjs
+# Offline artifact routing tests/metadata only; no credentials or transfer clients.
+!scripts/platform/
+!scripts/platform/drive-artifact-router.mjs
+!scripts/platform/drive-artifact-router.test.mjs
+!scripts/platform/drive-artifact-delivery.mjs
+!scripts/platform/drive-artifact-delivery.test.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
+!scripts/skill-bundles.mjs
 !scripts/skill-routing-evaluation.mjs
 !scripts/skill-routing-cases.json
 !scripts/skill-routing-challenges.json

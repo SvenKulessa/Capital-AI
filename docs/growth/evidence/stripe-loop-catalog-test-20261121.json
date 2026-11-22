@@ -1,0 +1,103 @@
+{
+  "contract": "CAPITAL_AI_STRIPE_CATALOG_SNAPSHOT@1",
+  "mode": "test",
+  "observedAt": "2026-11-21T14:19:29.713Z",
+  "sourceMainSha": "a69a81cca53f7460224e94eaa896d6a2099043ae",
+  "products": [
+    {
+      "id": "prod_Ukbac4O4QNsuYe",
+      "name": "AIFINANCIAL Pro",
+      "active": true,
+      "livemode": false
+    },
+    {
+      "id": "prod_UkbcCQZQLMoRDr",
+      "name": "AIFINANCIAL Enterprise",
+      "active": true,
+      "livemode": false
+    },
+    {
+      "id": "prod_UmofWjAjaskxbJ",
+      "name": "starter",
+      "active": true,
+      "livemode": false
+    }
+  ],
+  "prices": [
+    {
+      "id": "price_1Tl6NJPKr4joNbEcpRaqufKB",
+      "productId": "prod_Ukbac4O4QNsuYe",
+      "active": false,
+      "livemode": false,
+      "currency": "eur",
+      "unitAmountMinor": 1900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1Tl6PWPKr4joNbEcyhs7YYPR",
+      "productId": "prod_UkbcCQZQLMoRDr",
+      "active": false,
+      "livemode": false,
+      "currency": "eur",
+      "unitAmountMinor": 7900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TnF2FPKr4joNbEczpUiGcAQ",
+      "productId": "prod_UmofWjAjaskxbJ",
+      "active": true,
+      "livemode": false,
+      "currency": "eur",
+      "unitAmountMinor": 700,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TnF3VPKr4joNbEcEzeQHxX1",
+      "productId": "prod_UkbcCQZQLMoRDr",
+      "active": true,
+      "livemode": false,
+      "currency": "eur",
+      "unitAmountMinor": 10900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    },
+    {
+      "id": "price_1TnF4dPKr4joNbEcxVW7h7q9",
+      "productId": "prod_Ukbac4O4QNsuYe",
+      "active": true,
+      "livemode": false,
+      "currency": "eur",
+      "unitAmountMinor": 2900,
+      "recurring": {
+        "interval": "month",
+        "intervalCount": 1,
+        "usageType": "licensed"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "provider": "authorized Stripe plugin",
+      "operation": "GET /v1/products and GET /v1/prices",
+      "paginationComplete": true,
+      "scope": "CATALOG_READ_ONLY",
+      "redaction": "all metadata and customer data omitted"
+    }
+  ],
+  "status": "VERIFIED"
+}

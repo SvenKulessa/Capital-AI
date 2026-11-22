@@ -16,7 +16,8 @@ export const SOLO2_SKILLS = Object.freeze([
   'customer-success', 'mobile-engineering', 'product-advisory', 'product-engineering', 'visual-chat',
   'analytics-intelligence', 'data-engineering', 'market-advisory', 'market-engineering', 'quant-research',
   'ai-engineering', 'platform-advisory', 'platform-engineering', 'platform-observability',
-  'incident-response', 'legal-compliance', 'trust-advisory', 'trust-engineering',
+  'integration-engineering', 'skill-lifecycle',
+  'incident-response', 'legal-compliance', 'trust-advisory', 'trust-engineering', 'agent-evaluation',
   'growth-advisory', 'growth-engineering', 'revenue-engineering', 'sales-enterprise', 'seo-engineering',
 ]);
 export const SOLO2_RESOURCES = Object.freeze([
@@ -115,7 +116,7 @@ export function validateSolo2Profile(input) {
     || input.online.ciPollSeconds < 30 || input.online.ciPollSeconds > 3600
     || input.online.maxExternalCalls !== 0) fail('ONLINE_NOT_ADMITTED');
   uniqueKnown(input.domains, SOLO2_DOMAINS, 5, 'DOMAINS');
-  uniqueKnown(input.skills, SOLO2_SKILLS, 26, 'SKILLS');
+  uniqueKnown(input.skills, SOLO2_SKILLS, SOLO2_SKILLS.length, 'SKILLS');
   if (!input.domains.includes('TRUST')) fail('TRUST_REQUIRED');
   if (!Array.isArray(input.pipelines) || input.pipelines.length !== SOLO2_PIPELINES.length
     || new Set(input.pipelines.map(item => item?.id)).size !== SOLO2_PIPELINES.length) fail('PIPELINES');

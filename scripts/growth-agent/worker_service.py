@@ -17,6 +17,7 @@ from pathlib import Path
 
 from agent_platform import DOMAINS, build_research_graph
 from checkpoint_store import execute_durable_graph
+from offline_scope import scoped_thread_id
 
 ROOT = Path("/var/lib/capital-ai-agent")
 MAX_TASK_SIZE = 2048
@@ -74,8 +75,10 @@ def load_task(path: Path, inbox: Path) -> dict:
 
 
 def process(task: dict, *, state_root: Path, repo_root: Path) -> dict:
-    task_hash = hashlib.sha256(json.dumps(task, sort_keys=True).encode()).hexdigest()[:28]
-    thread_id = "research-" + task_hash
+    # Single-owner local scope only. Customer tenant admission is NOT implemented.
+    # Do not accept tenant/repository from task files or retrieved documents.
+    thread_id = scoped_thread_id(tenant="owner-local", repository="SvenKulessa/Capital-AI",
+                                 task_id=task["task_id"], payload=task)
     initial = {"task_id": thread_id, "domain": task["domain"], "query": task["query"]}
     return execute_durable_graph(
         lambda saver: build_research_graph(repo_root, checkpointer=saver),
