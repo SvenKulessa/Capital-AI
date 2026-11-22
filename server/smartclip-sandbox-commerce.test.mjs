@@ -18,7 +18,7 @@ const env = {
   STRIPE_SMARTCLIP_TEST_PRICE_ID: priceId,
   STRIPE_SMARTCLIP_TEST_PRODUCT_ID: productId,
   SMARTCLIP_SANDBOX_RELEASE_SHA256: SMARTCLIP_PINNED_SHA256,
-  SMARTCLIP_SANDBOX_TAX_CODE: 'txcd_10503000',
+  SMARTCLIP_SANDBOX_TAX_CODE: 'txcd_10202000',
   SMARTCLIP_SANDBOX_TAX_ATTESTED: 'true',
   SUPABASE_URL: 'https://primary-fixture.supabase.co',
   SMARTCLIP_SANDBOX_DB_URL: 'https://isolated-fixture.supabase.co',
@@ -118,6 +118,10 @@ test('default disabled, live keys and unknown digests fail closed', async()=>{
   assert.equal((await call('checkout','POST',body,{cfg:{...env,STRIPE_SMARTCLIP_TEST_KEY:'rk_live_invalid'}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_RELEASE_SHA256:'0'.repeat(64)}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10000000'}})).statusCode,503);
+  // The prior test fixture used a document/news tax category; it must not activate software checkout.
+  assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10503000'}})).statusCode,503);
+  assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10203000'}})).statusCode,503);
+  assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_ATTESTED:'false'}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_DB_URL:env.SUPABASE_URL}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_DB_SERVICE_KEY:''}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SUPABASE_URL:undefined,VITE_SUPABASE_URL:undefined}})).statusCode,503);
@@ -224,6 +228,9 @@ test('unpaid, foreign, version-mismatched and multi-item sessions never grant',a
   const fixtures=[
     makeFixture({session:{payment_status:'unpaid'}}),
     makeFixture({session:{metadata:{...metadata,channel:'foreign'}}}),
+    // A free Acode Store install is not evidence of a paid CAPITAL-AI homepage license.
+    makeFixture({session:{metadata:{...metadata,channel:'acode_free_plugin'}}}),
+    makeFixture({intent:{metadata:{...metadata,channel:'acode_free_plugin'}}}),
     makeFixture({session:{client_reference_id:otherUserId}}),
     makeFixture({lines:{data:[{quantity:2,amount_subtotal:498,price:{id:priceId,product:productId}}],has_more:false}}),
     makeFixture({intent:{metadata:{...metadata,release_sha256:'0'.repeat(64)}}}),
