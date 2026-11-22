@@ -101,4 +101,11 @@ ROLLBACK;
 SELECT count(*) FROM private.smartclip_sandbox_entitlements WHERE stripe_payment_intent_id='pi_p0_rollback000001';
 SQL
 [ "$(tail -n 1 "$tmp/rollback")" = 0 ] || { echo 'BLOCKED: explicit_rollback'; exit 1; }
-echo 'SMARTCLIP_P0=VERIFIED postgres_two_connection_races_and_sql_rollback isolated_network=none container_destroyed_on_exit=true'
+# Container teardown is a separate readback, not implied by test success.
+docker rm -f "$container" >/dev/null
+if docker inspect "$container" >/dev/null 2>&1; then
+  echo 'SMARTCLIP_P0=BLOCKED container_cleanup_not_verified'
+  exit 1
+fi
+container=''
+echo 'SMARTCLIP_P0=VERIFIED postgres_two_connection_races_and_sql_rollback isolated_network=none container_cleanup_verified=true'
