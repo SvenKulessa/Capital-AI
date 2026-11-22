@@ -51,6 +51,34 @@ The snapshot object must contain `expectedMainSha`, `currentMainSha`, `expectedS
 
 Render official documentation: https://render.com/docs/deploying-an-image and https://api-docs.render.com/reference/retrieve-deploy . Git-backed deploys do not have `deploy.image`; prebuilt image services can reference immutable digests. Render pulls from registry again on deploy/restart and requires the old image to remain available for rollback. See also `docs/platform/LANGGRAPH-RUNTIME-OCI-RIGHTS-ADMISSION-20261119.md` for independent worker image restrictions; do not mix product scopes or evidence.
 
+
+## Focused open-rights inventory (verified against actual existing ledger)
+
+The source of truth for rights evidence is `docs/security/evidence/license-rights-review.json`. The document is **historical** (source `ed594ef93f66ee8f13f67d75dde56f46a95b1cd6`, base `node:24.19.0-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43`) and is **not** applicable to the current source `fa706af9aa698d702dc782f3f95a95c7f7572a22` and pinned base `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`. It still records `status=REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null`, 18 historical OS package records marked `VERSION_MATCHED_RECIPE_SOURCE_DELIVERY_OPEN`, and six unclosed obligations:
+
+| Exact existing remainingGate text | Evidence needed to make progress, not an approval |
+|---|---|
+| Complete corresponding sources and delivery obligations for OS binaries | For actual **current** packaged binary versions, source archives, patches, build inputs, redistributable source delivery path and legally required offer/NOTICE |
+| Exact base binary/source provenance and notice packaging | Confirm current pinned base's official manifest, architecture, binary-to-source mapping, license/NOTICE and redistributable archive or source-offer policy |
+| JPEG usage terms and creation trace; AI origin confirmed by owner | Identify each **currently shipped** JPEG by repository path/digest, author/source, permitted commercial redistribution and derivative rights; exclude obsolete assets |
+| Inline logo origin and trademark use review | Identify each **currently shipped** logo/symbol and required authorization for public/registry use; check trademarks separately from software copyright |
+| Provider contract scopes and attribution for actual public display/API/derived-data/export use | Review contracts for only the exact **currently used** data/API/provider and attribution/redistribution scopes; do not confuse authentication with content rights |
+| Verify pinned font binaries and OFL in the final published image | Match hashes and exact OFL notices against binaries from the final **registry-pulled** image; preserve required notices |
+
+These are **six open audit topics, not six independently verified legal violations**. No file in the present branch changes or invents the rights ledger; if a particular asset is absent from the current final image, that fact must be shown by a current image inventory before closing its row. Do not set `status=APPROVED` from a synthetic test or an unchanged historical JSON.
+
+## Additional verified Render behavior relevant to rollback
+
+- Official Render source change: **Settings → Build → Source → Edit** triggers a new deploy upon submission (Render changelog, May 11 2026): https://render.com/changelog/change-your-services-backing-repo-or-image-in-the-render-dashboard
+- Official image-backed deployment supports GHCR and `@sha256` immutable references; private GHCR requires **`read:packages`** on a token actually permitted to pull the exact package: https://render.com/docs/deploying-an-image
+- Official deployment docs: image-backed services need a deliberate deploy trigger; merely updating a mutable registry tag does not redeploy them: https://render.com/docs/deploys
+- Existing Render service has a persistent disk. **Do not assume image or source rollback also rolls back disk data**; preserve backup/restore evidence and retain the prior pinned image for a rollback. Source-switching back to Git itself deploys and must be considered a new production operation.
+- Cost comparison is **NOT_PROVEN** for any future source switch: the currently configured `0.5c-512mb` plan and single-instance count are a read-only baseline, not a bill, future pricing approval, or assertion of zero costs. Validate workspace pricing and applicable build/pipeline minutes, storage and bandwidth before a change.
+
+## Security correction in this PR
+
+A structurally matching `legalApproval.reference` in a locally supplied JSON could previously make the *offline preview* output a `REDISTRIBUTION_RIGHTS=VERIFIED` label, despite no independent proof that the reference was genuine. The updated evaluator returns `NOT_PROVEN` for a structurally matched contract while preserving `BLOCKED` for any open rights requirements. The output explicitly declares `evidenceAuthority=SUPPLIED_SNAPSHOT_CONSISTENCY_ONLY`. The real publication workflow's pre-existing rights guard remains unchanged; the preview **never authorizes publishing**.
+
 ## QUALITY evidence
 
 Five deterministic Node tests cover the Git baseline, stale Main/foreign owner/source, forged credentials/signature/approval claims, secret minimization, and no provider mutations. Wired into the existing `Docker Security Gate` test list, **not** a new workflow or required check. A passing synthetic test proves only the preflight code behavior. Actual package rights, registry push, signatures, Render digest, and production cutover remain **BLOCKED** or **NOT_PROVEN**.
