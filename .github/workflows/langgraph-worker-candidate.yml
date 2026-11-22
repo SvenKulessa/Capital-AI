@@ -117,6 +117,7 @@ jobs:
             PlatformResearchTests.test_completed_research_checkpoint_cannot_replay_after_profile_change \
             PlatformResearchTests.test_profiles_missing_or_corrupt_never_create_checkpoint \
             PlatformResearchTests.test_checkpoint_reopened_by_independent_interpreters \
+            PlatformResearchTests.test_copied_sqlite_database_with_foreign_task_identity_fails_closed \
             PlatformResearchTests.test_each_domain_has_source_bound_graph_route_and_no_tools
           echo "FIVE_DOMAIN_CHECKPOINT_REPLAY_TESTED"
           docker run --rm --network none --read-only \
