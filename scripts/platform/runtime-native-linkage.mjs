@@ -4,6 +4,7 @@ import { createReadStream, existsSync, openSync, readSync, closeSync, readFileSy
 import { basename, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readElfNeeded } from './elf-needed.mjs';
+import { inspectOptionalUnrarFiles } from './runtime-unrar-files.mjs';
 
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const SHA40 = /^[a-f0-9]{40}$/;
@@ -141,6 +142,7 @@ export async function collectRuntimeNativeLinkage({ root = '/', expectedConfigDi
       status: 'IMAGE_PACKAGE_MANIFEST_OBSERVED', nativeFiles: await describeFiles(root, paths.filter(x => ELF_SUFFIX.test(x)).slice(0, 90)),
       licenseFiles: await describeFiles(root, paths.filter(x => NOTICE_NAME.test(basename(x))).slice(0, 30), false) });
   }
+  const unrarFileBoundary = inspectOptionalUnrarFiles(root);
   const dynamicUnrar = [...packages.flatMap(p => p.binaryFiles), ...node.flatMap(p => p.nativeFiles)].some(f =>
     f.dynamic?.needed?.some(n => /unrar/i.test(n)));
   return {
@@ -148,6 +150,8 @@ export async function collectRuntimeNativeLinkage({ root = '/', expectedConfigDi
     imageConfigDigest: expectedConfigDigest, imageIdentityAuthority: 'SUPPLIED_FROM_HOST_EXPORTED_CONFIG_VERIFICATION',
     installedApkDbSha256: s256(installed), packageCount: apk.size, packages, node,
     unrar: { installedPackageFilenameCandidates: unrarRelated, directDtNeededObserved: dynamicUnrar,
+      clamavUnrarSubpackageInstalled: apk.has('clamav-libunrar'),
+      boundedRuntimeLibraryFiles: unrarFileBoundary,
       staticLinkage: 'NOT_PROVEN', absenceOfUnrarCode: 'NOT_PROVEN' },
     noticeCompleteness: 'NOT_PROVEN', sourceDeliveryProven: false, legalApproval: null,
     redistributionApproved: false, readyForCutover: false,
@@ -180,6 +184,21 @@ export function reconcileRuntimeNativeLinkage(report, inventory, runtimeCoverage
       !Array.isArray(report.packages) || report.packages.length !== TRACKED_APKS.length ||
       !Array.isArray(report.node) || report.node.length !== TRACKED_NPM.length) {
     throw new Error('Unbound or elevated final image linkage evidence');
+  }
+  const unrar = report.unrar;
+  if (!unrar || !Array.isArray(unrar.installedPackageFilenameCandidates) ||
+      unrar.clamavUnrarSubpackageInstalled !== inventory.packages.some(p => p.name === 'clamav-libunrar') ||
+      unrar.staticLinkage !== 'NOT_PROVEN' || unrar.absenceOfUnrarCode !== 'NOT_PROVEN' ||
+      unrar.boundedRuntimeLibraryFiles?.schema !== 'CAPITAL_AI_UNRAR_RUNTIME_FILE_BOUNDARY@1' ||
+      unrar.boundedRuntimeLibraryFiles?.status !== 'COMPLETE_IN_LISTED_SEARCH_ROOTS_ONLY' ||
+      !Array.isArray(unrar.boundedRuntimeLibraryFiles.scannedRoots) ||
+      unrar.boundedRuntimeLibraryFiles.scannedRoots.length < 1 ||
+      !Array.isArray(unrar.boundedRuntimeLibraryFiles.namedLibraryCandidates) ||
+      unrar.boundedRuntimeLibraryFiles.wholeImageAbsence !== 'NOT_PROVEN' ||
+      unrar.boundedRuntimeLibraryFiles.staticUnrarInclusion !== 'NOT_PROVEN' ||
+      unrar.boundedRuntimeLibraryFiles.lateRuntimeLoading !== 'NOT_PROVEN' ||
+      unrar.boundedRuntimeLibraryFiles.redistributionApproved !== false) {
+    throw new Error('UnRAR file-scope scan missing or elevated into absence/license approval');
   }
   for (const pkg of report.packages) {
     const actual = inventory.packages.find(x => x.name === pkg.name);
