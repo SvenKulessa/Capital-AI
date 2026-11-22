@@ -372,5 +372,194 @@
       "testsMustRejectUntrustedApprovals": true
     },
     "publicPublishAllowed": false
+  },
+  "reviewPackage": {
+    "contractVersion": "CAPITAL_AI_AKASH_EDITORIAL_RIGHTS_CANDIDATE@1",
+    "preparedOn": "2026-11-22",
+    "preparedBy": "GROWTH_DRAFT_REVIEW",
+    "status": "REVIEW_READY_NOT_APPROVED",
+    "scope": {
+      "site": "CAPITAL-AI",
+      "target": "PRIVATE_EDITORIAL_APPROVAL_FOR_POTENTIAL_PUBLIC_HOME_NEWS",
+      "publicationChannel": "WEBSITE",
+      "locale": "de-DE",
+      "mediaUse": "EXACT_SHA256_FIRST_PARTY_PNG_ONLY",
+      "textUse": "INDEPENDENT_GERMAN_FACTUAL_SUMMARY",
+      "rightsExclusions": [
+        "THIRD_PARTY_ARTICLE_REPUBLICATION",
+        "ARTICLE_TRANSLATION",
+        "THIRD_PARTY_IMAGES",
+        "THIRD_PARTY_LOGOS",
+        "BRAND_ENDORSEMENT",
+        "BULK_SCRAPING",
+        "AUTOMATED_SOCIAL_PUBLICATION",
+        "COMMERCIAL_THIRD_PARTY_MEDIA_RESALE"
+      ],
+      "additionalChannels": [
+        {
+          "channel": "X",
+          "status": "NOT_APPROVED_SEPARATE_EDITION_REQUIRED"
+        },
+        {
+          "channel": "INSTAGRAM",
+          "status": "NOT_APPROVED_SEPARATE_EDITION_REQUIRED"
+        },
+        {
+          "channel": "LINKEDIN",
+          "status": "NOT_APPROVED_SEPARATE_EDITION_REQUIRED"
+        }
+      ]
+    },
+    "editorial": {
+      "headline": "Akash plant Marktmodell für GPU-Rechenstunden – Handel noch nicht gestartet",
+      "teaser": "Akash hat Compute Forwards als Konzept für die Planung künftiger GPU-Rechenkapazität vorgestellt. Ein Handelsmarkt ist derzeit nicht eröffnet.",
+      "paragraphs": [
+        "Compute Forwards soll es qualifizierten Unternehmen künftig ermöglichen, Rechenleistung für einen späteren Zeitraum über ein geregeltes Marktmodell zu vereinbaren. Vorgesehen ist ein auf Solana aufbauender Ansatz. Bislang beschreibt Akash das Vorhaben ausdrücklich als Entwurf; tatsächlich handelbare Verträge gibt es noch nicht.",
+        "Vor einem Pilot müssen laut Akash unter anderem zwei Prüfungen abgeschlossen, identifizierte Risiken behoben, rechtliche Fragen geklärt und technische Schutzmaßnahmen bestätigt werden. Der mögliche Start hängt von diesen Voraussetzungen ab.",
+        "Akash nennt Anfang 2027 als Planungszeitraum. Eine Solana-Meldung vom 19. November nennt März für einen Pilot und April für erste Rechenlieferungen. Diese Monatsangaben sind keine bestätigte Marktöffnung oder Lieferzusage.",
+        "Für die Einordnung ist entscheidend, zwischen einem veröffentlichten Konzept, einer Simulation und einem tatsächlich verfügbaren Markt zu unterscheiden. Die vorgestellten Abläufe ersetzen keine Prüfung von Gegenparteien, Regulierung oder Lieferbarkeit."
+      ],
+      "disclaimer": "Informationsbeitrag über einen angekündigten Entwurf; keine Anlage-, Handels- oder Kaufempfehlung. Stand der Quellenprüfung: 22.11.2026.",
+      "sourceNote": "Faktenabgleich: Akash-Blog vom 17.11.2026, Akash-Projektstatus und Solana-Bericht vom 19.11.2026; die Quellen sind keine Lizenz zur Text- oder Bildübernahme.",
+      "altText": "Eigene CAPITAL-AI-Statusgrafik: Compute-Forwards-Konzept angekündigt, Pilot an Voraussetzungen gebunden, Handel und Lieferungen nicht nachgewiesen.",
+      "sha256": "2999bfda6a85dc198eab7f5c92240f8d51de9adb9a4cb83e928ce1360abd2bb0",
+      "digestBasis": "SHA256_UTF8_JSON_STRINGIFY_EDITORIAL_STORY_FIELDS_IN_ORDER",
+      "titleScope": "DRAFT_NOT_PUBLIC"
+    },
+    "factualReferences": [
+      {
+        "url": "https://akash.network/blog/introducing-akash-compute-forwards/",
+        "date": "2026-11-17",
+        "use": "MANUAL_FACT_CROSSCHECK_ONLY",
+        "reproductionGrant": "NOT_PROVEN"
+      },
+      {
+        "url": "https://forwards.akash.network/status",
+        "date": null,
+        "use": "STATUS_AND_GATE_FACT_CROSSCHECK_ONLY",
+        "reproductionGrant": "NOT_PROVEN"
+      },
+      {
+        "url": "https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push",
+        "date": "2026-11-19",
+        "use": "SECONDARY_TIMELINE_CROSSCHECK_ONLY",
+        "reproductionGrant": "NOT_PROVEN"
+      }
+    ],
+    "rightsDossier": {
+      "assessedOn": "2026-11-22",
+      "status": "SCOPE_DEFINED_NO_EXTERNAL_ARTICLE_LICENSE",
+      "articleText": {
+        "origin": "NEW_CAPITAL_AI_DRAFT",
+        "thirdPartyTextCopied": false,
+        "thirdPartyQuoteBytesUsed": false,
+        "legalAssessment": "REVIEW_REQUIRED",
+        "editorialOwnerGrant": "PENDING_OWNER_DECISION"
+      },
+      "originalGraphics": {
+        "licenseId": "LicenseRef-CapitalAI-Owned",
+        "licenseDocumentSha256": "881d39959c8dd1797c6f10e15f3939f46a01ca9aa2e547e782a5edc9637d308e",
+        "assets": [
+          {
+            "assetId": "akash-landscape",
+            "sha256": "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+            "licenseRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+            "grantId": "owner-akash-landscape-20261120",
+            "allowedChannel": "WEBSITE",
+            "origin": "FIRST_PARTY_TEMPLATE",
+            "sourceContentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893"
+          },
+          {
+            "assetId": "akash-portrait",
+            "sha256": "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf",
+            "licenseRef": "docs/licenses/CAPITAL-AI-ORIGINAL-GRAPHIC-LICENSE-1.0.md",
+            "grantId": "owner-akash-portrait-20261120",
+            "allowedChannel": "WEBSITE",
+            "origin": "FIRST_PARTY_TEMPLATE",
+            "sourceContentDigest": "5ddb5dca5315345c5867c25cfe19827e8f3c4d5830375484961fc04aa1aa3893"
+          }
+        ],
+        "licenseEvidence": "RECORDED_OWNER_GRANTS_FOR_EXACT_IMAGES_ONLY",
+        "sourceAndBrandRightsGranted": false
+      },
+      "fonts": {
+        "family": "Plus Jakarta Sans",
+        "license": "SIL Open Font License 1.1",
+        "notice": "public/fonts/OFL.txt",
+        "status": "DOCUMENTED_FOR_RENDERER_ONLY"
+      },
+      "sourceTerms": [
+        {
+          "url": "https://solana.com/de/tos",
+          "effect": "COMMERCIAL_COPYING_AND_AUTOMATED_RETRIEVAL_RESTRICTED",
+          "grant": "NOT_PROVEN"
+        },
+        {
+          "url": "https://solana.com/de/branding",
+          "effect": "TRADEMARK_SCOPE_SPECIFIC",
+          "grant": "NOT_PROVEN"
+        },
+        {
+          "url": "https://akash.network/brand/resources/",
+          "effect": "NO_BLANKET_CO_BRANDING",
+          "grant": "NOT_PROVEN"
+        }
+      ],
+      "directSourceUse": "PUBLIC_FACT_REFERENCES_ONLY_WITH_MANUAL_LEGAL_REVIEW_PENDING",
+      "sourceScrapingAllowed": false,
+      "thirdPartyLogosAllowed": false,
+      "thirdPartyArticleReuseAllowed": false,
+      "neutralAttributionLink": "REVIEW_REQUIRED_NO_AUTOMATIC_LINK_PERMISSION",
+      "missingRightsEvidence": [
+        "EXACT_USE_SOURCE_TERMS_ASSESSMENT_OR_RIGHTSHOLDER_PERMISSION_IF_REQUIRED",
+        "EDITORIAL_OWNER_APPROVAL_FOR_THIS_EXACT_TEXT_AND_ASSETS"
+      ],
+      "legalOpinionProvided": false
+    },
+    "approvalReceipts": {
+      "editorial": {
+        "decision": "PENDING_OWNER",
+        "receiptId": null,
+        "approver": null,
+        "approvedEditorialSha256": null,
+        "approvedAssetSha256s": [],
+        "reviewedOn": null,
+        "checks": [
+          "TECHNICAL_ACCURACY",
+          "MARCH_APRIL_VS_EARLY_2027_QUALIFICATION",
+          "NO_LIVE_MARKET_CLAIM",
+          "ORIGINAL_GERMAN_WORDING",
+          "NO_INVESTMENT_ADVICE",
+          "ACCESSIBLE_ALT_TEXT",
+          "SOURCE_ATTRIBUTION_SCOPE"
+        ]
+      },
+      "rights": {
+        "decision": "PENDING_SCOPE_REVIEW",
+        "receiptId": null,
+        "reviewer": null,
+        "licenseEvidenceRef": null,
+        "reviewedOn": null,
+        "checks": [
+          "SOURCE_SITE_TERMS",
+          "EXACT_ARTICLE_NO_COPYING",
+          "NEUTRAL_FACTUAL_REPORTING_LEGAL_BASIS",
+          "SOURCE_LINKING",
+          "BRAND_NOMINATIVE_USE",
+          "EXACT_PNG_GRANTS",
+          "FONT_NOTICES"
+        ]
+      },
+      "publication": {
+        "decision": "NOT_AUTHORIZED",
+        "receiptId": null,
+        "publishedUrl": null,
+        "publishedAt": null,
+        "readback": null
+      }
+    },
+    "decision": "BLOCKED_FOR_PUBLIC_PUBLICATION",
+    "publicPublishAllowed": false,
+    "noExternalContactOrPermissionClaim": true
   }
 }
