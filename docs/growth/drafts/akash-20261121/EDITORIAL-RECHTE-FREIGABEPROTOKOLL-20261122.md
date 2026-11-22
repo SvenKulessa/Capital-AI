@@ -1,6 +1,6 @@
 # Akash Compute Forwards – nutzungsbezogener Rechte- und Redaktionsprüfsatz
 
-Stand: 2026-11-22 · Status: **REVIEW_READY_NOT_APPROVED** · Scope: ausschließlich CAPITAL-AI, deutschsprachiger eigener Homepage-Fachbeitrag.
+Stand: 2026-11-22 · Status: **EDITORIAL_OWNER_APPROVED_RIGHTS_PENDING** · Scope: ausschließlich CAPITAL-AI, deutschsprachiger eigener Homepage-Fachbeitrag.
 
 Maßgeblich für den genauen Text, die Asset-Bindungen und die entscheidungsfähigen Felder ist `source-review-v1.json#reviewPackage`, nicht dieser erläuternde Text. SHA-256 des dortigen kanonischen redaktionellen Textobjekts: `2999bfda6a85dc198eab7f5c92240f8d51de9adb9a4cb83e928ce1360abd2bb0`.
 
@@ -46,15 +46,18 @@ Für die Einordnung ist entscheidend, zwischen einem veröffentlichten Konzept, 
 
 Die sprachlich unveränderte freizugebende Fassung ist an den oben genannten Text-Digest zu binden. Werden Wörter geändert, muss der Digest neu berechnet und die Prüfung wiederholt werden.
 
-## 4. Ausstehende tatsächliche Entscheidungen
+## 4. Dokumentierte Owner-Redaktionsfreigabe und offene Rechteprüfung
 
 **TRUST / Rechteprüfung:** [ ] Zulässigkeit des konkret geplanten selbständigen Faktenartikels, seiner Quellenverweise und Namensnennungen unter den anwendbaren Nutzungsbedingungen und gesetzlichen Schranken gesondert geprüft; [ ] keine übernommenen Dritttexte/Bilder/Logos; [ ] genau zwei Grafik-Hashwerte mit Original-Owner-Grants abgeglichen; [ ] zusätzliche Kanäle ausgeschlossen oder gesondert genehmigt.
 
-**Redaktion:** [ ] Quellenstand und Datumsdifferenz Akash/Solana nachgeprüft; [ ] keine behauptete Live-Handelsverfügbarkeit; [ ] eigene Formulierungen und korrekte Bildbeschreibung bestätigt; [ ] exakte SHA-256-Fassung freigegeben; [ ] Redaktionsempfänger/Entscheider mit Datum und nachprüfbarer, extern bestätigter Freigabereferenz dokumentiert.
+**Redaktion:** [ ] Quellenstand und Datumsdifferenz Akash/Solana unabhängig nachgeprüft; [ ] keine behauptete Live-Handelsverfügbarkeit erneut überprüft; [ ] eigene Formulierungen und korrekte Bildbeschreibung unabhängig bestätigt; [x] Owner hat die zuvor vorgelegte exakte SHA-256-Fassung im laufenden Chat mit „freigegeben“ autorisiert; [ ] extern signierter Entscheidungsbeleg vorhanden (nicht behauptet oder verlangt, wenn keine externe Signatur nötig ist).
 
-**Freigabeprotokoll (absichtlich leer):**
-- Entscheidung RIGHTS: `PENDING_SCOPE_REVIEW`; Rechtebeleg/Entscheider/Datum: **ausstehend**.
-- Entscheidung EDITORIAL: `PENDING_OWNER`; Freigabe-Receipt/Entscheider/Datum: **ausstehend**.
+**Freigabeprotokoll (nach der direkten Owner-Nachricht aktualisiert):**
+- Entscheidung RIGHTS: `PENDING_SCOPE_REVIEW`; rechtliche Einzelfallbewertung oder Drittrechtebeleg: **ausstehend**.
+- Entscheidung EDITORIAL: `OWNER_APPROVED_EXACT_DRAFT`; direkte Owner-Aussage am 22.11.2026: **„freigegeben“**.
+- Interner Referenzbeleg: `CHAT_EDITORIAL_APPROVAL_20261122_SHA256_2999bfda6a85` – ein aus der Chat-Nachricht abgeleiteter Nachweis, **keine** externe oder kryptografische Signatur.
+- Freigegebener Text-SHA-256: `2999bfda6a85dc198eab7f5c92240f8d51de9adb9a4cb83e928ce1360abd2bb0`; Grafik-SHA-256: `d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8` und `6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf`.
+- Freigabeumfang: genau der vorgelegte eigene deutsche Artikel und die zwei eigenen Bilder für eine mögliche CAPITAL-AI-Website-Edition. **Keine** Solana-/Akash-Lizenz, keine anderen Social-Kanäle, keine automatische Live-Freigabe.
 - Entscheidung PUBLICATION: `NOT_AUTHORIZED`; URL und Readback: **ausstehend**.
 
 Ein Dokument, ein ausgeführter Test, ein PR-Kommentar oder ein LLM-Urteil dürfen diese Felder **nicht** automatisch auf APPROVED setzen. Falls zusätzliche schriftliche Rechte notwendig sind, müssen sie auf das konkrete Werk, Nutzungsart, Zeitraum, Gebiet, Kanäle und Unterlizenzierung bezogen sein.
