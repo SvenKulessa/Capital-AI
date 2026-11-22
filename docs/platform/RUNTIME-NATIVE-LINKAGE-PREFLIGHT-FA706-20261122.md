@@ -27,3 +27,17 @@ Der bestehende **Docker Security Gate** führt nach Image-Export, Trivy/SBOM und
 - Die historischen Dateien `docs/security/evidence/license-rights-review.json` und ältere OS-Quellevidenz bleiben unverändert; `status=REVIEW_OPEN`, `deployEligible=false`.
 
 **Admission bleibt:** `FINAL_IMAGE_NATIVE_BYTES=WAIT` bis GitHub-Lauf erfolgreich abgeschlossen und Ausgaben gelesen; `ELF_LINKAGE=WAIT`; `STATIC_UNRAR_INCLUSION=NOT_PROVEN`; `REDISTRIBUTION=BLOCKED`; `PUBLISH=NONE`; `DEPLOY=NONE`.
+
+## Real CI-byte readback and targeted remediation
+
+**Actual artifact:** [Docker Security Gate 44972410982](https://github.com/SvenKulessa/Capital-AI/actions/runs/44972410982), source SHA `01e27bdf117118fa43fe824b3e6190b13a9f9ed8`, artifact ID `14734636445`, ZIP SHA-256 `c58c44a83dce61ac0ea43cc032f964c246b07dafd69b9a69fa7cb7baee0e92e4`. Re-read the actual ZIP independently. Its `runtime-native-linkage.json`, `runtime-native-linkage-summary.json`, `runtime-license-coverage.json`, `os-source-inventory.json` and `image-id.txt` match the same **CI config digest** `sha256:7bb2d1225bf79e3b525c6056dbb231ec5e7eb555b988f02d42cd8265a7341570`; APK database digest also matches.
+
+- 10 verified native APK-file *paths* across ClamAV and libmspack (some are symlink aliases of the same content); 2 verified Node-native file paths.
+- `/usr/lib/libclamav.so.12.0.3`: SHA-256 `14ee6d9b1d89a1eadb55d5dcfa30602f248e39742f9ff19f4d44d0544ffd9105`.
+- `/app/node_modules/@img/sharp-libvips-linuxmusl-x64/lib/libvips-cpp.so.8.18.7`: SHA-256 `979b625437190a1970b835164e0e30d47dc60159ce6a394ce78cc40cb9d59ab8`.
+- `/app/node_modules/@img/sharp-linuxmusl-x64/lib/sharp-linuxmusl-x64-0.35.5.node`: SHA-256 `14ce8ddd283c101f225089152da805632568bfa372d336ccbfdd811f4f1dca02`.
+- The APK installed database lists no filename containing `unrar`, yet the recorded `directDtNeededObserved=false` was derived from **unresolved DT_NEEDED checks**. It is **not** evidence of absent direct, dynamically loaded, or statically embedded UnRAR.
+- **Reproduced technical defect:** Every ELF file's first-pass `dynamic.status` was `NOT_PROVEN` despite the Docker Security Gate step succeeding. The previous output omitted a safe failure category. Inventory confirms `scanelf=1.3.9-r1` is installed, but exact scanelf failure reason remains unproven.
+- **Remediation in the same PR:** `scripts/platform/elf-needed.mjs` implements a bounded, read-only, no-execution ELF64 little-endian `PT_DYNAMIC`/`DT_NEEDED` parser. The native collector retains its existing scanelf path and uses the parser only when scanelf cannot validate. The parser rejects unexpected endianness/class, invalid offsets, malformed dynamic entries, missing string-table mapping and non-allowlisted library names. Existing Docker Security Gate runs dedicated fixtures and binds both scripts read-only into the inspected image. No changes to installed production packages, rulesets, entitlement, publication or provider state.
+
+**Current-new-head ELF outcome:** `WAIT` until the revised CI run produces fresh hashed file and `DT_NEEDED` evidence. Any static or `dlopen` inclusion stays `NOT_PROVEN` even after a successful direct dependency parse. Rights and corresponding-source duties remain `REVIEW_OPEN`/`BLOCKED`; prior `license-rights-review.json` remains unchanged.
