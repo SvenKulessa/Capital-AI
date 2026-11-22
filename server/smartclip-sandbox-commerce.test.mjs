@@ -177,6 +177,49 @@ test('valid payment webhook grants once and duplicate replay is idempotent',asyn
   assert.equal((await call('access','GET',undefined,{fixture:f})).payload.entitled,true);
   assert.equal((await call('access','GET',undefined,{fixture:f,user:otherUserId})).payload.entitled,false);
 });
+
+test('parallel delivery of identical signed webhook remains idempotent at the fixture boundary',async()=>{
+  const fixture=makeFixture();
+  const raw=event('checkout.session.completed',{id:sid});
+  const headers={'stripe-signature':sign(raw)};
+  const results=await Promise.all(Array.from({length:24},()=>call('webhook','POST',raw,{fixture,headers})));
+  assert.ok(results.every(x=>x.statusCode===200 && x.payload.granted===true));
+  assert.equal(fixture.ledger.size,1);
+  assert.equal((await call('access','GET',undefined,{fixture})).payload.entitled,true);
+});
+
+test('refund overtakes an in-flight grant and its tombstone prevents re-activation',async()=>{
+  const fixture=makeFixture(), baseFetch=fixture.fetchImpl;
+  let grantStarted, resumeGrant;
+  const entered=new Promise(resolve=>{grantStarted=resolve;});
+  const paused=new Promise(resolve=>{resumeGrant=resolve;});
+  fixture.fetchImpl=async(endpoint,options={})=>{
+    if(String(endpoint).includes('/rest/v1/rpc/capital_ai_smartclip_sandbox') &&
+       options.body && JSON.parse(options.body)._action==='grant') {
+      grantStarted();
+      await paused;
+    }
+    return baseFetch(endpoint,options);
+  };
+  const success=event('checkout.session.completed',{id:sid});
+  const inFlight=call('webhook','POST',success,{fixture,headers:{'stripe-signature':sign(success)}});
+  await entered;
+  // The provider refund arrives after grant verification but before RPC commit.
+  fixture.charge.refunded=true;
+  fixture.charge.amount_refunded=249;
+  const refund=event('charge.refunded',{id:chargeId});
+  const reversed=await call('webhook','POST',refund,{fixture,headers:{'stripe-signature':sign(refund)}});
+  assert.equal(reversed.statusCode,200);
+  assert.equal(reversed.payload.revoked,true);
+  resumeGrant();
+  const completed=await inFlight;
+  assert.equal(completed.statusCode,200);
+  assert.equal(completed.payload.granted,false);
+  assert.equal(fixture.ledger.get(pid).status,'revoked');
+  assert.equal((await call('access','GET',undefined,{fixture})).payload.entitled,false);
+  // Simulates handler interleaving only. Real PostgreSQL multi-connection race requires separate evidence.
+});
+
 test('unpaid, foreign, version-mismatched and multi-item sessions never grant',async()=>{
   const fixtures=[
     makeFixture({session:{payment_status:'unpaid'}}),
