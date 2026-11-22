@@ -136,8 +136,14 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     const isolatedRegistrations = registrations.has_more === false &&
       Array.isArray(registrations.data) &&
       registrations.data.every(x => x?.livemode === false);
+    // Restrict this TEST pilot to a documented domestic standard VAT registration.
+    // inbound_goods is physical-goods-only; small_seller is a distinct EU place-of-
+    // supply regime and needs separate owner/legal confirmation before use here.
+    // An active DE registration alone must not authorize digital software checkout.
     const collectingDE = isolatedRegistrations &&
-      registrations.data.some(x => x.country === 'DE' && x.status === 'active');
+      registrations.data.some(x => x?.country === 'DE' && x.status === 'active' &&
+        x.country_options?.de?.type === 'standard' &&
+        x.country_options?.de?.standard?.place_of_supply_scheme === 'standard');
     return tax.status === 'active' && tax.livemode === false && collectingDE &&
       price.id === priceId && price.livemode === false && price.active === true &&
       product.id === productId && product.livemode === false && product.active === true &&
