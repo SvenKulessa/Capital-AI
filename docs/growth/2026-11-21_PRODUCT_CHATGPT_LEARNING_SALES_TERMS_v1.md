@@ -44,11 +44,20 @@ Version 2 / 21.11.2026 · **OWNER_INTERNAL_TARGET_APPROVED — PUBLIC_SALES_HOLD
 4. Rechnung und ggf. Zahlung nach individueller Vereinbarung; technische Prüfung durch bestehenden Commerce-/Entitlement-Prozess. Ein `checkout.session.completed` allein ist kein Evidence für Zahlung oder Lizenz, und erfolgreiche Zahlungsbelege sind ohne Rechtekette kein rechtlicher Grant.
 5. Separater hashgebundener Delivery-Receipt an den konkreten Kunden; Social-/Website-Veröffentlichung nur bei eigenständiger Kanal-/Artikel-Freigabe.
 
-## Musterrechnung, ausdrücklich **Szenario und nicht Ist-Zahl**
-Publisher EUR 129 minus beispielhaft EUR 70 Herstellung/Support minus EUR 5 variable Kosten = EUR 54 Deckungsbeitrag (41,9 %).
-Studio EUR 390 minus beispielhaft EUR 230 Anpassung/Support minus EUR 12 variable Kosten = EUR 148 Deckungsbeitrag (37,9 %).
-Ein Reseller-Kunde mit Publisher-Lizenz erzeugt bei Einkauf EUR 90,30 und hypothetischen EUR 45 Erfüllungskosten einen Deckungsbeitrag von EUR 45,30 für CAPITAL-AI, **vor** Rechtsprüfung, Partnerakquise und sonstigen Gemeinkosten. Kein behaupteter Kunden-ROI.
-Pilot-Entscheidung: Aufwand je Auslieferung erfassen; nach 5 tatsächlichen Kundenverträgen prüfen, ob reale Stückkosten und Beschwerden einen skalierbaren Verkauf tragen. Fiktive Angebote/Zahlungen zählen nicht als Absatz.
+## Musterrechnung – ausschließlich hypothetisches Szenario mit aktuellen internen Zielpreisen
+Die Beträge EUR 99 / EUR 290 sind vom Owner genehmigte **interne Basiszielpreise, keine öffentlichen Angebote**. Die früheren Beispielpreise EUR 129 / EUR 390 / EUR 90,30 sind überholt und werden nicht als aktuelle Preis- oder Deckungsbeitragsreferenz verwendet. Kosten und Stückzahlen sind **nicht gemessene Annahmen**.
+
+| Nur hypothetische Konstellation | Interner Netto-Zielpreis | Angenommene Kosten (Arbeits-/Supportaufwand + variabel) | Rein rechnerischer Deckungsbeitrag |
+| --- | ---: | ---: | ---: |
+| Publisher – Basis | EUR 99,00 | EUR 70,00 + 5,00 | **EUR 24,00** |
+| Studio – Basis | EUR 290,00 | EUR 230,00 + 12,00 | **EUR 48,00** |
+| Publisher – 25%-Kondition | EUR 74,25 | EUR 70,00 + 5,00 | **EUR -0,75** |
+| Studio – 25%-Kondition | EUR 217,50 | EUR 230,00 + 12,00 | **EUR -24,50** |
+| Publisher – 30%-Sonderkondition | EUR 69,30 | EUR 70,00 + 5,00 | **EUR -5,70** |
+| Studio – 30%-Sonderkondition | EUR 203,00 | EUR 230,00 + 12,00 | **EUR -39,00** |
+| Reseller-Publisher-Pilot (70% der Basis) | EUR 69,30 | pauschal angenommen EUR 45,00 | **EUR 24,30** |
+
+Alle Werte verstehen sich vor nicht erfassten Gemeinkosten, individuellen Steuerwirkungen und Rechtsprüfungsaufwand; keinerlei Gewinn-, Kosten- oder ROI-Nachweis. Partnerpreise sind **B2B-Einkaufskonditionen**, keine bindenden Endkundenpreise. Pilot-Entscheidung erst nach tatsächlicher Erfassung von Lieferung, Bearbeitungszeit, Support, Rechten und rechtswirksam abgeschlossenen Kundenverträgen; fiktive Zahlungen zählen nicht als Absatz.
 
 ## Nicht verhandelbare Zulassungsbedingungen
 - `LICENSE_TERMS=LEGAL_REVIEW_REQUIRED`
