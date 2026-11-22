@@ -129,11 +129,17 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
       stripe('/products/' + encodeURIComponent(productId)),
     ]);
     // Provider-readback proof, not merely an enabled boolean or a nonzero tax amount.
-    const collectingDE = registrations.has_more === false &&
+    // A live tax registration never authorizes this isolated test-only checkout.
+    // Missing, mixed-mode or incomplete provider readbacks fail closed.
+    const isolatedRegistrations = registrations.has_more === false &&
       Array.isArray(registrations.data) &&
+      registrations.data.every(x => x?.livemode === false);
+    const collectingDE = isolatedRegistrations &&
       registrations.data.some(x => x.country === 'DE' && x.status === 'active');
-    return tax.status === 'active' && collectingDE && price.active === true &&
-      product.active === true && stripeObjectId(price.product) === productId &&
+    return tax.status === 'active' && tax.livemode === false && collectingDE &&
+      price.id === priceId && price.livemode === false && price.active === true &&
+      product.id === productId && product.livemode === false && product.active === true &&
+      stripeObjectId(price.product) === productId &&
       stripeObjectId(product.default_price) === priceId &&
       price.type === 'one_time' && !price.recurring && price.currency === 'eur' &&
       price.unit_amount === FORM_PRICE_CENTS && price.tax_behavior === 'inclusive' &&
@@ -169,6 +175,7 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
       meta.license_accepted !== 'true' || meta.immediate_delivery_consent !== 'true' ||
       meta.withdrawal_loss_acknowledged !== 'true' ||
       session.automatic_tax?.enabled !== true || session.automatic_tax?.status !== 'complete' ||
+      session.invoice_creation?.enabled !== true ||
       !PID.test(session.payment_intent || '')) return false;
     const [lines, intent] = await Promise.all([
       stripe('/checkout/sessions/' + encodeURIComponent(sessionId) + '/line_items?limit=2'),
@@ -177,7 +184,8 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     const line = lines.data?.[0];
     if (lines.has_more !== false || lines.data?.length !== 1 ||
       line?.quantity !== 1 || line?.amount_subtotal !== FORM_PRICE_CENTS ||
-      line.price?.id !== priceId || stripeObjectId(line.price?.product) !== productId ||
+      line.price?.id !== priceId || line.price?.livemode !== false ||
+      stripeObjectId(line.price?.product) !== productId ||
       line.price?.currency !== 'eur' || line.price?.unit_amount !== FORM_PRICE_CENTS ||
       line.price?.tax_behavior !== 'inclusive' || line.price?.recurring ||
       intent.id !== session.payment_intent || intent.livemode !== false ||
@@ -188,7 +196,8 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
       intent.metadata?.release_sha256 !== digest) return false;
     const charge = await stripe('/charges/' + encodeURIComponent(intent.latest_charge));
     if (charge.id !== intent.latest_charge || charge.payment_intent !== intent.id ||
-      charge.livemode !== false || charge.paid !== true || charge.refunded !== false ||
+      charge.livemode !== false || charge.status !== 'succeeded' ||
+      charge.currency !== 'eur' || charge.paid !== true || charge.refunded !== false ||
       charge.disputed !== false || charge.amount_refunded !== 0 ||
       charge.amount !== FORM_PRICE_CENTS) return false;
     const result = await rpc('grant', { _user_id: session.client_reference_id,
@@ -200,6 +209,7 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     if (!CHARGE.test(chargeId)) return false;
     const charge = await stripe('/charges/' + encodeURIComponent(chargeId));
     if (charge.id !== chargeId || charge.livemode !== false ||
+      charge.currency !== 'eur' || charge.amount !== FORM_PRICE_CENTS ||
       !PID.test(charge.payment_intent || '')) return false;
     const intent = await stripe('/payment_intents/' + encodeURIComponent(charge.payment_intent));
     if (intent.id !== charge.payment_intent || intent.livemode !== false ||
@@ -286,6 +296,10 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
       const form = new URLSearchParams({
         mode: 'payment', 'line_items[0][price]': priceId, 'line_items[0][quantity]': '1',
         'automatic_tax[enabled]': 'true', billing_address_collection: 'required',
+        'invoice_creation[enabled]': 'true',
+        'invoice_creation[invoice_data][metadata][sku]': SMARTCLIP_SKU,
+        'invoice_creation[invoice_data][metadata][release_sha256]': digest,
+        'invoice_creation[invoice_data][metadata][license_version]': SMARTCLIP_LICENSE,
         client_reference_id: user.userId, customer_email: user.email,
         success_url: base + '/profile?smartclip=test-complete',
         cancel_url: base + '/profile?smartclip=test-cancelled',
@@ -302,7 +316,8 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
         'payment_intent_data[metadata][release_sha256]': digest,
       });
       const s = await stripe('/checkout/sessions', form.toString(), requestKey);
-      if (!SID.test(s.id || '') || s.livemode !== false || s.mode !== 'payment' || !safeStripeUrl(s.url)) {
+      if (!SID.test(s.id || '') || s.livemode !== false || s.mode !== 'payment' ||
+          s.invoice_creation?.enabled !== true || !safeStripeUrl(s.url)) {
         throw Error('invalid_checkout_response');
       }
       json(res, 200, { checkoutUrl: s.url, testOnly: true });
