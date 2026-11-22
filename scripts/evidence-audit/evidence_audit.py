@@ -21,6 +21,9 @@ def _clean(value, limit=180):
 def build_report(source):
     if not isinstance(source, dict) or not REPO.fullmatch(str(source.get("repository", ""))):
         raise ValueError("invalid repository")
+    owner, name = source["repository"].split("/")
+    if owner in (".", "..") or name in (".", ".."):
+        raise ValueError("invalid repository")
     sha = source.get("head_sha")
     if not isinstance(sha, str) or not SHA.fullmatch(sha):
         raise ValueError("invalid head_sha")
