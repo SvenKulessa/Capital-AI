@@ -1,5 +1,5 @@
-import { openSync, closeSync, readSync, statSync, existsSync, realpathSync, readdirSync, lstatSync } from 'node:fs';
-import { resolve, join, sep, basename } from 'node:path';
+import { openSync, closeSync, readSync, statSync, existsSync, realpathSync, readdirSync } from 'node:fs';
+import { resolve, join, sep } from 'node:path';
 
 // A narrowly scoped inventory of possible optional UnRAR library copies,
 // including libraries not owned by APK. It is NOT a whole-filesystem audit.
