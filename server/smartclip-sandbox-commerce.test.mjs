@@ -84,7 +84,9 @@ function makeFixture(options = {}) {
       return reply({},400);
     }
     if (url.endsWith('/tax/settings')) return reply({status:'active',livemode:false,...(opt.taxSettings||{})});
-    if (url.includes('/tax/registrations?')) return reply(opt.registrations || {has_more:false,data: opt.registered ? [{country:'DE',status:'active',livemode:false}] : []});
+    if (url.includes('/tax/registrations?')) return reply(opt.registrations || {has_more:false,
+      data: opt.registered ? [{country:'DE',status:'active',livemode:false,
+        country_options:{de:{type:'standard',standard:{place_of_supply_scheme:'standard'}}}}] : []});
     if (url.endsWith('/prices/' + priceId)) return reply(price);
     if (url.endsWith('/products/' + productId)) return reply(product);
     if (url.endsWith('/checkout/sessions') && init.method==='POST') {
@@ -170,6 +172,23 @@ test('live or mixed-mode tax, price and product readbacks cannot authorize sandb
     const result=await call('checkout','POST',body,{fixture});
     assert.equal(result.statusCode,503);
     assert.equal(fixture.calls.some(c=>c.url.endsWith('/checkout/sessions')&&c.method==='POST'),false);
+  }
+});
+test('goods-only, unrelated EU and missing tax schemes cannot enable software checkout',async()=>{
+  const schemes=[
+    {de:{type:'standard',standard:{place_of_supply_scheme:'inbound_goods'}}},
+    {de:{type:'standard',standard:{place_of_supply_scheme:'small_seller'}}},
+    {de:{type:'oss_union'}},
+    {de:{type:'standard'}},
+    undefined
+  ];
+  for(const country_options of schemes) {
+    const fixture=makeFixture({registrations:{has_more:false,data:[
+      {country:'DE',status:'active',livemode:false,country_options}]}});
+    const result=await call('checkout','POST',body,{fixture});
+    assert.equal(result.statusCode,503);
+    assert.equal(fixture.calls.some(c=>c.url.endsWith('/checkout/sessions') &&
+      c.method==='POST'),false);
   }
 });
 test('invalid price, product, license metadata and extra line items do not grant sales', async()=>{
