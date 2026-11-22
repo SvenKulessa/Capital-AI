@@ -29,6 +29,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const SID = /^cs_test_[A-Za-z0-9_]{8,240}$/;
 const PID = /^pi_[A-Za-z0-9_]{8,240}$/;
 const CHARGE = /^ch_[A-Za-z0-9_]{8,240}$/;
+const INVOICE = /^in_[A-Za-z0-9_]{8,240}$/;
+const CUSTOMER = /^cus_[A-Za-z0-9_]{8,240}$/;
 const PRICE = /^price_[A-Za-z0-9_]{6,240}$/;
 const PRODUCT = /^prod_[A-Za-z0-9_]{6,240}$/;
 const REQ_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -200,6 +202,29 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
       charge.currency !== 'eur' || charge.paid !== true || charge.refunded !== false ||
       charge.disputed !== false || charge.amount_refunded !== 0 ||
       charge.amount !== FORM_PRICE_CENTS) return false;
+    // Checkout can complete before Stripe finalizes its paid invoice.
+    // Return a retryable webhook error instead of acknowledging an unfulfilled sale.
+    // An invoice flag or self-reported browser receipt is never sufficient.
+    if (!INVOICE.test(stripeObjectId(session.invoice) || '') ||
+        !CUSTOMER.test(stripeObjectId(session.customer) || '')) {
+      throw Error('smartclip_invoice_pending');
+    }
+    const invoiceId = stripeObjectId(session.invoice);
+    const invoice = await stripe('/invoices/' + encodeURIComponent(invoiceId));
+    if (invoice.id !== invoiceId || invoice.livemode !== false ||
+        stripeObjectId(invoice.customer) !== stripeObjectId(session.customer) ||
+        invoice.currency !== 'eur' || invoice.total !== FORM_PRICE_CENTS ||
+        invoice.amount_paid !== FORM_PRICE_CENTS || invoice.amount_remaining !== 0 ||
+        invoice.paid_out_of_band !== false ||
+        invoice.metadata?.sku !== SMARTCLIP_SKU ||
+        invoice.metadata?.release_sha256 !== digest ||
+        invoice.metadata?.license_version !== SMARTCLIP_LICENSE) return false;
+    if (invoice.status !== 'paid' || invoice.paid !== true) {
+      if (invoice.status === 'draft' || invoice.status === 'open') {
+        throw Error('smartclip_invoice_pending');
+      }
+      return false;
+    }
     const result = await rpc('grant', { _user_id: session.client_reference_id,
       _session_id: session.id, _payment_intent_id: intent.id, _release_sha256: digest });
     return result?.granted === true;
