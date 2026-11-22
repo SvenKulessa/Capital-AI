@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from agent_platform import build_research_graph, retrieve
+from agent_platform import DOMAINS, build_research_graph, retrieve
 from domain_profile_binding import PROFILES, SOURCES
 from worker_service import check_root, load_task, process
 
@@ -114,6 +114,29 @@ class PlatformResearchTests(unittest.TestCase):
                 with self.assertRaises((OSError, ValueError)):
                     process(task, state_root=root, repo_root=repo)
                 self.assertEqual(list((root / "checkpoints").iterdir()), [])
+
+    def test_each_domain_has_source_bound_graph_route_and_no_tools(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fixture(root)
+            graph = build_research_graph(root)
+            bundles = set()
+            for domain in DOMAINS:
+                query = ("SQLite checkpoint" if domain == "PLATFORM"
+                         else "SOLO_MAINTAINER_FLOW")
+                state = graph.invoke({"task_id": "domain-" + domain.lower(),
+                                      "domain": domain, "query": query})
+                with self.subTest(domain=domain):
+                    self.assertEqual(state["status"], "RESEARCH_DRAFT")
+                    self.assertEqual(state["profile_skills"], [
+                        domain.lower() + "-engineering", domain.lower() + "-advisory"])
+                    self.assertEqual(state["agent_route"], [
+                        "supervisor", "retriever", domain.lower() + "_analyst",
+                        "trust_reviewer"])
+                    self.assertRegex(state["profile_sha256"], r"^[a-f0-9]{64}$")
+                    self.assertNotIn("merge", state["agent_route"])
+                    bundles.add(state["bundle_sha256"])
+            self.assertEqual(len(bundles), 1)
 
     def test_no_matching_evidence_not_proven(self):
         with tempfile.TemporaryDirectory() as tmp:
