@@ -20,7 +20,7 @@ const env = {
   STRIPE_SMARTCLIP_TEST_PRICE_ID: priceId,
   STRIPE_SMARTCLIP_TEST_PRODUCT_ID: productId,
   SMARTCLIP_SANDBOX_RELEASE_SHA256: SMARTCLIP_PINNED_SHA256,
-  SMARTCLIP_SANDBOX_TAX_CODE: 'txcd_10202000',
+  SMARTCLIP_SANDBOX_TAX_CODE: 'txcd_10202001',
   SMARTCLIP_SANDBOX_TAX_ATTESTED: 'true',
   SUPABASE_URL: 'https://primary-fixture.supabase.co',
   SMARTCLIP_SANDBOX_DB_URL: 'https://isolated-fixture.supabase.co',
@@ -131,6 +131,8 @@ test('default disabled, live keys and unknown digests fail closed', async()=>{
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10000000'}})).statusCode,503);
   // The prior test fixture used a document/news tax category; it must not activate software checkout.
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10503000'}})).statusCode,503);
+  // Only the owner-approved TEST classification is admitted; do not fall back.
+  assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10202000'}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10203000'}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_ATTESTED:'false'}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_DB_URL:env.SUPABASE_URL}})).statusCode,503);
