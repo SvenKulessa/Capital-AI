@@ -67,6 +67,7 @@ jobs:
             scripts/platform/ghcr-render-cutover-plan.test.mjs \
             scripts/platform/runtime-license-coverage.test.mjs \
             scripts/platform/runtime-native-linkage.test.mjs \
+            scripts/platform/elf-needed.test.mjs \
             scripts/production-handoff.test.mjs \
             scripts/write-runtime-identity.test.mjs \
             scripts/post-merge-followup.test.mjs \
@@ -430,6 +431,7 @@ jobs:
           test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
           docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
             --mount type=bind,source="$PWD/scripts/platform/runtime-native-linkage.mjs",target=/tmp/runtime-native-linkage.mjs,readonly \
+            --mount type=bind,source="$PWD/scripts/platform/elf-needed.mjs",target=/tmp/elf-needed.mjs,readonly \
             --entrypoint node "$image" /tmp/runtime-native-linkage.mjs collect "$(cat security-reports/image-id.txt)" \
             > security-reports/runtime-native-linkage.json
           node scripts/platform/runtime-native-linkage.mjs verify \
