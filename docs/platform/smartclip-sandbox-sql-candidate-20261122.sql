@@ -1,6 +1,9 @@
 -- SmartClip test-only purchase ledger. Additive schema candidate, NOT applied to production.
 -- Gate: only a separate authorized non-production Supabase environment may execute this.
 -- SQL is an atomic idempotency boundary; refund tombstones block late success forever.
+-- A fresh isolated sandbox may not have the private schema yet.
+-- Do not install this candidate in production or on a shared recovery workload.
+create schema if not exists private;
 create table if not exists private.smartclip_sandbox_entitlements (
   stripe_payment_intent_id text primary key check (stripe_payment_intent_id ~ '^pi_[A-Za-z0-9_]{8,240}$'),
   checkout_session_id text unique check (checkout_session_id is null or checkout_session_id ~ '^cs_test_[A-Za-z0-9_]{8,240}$'),
