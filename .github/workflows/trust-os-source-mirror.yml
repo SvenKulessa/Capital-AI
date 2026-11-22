@@ -46,10 +46,12 @@ jobs:
             --dir "$RUNNER_TEMP/os-mirror"
           test -s "$RUNNER_TEMP/os-mirror/os-source-inventory.json"
           test -s "$RUNNER_TEMP/os-mirror/os-apk-installed.txt"
-          # Eliminate world-writable report directories; the isolated user owns the source tree.
-          sudo chown 10001:10001 "$RUNNER_TEMP/os-mirror"
-          sudo chmod 0700 "$RUNNER_TEMP/os-mirror"
+          # Keep artifact root owned by the runner, grant the container only private scratch dirs.
+          chmod 0755 "$RUNNER_TEMP/os-mirror"
           chmod 0444 "$RUNNER_TEMP/os-mirror/os-source-inventory.json"
+          mkdir -p "$RUNNER_TEMP/os-mirror/mirror" "$RUNNER_TEMP/os-mirror/reports" "$RUNNER_TEMP/os-mirror/aports-git"
+          sudo chown -R 10001:10001 "$RUNNER_TEMP/os-mirror/mirror" "$RUNNER_TEMP/os-mirror/reports" "$RUNNER_TEMP/os-mirror/aports-git"
+          sudo chmod 0700 "$RUNNER_TEMP/os-mirror/mirror" "$RUNNER_TEMP/os-mirror/reports" "$RUNNER_TEMP/os-mirror/aports-git"
       - name: Build throwaway non-privileged Alpine source runner
         run: |
           set -euo pipefail
