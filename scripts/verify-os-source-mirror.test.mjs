@@ -128,3 +128,41 @@ test('current 34-recipe aports lock is source-image-bound and never authorizes d
   assert.equal(current.status.redistributionApproved, false);
   assert.equal(current.publishedOCIManifestDigest, null);
 });
+
+
+test('current source lock preserves 50 actual-image binary counts without granting source or license rights', () => {
+  const current = JSON.parse(readFileSync(new URL('../docs/security/evidence/os-aports-recipe-lock-fa706af9-20261122.json', import.meta.url), 'utf8'));
+  const previous = JSON.parse(readFileSync(new URL('../docs/security/evidence/os-aports-recipe-lock-03dcdb64-20261119.json', import.meta.url), 'utf8'));
+  assert.equal(current.schema, 'CAPITAL_AI_OS_RECIPE_LOCK@1');
+  assert.equal(current.sourceSha, 'fa706af9aa698d702dc782f3f95a95c7f7572a22');
+  assert.equal(current.testedMergeSha, current.sourceSha);
+  assert.equal(current.sourceRunId, 44955707366);
+  assert.equal(current.sourceArtifactId, 14727855604);
+  assert.equal(current.localImageConfigDigest, 'sha256:5f76597529b8ef14ead01b686879b577c9ba35a455c03ae5aa021c1a8ae7d1d7');
+  assert.equal(current.installedApkDbSha256, 'sha256:263c775b75102a70b050dcf8bfde0da4e728ab316c8ebea31cd51735fdc16f64');
+  assert.equal(current.alpineRelease, '3.24.4');
+  assert.equal(current.binaryPackageCount, 50);
+  assert.equal(current.sourceRecipeCount, 34);
+  assert.equal(current.recipes.length, 34);
+  assert.equal(new Set(current.recipes.map(r => r.sourcePackage)).size, 34);
+  assert.equal(current.recipes.reduce((sum, r) => sum + r.declaredSha512Entries, 0), 229);
+  assert.ok(current.recipes.every(r => r.verifiedSourceBytes === false && r.copyrightNoticesReviewed === false));
+  assert.equal(current.publishedOCIManifestDigest, null);
+  assert.equal(current.status.redistributionApproved, false);
+  const before = new Map(previous.recipes.map(r => [r.sourcePackage, r]));
+  const unchanged = current.recipes.filter(r =>
+    r.sourcePackage !== 'libxml2' && JSON.stringify(r) === JSON.stringify(before.get(r.sourcePackage)));
+  assert.equal(unchanged.length, 33);
+  const updated = current.recipes.find(r => r.sourcePackage === 'libxml2');
+  assert.deepEqual({
+    version: updated.version, commit: updated.aportsCommit, blob: updated.apkbuildGitBlob,
+    sha512Declarations: updated.declaredSha512Entries,
+  }, {
+    version: '2.13.9-r3', commit: 'c7ab030c13f6ad20df0913a5f24c00734f214de8',
+    blob: 'cf39a1513c620114ced9d84fc0452e595473c420',
+    sha512Declarations: 4,
+  });
+  // The lock is a source-recipe identity and checksum DECLARATION snapshot.
+  // This test never downloads source files or changes the license rights ledger.
+  assert.equal(current.recipes.filter(r => r.verifiedSourceBytes).length, 0);
+});
