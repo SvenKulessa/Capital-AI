@@ -254,3 +254,112 @@ test('independent QUALITY rejects fabricated licenses, approval, status and tamp
   tamper(null, m => { m.socialPackage.approvals.push({ decision: 'APPROVED' }); });
   tamper(null, m => { m.plan.publication.publicPublishAllowed = true; });
 });
+
+
+// Used for review evidence only; this validator never issues grants or
+// authorizes publication. No new CI gate is introduced.
+function validateAkashEditorialRightsCandidate(evidence, manifest) {
+  const pkg = evidence.reviewPackage;
+  assert.equal(pkg.contractVersion, 'CAPITAL_AI_AKASH_EDITORIAL_RIGHTS_CANDIDATE@1');
+  assert.equal(pkg.status, 'REVIEW_READY_NOT_APPROVED');
+  assert.equal(pkg.scope.site, 'CAPITAL-AI');
+  assert.equal(pkg.scope.publicationChannel, 'WEBSITE');
+  assert.equal(pkg.scope.textUse, 'INDEPENDENT_GERMAN_FACTUAL_SUMMARY');
+  assert.equal(pkg.scope.mediaUse, 'EXACT_SHA256_FIRST_PARTY_PNG_ONLY');
+  assert.ok(pkg.scope.rightsExclusions.includes('THIRD_PARTY_ARTICLE_REPUBLICATION'));
+  assert.ok(pkg.scope.rightsExclusions.includes('BULK_SCRAPING'));
+  assert.ok(pkg.scope.rightsExclusions.includes('THIRD_PARTY_LOGOS'));
+  assert.ok(pkg.scope.additionalChannels.every(channel => channel.status === 'NOT_APPROVED_SEPARATE_EDITION_REQUIRED'));
+  const { headline, teaser, paragraphs, disclaimer, sourceNote, altText } = pkg.editorial;
+  assert.ok(headline.length > 40 && teaser.length > 40);
+  assert.equal(paragraphs.length, 4);
+  assert.ok(paragraphs.every(value => typeof value === 'string' && value.length > 80));
+  assert.ok(paragraphs.join(' ').includes('Anfang 2027'));
+  assert.ok(paragraphs.join(' ').includes('März') && paragraphs.join(' ').includes('April'));
+  assert.match(paragraphs.join(' '), /keine bestätigte Marktöffnung/);
+  assert.match(disclaimer, /keine Anlage-/);
+  assert.ok(altText.length > 40);
+  assert.equal(pkg.editorial.sha256, digest(JSON.stringify({
+    headline, teaser, paragraphs, disclaimer, sourceNote, altText,
+  })));
+  assert.equal(pkg.editorial.digestBasis, 'SHA256_UTF8_JSON_STRINGIFY_EDITORIAL_STORY_FIELDS_IN_ORDER');
+  assert.equal(pkg.editorial.titleScope, 'DRAFT_NOT_PUBLIC');
+  assert.deepEqual(pkg.factualReferences.map(x => x.url), [
+    'https://akash.network/blog/introducing-akash-compute-forwards/',
+    'https://forwards.akash.network/status',
+    'https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push',
+  ]);
+  assert.ok(pkg.factualReferences.every(x => x.use.endsWith('FACT_CROSSCHECK_ONLY') && x.reproductionGrant === 'NOT_PROVEN'));
+  const rights = pkg.rightsDossier;
+  assert.equal(rights.status, 'SCOPE_DEFINED_NO_EXTERNAL_ARTICLE_LICENSE');
+  assert.equal(rights.articleText.origin, 'NEW_CAPITAL_AI_DRAFT');
+  assert.equal(rights.articleText.thirdPartyTextCopied, false);
+  assert.equal(rights.articleText.thirdPartyQuoteBytesUsed, false);
+  assert.equal(rights.articleText.legalAssessment, 'REVIEW_REQUIRED');
+  assert.equal(rights.articleText.editorialOwnerGrant, 'PENDING_OWNER_DECISION');
+  assert.equal(rights.originalGraphics.licenseDocumentSha256, manifest.licenseDocumentSha256);
+  assert.equal(rights.originalGraphics.sourceAndBrandRightsGranted, false);
+  assert.equal(rights.originalGraphics.assets.length, 2);
+  for (const asset of rights.originalGraphics.assets) {
+    const item = manifest.assets.find(a => a.assetId === asset.assetId);
+    const grant = manifest.graphicOwnerGrants.find(g => g.grantId === asset.grantId);
+    assert.ok(item && grant);
+    assert.equal(asset.sha256, item.sha256);
+    assert.equal(asset.sourceContentDigest, item.contentDigest);
+    assert.equal(asset.licenseRef, grant.authorizationEvidenceRef);
+    assert.equal(grant.asset.sha256, asset.sha256);
+    assert.ok(grant.allowedChannels.includes(asset.allowedChannel));
+    assert.equal(asset.allowedChannel, 'WEBSITE');
+    assert.equal(asset.origin, 'FIRST_PARTY_TEMPLATE');
+  }
+  assert.equal(rights.fonts.license, 'SIL Open Font License 1.1');
+  assert.equal(rights.legalOpinionProvided, false);
+  assert.equal(rights.thirdPartyLogosAllowed, false);
+  assert.equal(rights.thirdPartyArticleReuseAllowed, false);
+  assert.equal(rights.sourceScrapingAllowed, false);
+  assert.equal(rights.neutralAttributionLink, 'REVIEW_REQUIRED_NO_AUTOMATIC_LINK_PERMISSION');
+  assert.equal(rights.missingRightsEvidence.length, 2);
+  assert.ok(rights.sourceTerms.every(t => t.grant === 'NOT_PROVEN'));
+  assert.equal(pkg.approvalReceipts.editorial.decision, 'PENDING_OWNER');
+  assert.equal(pkg.approvalReceipts.editorial.receiptId, null);
+  assert.equal(pkg.approvalReceipts.editorial.approvedEditorialSha256, null);
+  assert.deepEqual(pkg.approvalReceipts.editorial.approvedAssetSha256s, []);
+  assert.equal(pkg.approvalReceipts.rights.decision, 'PENDING_SCOPE_REVIEW');
+  assert.equal(pkg.approvalReceipts.rights.licenseEvidenceRef, null);
+  assert.equal(pkg.approvalReceipts.publication.decision, 'NOT_AUTHORIZED');
+  assert.equal(pkg.approvalReceipts.publication.publishedUrl, null);
+  assert.equal(pkg.approvalReceipts.publication.readback, null);
+  assert.equal(pkg.decision, 'BLOCKED_FOR_PUBLIC_PUBLICATION');
+  assert.equal(pkg.publicPublishAllowed, false);
+  assert.equal(evidence.rights.publicPublishAllowed, false);
+  assert.equal(manifest.publicPublishAllowed, false);
+  assert.equal(pkg.noExternalContactOrPermissionClaim, true);
+  return true;
+}
+
+test('use-scoped Akash rights packet binds draft text and first-party graphics without rights admission', () => {
+  assert.equal(validateAkashEditorialRightsCandidate(draftEvidence, akashManifest), true);
+});
+
+test('editorial rights packet fails closed for forged approvals, text changes, assets, links and publishing', () => {
+  const alter = fn => {
+    const next = structuredClone(draftEvidence);
+    fn(next.reviewPackage);
+    assert.throws(() => validateAkashEditorialRightsCandidate(next, akashManifest));
+  };
+  alter(p => { p.editorial.headline = 'Autorisierter Handel ist gestartet'; });
+  alter(p => { p.editorial.paragraphs[0] += ' Echtbetrieb behauptet.'; });
+  alter(p => { p.editorial.sha256 = '0'.repeat(64); });
+  alter(p => { p.rightsDossier.originalGraphics.assets[0].sha256 = '0'.repeat(64); });
+  alter(p => { p.rightsDossier.originalGraphics.assets[0].grantId = 'fake-grant'; });
+  alter(p => { p.rightsDossier.articleText.thirdPartyTextCopied = true; });
+  alter(p => { p.rightsDossier.thirdPartyArticleReuseAllowed = true; });
+  alter(p => { p.rightsDossier.sourceScrapingAllowed = true; });
+  alter(p => { p.rightsDossier.sourceTerms[0].grant = 'LICENSED'; });
+  alter(p => { p.factualReferences[1].url = 'https://unverified.invalid/status'; });
+  alter(p => { p.scope.additionalChannels[0].status = 'APPROVED'; });
+  alter(p => { p.approvalReceipts.editorial.decision = 'APPROVED'; });
+  alter(p => { p.approvalReceipts.rights.decision = 'APPROVED'; });
+  alter(p => { p.approvalReceipts.publication.decision = 'AUTHORIZED'; });
+  alter(p => { p.publicPublishAllowed = true; });
+});
