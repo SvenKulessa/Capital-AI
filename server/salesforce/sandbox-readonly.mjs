@@ -91,7 +91,7 @@ export class SalesforceSandboxReadonlyClient {
     }
     let raw;
     try { raw = await response.text(); } catch { throw Error('SALESFORCE_READBACK_BODY_FAILED'); }
-    if (typeof raw !== 'string' || raw.length > MAX_RESPONSE_BYTES) throw Error('SALESFORCE_READBACK_TOO_LARGE');
+    if (typeof raw !== 'string' || Buffer.byteLength(raw, 'utf8') > MAX_RESPONSE_BYTES) throw Error('SALESFORCE_READBACK_TOO_LARGE');
     try { return JSON.parse(raw); } catch { throw Error('SALESFORCE_READBACK_JSON_INVALID'); }
   }
 
