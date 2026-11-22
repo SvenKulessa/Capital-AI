@@ -90,7 +90,7 @@ function makeFixture(options = {}) {
 }
 function request(method, data, headers = {}) {
   const raw = data === undefined ? [] : [Buffer.from(typeof data==='string' ? data : JSON.stringify(data))];
-  return Object.assign(Readable.from(raw), {method, headers});
+  return Object.assign(Readable.from(raw), {method, headers:{'content-type':'application/json',...headers}});
 }
 function res() {
   return {statusCode:0, payload:null, headers:{}, setHeader(k,v){this.headers[k]=v;}};
