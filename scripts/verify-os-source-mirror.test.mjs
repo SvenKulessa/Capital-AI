@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { reconcileRecipeLock, parseRecipe, verifyStagedSourceMirror } from './verify-os-source-mirror.mjs';
 
 const checksum = contents => createHash('sha512').update(contents).digest('hex');
@@ -165,4 +166,18 @@ test('current source lock preserves 50 actual-image binary counts without granti
   // The lock is a source-recipe identity and checksum DECLARATION snapshot.
   // This test never downloads source files or changes the license rights ledger.
   assert.equal(current.recipes.filter(r => r.verifiedSourceBytes).length, 0);
+});
+
+
+test('isolated mirror collector accepts current 34/50 and historical 21/34 snapshots without publishing', () => {
+  const filename = new URL('./collect_os_source_mirror.sh', import.meta.url);
+  const source = readFileSync(filename, 'utf8');
+  const syntax = spawnSync('bash', ['-n', filename.pathname], { encoding: 'utf8', timeout: 5000 });
+  assert.equal(syntax.status, 0, syntax.stderr);
+  assert.ok(source.includes("assert (len(lock['recipes']),len(inv['packages'])) in {(21,34),(34,50)}"));
+  assert.ok(source.includes("f\"community/{r['sourcePackage']}/APKBUILD\""));
+  assert.ok(source.includes('archive "$commit" "' + '$' + '{recipe_path%/APKBUILD}"'));
+  assert.ok(source.includes('if [[ $(id -u) -eq 0 ]]'));
+  assert.ok(source.includes("data['sourceDeliveryProven']=False;data['redistributionApproved']=False"));
+  assert.ok(source.includes("report.get('archiveHashesVerified') is True"));
 });
