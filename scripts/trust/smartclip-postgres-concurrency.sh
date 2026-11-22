@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Isolated two-backend PostgreSQL race test. No network, ports, external database or provider secrets.
-set -euo pipefail
+set -Eeuo pipefail
 cd "$(dirname "$0")/../.."
 image='postgres:17.12-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73'
 sql='docs/platform/smartclip-sandbox-sql-candidate-20261122.sql'
@@ -12,14 +12,42 @@ cleanup() {
   rm -rf "$tmp"
 }
 trap cleanup EXIT
+trap 'status=$?; echo "SMARTCLIP_P0=BLOCKED script_error_line=${LINENO} exit_status=${status}" >&2' ERR
 container="$(docker run --detach --rm --network none -e POSTGRES_HOST_AUTH_METHOD=trust "$image")"
 [ "$(docker inspect --format '{{.HostConfig.NetworkMode}}' "$container")" = none ]
-for _ in $(seq 1 100); do
-  docker exec "$container" pg_isready -U postgres -d postgres >/dev/null 2>&1 && break
+
+# The official Postgres entrypoint briefly runs an initialization postmaster.
+# pg_isready can answer positively for that temporary backend before it stops,
+# so a single successful readiness probe can race createdb on a cold Docker node.
+# Wait for the entrypoint's final-init marker, then retry both health and createdb.
+initialized=0
+for _ in $(seq 1 150); do
+  if docker logs "$container" 2>&1 | grep -q 'PostgreSQL init process complete; ready for start up'; then
+    initialized=1
+    break
+  fi
   sleep 0.2
 done
-docker exec "$container" pg_isready -U postgres -d postgres >/dev/null
-docker exec "$container" createdb -U postgres smartclip_p0
+if [ "$initialized" -ne 1 ]; then
+  echo 'SMARTCLIP_P0=BLOCKED postgres_entrypoint_init_not_completed' >&2
+  exit 1
+fi
+
+bootstrapped=0
+for _ in $(seq 1 100); do
+  if docker exec "$container" pg_isready -U postgres -d postgres >/dev/null 2>&1 &&
+     docker exec "$container" createdb -U postgres smartclip_p0 > "$tmp/createdb.out" 2> "$tmp/createdb.err"; then
+    bootstrapped=1
+    break
+  fi
+  sleep 0.2
+done
+if [ "$bootstrapped" -ne 1 ]; then
+  echo 'SMARTCLIP_P0=BLOCKED postgres_createdb_not_ready' >&2
+  cat "$tmp/createdb.err" >&2 || true
+  exit 1
+fi
+echo 'SMARTCLIP_P0=POSTGRES_READY final_init=true isolated_db=smartclip_p0'
 pg() { docker exec -i "$container" psql -X -qAt -v ON_ERROR_STOP=1 -U postgres -d smartclip_p0 "$@"; }
 q() { docker exec "$container" psql -X -qAt -v ON_ERROR_STOP=1 -U postgres -d smartclip_p0 -c "$1"; }
 case "$(q 'SHOW server_version')" in 17.*) : ;; *) echo 'BLOCKED: version'; exit 1;; esac
