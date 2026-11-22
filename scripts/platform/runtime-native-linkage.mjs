@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { createReadStream, existsSync, openSync, readSync, closeSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { basename, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readElfNeeded } from './elf-needed.mjs';
 
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const SHA40 = /^[a-f0-9]{40}$/;
@@ -57,29 +58,30 @@ async function fileHash(path) {
   return 'sha256:' + h.digest('hex');
 }
 function scanNeeded(path) {
-  // ELF magic is checked before querying DT_NEEDED. A filename suffix alone is
-  // never evidence that the bytes are ELF or that they carry any shared symbols.
+  // Primary result from the image's own pinned scanelf. The previous real-image
+  // readback reported NOT_PROVEN for every ELF; do not silently accept this.
+  // Bounded ELF64 parsing supplies a deterministic no-execution fallback.
   const fd = openSync(path, 'r');
-  let magic;
   try {
-    magic = Buffer.alloc(4);
-    if (readSync(fd, magic, 0, 4, 0) !== 4 || !magic.equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46]))) {
+    const magic = Buffer.alloc(4);
+    if (readSync(fd, magic, 0, 4, 0) !== 4 ||
+        !magic.equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46]))) {
       return { status: 'NOT_ELF_OR_HEADER_UNREADABLE', needed: [] };
     }
   } finally { closeSync(fd); }
-  // scanelf documentation: -F '%n' requests NEEDED and is mutually exclusive
-  // with -n; -B removes the header. Never use -n -F together.
   const x = spawnSync('scanelf', ['-BF', '%n', path], {
     encoding: 'utf8', timeout: 5000, maxBuffer: 64 * 1024,
   });
-  if (x.error || x.status !== 0 || x.signal) return { status: 'NOT_PROVEN', needed: [] };
-  const raw = x.stdout.trim();
-  if (!raw || raw === '-' || raw.length > 4096 || !/^[a-zA-Z0-9_.+, -]+$/.test(raw)) {
-    return { status: 'NOT_PROVEN', needed: [] };
+  if (!x.error && x.status === 0 && !x.signal) {
+    const raw = x.stdout.trim();
+    if (raw && raw !== '-' && raw.length <= 4096 && /^[a-zA-Z0-9_.+, -]+$/.test(raw)) {
+      const needed = raw.split(/[ ,]+/).filter(Boolean);
+      if (needed.every(n => /^[a-zA-Z0-9_.+-]+$/.test(n))) {
+        return { status: 'SCANELF_DT_NEEDED', needed: [...new Set(needed)].sort() };
+      }
+    }
   }
-  const needed = raw.split(/[ ,]+/).filter(Boolean);
-  if (!needed.every(x => /^[a-zA-Z0-9_.+-]+$/.test(x))) return { status: 'NOT_PROVEN', needed: [] };
-  return { status: 'SCANELF_DT_NEEDED', needed: [...new Set(needed)].sort() };
+  return readElfNeeded(path);
 }
 
 function collectPackageFiles(root, dir, max = 350) {
