@@ -1,0 +1,283 @@
+// CAPITAL-AI SmartClip: sandbox-only, fail-closed extension of existing commerce contracts.
+// No live key can activate this handler; no success-page fulfillment or synthetic receipts.
+import { createHash, randomBytes } from 'node:crypto';
+import { boundedJson, readJson, secureUrl } from './http-security.mjs';
+import { verifyBlueprintWebhookSignature } from './blueprint-commerce.mjs';
+
+export const SMARTCLIP_SKU = 'SMARTCLIP_PERSONAL';
+export const SMARTCLIP_RELEASE = 'acode-bridge-v2';
+export const SMARTCLIP_LICENSE = 'draft-v3'; // NOT a legally approved consumer EULA.
+const SHA = /^[a-f0-9]{64}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SID = /^cs_test_[A-Za-z0-9_]{8,240}$/;
+const PID = /^pi_[A-Za-z0-9_]{8,240}$/;
+const CHARGE = /^ch_[A-Za-z0-9_]{8,240}$/;
+const PRICE = /^price_[A-Za-z0-9_]{6,240}$/;
+const PRODUCT = /^prod_[A-Za-z0-9_]{6,240}$/;
+const REQ_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const IS_TEST_KEY = /^(rk|sk)_test_[A-Za-z0-9_]{10,}$/;
+const FORM_PRICE_CENTS = 249;
+
+async function rawBody(req, limit = 65536) {
+  const parts = []; let total = 0;
+  for await (const chunk of req) {
+    total += chunk.length;
+    if (total > limit) throw Error('body_size');
+    parts.push(chunk);
+  }
+  return Buffer.concat(parts);
+}
+
+function dbConfig(env) {
+  try {
+    const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
+    const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
+    if (url.href !== url.origin + '/' || key.length < 32) return null;
+    return { origin: url.origin, key };
+  } catch { return null; }
+}
+
+function safeStripeUrl(value) {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'https:' && u.hostname === 'checkout.stripe.com' &&
+      u.port === '' && !u.username && !u.password;
+  } catch { return false; }
+}
+
+const stripeObjectId = (v) => typeof v === 'string' ? v : v?.id;
+function letters() {
+  return [...randomBytes(8)].map(n => String.fromCharCode(97 + (n % 26))).join('');
+}
+
+export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = fetch, auth } = {}) {
+  const key = String(env.STRIPE_SMARTCLIP_TEST_KEY || '');
+  const hook = String(env.STRIPE_SMARTCLIP_TEST_WEBHOOK_SECRET || '');
+  const priceId = String(env.STRIPE_SMARTCLIP_TEST_PRICE_ID || '');
+  const productId = String(env.STRIPE_SMARTCLIP_TEST_PRODUCT_ID || '');
+  const digest = String(env.SMARTCLIP_SANDBOX_RELEASE_SHA256 || '');
+  const taxCode = String(env.SMARTCLIP_SANDBOX_TAX_CODE || '');
+  const db = dbConfig(env);
+  const configured = env.SMARTCLIP_SANDBOX_ENABLED === 'true' && IS_TEST_KEY.test(key) &&
+    hook.length >= 16 && PRICE.test(priceId) && PRODUCT.test(productId) &&
+    SHA.test(digest) && /^txcd_[0-9]{8}$/.test(taxCode) && taxCode !== 'txcd_10000000' &&
+    env.SMARTCLIP_SANDBOX_TAX_ATTESTED === 'true' && Boolean(db && auth);
+  const base = String(env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
+
+  async function stripe(path, body, idem) {
+    const reply = await fetchImpl('https://api.stripe.com/v1' + path, {
+      method: body ? 'POST' : 'GET',
+      headers: {
+        Authorization: 'Bearer ' + key,
+        'Stripe-Version': '2026-11-18.endive',
+        ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+        ...(idem ? { 'Idempotency-Key': idem } : {}),
+      },
+      ...(body ? { body } : {}),
+      redirect: 'error', signal: AbortSignal.timeout(7000),
+    });
+    if (!reply.ok) throw Error('stripe_unavailable');
+    return boundedJson(reply, 65536);
+  }
+
+  async function rpc(action, params = {}) {
+    if (!db) throw Error('store_unavailable');
+    const headers = { apikey: db.key, 'Content-Type': 'application/json' };
+    if (db.key.startsWith('eyJ')) headers.Authorization = 'Bearer ' + db.key;
+    const reply = await fetchImpl(db.origin + '/rest/v1/rpc/capital_ai_smartclip_sandbox', {
+      method: 'POST', headers, body: JSON.stringify({ _action: action, ...params }),
+      redirect: 'error', signal: AbortSignal.timeout(7000),
+    });
+    if (!reply.ok) throw Error('store_unavailable');
+    return boundedJson(reply, 4096);
+  }
+
+  async function paymentReady() {
+    const [tax, registrations, price, product] = await Promise.all([
+      stripe('/tax/settings'),
+      stripe('/tax/registrations?limit=100'),
+      stripe('/prices/' + encodeURIComponent(priceId)),
+      stripe('/products/' + encodeURIComponent(productId)),
+    ]);
+    // Provider-readback proof, not merely an enabled boolean or a nonzero tax amount.
+    const collectingDE = registrations.has_more === false &&
+      Array.isArray(registrations.data) &&
+      registrations.data.some(x => x.country === 'DE' && x.status === 'active');
+    return tax.status === 'active' && collectingDE && price.active === true &&
+      product.active === true && stripeObjectId(price.product) === productId &&
+      stripeObjectId(product.default_price) === priceId &&
+      price.type === 'one_time' && !price.recurring && price.currency === 'eur' &&
+      price.unit_amount === FORM_PRICE_CENTS && price.tax_behavior === 'inclusive' &&
+      product.tax_code === taxCode &&
+      product.metadata?.sku === SMARTCLIP_SKU &&
+      product.metadata?.release_sha256 === digest &&
+      product.metadata?.license_version === SMARTCLIP_LICENSE;
+  }
+
+  async function authenticated(req, res, json) {
+    const user = await auth?.verify?.(req, res);
+    if (!user?.userId || !UUID.test(user.userId) || user.emailVerified !== true ||
+      typeof user.email !== 'string' || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(user.email) ||
+      user.email.length > 254) {
+      json(res, 401, { error: 'authentication_required' }); return null;
+    }
+    return user;
+  }
+
+  async function grantFromProvider(sessionId) {
+    if (!SID.test(sessionId)) return false;
+    const session = await stripe('/checkout/sessions/' + encodeURIComponent(sessionId));
+    const meta = session.metadata || {};
+    if (session.id !== sessionId || session.livemode !== false ||
+      session.status !== 'complete' || session.mode !== 'payment' ||
+      session.payment_status !== 'paid' || session.currency !== 'eur' ||
+      session.amount_subtotal !== FORM_PRICE_CENTS ||
+      session.amount_total !== FORM_PRICE_CENTS || !UUID.test(session.client_reference_id || '') ||
+      meta.channel !== 'homepage_sandbox' || meta.sku !== SMARTCLIP_SKU ||
+      meta.release_sha256 !== digest || meta.release_id !== SMARTCLIP_RELEASE ||
+      meta.license_version !== SMARTCLIP_LICENSE ||
+      meta.user_id !== session.client_reference_id ||
+      meta.license_accepted !== 'true' || meta.immediate_delivery_consent !== 'true' ||
+      meta.withdrawal_loss_acknowledged !== 'true' ||
+      session.automatic_tax?.enabled !== true || session.automatic_tax?.status !== 'complete' ||
+      !PID.test(session.payment_intent || '')) return false;
+    const [lines, intent] = await Promise.all([
+      stripe('/checkout/sessions/' + encodeURIComponent(sessionId) + '/line_items?limit=2'),
+      stripe('/payment_intents/' + encodeURIComponent(session.payment_intent)),
+    ]);
+    const line = lines.data?.[0];
+    if (lines.has_more !== false || lines.data?.length !== 1 ||
+      line?.quantity !== 1 || line?.amount_subtotal !== FORM_PRICE_CENTS ||
+      line.price?.id !== priceId || stripeObjectId(line.price?.product) !== productId ||
+      line.price?.currency !== 'eur' || line.price?.unit_amount !== FORM_PRICE_CENTS ||
+      line.price?.tax_behavior !== 'inclusive' || line.price?.recurring ||
+      intent.id !== session.payment_intent || intent.livemode !== false ||
+      intent.status !== 'succeeded' || intent.currency !== 'eur' ||
+      intent.amount_received !== FORM_PRICE_CENTS || !CHARGE.test(intent.latest_charge || '') ||
+      intent.metadata?.channel !== 'homepage_sandbox' ||
+      intent.metadata?.sku !== SMARTCLIP_SKU || intent.metadata?.user_id !== meta.user_id ||
+      intent.metadata?.release_sha256 !== digest) return false;
+    const charge = await stripe('/charges/' + encodeURIComponent(intent.latest_charge));
+    if (charge.id !== intent.latest_charge || charge.payment_intent !== intent.id ||
+      charge.livemode !== false || charge.paid !== true || charge.refunded !== false ||
+      charge.disputed !== false || charge.amount_refunded !== 0 ||
+      charge.amount !== FORM_PRICE_CENTS) return false;
+    const result = await rpc('grant', { _user_id: session.client_reference_id,
+      _session_id: session.id, _payment_intent_id: intent.id, _release_sha256: digest });
+    return result?.granted === true;
+  }
+
+  async function revokeFromProvider(chargeId) {
+    if (!CHARGE.test(chargeId)) return false;
+    const charge = await stripe('/charges/' + encodeURIComponent(chargeId));
+    if (charge.id !== chargeId || charge.livemode !== false ||
+      !PID.test(charge.payment_intent || '')) return false;
+    const intent = await stripe('/payment_intents/' + encodeURIComponent(charge.payment_intent));
+    if (intent.id !== charge.payment_intent || intent.livemode !== false ||
+      intent.metadata?.channel !== 'homepage_sandbox' ||
+      intent.metadata?.sku !== SMARTCLIP_SKU ||
+      intent.metadata?.release_sha256 !== digest ||
+      !UUID.test(intent.metadata?.user_id || '')) return false;
+    if (!(charge.disputed === true ||
+      (Number.isInteger(charge.amount) && charge.amount > 0 &&
+       Number.isInteger(charge.amount_refunded) && charge.amount_refunded >= charge.amount))) return false;
+    const result = await rpc('revoke', { _payment_intent_id: intent.id,
+      _release_sha256: digest, _reason: charge.disputed === true ? 'disputed' : 'refunded' });
+    return result?.revoked === true;
+  }
+
+  return { async handle(req, res, url, json) {
+    if (!url.pathname.startsWith('/api/billing/smartclip-sandbox/')) return false;
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    if (!configured) { json(res, 503, { error: 'smartclip_sandbox_unavailable' }); return true; }
+    const action = url.pathname.slice('/api/billing/smartclip-sandbox/'.length);
+    if (url.search) { json(res, 400, { error: 'invalid_request' }); return true; }
+    if (action === 'webhook' && req.method === 'POST') {
+      let event;
+      try {
+        const raw = await rawBody(req);
+        if (!verifyBlueprintWebhookSignature(raw, req.headers['stripe-signature'], hook)) {
+          json(res, 400, { error: 'invalid_webhook_signature' }); return true;
+        }
+        event = JSON.parse(raw.toString('utf8'));
+        if (event.livemode !== false || typeof event.type !== 'string' || typeof event.id !== 'string') {
+          json(res, 400, { error: 'invalid_event' }); return true;
+        }
+      } catch { json(res, 400, { error: 'invalid_event' }); return true; }
+      try {
+        if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) {
+          const id = event.data?.object?.id;
+          if (!SID.test(id || '')) { json(res, 200, { received: true, ignored: true }); return true; }
+          const granted = await grantFromProvider(id);
+          // Unpaid, invalid or refunded events are ignored. Stripe can resend later success events.
+          json(res, 200, { received: true, granted }); return true;
+        }
+        if (['charge.refunded', 'charge.dispute.created'].includes(event.type)) {
+          const charge = event.type === 'charge.refunded' ? event.data?.object?.id : event.data?.object?.charge;
+          if (!CHARGE.test(charge || '')) { json(res, 200, { received: true, ignored: true }); return true; }
+          const revoked = await revokeFromProvider(charge);
+          json(res, 200, { received: true, revoked }); return true;
+        }
+        json(res, 200, { received: true, ignored: true }); return true;
+      } catch {
+        json(res, 503, { error: 'fulfillment_unavailable' }); return true;
+      }
+    }
+    if (!['checkout', 'access'].includes(action)) {
+      json(res, 404, { error: 'not_found' }); return true;
+    }
+    if (req.method !== (action === 'checkout' ? 'POST' : 'GET')) {
+      res.setHeader('Allow', action === 'checkout' ? 'POST' : 'GET');
+      json(res, 405, { error: 'method_not_allowed' }); return true;
+    }
+    if (!auth?.sameOrigin?.(req)) { json(res, 403, { error: 'forbidden_origin' }); return true; }
+    const user = await authenticated(req, res, json);
+    if (!user) return true;
+    if (action === 'access') {
+      try {
+        const state = await rpc('access', { _user_id: user.userId });
+        json(res, 200, { entitled: state?.entitled === true, releaseSha256: state?.entitled === true ? digest : null });
+      } catch { json(res, 503, { error: 'license_unavailable' }); }
+      return true;
+    }
+    let body;
+    try { body = await readJson(req, 1024); } catch { json(res, 400, { error: 'invalid_request' }); return true; }
+    if (!body || Object.keys(body).sort().join(',') !==
+      'immediateDeliveryConsent,licenseAccepted,requestId,sku,withdrawalLossAcknowledged' ||
+      body.sku !== SMARTCLIP_SKU || !REQ_ID.test(body.requestId || '') ||
+      body.licenseAccepted !== true || body.immediateDeliveryConsent !== true ||
+      body.withdrawalLossAcknowledged !== true) {
+      json(res, 400, { error: 'invalid_checkout' }); return true;
+    }
+    try {
+      if (!(await paymentReady())) { json(res, 503, { error: 'checkout_not_ready' }); return true; }
+      const requestKey = createHash('sha256').update('smartclip-sandbox:' + user.userId +
+        ':' + digest + ':' + body.requestId).digest('hex');
+      const form = new URLSearchParams({
+        mode: 'payment', 'line_items[0][price]': priceId, 'line_items[0][quantity]': '1',
+        'automatic_tax[enabled]': 'true', billing_address_collection: 'required',
+        client_reference_id: user.userId, customer_email: user.email,
+        success_url: base + '/profile?smartclip=test-complete',
+        cancel_url: base + '/profile?smartclip=test-cancelled',
+        integration_identifier: 'capitalaisc' + letters(),
+        'metadata[channel]': 'homepage_sandbox', 'metadata[sku]': SMARTCLIP_SKU,
+        'metadata[user_id]': user.userId, 'metadata[release_id]': SMARTCLIP_RELEASE,
+        'metadata[release_sha256]': digest, 'metadata[license_version]': SMARTCLIP_LICENSE,
+        'metadata[license_accepted]': 'true',
+        'metadata[immediate_delivery_consent]': 'true',
+        'metadata[withdrawal_loss_acknowledged]': 'true',
+        'payment_intent_data[metadata][channel]': 'homepage_sandbox',
+        'payment_intent_data[metadata][sku]': SMARTCLIP_SKU,
+        'payment_intent_data[metadata][user_id]': user.userId,
+        'payment_intent_data[metadata][release_sha256]': digest,
+      });
+      const s = await stripe('/checkout/sessions', form.toString(), requestKey);
+      if (!SID.test(s.id || '') || s.livemode !== false || s.mode !== 'payment' || !safeStripeUrl(s.url)) {
+        throw Error('invalid_checkout_response');
+      }
+      json(res, 200, { checkoutUrl: s.url, testOnly: true });
+    } catch { json(res, 503, { error: 'checkout_not_ready' }); }
+    return true;
+  } };
+}
