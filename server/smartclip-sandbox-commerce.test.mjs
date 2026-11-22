@@ -120,6 +120,7 @@ test('default disabled, live keys and unknown digests fail closed', async()=>{
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10000000'}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_DB_URL:env.SUPABASE_URL}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_DB_SERVICE_KEY:''}})).statusCode,503);
+  assert.equal((await call('checkout','POST',body,{cfg:{...env,SUPABASE_URL:undefined,VITE_SUPABASE_URL:undefined}})).statusCode,503);
 });
 test('checkout denies missing authentication, origin, acknowledgments, and arbitrary extras', async()=>{
   assert.equal((await call('checkout','POST',body,{user:null})).statusCode,401);
