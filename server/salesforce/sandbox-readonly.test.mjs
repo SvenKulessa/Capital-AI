@@ -157,3 +157,14 @@ test('no synthetic approval: forged readback and tampered asset hashes are block
     corrupted,readback,
   ), /DIGEST_MISMATCH/);
 });
+
+test('rejects multibyte UTF-8 Salesforce payloads exceeding byte limit', async () => {
+  const payload = JSON.stringify({ records: ['€'.repeat(700_000)] });
+  assert.ok(payload.length < 2_000_000);
+  assert.ok(Buffer.byteLength(payload, 'utf8') > 2_000_000);
+  const client = new SalesforceSandboxReadonlyClient({
+    ...credentials,
+    fetchImpl: async () => ({ status: 200, ok: true, text: async () => payload }),
+  });
+  await assert.rejects(() => client.readProduct(product), /READBACK_TOO_LARGE/);
+});
