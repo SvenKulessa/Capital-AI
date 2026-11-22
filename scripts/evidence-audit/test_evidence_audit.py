@@ -34,6 +34,12 @@ class AuditTests(unittest.TestCase):
     def test_invalid_repo(self):
         s=sample();s["repository"]="../../etc/passwd"
         with self.assertRaises(ValueError):build_report(s)
+    def test_repository_dot_segments_rejected(self):
+        for repository in ("../Capital-AI", "./Capital-AI", "SvenKulessa/..", "SvenKulessa/."):
+            with self.subTest(repository=repository):
+                s = sample(); s["repository"] = repository
+                with self.assertRaises(ValueError):
+                    build_report(s)
     def test_invalid_sha(self):
         s=sample();s["head_sha"]="invalid"
         with self.assertRaises(ValueError):build_report(s)
