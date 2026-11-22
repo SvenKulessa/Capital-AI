@@ -48,7 +48,11 @@ function candleSeries(rows, now) {
     if (!Number.isSafeInteger(time) || time % HOUR || low > Math.min(open, close)
       || high < Math.max(open, close)) throw Error('MARKET_CANDLE_INVALID');
   }
-  const series = rows.filter(([time]) => time <= now).sort(([a], [b]) => a - b).slice(-25);
+  // Conservatively treat each hourly timestamp as an interval start: the current
+  // hour is still forming. Provider timestamp semantics require separate evidence.
+  const lastClosedStart = Math.floor(now / HOUR) * HOUR - HOUR;
+  const series = rows.filter(([time]) => time <= lastClosedStart)
+    .sort(([a], [b]) => a - b).slice(-25);
   if (series.length !== 25 || now - series.at(-1)[0] > 2 * HOUR
     || series.slice(1).some(([time], i) => time - series[i][0] !== HOUR)) throw Error('MARKET_CANDLES_STALE_OR_GAPPED');
   return series;
