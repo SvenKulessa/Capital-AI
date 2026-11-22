@@ -6,12 +6,15 @@ The verified source digest is included in trusted checkpoint identity.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import stat
+
+from offline_scope import scoped_thread_id
 
 DOMAINS = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
 REPOSITORY = "SvenKulessa/Capital-AI"
@@ -171,3 +174,71 @@ def load_domain_profiles(repo_root: Path) -> dict:
         digest.update(hashlib.sha256(raw[path]).digest())
     return {"bundle_sha256": digest.hexdigest(), "domains": selected,
             "permission_expansion": False, "provider_access": False}
+
+
+
+@dataclass(frozen=True)
+class BoundDomainTask:
+    """Immutable source-bound identity; metadata only, never authority."""
+
+    thread_id: str
+    domain: str
+    query: str
+    bundle_sha256: str
+    profile_sha256: str
+    skills: tuple[str, str]
+
+    def initial_state(self) -> dict:
+        return {
+            "task_id": self.thread_id,
+            "domain": self.domain,
+            "query": self.query,
+            "bundle_sha256": self.bundle_sha256,
+            "profile_sha256": self.profile_sha256,
+            "profile_skills": list(self.skills),
+            "attempts": 0,
+            "history": [],
+        }
+
+    def matches_state(self, state: object) -> bool:
+        return (
+            isinstance(state, dict)
+            and state.get("task_id") == self.thread_id
+            and state.get("domain") == self.domain
+            and state.get("query") == self.query
+            and state.get("bundle_sha256") == self.bundle_sha256
+            and state.get("profile_sha256") == self.profile_sha256
+            and state.get("profile_skills") == list(self.skills)
+        )
+
+
+def bind_domain_task(repo_root: Path, *, tenant: str, repository: str,
+                     task: object) -> BoundDomainTask:
+    """Share the exact offline task/profile/checkpoint identity with both graphs.
+
+    The trusted host supplies tenant/repository, never task JSON, prompts or
+    retrieved content. This contract does NOT admit customer tenants or ONLINE
+    execution and never returns credentials, callbacks or permissions.
+    """
+    if repository != REPOSITORY:
+        raise ValueError("cross-repository domain task forbidden")
+    if (type(task) is not dict or set(task) != {"schema", "task_id", "domain", "query"}
+            or task.get("schema") != "CAPITAL_AI_OFFLINE_RESEARCH@1"
+            or type(task.get("task_id")) is not str
+            or re.fullmatch(r"[A-Za-z0-9._:-]{1,96}", task["task_id"], re.ASCII) is None
+            or type(task.get("domain")) is not str or task["domain"] not in DOMAINS
+            or type(task.get("query")) is not str
+            or not 1 <= len(task["query"]) <= 300):
+        raise ValueError("invalid offline domain task contract")
+    bundle = load_domain_profiles(repo_root)
+    metadata = bundle["domains"][task["domain"]]
+    thread_id = scoped_thread_id(
+        tenant=tenant, repository=repository, task_id=task["task_id"],
+        payload={**task, "bundle_sha256": bundle["bundle_sha256"]},
+    )
+    return BoundDomainTask(
+        thread_id=thread_id, domain=task["domain"], query=task["query"],
+        bundle_sha256=bundle["bundle_sha256"],
+        profile_sha256=metadata["profile_sha256"],
+        skills=tuple(metadata["skills"]),
+    )
