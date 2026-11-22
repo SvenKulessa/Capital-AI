@@ -64,6 +64,7 @@ jobs:
             scripts/verify-main-ruleset-origin.test.mjs \
             scripts/registry-cve-gate.test.mjs \
             scripts/assert-ghcr-publication-rights.test.mjs \
+            scripts/platform/ghcr-render-cutover-plan.test.mjs \
             scripts/production-handoff.test.mjs \
             scripts/write-runtime-identity.test.mjs \
             scripts/post-merge-followup.test.mjs \
