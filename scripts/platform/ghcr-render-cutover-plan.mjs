@@ -52,8 +52,8 @@ export function evaluateGhcrRenderCutoverPlan({
   const gates = [
     item('CURRENT_MAIN_SHA', sourceSame ? 'VERIFIED' : 'BLOCKED',
       sourceSame ? 'Exact supplied Main SHA matches the expected commit' : 'Missing, stale or mismatched Main SHA'),
-    item('REDISTRIBUTION_RIGHTS', rights.blockers.length ? 'BLOCKED' : 'VERIFIED',
-      rights.blockers.length ? rights.blockers.join(',') : 'Existing rights guard contract matched; legal source still must be independently reviewed'),
+    item('REDISTRIBUTION_RIGHTS', rights.blockers.length ? 'BLOCKED' : 'NOT_PROVEN',
+      rights.blockers.length ? rights.blockers.join(',') : 'Existing rights guard structurally matches, but an offline input cannot independently authenticate a legal approval'),
     item('RENDER_GIT_SOURCE_BASELINE', gitService ? 'VERIFIED' : 'BLOCKED',
       gitService ? 'Existing Git-backed service scope and owner match' : 'Unknown or unexpected service, owner, source, or platform'),
     item('RENDER_LIVE_COMMIT_BASELINE', exactDeploy ? 'VERIFIED' : 'BLOCKED',
@@ -78,6 +78,7 @@ export function evaluateGhcrRenderCutoverPlan({
     schema: 'CAPITAL_AI_GHCR_RENDER_CUTOVER_PLAN@1',
     project: 'CAPITAL-AI',
     mode: 'OFFLINE_READ_ONLY',
+    evidenceAuthority: 'SUPPLIED_SNAPSHOT_CONSISTENCY_ONLY',
     sourceSha: sourceValid ? expectedMainSha : null,
     currentMainSha: currentValid ? currentMainSha : null,
     serviceId: serviceIdValid ? expectedServiceId : null,
