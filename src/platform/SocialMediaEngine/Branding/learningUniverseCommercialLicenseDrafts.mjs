@@ -50,7 +50,7 @@ export function calculateLearningUniverseInternalPromotion(offerKey, localDate) 
   if (offerKey !== 'PUBLISHER' && offerKey !== 'STUDIO') {
     throw new Error('LEARNING_PROMO_UNSUPPORTED_OFFER');
   }
-  if (typeof localDate !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(localDate) ||
+  if (typeof localDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(localDate) ||
       Number.isNaN(Date.parse(localDate + 'T00:00:00Z')) ||
       new Date(localDate + 'T00:00:00Z').toISOString().slice(0, 10) !== localDate) {
     throw new Error('LEARNING_PROMO_INVALID_LOCAL_DATE');
