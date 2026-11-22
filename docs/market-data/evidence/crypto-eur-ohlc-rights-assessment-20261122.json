@@ -1,0 +1,245 @@
+{
+  "schemaVersion": "CAPITAL_AI_MARKET_CRYPTO_EUR_OHLC_RIGHTS_RESEARCH@1",
+  "kind": "PUBLIC_TERMS_RESEARCH_NOT_PROVIDER_ADMISSION",
+  "reviewedDate": "2026-11-22",
+  "scope": {
+    "repository": "SvenKulessa/Capital-AI",
+    "pr": 714,
+    "assets": [
+      "XRP",
+      "SOL",
+      "POL"
+    ],
+    "quoteCurrency": "EUR",
+    "priceType": "OHLC",
+    "intervalSeconds": 3600,
+    "requiredConsecutiveCompletedCandlesPerAsset": 25,
+    "maxLatestCandleAgeSeconds": 7200,
+    "requiredCapabilities": [
+      "commercialDerivedScoring",
+      "externalDisplay",
+      "cacheRetention",
+      "historicalReplay"
+    ],
+    "redistributionOrResale": "must be expressly licensed if offered"
+  },
+  "evidenceBoundary": {
+    "ownerAccountOrContractReadback": "NOT_PROVEN",
+    "contractBytesAvailable": false,
+    "sourceTermsBytesDigest": "NOT_PROVEN",
+    "liveMarketDataFetched": false,
+    "realCandlesValidated": false,
+    "githubReleasesEditorialRights": "NOT_PROVEN",
+    "ollamaInferenceCommercialUseScope": "NOT_PROVEN",
+    "providerActivated": false,
+    "publicationAuthorized": false,
+    "providerEvidenceMayNotBePromotedFromPublicTerms": true
+  },
+  "perAsset": [
+    {
+      "asset": "XRP",
+      "candles": "NOT_PROVEN",
+      "freshness": "NOT_PROVEN"
+    },
+    {
+      "asset": "SOL",
+      "candles": "NOT_PROVEN",
+      "freshness": "NOT_PROVEN"
+    },
+    {
+      "asset": "POL",
+      "candles": "NOT_PROVEN",
+      "freshness": "NOT_PROVEN"
+    }
+  ],
+  "providers": [
+    {
+      "providerId": "binance-vision",
+      "providerName": "Binance",
+      "sourceTermsUrls": [
+        "https://github.com/binance/binance-public-data/blob/master/TERMS_AND_CONDITIONS.md"
+      ],
+      "publicTermsFinding": "Default public-archive terms restrict use to noncommercial purposes, including derivative indicators.",
+      "licenseHolder": null,
+      "contractCounterparty": null,
+      "subscriptionPlan": null,
+      "feedDatasetVenueScope": null,
+      "accountSpecificContractReference": null,
+      "termsBytesSha256": null,
+      "permissions": {
+        "commercialDerivedScoring": "BLOCKED",
+        "externalDisplay": "BLOCKED",
+        "cacheRetention": "NOT_PROVEN",
+        "historicalReplay": "NOT_PROVEN",
+        "thirdPartyRedistributionOrResale": "BLOCKED"
+      },
+      "rightsAdmission": "BLOCKED",
+      "runtimeAdmission": "BLOCKED",
+      "productionUseEligible": false,
+      "sourceCandlesVerified": false
+    },
+    {
+      "providerId": "coinbase",
+      "providerName": "Coinbase",
+      "sourceTermsUrls": [
+        "https://www.coinbase.com/legal/market_data"
+      ],
+      "publicTermsFinding": "Market Data Terms 2026-08-07 restrict external end-user applications and dissemination of derived works without prior express written consent; AI/ML model use is restricted.",
+      "licenseHolder": null,
+      "contractCounterparty": null,
+      "subscriptionPlan": null,
+      "feedDatasetVenueScope": null,
+      "accountSpecificContractReference": null,
+      "termsBytesSha256": null,
+      "permissions": {
+        "commercialDerivedScoring": "BLOCKED",
+        "externalDisplay": "BLOCKED",
+        "cacheRetention": "NOT_PROVEN",
+        "historicalReplay": "NOT_PROVEN",
+        "thirdPartyRedistributionOrResale": "BLOCKED"
+      },
+      "rightsAdmission": "BLOCKED",
+      "runtimeAdmission": "BLOCKED",
+      "productionUseEligible": false,
+      "sourceCandlesVerified": false
+    },
+    {
+      "providerId": "kraken",
+      "providerName": "Kraken / applicable Payward entity not evidenced",
+      "sourceTermsUrls": [
+        "https://support.kraken.com/articles/360047124832-downloadable-historical-ohlcvt-open-high-low-close-volume-trades-data"
+      ],
+      "publicTermsFinding": "Public quarterly OHLCVT archive cannot establish the <=2h live freshness requirement; REST commercial rights and dataset scope unverified.",
+      "licenseHolder": null,
+      "contractCounterparty": null,
+      "subscriptionPlan": null,
+      "feedDatasetVenueScope": null,
+      "accountSpecificContractReference": null,
+      "termsBytesSha256": null,
+      "permissions": {
+        "commercialDerivedScoring": "NOT_PROVEN",
+        "externalDisplay": "NOT_PROVEN",
+        "cacheRetention": "NOT_PROVEN",
+        "historicalReplay": "NOT_PROVEN",
+        "thirdPartyRedistributionOrResale": "NOT_PROVEN"
+      },
+      "rightsAdmission": "BLOCKED",
+      "runtimeAdmission": "BLOCKED",
+      "productionUseEligible": false,
+      "sourceCandlesVerified": false
+    },
+    {
+      "providerId": "coinmetrics-community",
+      "providerName": "Coin Metrics",
+      "sourceTermsUrls": [
+        "https://github.com/coinmetrics/data/blob/master/LICENSE",
+        "https://github.com/coinmetrics/data/blob/master/README.md"
+      ],
+      "publicTermsFinding": "Community archive is CC BY-NC 4.0; paid commercial dataset use requires its own applicable agreement.",
+      "licenseHolder": null,
+      "contractCounterparty": null,
+      "subscriptionPlan": null,
+      "feedDatasetVenueScope": null,
+      "accountSpecificContractReference": null,
+      "termsBytesSha256": null,
+      "permissions": {
+        "commercialDerivedScoring": "BLOCKED",
+        "externalDisplay": "BLOCKED",
+        "cacheRetention": "NOT_PROVEN",
+        "historicalReplay": "NOT_PROVEN",
+        "thirdPartyRedistributionOrResale": "BLOCKED"
+      },
+      "rightsAdmission": "BLOCKED",
+      "runtimeAdmission": "BLOCKED",
+      "productionUseEligible": false,
+      "sourceCandlesVerified": false
+    },
+    {
+      "providerId": "coingecko",
+      "providerName": "CoinGecko",
+      "sourceTermsUrls": [
+        "https://support.coingecko.com/articles/1043089972-what-are-the-differences-between-commercial-and-custom-licenses"
+      ],
+      "publicTermsFinding": "Paid-plan commercial analytics/display may be permitted with attribution; raw redistribution and resale need custom rights. No account-specific plan, scope or retention/replay grant evidenced; legacy source blocked in MARKET policy.",
+      "licenseHolder": null,
+      "contractCounterparty": null,
+      "subscriptionPlan": null,
+      "feedDatasetVenueScope": null,
+      "accountSpecificContractReference": null,
+      "termsBytesSha256": null,
+      "permissions": {
+        "commercialDerivedScoring": "NOT_PROVEN",
+        "externalDisplay": "NOT_PROVEN",
+        "cacheRetention": "NOT_PROVEN",
+        "historicalReplay": "NOT_PROVEN",
+        "thirdPartyRedistributionOrResale": "BLOCKED"
+      },
+      "rightsAdmission": "BLOCKED",
+      "runtimeAdmission": "BLOCKED",
+      "productionUseEligible": false,
+      "sourceCandlesVerified": false
+    },
+    {
+      "providerId": "twelvedata",
+      "providerName": "Twelve Data",
+      "sourceTermsUrls": [
+        "https://twelvedata.com/terms",
+        "https://support.twelvedata.com/en/articles/5332349-commercial-and-personal-usage"
+      ],
+      "publicTermsFinding": "Derived data/external displays depend on subscribed tier, feed and third-party terms; cache duration restricted; redistribution separately authorized.",
+      "licenseHolder": null,
+      "contractCounterparty": null,
+      "subscriptionPlan": null,
+      "feedDatasetVenueScope": null,
+      "accountSpecificContractReference": null,
+      "termsBytesSha256": null,
+      "permissions": {
+        "commercialDerivedScoring": "NOT_PROVEN",
+        "externalDisplay": "NOT_PROVEN",
+        "cacheRetention": "NOT_PROVEN",
+        "historicalReplay": "NOT_PROVEN",
+        "thirdPartyRedistributionOrResale": "BLOCKED"
+      },
+      "rightsAdmission": "BLOCKED",
+      "runtimeAdmission": "BLOCKED",
+      "productionUseEligible": false,
+      "sourceCandlesVerified": false
+    },
+    {
+      "providerId": "massive",
+      "providerName": "Massive (formerly Polygon.io)",
+      "sourceTermsUrls": [
+        "https://massive.com/legal/market-data-terms-of-service",
+        "https://massive.com/knowledge-base/article/how-can-i-redistribute-massives-market-data"
+      ],
+      "publicTermsFinding": "Data and derived work sharing constrained by applicable business licenses; no subscribed crypto EUR feed or scoped agreement evidenced.",
+      "licenseHolder": null,
+      "contractCounterparty": null,
+      "subscriptionPlan": null,
+      "feedDatasetVenueScope": null,
+      "accountSpecificContractReference": null,
+      "termsBytesSha256": null,
+      "permissions": {
+        "commercialDerivedScoring": "NOT_PROVEN",
+        "externalDisplay": "NOT_PROVEN",
+        "cacheRetention": "NOT_PROVEN",
+        "historicalReplay": "NOT_PROVEN",
+        "thirdPartyRedistributionOrResale": "NOT_PROVEN"
+      },
+      "rightsAdmission": "BLOCKED",
+      "runtimeAdmission": "BLOCKED",
+      "productionUseEligible": false,
+      "sourceCandlesVerified": false
+    }
+  ],
+  "missingToAdmit": [
+    "Exact contracting entity, signed plan/order/license and jurisdiction",
+    "Instrument identifiers, real XRP/EUR, SOL/EUR and POL/EUR venue and data feed coverage",
+    "Commercial derived scoring/paid subscription and website/app report display permission",
+    "Raw and derived data retention, backup, immutable replay, post-contract deletion terms",
+    "Reseller/agency/sublicense/pass-through and third-party redistribution, where needed",
+    "Real permitted 25 completed consecutive 1h EUR OHLC candles per asset; newest <=2h; provider bar timestamp semantics attested",
+    "Offline safety regression and independent editorial rights for release excerpts and inference",
+    "Explicit authenticated runtime admission and approved budget, no credentials in evidence"
+  ]
+}
