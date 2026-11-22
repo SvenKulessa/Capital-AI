@@ -44,17 +44,20 @@ function makeFixture(options = {}) {
   const session = { id:sid, mode:'payment', livemode:false, status:'complete',
     payment_status:'paid', currency:'eur', amount_subtotal:249, amount_total:249,
     payment_intent:pid, client_reference_id:userId,
-    automatic_tax:{enabled:true,status:'complete'}, metadata:{...metadata}, ...(opt.session||{}) };
+    automatic_tax:{enabled:true,status:'complete'}, invoice_creation:{enabled:true},
+    metadata:{...metadata}, ...(opt.session||{}) };
   const intent = { id:pid, status:'succeeded', livemode:false, currency:'eur',
     amount_received:249, latest_charge:chargeId, metadata:{...metadata}, ...(opt.intent||{}) };
   const charge = { id:chargeId, payment_intent:pid, livemode:false, paid:true,
-    refunded:false, disputed:false, amount_refunded:0, amount:249, ...(opt.charge||{}) };
-  const price = { id:priceId, active:true, product:productId, currency:'eur',
+    status:'succeeded', currency:'eur', refunded:false, disputed:false,
+    amount_refunded:0, amount:249, ...(opt.charge||{}) };
+  const price = { id:priceId, livemode:false, active:true, product:productId, currency:'eur',
     unit_amount:249, type:'one_time', tax_behavior:'inclusive', recurring:null, ...(opt.price||{}) };
-  const product = { id:productId, active:true, default_price:priceId,
+  const product = { id:productId, livemode:false, active:true, default_price:priceId,
     tax_code:env.SMARTCLIP_SANDBOX_TAX_CODE, metadata:{ sku:SMARTCLIP_SKU,
     release_sha256:SMARTCLIP_PINNED_SHA256,license_version:'draft-v3' }, ...(opt.product||{}) };
-  const lines = { has_more:false, data:[{quantity:1,amount_subtotal:249,price}], ...(opt.lines||{}) };
+  const lines = { has_more:false, data:[{quantity:1,amount_subtotal:249,
+    price:{...price,...(opt.linePrice||{})}}], ...(opt.lines||{}) };
   async function fetchImpl(endpoint, init = {}) {
     const url = String(endpoint);
     calls.push({ url, body:init.body, headers:init.headers, method:init.method || 'GET' });
@@ -74,12 +77,13 @@ function makeFixture(options = {}) {
       if (data._action === 'access') return reply({entitled: [...ledger.values()].some(x=>x.userId===data._user_id && x.status==='paid')});
       return reply({},400);
     }
-    if (url.endsWith('/tax/settings')) return reply({status:'active'});
-    if (url.includes('/tax/registrations?')) return reply({has_more:false,data: opt.registered ? [{country:'DE',status:'active'}] : []});
+    if (url.endsWith('/tax/settings')) return reply({status:'active',livemode:false,...(opt.taxSettings||{})});
+    if (url.includes('/tax/registrations?')) return reply(opt.registrations || {has_more:false,data: opt.registered ? [{country:'DE',status:'active',livemode:false}] : []});
     if (url.endsWith('/prices/' + priceId)) return reply(price);
     if (url.endsWith('/products/' + productId)) return reply(product);
     if (url.endsWith('/checkout/sessions') && init.method==='POST') {
-      return reply({id:sid,mode:'payment',livemode:false,url:'https://checkout.stripe.com/c/pay/test_smartclip'});
+      return reply({id:sid,mode:'payment',livemode:false,invoice_creation:{enabled:true},
+        url:'https://checkout.stripe.com/c/pay/test_smartclip',...(opt.checkoutResponse||{})});
     }
     if (url.endsWith('/checkout/sessions/' + sid)) return reply(session);
     if (url.includes('/checkout/sessions/' + sid + '/line_items?')) return reply(lines);
@@ -140,6 +144,25 @@ test('missing registration prevents even a sandbox checkout request', async()=>{
   assert.equal(r.statusCode,503);
   assert.equal(f.calls.some(x=>x.url.endsWith('/checkout/sessions') && x.method==='POST'),false);
 });
+test('live or mixed-mode tax, price and product readbacks cannot authorize sandbox checkout',async()=>{
+  const invalid=[
+    makeFixture({taxSettings:{livemode:true}}),
+    makeFixture({registrations:{has_more:false,data:[{country:'DE',status:'active',livemode:true}]}}),
+    makeFixture({registrations:{has_more:false,data:[
+      {country:'DE',status:'active',livemode:false},{country:'DE',status:'active',livemode:true}]}}),
+    makeFixture({registrations:{has_more:true,data:[{country:'DE',status:'active',livemode:false}]}}),
+    makeFixture({registrations:{has_more:false,data:[{country:'DE',status:'active'}]}}),
+    makeFixture({price:{livemode:true}}),
+    makeFixture({product:{livemode:true}}),
+    makeFixture({price:{id:'price_test_mismatched'}}),
+    makeFixture({product:{id:'prod_test_mismatched'}})
+  ];
+  for (const fixture of invalid) {
+    const result=await call('checkout','POST',body,{fixture});
+    assert.equal(result.statusCode,503);
+    assert.equal(fixture.calls.some(c=>c.url.endsWith('/checkout/sessions')&&c.method==='POST'),false);
+  }
+});
 test('invalid price, product, license metadata and extra line items do not grant sales', async()=>{
   for(const fixture of [
     makeFixture({price:{unit_amount:1}}),
@@ -161,9 +184,24 @@ test('checkout pins product and identity; idempotent retry has identical body an
   const form=new URLSearchParams(creates[0].body);
   assert.equal(form.get('line_items[0][price]'),priceId);
   assert.equal(form.get('automatic_tax[enabled]'),'true');
+  assert.equal(form.get('invoice_creation[enabled]'),'true');
+  assert.equal(form.get('invoice_creation[invoice_data][metadata][sku]'),SMARTCLIP_SKU);
+  assert.equal(form.get('invoice_creation[invoice_data][metadata][release_sha256]'),SMARTCLIP_PINNED_SHA256);
   assert.equal(form.get('client_reference_id'),userId);
   assert.equal(form.get('metadata[release_sha256]'),SMARTCLIP_PINNED_SHA256);
   assert.equal(form.has('payment_method_types'),false);
+});
+test('missing invoice creation is rejected before exposing a checkout URL or granting a license',async()=>{
+  const invalid=makeFixture({checkoutResponse:{invoice_creation:{enabled:false}}});
+  const created=await call('checkout','POST',body,{fixture:invalid});
+  assert.equal(created.statusCode,503);
+  assert.equal(created.payload.error,'checkout_not_ready');
+  const paid=makeFixture({session:{invoice_creation:{enabled:false}}});
+  const raw=event('checkout.session.completed',{id:sid});
+  const r=await call('webhook','POST',raw,{fixture:paid,headers:{'stripe-signature':sign(raw)}});
+  assert.equal(r.statusCode,200);
+  assert.equal(r.payload.granted,false);
+  assert.equal(paid.ledger.size,0);
 });
 test('forged or expired webhook cannot reach provider or mutate ledger',async()=>{
   const f=makeFixture(),raw=event('checkout.session.completed',{id:sid});
@@ -234,6 +272,9 @@ test('unpaid, foreign, version-mismatched and multi-item sessions never grant',a
     makeFixture({session:{client_reference_id:otherUserId}}),
     makeFixture({lines:{data:[{quantity:2,amount_subtotal:498,price:{id:priceId,product:productId}}],has_more:false}}),
     makeFixture({intent:{metadata:{...metadata,release_sha256:'0'.repeat(64)}}}),
+    makeFixture({linePrice:{livemode:true}}),
+    makeFixture({charge:{currency:'usd'}}),
+    makeFixture({charge:{status:'failed'}}),
     makeFixture({charge:{refunded:true,amount_refunded:249}})
   ];
   const raw=event('checkout.session.completed',{id:sid});
@@ -266,6 +307,12 @@ test('refund before success stores tombstone; partial and foreign refunds never 
   const foreign=makeFixture({intent:{metadata:{...metadata,channel:'foreign'}},charge:{refunded:true,amount_refunded:249}});
   assert.equal((await call('webhook','POST',refund,{fixture:foreign,headers:{'stripe-signature':sign(refund)}})).payload.revoked,false);
   assert.equal(foreign.ledger.size,0);
+  const wrongCurrency=makeFixture({charge:{currency:'usd',refunded:true,amount_refunded:249}});
+  const wrongAmount=makeFixture({charge:{amount:199,refunded:true,amount_refunded:199}});
+  for (const fixture of [wrongCurrency,wrongAmount]) {
+    assert.equal((await call('webhook','POST',refund,{fixture,headers:{'stripe-signature':sign(refund)}})).payload.revoked,false);
+    assert.equal(fixture.ledger.size,0);
+  }
 });
 test('provider failure causes retryable 503 rather than false success',async()=>{
   const f=makeFixture({failProvider:'/payment_intents/'});
