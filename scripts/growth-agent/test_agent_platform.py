@@ -210,7 +210,10 @@ class PlatformResearchTests(unittest.TestCase):
             source = '''import json,sys;from pathlib import Path;from worker_service import process
 root=Path(sys.argv[1]);repo=Path(sys.argv[2]);task=json.loads(sys.argv[3]);result=process(task,state_root=root,repo_root=repo)
 print(json.dumps({"status":result["status"],"agents":result["agent_route"],"citations":len(result.get("citations",[]))}))'''
-            env = dict(os.environ, PYTHONPATH=str(Path(__file__).parent))
+            # Preserve the candidate image's pinned /opt/worker-packages path
+            # when a separate interpreter tests the real SQLite checkpoint.
+            env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, (
+                str(Path(__file__).parent), os.environ.get("PYTHONPATH", "")))))
             outputs = []
             for i in range(3):
                 call = subprocess.run([sys.executable, "-c", source, str(root), str(repo),
