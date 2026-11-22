@@ -2,7 +2,7 @@
 # Isolated two-backend PostgreSQL race test. No network, ports, external database or provider secrets.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-image='postgres:17.12-alpine@sha256:57c472af7d3a60318fe0d2a555eebb73168bcb53ed7ef11ae799613223dfc424'
+image='postgres:17.12-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73'
 sql='docs/platform/smartclip-sandbox-sql-candidate-20261122.sql'
 [ -r "$sql" ] && command -v docker >/dev/null
 tmp="$(mktemp -d)"
