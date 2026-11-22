@@ -377,7 +377,7 @@
     "contractVersion": "CAPITAL_AI_AKASH_EDITORIAL_RIGHTS_CANDIDATE@1",
     "preparedOn": "2026-11-22",
     "preparedBy": "GROWTH_DRAFT_REVIEW",
-    "status": "REVIEW_READY_NOT_APPROVED",
+    "status": "EDITORIAL_OWNER_APPROVED_RIGHTS_PENDING",
     "scope": {
       "site": "CAPITAL-AI",
       "target": "PRIVATE_EDITORIAL_APPROVAL_FOR_POTENTIAL_PUBLIC_HOME_NEWS",
@@ -454,7 +454,7 @@
         "thirdPartyTextCopied": false,
         "thirdPartyQuoteBytesUsed": false,
         "legalAssessment": "REVIEW_REQUIRED",
-        "editorialOwnerGrant": "PENDING_OWNER_DECISION"
+        "editorialOwnerGrant": "OWNER_APPROVED_EXACT_WEBSITE_DRAFT_ONLY"
       },
       "originalGraphics": {
         "licenseId": "LicenseRef-CapitalAI-Owned",
@@ -511,19 +511,21 @@
       "thirdPartyArticleReuseAllowed": false,
       "neutralAttributionLink": "REVIEW_REQUIRED_NO_AUTOMATIC_LINK_PERMISSION",
       "missingRightsEvidence": [
-        "EXACT_USE_SOURCE_TERMS_ASSESSMENT_OR_RIGHTSHOLDER_PERMISSION_IF_REQUIRED",
-        "EDITORIAL_OWNER_APPROVAL_FOR_THIS_EXACT_TEXT_AND_ASSETS"
+        "EXACT_USE_SOURCE_TERMS_ASSESSMENT_OR_RIGHTSHOLDER_PERMISSION_IF_REQUIRED"
       ],
       "legalOpinionProvided": false
     },
     "approvalReceipts": {
       "editorial": {
-        "decision": "PENDING_OWNER",
-        "receiptId": null,
-        "approver": null,
-        "approvedEditorialSha256": null,
-        "approvedAssetSha256s": [],
-        "reviewedOn": null,
+        "decision": "OWNER_APPROVED_EXACT_DRAFT",
+        "receiptId": "CHAT_EDITORIAL_APPROVAL_20261122_SHA256_2999bfda6a85",
+        "approver": "OWNER_DIRECT_CHAT_DECLARATION",
+        "approvedEditorialSha256": "2999bfda6a85dc198eab7f5c92240f8d51de9adb9a4cb83e928ce1360abd2bb0",
+        "approvedAssetSha256s": [
+          "d6f014f0a0f90a6dd2c68d91fb657b89524bd89e152edd1417d65b29b35235a8",
+          "6fba319f7ef1d3bdb1a25b83133f553d2714aeda5f9ac23a47a0a104cc2a07cf"
+        ],
+        "reviewedOn": "2026-11-22",
         "checks": [
           "TECHNICAL_ACCURACY",
           "MARCH_APRIL_VS_EARLY_2027_QUALIFICATION",
@@ -532,7 +534,17 @@
           "NO_INVESTMENT_ADVICE",
           "ACCESSIBLE_ALT_TEXT",
           "SOURCE_ATTRIBUTION_SCOPE"
-        ]
+        ],
+        "evidence": {
+          "type": "DIRECT_USER_CHAT_APPROVAL",
+          "declaration": "freigegeben",
+          "source": "CURRENT_CHAT_OWNER_RESPONSE_2026-11-22",
+          "scope": "PREVIOUSLY_PRESENTED_GERMAN_EDITORIAL_DRAFT_AND_TWO_IDENTIFIED_FIRST_PARTY_GRAPHICS_FOR_CAPITAL_AI_WEBSITE_ONLY",
+          "cryptographicSignature": false,
+          "thirdPartyGrant": false,
+          "publicationAuthorization": false,
+          "note": "Owner intent recorded in chat and pinned to revision; not an externally signed license or independent legal opinion."
+        }
       },
       "rights": {
         "decision": "PENDING_SCOPE_REVIEW",
