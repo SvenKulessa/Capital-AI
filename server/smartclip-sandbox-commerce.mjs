@@ -34,6 +34,11 @@ const PRODUCT = /^prod_[A-Za-z0-9_]{6,240}$/;
 const REQ_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const IS_TEST_KEY = /^(rk|sk)_test_[A-Za-z0-9_]{10,}$/;
 const FORM_PRICE_CENTS = 249;
+// Candidate Stripe tax codes for prewritten downloadable personal-use software.
+// Provider catalog readback: txcd_10202000 / txcd_10202001 (22 Nov 2026).
+// This is not legal classification approval: explicit tax attestation and a
+// provider-readback active registration remain mandatory for sandbox checkout.
+const SMARTCLIP_SOFTWARE_TAX_CODES = new Set(['txcd_10202000', 'txcd_10202001']);
 
 async function rawBody(req, limit = 65536) {
   const parts = []; let total = 0;
@@ -84,7 +89,7 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
   const db = dbConfig(env);
   const configured = env.SMARTCLIP_SANDBOX_ENABLED === 'true' && IS_TEST_KEY.test(key) &&
     hook.length >= 16 && PRICE.test(priceId) && PRODUCT.test(productId) &&
-    SHA.test(digest) && digest === SMARTCLIP_PINNED_SHA256 && /^txcd_[0-9]{8}$/.test(taxCode) && taxCode !== 'txcd_10000000' &&
+    SHA.test(digest) && digest === SMARTCLIP_PINNED_SHA256 && SMARTCLIP_SOFTWARE_TAX_CODES.has(taxCode) &&
     env.SMARTCLIP_SANDBOX_TAX_ATTESTED === 'true' && Boolean(db && auth);
   const base = String(env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
 
