@@ -78,7 +78,7 @@ ContentSocialPackage.contentId, sourceSha, text asset SHA-256 and matching appro
 
 All provider calls use GET /services/data/vXX.0/query?q=... or GET /services/data/vXX.0/sobjects/{Product2|PricebookEntry}/describe. Salesforce Organization.IsSandbox is checked before product reads. Production URLs, foreign hosts, invalid IDs, duplicate ProductCodes, truncated pages, missing fields, unsigned/unapproved packages, unsafe URLs and HTTP failures are rejected or held. Sandbox Product2 data are not proof of publication rights or real commercial pricing.
 
-Setup: Connect Salesforce sandbox through the approved provider integration or OAuth out-of-band using a dedicated least-privilege sandbox user. The direct ChatGPT Salesforce app was administratively disabled at inspection; Windsor.ai Salesforce connector is available but no Salesforce account was connected. Do not paste tokens into ChatGPT, GitHub, Drive or logs. Do not copy signed connection URLs into source-controlled documentation.
+Setup: Connect Salesforce sandbox through the approved provider integration or OAuth out-of-band using a dedicated least-privilege sandbox user. The direct ChatGPT Salesforce app was administratively disabled at inspection. The Windsor.ai Salesforce connector explicitly supports production only, so it is BLOCKED as a sandbox route. Do not connect the production connector for this task. A separate authorized Salesforce sandbox OAuth/session via the sandbox My Domain and an isolated least-privilege integration user is required. Do not paste tokens into ChatGPT, GitHub, Drive or logs. Do not copy signed connection URLs into source-controlled documentation.
 
 Run only from an authenticated owner-controlled runtime with protected environment variables:
 - SALESFORCE_SANDBOX_INSTANCE_URL (HTTPS sandbox My Domain host returned by Salesforce)
@@ -100,3 +100,5 @@ Official references:
 - https://developer.salesforce.com/docs/platform/field-reference/references/field-reference/salesforce-field-reference-organization.html
 
 Status: CONTROL_PRESENT on feature branch; local standalone tests require CI at exact current HEAD. CRM_CONNECTION=NOT_CONNECTED; LIVE_SANDBOX_READBACK=NOT_PROVEN; DEVICE_CARE_KI_CROSS_PROJECT_RUNTIME=NONE; COMMERCIAL_RELEASE=HOLD. Rollback: revert the scoped PR branch commits; no Salesforce record was changed.
+
+Provider limitation verified 2026-11-22: https://onboard.windsor.ai/app/salesforce explicitly states Salesforce sandbox is not supported. This connector is excluded from SANDBOX_READBACK admission. Never use a production-only connector to satisfy the sandbox requirement.
