@@ -119,7 +119,10 @@ class BoundDomainTaskTests(unittest.TestCase):
             bound_task=binding, repo_root=REPO,
         )
         spoofed = {**binding.initial_state(), "profile_sha256": "0" * 64}
-        result = graph.invoke(spoofed)
+        result = graph.invoke(
+            spoofed,
+            {"configurable": {"thread_id": binding.thread_id}, "recursion_limit": 24},
+        )
         self.assertEqual(result["status"], "BLOCKED")
         self.assertEqual(observer.calls, [])
 
