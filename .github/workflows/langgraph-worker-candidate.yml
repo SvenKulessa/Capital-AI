@@ -116,8 +116,16 @@ jobs:
             /app/scripts/growth-agent/test_agent_platform.py \
             PlatformResearchTests.test_completed_research_checkpoint_cannot_replay_after_profile_change \
             PlatformResearchTests.test_profiles_missing_or_corrupt_never_create_checkpoint \
-            PlatformResearchTests.test_checkpoint_reopened_by_independent_interpreters
+            PlatformResearchTests.test_checkpoint_reopened_by_independent_interpreters \
+            PlatformResearchTests.test_each_domain_has_source_bound_graph_route_and_no_tools
           echo "FIVE_DOMAIN_CHECKPOINT_REPLAY_TESTED"
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_offline_scope.py -v
+          echo "OFFLINE_TENANT_REPO_SCOPE_NEGATIVES_PASS"
           docker run --rm --network none --read-only \
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --cap-drop ALL --security-opt no-new-privileges \
