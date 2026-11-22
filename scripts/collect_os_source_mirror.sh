@@ -17,7 +17,7 @@ done
 mkdir -p "$MIRROR" "$REPORT_DIR" "$APORTS_DIR"
 export GIT_TERMINAL_PROMPT=0 GIT_CONFIG_NOSYSTEM=1
 
-# Check exact source SHA, image config identity, all 21 recipe refs and 34 APK binaries.
+# Check source, image, APKDB and recipe identity for historical (21/34) and current (34/50) snapshots.
 python3 - "$LOCK" "$INVENTORY" <<'PY'
 import json, re, sys
 lock=json.load(open(sys.argv[1],encoding='utf8'))
@@ -30,19 +30,20 @@ assert lock['localImageConfigDigest']==inv['imageConfigDigest']
 assert lock['installedApkDbSha256']==inv['installedApkDbSha256']
 assert lock['publishedOCIManifestDigest'] is None
 assert lock['status']['redistributionApproved'] is False
-assert len(lock['recipes'])==21==len(inv['sourceRecipeLocators'])
-assert len(inv['packages'])==34
+assert len(lock['recipes'])==lock['sourceRecipeCount']==len(inv['sourceRecipeLocators'])
+assert len(inv['packages'])==lock['binaryPackageCount']
+assert (len(lock['recipes']),len(inv['packages'])) in {(21,34),(34,50)}
 idx={x['package']:x for x in inv['sourceRecipeLocators']}
-assert len(idx)==21
+assert len(idx)==len(lock['recipes'])
 for r in lock['recipes']:
     assert re.fullmatch(r'[a-z0-9][a-z0-9+_.-]*',r['sourcePackage'])
     assert re.fullmatch(r'[a-f0-9]{40}',r['aportsCommit'])
     assert re.fullmatch(r'[a-f0-9]{40}',r['apkbuildGitBlob'])
-    assert r['path']==f"main/{r['sourcePackage']}/APKBUILD"
+    assert r['path'] in (f"main/{r['sourcePackage']}/APKBUILD", f"community/{r['sourcePackage']}/APKBUILD")
     assert idx[r['sourcePackage']]['aportsCommit']==r['aportsCommit']
     p=[x for x in inv['packages'] if x['sourcePackage']==r['sourcePackage']]
     assert p and all(x['version']==r['version'] for x in p)
-print('LOCK_INVENTORY_CROSSCHECK_PASS: 21 source recipes / 34 binary packages')
+print(f"LOCK_INVENTORY_CROSSCHECK_PASS: {len(lock['recipes'])} source recipes / {len(inv['packages'])} binary packages")
 PY
 
 if [[ ! -d "$APORTS_DIR/.git" ]]; then
@@ -55,11 +56,11 @@ fi
 python3 - "$LOCK" <<'PY' > "$REPORT_DIR/recipes.tsv"
 import json,sys
 for x in json.load(open(sys.argv[1],encoding='utf8'))['recipes']:
-    print('\t'.join(x[k] for k in ('sourcePackage','aportsCommit','apkbuildGitBlob','version')))
+    print('\t'.join(x[k] for k in ('sourcePackage','aportsCommit','apkbuildGitBlob','version','path')))
 PY
 
 failures=0
-while IFS=$'\t' read -r name commit expected_blob expected_version; do
+while IFS=$'\t' read -r name commit expected_blob expected_version recipe_path; do
   [[ -n "$name" ]] || continue
   echo "Collecting pinned aports recipe: $name @ $commit" >&2
   mkdir -p "$MIRROR/$name" "$MIRROR/$name/distfiles"
@@ -68,7 +69,7 @@ while IFS=$'\t' read -r name commit expected_blob expected_version; do
     echo 'APORTS_FETCH_FAILED' >>"$log"; failures=$((failures+1)); continue
   fi
   # Extract all commit-pinned recipe-directory files (includes Alpine patches and build inputs).
-  if ! (git -C "$APORTS_DIR" archive "$commit" "main/$name" | tar -x --strip-components=2 -C "$MIRROR/$name") >>"$log" 2>&1; then
+  if ! (git -C "$APORTS_DIR" archive "$commit" "${recipe_path%/APKBUILD}" | tar -x --strip-components=2 -C "$MIRROR/$name") >>"$log" 2>&1; then
     echo 'APORTS_ARCHIVE_FAILED' >>"$log"; failures=$((failures+1)); continue
   fi
   found_blob="$(git hash-object "$MIRROR/$name/APKBUILD")"
@@ -82,7 +83,7 @@ while IFS=$'\t' read -r name commit expected_blob expected_version; do
     # A fallback is accepted ONLY after comparing actual bytes to the pinned APKBUILD SHA-512.
     archive_name=''
     case "$name" in
-      apk-tools) archive_name='apk-tools-v3.0.8.tar.gz' ;;
+      apk-tools) if [[ "$expected_version" == '3.0.8-r0' ]]; then archive_name='apk-tools-v3.0.8.tar.gz'; fi ;;
       ca-certificates) archive_name='ca-certificates-20261020.tar.bz2' ;;
       ncurses) archive_name='ncurses-6.6-20260516.tgz' ;;
     esac
