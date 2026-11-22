@@ -1,12 +1,13 @@
 // CAPITAL-AI SmartClip: sandbox-only, fail-closed extension of existing commerce contracts.
 // No live key can activate this handler; no success-page fulfillment or synthetic receipts.
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { boundedJson, readJson, secureUrl } from './http-security.mjs';
 import { verifyBlueprintWebhookSignature } from './blueprint-commerce.mjs';
 
 export const SMARTCLIP_SKU = 'SMARTCLIP_PERSONAL';
 export const SMARTCLIP_RELEASE = 'acode-bridge-v2';
 export const SMARTCLIP_LICENSE = 'draft-v3'; // NOT a legally approved consumer EULA.
+export const SMARTCLIP_PINNED_SHA256 = '8c2683d641f28bf466026dff1f4adb0c073bc81564bc0afd4b758a33d7b76512';
 const SHA = /^[a-f0-9]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SID = /^cs_test_[A-Za-z0-9_]{8,240}$/;
@@ -46,8 +47,9 @@ function safeStripeUrl(value) {
 }
 
 const stripeObjectId = (v) => typeof v === 'string' ? v : v?.id;
-function letters() {
-  return [...randomBytes(8)].map(n => String.fromCharCode(97 + (n % 26))).join('');
+function letters(requestKey) {
+  // Identical requestId must produce identical Stripe POST parameters under idempotent retries.
+  return [...Buffer.from(requestKey.slice(0, 16), 'hex')].map(n => String.fromCharCode(97 + (n % 26))).join('');
 }
 
 export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = fetch, auth } = {}) {
@@ -60,7 +62,7 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
   const db = dbConfig(env);
   const configured = env.SMARTCLIP_SANDBOX_ENABLED === 'true' && IS_TEST_KEY.test(key) &&
     hook.length >= 16 && PRICE.test(priceId) && PRODUCT.test(productId) &&
-    SHA.test(digest) && /^txcd_[0-9]{8}$/.test(taxCode) && taxCode !== 'txcd_10000000' &&
+    SHA.test(digest) && digest === SMARTCLIP_PINNED_SHA256 && /^txcd_[0-9]{8}$/.test(taxCode) && taxCode !== 'txcd_10000000' &&
     env.SMARTCLIP_SANDBOX_TAX_ATTESTED === 'true' && Boolean(db && auth);
   const base = String(env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
 
@@ -260,7 +262,7 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
         client_reference_id: user.userId, customer_email: user.email,
         success_url: base + '/profile?smartclip=test-complete',
         cancel_url: base + '/profile?smartclip=test-cancelled',
-        integration_identifier: 'capitalaisc' + letters(),
+        integration_identifier: 'capitalaisc' + letters(requestKey),
         'metadata[channel]': 'homepage_sandbox', 'metadata[sku]': SMARTCLIP_SKU,
         'metadata[user_id]': user.userId, 'metadata[release_id]': SMARTCLIP_RELEASE,
         'metadata[release_sha256]': digest, 'metadata[license_version]': SMARTCLIP_LICENSE,
