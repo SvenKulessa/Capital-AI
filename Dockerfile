@@ -103,7 +103,7 @@ COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./
 COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
-COPY server/salesforce/sandbox-readonly.mjs server/salesforce/sandbox-readonly.test.mjs ./server/salesforce/
+COPY server/twenty/cloud-readonly.mjs server/twenty/cloud-readonly.test.mjs ./server/twenty/
 COPY server/oauth-consent.mjs server/oauth-consent.test.mjs ./server/
 COPY scripts/agent-operations-pilot-migration.test.mjs ./scripts/
 COPY scripts/oauth-client-isolation.test.mjs ./scripts/
