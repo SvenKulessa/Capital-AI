@@ -23,7 +23,7 @@ MAX_SOURCE_BYTES = 180_000
 BIDI_CONTROLS = frozenset(("\u202a", "\u202b", "\u202c", "\u202d", "\u202e",
                            "\u2066", "\u2067", "\u2068", "\u2069", "\u200e",
                            "\u200f", "\u061c"))
-SKILL_ID = re.compile(r"[a-z][a-z0-9-]{1,70}\\Z", re.ASCII)
+SKILL_ID = re.compile(r"[a-z][a-z0-9-]{1,70}\Z", re.ASCII)
 
 
 def _read_source(root: Path, relative: str) -> bytes:
@@ -164,10 +164,10 @@ def load_domain_profiles(repo_root: Path) -> dict:
             "profile_sha256": hashlib.sha256(raw[PROFILES[domain]]).hexdigest(),
             "skills": [skill["engineering"], skill["advisory"]],
         }
-    digest = hashlib.sha256(b"CAPITAL_AI_SOLO2_DOMAIN_BUNDLE@1\\x00")
+    digest = hashlib.sha256(b"CAPITAL_AI_SOLO2_DOMAIN_BUNDLE@1\x00")
     for path in SOURCES:
         digest.update(path.encode("ascii"))
-        digest.update(b"\\x00")
+        digest.update(b"\x00")
         digest.update(hashlib.sha256(raw[path]).digest())
     return {"bundle_sha256": digest.hexdigest(), "domains": selected,
             "permission_expansion": False, "provider_access": False}
