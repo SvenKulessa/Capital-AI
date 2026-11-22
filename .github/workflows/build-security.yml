@@ -111,6 +111,8 @@ jobs:
           npm run validate:all
           git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
           node scripts/license-evidence.mjs
+      - name: SmartClip PostgreSQL two-connection race (isolated Docker)
+        run: bash scripts/trust/smartclip-postgres-concurrency.sh
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           docker build --file Dockerfile.security --tag capital-ai-security .
