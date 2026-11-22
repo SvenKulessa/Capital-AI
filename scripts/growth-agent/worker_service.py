@@ -92,6 +92,7 @@ def process(task: dict, *, state_root: Path, repo_root: Path) -> dict:
         lambda saver: build_research_graph(repo_root, checkpointer=saver,
                                            expected_bundle_sha256=bundle["bundle_sha256"]),
         thread_id, str(state_root / "checkpoints" / (thread_id + ".sqlite3")), initial,
+        enforce_offline_binding=True,
     )
 
 

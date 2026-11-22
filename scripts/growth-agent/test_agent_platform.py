@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -11,7 +12,8 @@ import unittest
 from unittest.mock import patch
 
 from agent_platform import DOMAINS, build_research_graph, retrieve
-from domain_profile_binding import PROFILES, SOURCES
+from domain_profile_binding import PROFILES, SOURCES, load_domain_profiles
+from offline_scope import scoped_thread_id
 from worker_service import check_root, load_task, process
 
 
@@ -91,6 +93,32 @@ class PlatformResearchTests(unittest.TestCase):
             self.assertEqual(second["status"], "RESEARCH_DRAFT")
             self.assertNotEqual(first["bundle_sha256"], second["bundle_sha256"])
             self.assertEqual(len(list((root / "checkpoints").glob("*.sqlite3"))), 2)
+
+    def test_copied_sqlite_database_with_foreign_task_identity_fails_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            repo = base / "repo"
+            repo.mkdir()
+            fixture(repo)
+            root = base / "state"
+            state_dirs(root)
+            first = {"schema": "CAPITAL_AI_OFFLINE_RESEARCH@1", "task_id": "owner-task",
+                     "domain": "PLATFORM", "query": "SQLite checkpoint"}
+            other = {**first, "task_id": "different-task"}
+            result = process(first, state_root=root, repo_root=repo)
+            self.assertEqual(result["status"], "RESEARCH_DRAFT")
+            originals = list((root / "checkpoints").glob("*.sqlite3"))
+            self.assertEqual(len(originals), 1)
+            bundle = load_domain_profiles(repo)
+            other_id = scoped_thread_id(
+                tenant="owner-local", repository="SvenKulessa/Capital-AI",
+                task_id=other["task_id"], payload={**other, "bundle_sha256": bundle["bundle_sha256"]}
+            )
+            destination = root / "checkpoints" / (other_id + ".sqlite3")
+            shutil.copyfile(originals[0], destination)
+            destination.chmod(0o600)
+            with self.assertRaisesRegex(ValueError, "scope mismatch"):
+                process(other, state_root=root, repo_root=repo)
 
     def test_profiles_missing_or_corrupt_never_create_checkpoint(self):
         for case in ("missing", "tampered"):
