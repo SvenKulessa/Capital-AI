@@ -570,3 +570,7 @@
 !scripts/agent-operations-pilot-migration.test.mjs
 !supabase/migration-candidates/
 !supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql
+# Salesforce sandbox read-only test included in isolated Docker CI build
+!server/salesforce/
+!server/salesforce/sandbox-readonly.mjs
+!server/salesforce/sandbox-readonly.test.mjs
