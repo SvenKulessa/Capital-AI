@@ -98,6 +98,7 @@ jobs:
             scripts/benchmark-ledger-migration.test.mjs \
             scripts/benchmark-cost-calibration.test.mjs \
             scripts/stripe-three-purchase-e2e.test.mjs \
+            server/smartclip-sandbox-commerce.test.mjs \
             scripts/ecb-reference-admission.test.mjs \
             scripts/validate-oss-multi-asset-plan.test.mjs \
             scripts/verify-release-readiness.test.mjs \
