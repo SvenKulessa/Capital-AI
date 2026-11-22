@@ -64,18 +64,19 @@ export function readElfNeeded(filePath) {
     let terminated = false;
     for (let i = 0; i < dynamic.fileSize / 16; i++) {
       const record = range(dynamic.offset + i * 16, 16);
-      const tag = integer(record.readBigUInt64LE(0));
+      const tag = record.readBigUInt64LE(0);
+      if (tag === 0n) { terminated = true; break; }
+      if (tag !== 1n && tag !== 5n && tag !== 10n) continue;
       const value = integer(record.readBigUInt64LE(8));
-      if (tag === 0) { terminated = true; break; }
-      if (tag === 1) {
+      if (tag === 1n) {
         if (neededOffsets.length >= MAX_NAMES) return unresolved();
         neededOffsets.push(value);
       }
-      if (tag === 5) {
+      if (tag === 5n) {
         if (strAddress !== null) return unresolved();
         strAddress = value;
       }
-      if (tag === 10) {
+      if (tag === 10n) {
         if (strSize !== null) return unresolved();
         strSize = value;
       }
