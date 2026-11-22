@@ -20,8 +20,9 @@ const env = {
   SMARTCLIP_SANDBOX_RELEASE_SHA256: SMARTCLIP_PINNED_SHA256,
   SMARTCLIP_SANDBOX_TAX_CODE: 'txcd_10503000',
   SMARTCLIP_SANDBOX_TAX_ATTESTED: 'true',
-  SUPABASE_URL: 'https://fixture.supabase.co',
-  SUPABASE_SECRET_KEY: 'sb_secret_fixture_not_a_real_key_123456789',
+  SUPABASE_URL: 'https://primary-fixture.supabase.co',
+  SMARTCLIP_SANDBOX_DB_URL: 'https://isolated-fixture.supabase.co',
+  SMARTCLIP_SANDBOX_DB_SERVICE_KEY: 'sb_secret_fixture_not_a_real_key_123456789',
   PUBLIC_BASE_URL: 'https://capital-ai.online',
 };
 const metadata = {
@@ -117,6 +118,8 @@ test('default disabled, live keys and unknown digests fail closed', async()=>{
   assert.equal((await call('checkout','POST',body,{cfg:{...env,STRIPE_SMARTCLIP_TEST_KEY:'rk_live_invalid'}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_RELEASE_SHA256:'0'.repeat(64)}})).statusCode,503);
   assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_TAX_CODE:'txcd_10000000'}})).statusCode,503);
+  assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_DB_URL:env.SUPABASE_URL}})).statusCode,503);
+  assert.equal((await call('checkout','POST',body,{cfg:{...env,SMARTCLIP_SANDBOX_DB_SERVICE_KEY:''}})).statusCode,503);
 });
 test('checkout denies missing authentication, origin, acknowledgments, and arbitrary extras', async()=>{
   assert.equal((await call('checkout','POST',body,{user:null})).statusCode,401);
