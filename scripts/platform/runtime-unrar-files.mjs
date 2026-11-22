@@ -59,7 +59,7 @@ export function inspectOptionalUnrarFiles(root = '/', libclamavPath = '/usr/lib/
       for (const entry of readdirSync(item.dir, { withFileTypes: true })) {
         if (++entries > MAX_ENTRIES) throw new Error('UnRAR scan entry limit exceeded');
         const file = join(item.dir, entry.name);
-        const relative = '/' + file.slice(actualRoot.length).replace(/^\\/+/, '');
+        const relative = '/' + file.slice(actualRoot.length).split(sep).filter(Boolean).join('/');
         if (LIBRARY_NAME.test(entry.name)) {
           if (!/^[a-zA-Z0-9_+./@-]+$/.test(relative)) throw new Error('Unsafe UnRAR library path');
           matchingPaths.add(relative);
