@@ -16,13 +16,12 @@ import time
 from pathlib import Path
 
 from agent_platform import DOMAINS, build_research_graph
+from domain_profile_binding import load_domain_profiles
 from checkpoint_store import execute_durable_graph
-from offline_task_scope import TrustedOfflineScope
+from offline_scope import scoped_thread_id
 
 ROOT = Path("/var/lib/capital-ai-agent")
 MAX_TASK_SIZE = 2048
-# Owner-local offline worker: tenant/repo cannot come from untrusted task JSON.
-OFFLINE_SCOPE = TrustedOfflineScope("local-owner", "SvenKulessa/Capital-AI")
 STOP = False
 
 
@@ -77,13 +76,23 @@ def load_task(path: Path, inbox: Path) -> dict:
 
 
 def process(task: dict, *, state_root: Path, repo_root: Path) -> dict:
-    bound = OFFLINE_SCOPE.bind(task)
-    thread_id = bound.thread_id
+    # Single-owner local scope only. Customer tenant admission is NOT implemented.
+    # Do not accept tenant/repository from task files or retrieved documents.
+    # An immutable digest of all five profiles + app/registry/root policy is part
+    # of the trusted checkpoint key. Changing any profile starts a new thread,
+    # never replays an old completed result as current evidence.
+    bundle = load_domain_profiles(repo_root)
+    if task["domain"] not in bundle["domains"]:
+        raise ValueError("unknown offline domain")
+    scoped_payload = {**task, "bundle_sha256": bundle["bundle_sha256"]}
+    thread_id = scoped_thread_id(tenant="owner-local", repository="SvenKulessa/Capital-AI",
+                                 task_id=task["task_id"], payload=scoped_payload)
     initial = {"task_id": thread_id, "domain": task["domain"], "query": task["query"]}
     return execute_durable_graph(
-        lambda saver: build_research_graph(repo_root, checkpointer=saver),
+        lambda saver: build_research_graph(repo_root, checkpointer=saver,
+                                           expected_bundle_sha256=bundle["bundle_sha256"]),
         thread_id, str(state_root / "checkpoints" / (thread_id + ".sqlite3")), initial,
-        binding_digest=bound.binding_digest,
+        enforce_offline_binding=True,
     )
 
 

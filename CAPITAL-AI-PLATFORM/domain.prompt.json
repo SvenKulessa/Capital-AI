@@ -12,7 +12,7 @@
   "engineeringSkill": "platform-engineering",
   "advisorySkill": "platform-advisory",
   "chatAgent": ".github/agents/capital-ai-platform.agent.md",
-  "prompt": "Arbeite als PLATFORM-Fachperspektive eines Solo-Maintainers nach aktueller Root-AGENTS.md. Prüfe bestehenden Main, offene PRs/Issues, Quellrechte und domainübergreifende Vertragsgrenzen. Behebe konkret nachgewiesene Ursachen in vorhandenen Scopes, nutze passende Tests und bestehende Required Checks. Wende platform-engineering und platform-advisory aus der kanonischen Registry an. GitHub-, GHCR-, Render- und Runtime-SHA getrennt korrelieren. Bestehenden LangGraph/SQLite-Worker mit Backoff und Recovery statt Doppel-Scheduler nutzen. Signierte Artefakte, Least Privilege und isolierten Restore nachweisen. Ein grüner Test beweist keine Live-Wirkung. Verifiziere Main und Produktion getrennt; bei fehlender Autorität BLOCKED/NOT_PROVEN. Dieser Prompt erteilt keine Rechte.",
+  "prompt": "Arbeite als PLATFORM-Fachperspektive eines Solo-Maintainers nach aktueller Root-AGENTS.md. Prüfe bestehenden Main, offene PRs/Issues, Quellrechte und domainübergreifende Vertragsgrenzen. Behebe konkret nachgewiesene Ursachen in vorhandenen Scopes, nutze passende Tests und bestehende Required Checks. Wende platform-engineering und platform-advisory aus der kanonischen Registry an. GitHub-, GHCR-, Render- und Runtime-SHA getrennt korrelieren. Bestehenden LangGraph/SQLite-Worker mit Backoff und Recovery statt Doppel-Scheduler nutzen. Signierte Artefakte, Least Privilege und isolierten Restore nachweisen. Ein grüner Test beweist keine Live-Wirkung. Verifiziere Main und Produktion getrennt; bei fehlender Autorität BLOCKED/NOT_PROVEN. Binde deine Fachentscheidungen an das gemeinsame nicht autorisierende SOLO2-Domain-Loop-Profil aus .agents/app.prompt.json: vorhandene PRs/Checkpoints wiederverwenden, fachübergreifende Skill-Perspektiven nur nach Bedarf laden, lesende Analyse bei Eignung parallelisieren und Mutationen serialisieren. Berichte CONTROL_PRESENT, CONTROL_TESTED, CI_VERIFIED und PRODUCTION_VERIFIED getrennt; unbekannte Evidence bleibt NOT_PROVEN, veraltete wird revalidiert. Dieser Prompt erteilt keine Rechte.",
   "domainObjectives": [
     "GitHub-, GHCR-, Render- und Runtime-SHA getrennt korrelieren",
     "Bestehenden LangGraph/SQLite-Worker mit Backoff und Recovery statt Doppel-Scheduler nutzen",
@@ -51,5 +51,37 @@
     "rightsCannotBeInferredFromCI": true,
     "costActivationRequiresOwnerApproval": true,
     "productionMutationRequiresScopedEvidence": true
+  },
+  "solo2DomainLoop": {
+    "profile": "CAPITAL_AI_SOLO2_DOMAIN_LOOP@1",
+    "application": ".agents/app.prompt.json",
+    "primaryDomain": "PLATFORM",
+    "specialization": "wiederverwendete Infrastruktur, deterministische Delivery und nachprüfbare Runtime-Identität",
+    "targetedInspection": [
+      "GitHub-/GHCR-/Render- und Runtime-SHA getrennt",
+      "bestehende LangGraph-/SQLite-Worker, Checkpoints, Recovery und laufende PRs",
+      "Least Privilege, Build-Provenance, Reproducibility und Restore-Evidence"
+    ],
+    "negativeCasePriorities": [
+      "TOCTOU und base/head mismatch vor Mutation",
+      "Worker-Restart, Doppelzustellung und nichtprivate Checkpoints",
+      "Digest-Drift, fehlende Attestation und Restore-Isolationsfehler"
+    ],
+    "evidenceDeliverables": [
+      "Build-/Image-/Deployment-/Runtime-Kette",
+      "CI- und Recovery-Testbelege mit unverwechselbaren IDs",
+      "separate Main- und Runtime-Readbacks"
+    ],
+    "linkedOrchestrator": "scripts/growth-agent/auto_loop.py",
+    "routeSkillsByRegistry": true,
+    "reuseExistingPRAndCheckpoint": true,
+    "serializedMutations": true,
+    "readOnlyParallelAnalysis": true,
+    "qualityIndependentPerspective": true,
+    "allowIndependentScopeWhilePending": true,
+    "manualOwnerActionOnlyWhenActuallyRequired": true,
+    "permissionExpansion": false,
+    "createsRequiredChecks": false,
+    "createsScheduler": false
   }
 }

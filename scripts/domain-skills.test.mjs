@@ -286,3 +286,88 @@ test('ten-PR admission refuses absent, stale, draft, excluded or non-SHA-bound e
   assert.equal(m.requiredVerifiedMerges, 10);
   assert.equal([valid].filter(admits).length < m.requiredVerifiedMerges, true);
 });
+
+test('SOLO2 domain-chat binding is shared, non-authorizing, and scoped to five registry domains', () => {
+  const app = JSON.parse(read('.agents/app.prompt.json'));
+  const loop = app.solo2DomainLoop;
+  assert.equal(loop.schema, 'CAPITAL_AI_SOLO2_DOMAIN_LOOP@1');
+  assert.equal(loop.kind, 'NON_AUTHORIZING_EXECUTION_PROFILE');
+  assert.equal(loop.authority, 'AGENTS.md');
+  assert.equal(loop.contract, 'SOLO_MAINTAINER_FLOW@2');
+  assert.equal(loop.repository, 'SvenKulessa/Capital-AI');
+  assert.equal(loop.projectIsolation, 'STRICT');
+  assert.equal(loop.domainRegistry, '.agents/skills/registry.json');
+  assert.equal(loop.orchestrator, 'scripts/growth-agent/auto_loop.py');
+  assert.equal(loop.schedulerPolicy, 'REUSE_EXISTING_ONLY');
+  assert.equal(loop.runtimeActivation, 'NOT_PROVEN');
+  assert.equal(loop.permissionExpansion, false);
+  assert.deepEqual(loop.evidenceLevels, [
+    'CONTROL_PRESENT', 'CONTROL_TESTED', 'CI_VERIFIED', 'PRODUCTION_VERIFIED'
+  ]);
+  assert.equal(loop.orchestration.oneMutatingScopePerRepository, true);
+  assert.equal(loop.orchestration.writesSerialized, true);
+  assert.equal(loop.orchestration.maxDistinctRepairAttempts, 2);
+  assert.equal(loop.orchestration.independentQualityPerspective, true);
+  assert.equal(loop.orchestration.reuseStillValidEvidenceOnlyOnSameScopeAndSha, true);
+  for (const restriction of Object.values(loop.claims)) assert.equal(restriction, false);
+  assert.equal(loop.stateSemantics.STALE, 'REVALIDATE');
+  assert.equal(loop.stateSemantics.PENDING, 'WAIT');
+  assert.match(loop.stateSemantics.UNKNOWN, /NOT_PROVEN/);
+  for (const domain of expected) {
+    const prompt = JSON.parse(read(registry.promptContracts.domains[domain]));
+    const p = prompt.solo2DomainLoop;
+    assert.equal(p.profile, loop.schema);
+    assert.equal(p.application, '.agents/app.prompt.json');
+    assert.equal(p.primaryDomain, domain);
+    assert.equal(p.linkedOrchestrator, loop.orchestrator);
+    assert.equal(p.routeSkillsByRegistry, true);
+    assert.equal(p.reuseExistingPRAndCheckpoint, true);
+    assert.equal(p.serializedMutations, true);
+    assert.equal(p.qualityIndependentPerspective, true);
+    assert.equal(p.permissionExpansion, false);
+    assert.equal(p.createsRequiredChecks, false);
+    assert.equal(p.createsScheduler, false);
+    for (const key of ['targetedInspection', 'negativeCasePriorities', 'evidenceDeliverables']) {
+      assert.ok(Array.isArray(p[key]) && p[key].length >= 3);
+    }
+    const agent = read(registry.domains[domain].chatAgent);
+    assert.match(agent, /SOLO2 Domain Loop/);
+    assert.ok(agent.includes('CAPITAL-AI-' + domain + '/domain.prompt.json'));
+    assert.match(agent, /QUALITY/);
+    assert.match(agent, /PRODUCTION_VERIFIED/);
+  }
+});
+
+test('SOLO2 domain-chat config negatives cannot expand authority or spoof a domain', () => {
+  const app = JSON.parse(read('.agents/app.prompt.json'));
+  const loop = app.solo2DomainLoop;
+  const admits = candidate =>
+    candidate?.schema === 'CAPITAL_AI_SOLO2_DOMAIN_LOOP@1'
+    && candidate.authority === 'AGENTS.md'
+    && candidate.contract === 'SOLO_MAINTAINER_FLOW@2'
+    && candidate.repository === 'SvenKulessa/Capital-AI'
+    && candidate.projectIsolation === 'STRICT'
+    && candidate.permissionExpansion === false
+    && candidate.runtimeActivation === 'NOT_PROVEN'
+    && candidate.schedulerPolicy === 'REUSE_EXISTING_ONLY'
+    && candidate.orchestration?.oneMutatingScopePerRepository === true
+    && candidate.orchestration?.writesSerialized === true
+    && candidate.orchestration?.maxDistinctRepairAttempts === 2
+    && Object.values(candidate.claims ?? {}).length === 6
+    && Object.values(candidate.claims).every(v => v === false);
+  assert.equal(admits(loop), true);
+  for (const altered of [
+    {...loop, permissionExpansion:true},
+    {...loop, authority:'PR_COMMENT'},
+    {...loop, repository:'SvenKulessa/DeviceCare-KI'},
+    {...loop, projectIsolation:'SHARED'},
+    {...loop, runtimeActivation:'VERIFIED'},
+    {...loop, schedulerPolicy:'CREATE_NEW'},
+    {...loop, orchestration:{...loop.orchestration, writesSerialized:false}},
+    {...loop, orchestration:{...loop.orchestration, maxDistinctRepairAttempts:99}},
+    {...loop, claims:{...loop.claims, createsRequiredChecks:true}},
+    {...loop, claims:{...loop.claims, allowsUnauthorizedProviderActivation:true}},
+    {...loop, claims:{}},
+    null
+  ]) assert.equal(admits(altered), false);
+});
