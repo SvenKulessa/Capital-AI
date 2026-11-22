@@ -83,7 +83,7 @@ while IFS=$'\t' read -r name commit expected_blob expected_version recipe_path; 
     # A fallback is accepted ONLY after comparing actual bytes to the pinned APKBUILD SHA-512.
     archive_name=''
     case "$name" in
-      apk-tools) if [[ "$expected_version" == '3.0.8-r0' ]]; then archive_name='apk-tools-v3.0.8.tar.gz'; fi ;;
+      apk-tools) case "$expected_version" in '3.0.8-r0') archive_name='apk-tools-v3.0.8.tar.gz' ;; '3.0.9-r0') archive_name='apk-tools-v3.0.9.tar.gz' ;; esac ;;
       ca-certificates) archive_name='ca-certificates-20261020.tar.bz2' ;;
       ncurses) archive_name='ncurses-6.6-20260516.tgz' ;;
     esac
