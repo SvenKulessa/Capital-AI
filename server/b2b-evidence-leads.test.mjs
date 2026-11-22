@@ -20,3 +20,14 @@ test('invalid repository denied',async()=>{
 test('rate limit tenant and IP scoped',async()=>{const {submit,rows}=make({limit:2});assert.equal((await submit(req())).status,202);assert.equal((await submit(req())).status,202);assert.equal((await submit(req())).status,429);assert.equal(rows.length,2)});
 test('failed persistence cannot claim success',async()=>{const submit=createB2BLeadIntake({resolveTenant:async()=> 'tenant-a',persist:async()=>{throw Error('db unavailable')}});await assert.rejects(submit(req()),/db unavailable/)});
 test('tenant cannot be supplied by unauthenticated body',async()=>{const {submit}=make();assert.equal((await submit(req({...payload,tenantId:'tenant-a'},{tenant:'tenant-b'}))).status,403)});
+
+test('organization is validated after normalization and cannot store blank or control text',async()=>{
+  const {submit,rows}=make();
+  for(const organization of ['  ',' A ','Acme\\nInjected','\\u0000A','A\\u202eB','A\\u2066B']) {
+    const input=organization.replaceAll('\\n','\n').replaceAll('\\u0000','\u0000').replaceAll('\\u202e','\u202e').replaceAll('\\u2066','\u2066');
+    assert.equal((await submit(req({...payload,organization:input}))).status,400,JSON.stringify(input));
+  }
+  assert.equal(rows.length,0);
+  assert.equal((await submit(req({...payload,organization:'  Example GmbH  '}))).status,202);
+  assert.equal(rows[0].organization,'Example GmbH');
+});
