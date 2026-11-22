@@ -31,9 +31,13 @@ async function rawBody(req, limit = 65536) {
 
 function dbConfig(env) {
   try {
-    const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
-    const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const url = secureUrl(env.SMARTCLIP_SANDBOX_DB_URL);
+    const key = env.SMARTCLIP_SANDBOX_DB_SERVICE_KEY || '';
     if (url.href !== url.origin + '/' || key.length < 32) return null;
+    // The licensed sandbox store must never borrow the production Supabase credentials.
+    for (const primary of [env.SUPABASE_URL, env.VITE_SUPABASE_URL]) {
+      if (primary && secureUrl(primary).origin === url.origin) return null;
+    }
     return { origin: url.origin, key };
   } catch { return null; }
 }
