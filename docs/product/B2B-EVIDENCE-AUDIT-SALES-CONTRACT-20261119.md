@@ -29,6 +29,14 @@ Do not grant subscription entitlements for a one-time service; use an isolated s
 - Private encrypted storage; short retention with documented deletion; signed download URL after tenant authentication.
 - Report limitations, provenance and human reviewer identity; no raw secrets, access tokens, source code or customer contact details in public output.
 
+## Current implementation boundary (2026-11-23)
+
+The existing `server/b2b-evidence-leads.mjs` is a **source-only intake function**. It is not wired to a production HTTP route, Stripe checkout, customer authorization adapter or live lead store. `QUALIFIED_PENDING_REVIEW` must not be represented as a purchased or authorized audit.
+
+A targeted TRUST repair now validates **trimmed** organization names and rejects ASCII/C1 controls and bidi-override/isolate characters before persistence. The tenant resolver remains an injected trusted dependency; the client-supplied tenant ID cannot authorize access. Current B2B test evidence: [B2B Evidence Lead Tests run 45083608571](https://github.com/SvenKulessa/Capital-AI/actions/runs/45083608571), **11/11 successful** on SHA `7dbc5eee75d05508624257eb0fcbffc6b34ad511`. This is historical head-bound evidence: it must be re-evaluated on any later head including the documentation commit.
+
+No observed production leads, customer consents, subscriptions, Stripe transactions, revenue or deployment are claimed. Required main and PR checks, owner commercial decisions, DPA/retention, tenant-isolated real persistence, and verified provider evidence remain separate future steps.
+
 ## Negative tests before activation
 1. Missing/expired repository consent -> no audit.
 2. Cross-tenant order or report request -> deny, no data disclosure.
@@ -47,7 +55,7 @@ For a EUR 149 gross offer, calculate net revenue after applicable VAT, Stripe fe
 Pilot: five consenting prospects; record actual delivery costs and willingness to pay. No automated outreach without opt-in.
 
 ## Release gate / fail closed
-- [ ] PR #815 Evidence Audit engine and security checks merged and verified on main.
+- [x] PR #815 Evidence Audit offline engine and negative tests merged to main as `f8882a5286f3d6a7c7dbc8fa06e284bc257c125d` (GitHub merge readback verified; separate main-runtime deployment NOT_PROVEN).
 - [ ] Read-only GitHub collector, provenance and tenant isolation validated.
 - [ ] Report accessibility, quality and deletion process verified.
 - [ ] Terms, privacy/DPA, tax/VAT, invoice and pricing approved.
