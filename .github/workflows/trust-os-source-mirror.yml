@@ -48,7 +48,7 @@ jobs:
           test -s "$RUNNER_TEMP/os-mirror/os-apk-installed.txt"
           # Eliminate world-writable report directories; the isolated user owns the source tree.
           sudo chown 10001:10001 "$RUNNER_TEMP/os-mirror"
-          chmod 0700 "$RUNNER_TEMP/os-mirror"
+          sudo chmod 0700 "$RUNNER_TEMP/os-mirror"
           chmod 0444 "$RUNNER_TEMP/os-mirror/os-source-inventory.json"
       - name: Build throwaway non-privileged Alpine source runner
         run: |
