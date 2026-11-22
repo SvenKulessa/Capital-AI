@@ -289,7 +289,12 @@ function validateAkashEditorialRightsCandidate(evidence, manifest) {
     'https://forwards.akash.network/status',
     'https://solana.com/news/day-2-at-breakpoint-2026-ai-compute-and-britains-tokenisation-push',
   ]);
-  assert.ok(pkg.factualReferences.every(x => x.use.endsWith('FACT_CROSSCHECK_ONLY') && x.reproductionGrant === 'NOT_PROVEN'));
+  assert.deepEqual(pkg.factualReferences.map(x => x.use), [
+    'MANUAL_FACT_CROSSCHECK_ONLY',
+    'STATUS_AND_GATE_FACT_CROSSCHECK_ONLY',
+    'SECONDARY_TIMELINE_CROSSCHECK_ONLY',
+  ]);
+  assert.ok(pkg.factualReferences.every(x => x.reproductionGrant === 'NOT_PROVEN'));
   const rights = pkg.rightsDossier;
   assert.equal(rights.status, 'SCOPE_DEFINED_NO_EXTERNAL_ARTICLE_LICENSE');
   assert.equal(rights.articleText.origin, 'NEW_CAPITAL_AI_DRAFT');
