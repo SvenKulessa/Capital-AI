@@ -6,6 +6,12 @@ on:
       - 'deploy/Dockerfile.langgraph-worker'
       - 'deploy/Dockerfile.langgraph-worker.dockerignore'
       - 'scripts/growth-agent/agent_platform.py'
+      - 'scripts/growth-agent/domain_profile_binding.py'
+      - 'scripts/growth-agent/test_domain_profile_binding.py'
+      - 'scripts/growth-agent/test_agent_platform.py'
+      - '.agents/app.prompt.json'
+      - '.agents/skills/registry.json'
+      - 'CAPITAL-AI-*/domain.prompt.json'
       - 'scripts/growth-agent/checkpoint_store.py'
       - 'scripts/growth-agent/licensed_context_offline_graph.py'
       - 'scripts/growth-agent/test_licensed_context_offline_graph.py'
@@ -75,7 +81,7 @@ jobs:
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --cap-drop ALL --security-opt no-new-privileges \
             --entrypoint python3 "$image" \
-            -c 'import sys;sys.path.insert(0,"/app/scripts/growth-agent");from agent_platform import build_research_graph;g=build_research_graph("/app");result=g.invoke({"task_id":"smoke","domain":"PLATFORM","query":"LangGraph checkpoint"});assert result["status"]=="RESEARCH_DRAFT",result;assert "trust_reviewer" in result["agent_route"];print("OFFLINE_RAG_PASS")'
+            -c 'import sys;sys.path.insert(0,"/app/scripts/growth-agent");from agent_platform import build_research_graph;g=build_research_graph("/app");result=g.invoke({"task_id":"smoke","domain":"PLATFORM","query":"LangGraph checkpoint"});assert result["status"]=="RESEARCH_DRAFT",result;assert "trust_reviewer" in result["agent_route"];assert result["profile_skills"]==["platform-engineering","platform-advisory"];assert len(result["bundle_sha256"])==64;print("OFFLINE_RAG_PASS")'
           set +e
           output="$(docker run --rm --network none --read-only \
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
@@ -94,6 +100,33 @@ jobs:
             -m unittest discover -s /app/scripts/growth-agent \
             -p test_product_opportunity_graph.py -v
           echo "OPPORTUNITY_LANGGRAPH_OFFLINE_TESTED"
+          # Profile binding is exercised in the existing optional candidate job,
+          # not in a new workflow or Required Check.
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_domain_profile_binding.py -v
+          echo "FIVE_DOMAIN_PROFILE_BINDING_TESTED"
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            /app/scripts/growth-agent/test_agent_platform.py \
+            PlatformResearchTests.test_completed_research_checkpoint_cannot_replay_after_profile_change \
+            PlatformResearchTests.test_profiles_missing_or_corrupt_never_create_checkpoint \
+            PlatformResearchTests.test_checkpoint_reopened_by_independent_interpreters \
+            PlatformResearchTests.test_copied_sqlite_database_with_foreign_task_identity_fails_closed \
+            PlatformResearchTests.test_each_domain_has_source_bound_graph_route_and_no_tools
+          echo "FIVE_DOMAIN_CHECKPOINT_REPLAY_TESTED"
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_offline_scope.py -v
+          echo "OFFLINE_TENANT_REPO_SCOPE_NEGATIVES_PASS"
           docker run --rm --network none --read-only \
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --cap-drop ALL --security-opt no-new-privileges \

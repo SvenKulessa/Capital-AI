@@ -9,6 +9,7 @@ import hashlib
 import json
 import math
 import re
+import sqlite3
 
 _SCOPE = re.compile(r"[a-z0-9][a-z0-9._-]{0,63}\Z", re.ASCII)
 _REPO = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,99}/[A-Za-z0-9][A-Za-z0-9_.-]{0,99}\Z", re.ASCII)
@@ -64,3 +65,37 @@ def scoped_thread_id(*, tenant: str, repository: str, task_id: str,
     if len(canonical) > 4096:
         raise ValueError("offline checkpoint payload too large")
     return "offline-" + hashlib.sha256(canonical).hexdigest()[:40]
+
+
+
+def bind_checkpoint(conn: sqlite3.Connection, thread_id: str) -> None:
+    """Bind an offline SQLite file to its trusted task/profile scope.
+
+    Called only under checkpoint_store's existing exclusive file lock, before
+    LangGraph can inspect or resume a checkpoint. An unbound legacy database
+    containing checkpoints is never silently adopted. Metadata is integrity
+    evidence for accidental/copied cross-scope DB reuse, not authentication.
+    """
+    if not isinstance(thread_id, str) or not re.fullmatch(r"offline-[a-f0-9]{40}", thread_id):
+        raise ValueError("invalid offline checkpoint identity")
+    digest = hashlib.sha256(
+        b"CAPITAL_AI_OFFLINE_SQLITE_BINDING@1\x00" + thread_id.encode("ascii")
+    ).hexdigest()
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS capital_offline_scope ("
+        "id INTEGER PRIMARY KEY CHECK (id = 1), digest TEXT NOT NULL)"
+    )
+    rows = conn.execute("SELECT id, digest FROM capital_offline_scope").fetchall()
+    if rows:
+        if len(rows) != 1 or rows[0] != (1, digest):
+            raise ValueError("offline checkpoint scope mismatch")
+        return
+    legacy = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='checkpoints'"
+    ).fetchone()
+    if legacy and conn.execute("SELECT 1 FROM checkpoints LIMIT 1").fetchone():
+        raise ValueError("unbound legacy checkpoint denied")
+    conn.execute(
+        "INSERT INTO capital_offline_scope (id, digest) VALUES (1, ?)", (digest,)
+    )
+    conn.commit()
