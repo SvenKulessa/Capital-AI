@@ -1,8 +1,24 @@
 // CAPITAL-AI SmartClip: sandbox-only, fail-closed extension of existing commerce contracts.
 // No live key can activate this handler; no success-page fulfillment or synthetic receipts.
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { boundedJson, readJson, secureUrl } from './http-security.mjs';
-import { verifyBlueprintWebhookSignature } from './blueprint-commerce.mjs';
+
+// Same Stripe v1 timestamp/HMAC contract as Blueprint Commerce. Keep this leaf module
+// independent of the Blueprint email transporter during pre-install security CI.
+export function verifySmartclipWebhookSignature(raw, header, secret, now = Date.now()) {
+  if (!Buffer.isBuffer(raw) || typeof header !== 'string' ||
+      typeof secret !== 'string' || secret.length < 16) return false;
+  const fields = header.split(',').map(part => part.trim().split('='));
+  const timestamps = fields.filter(([key]) => key === 't');
+  if (timestamps.length !== 1 || !/^\d{10,12}$/.test(timestamps[0][1] || '')) return false;
+  const ts = Number(timestamps[0][1]);
+  if (!Number.isSafeInteger(ts) || Math.abs(Math.floor(now / 1000) - ts) > 300) return false;
+  const expected = createHmac('sha256', secret).update(String(ts)).update('.').update(raw).digest();
+  return fields.some(([key, value]) => {
+    if (key !== 'v1' || !/^[a-f0-9]{64}$/i.test(value || '')) return false;
+    return timingSafeEqual(expected, Buffer.from(value, 'hex'));
+  });
+}
 
 export const SMARTCLIP_SKU = 'SMARTCLIP_PERSONAL';
 export const SMARTCLIP_RELEASE = 'acode-bridge-v2';
@@ -205,7 +221,7 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
       let event;
       try {
         const raw = await rawBody(req);
-        if (!verifyBlueprintWebhookSignature(raw, req.headers['stripe-signature'], hook)) {
+        if (!verifySmartclipWebhookSignature(raw, req.headers['stripe-signature'], hook)) {
           json(res, 400, { error: 'invalid_webhook_signature' }); return true;
         }
         event = JSON.parse(raw.toString('utf8'));
