@@ -9,7 +9,7 @@ import { createCryptoSignalWorkflow } from './crypto-signal-workflow.mjs';
 
 const NOW = Date.parse('2026-11-14T12:11:00Z');
 const HOUR = 3600000;
-const closeTime = Math.floor(NOW / HOUR) * HOUR;
+const closeTime = Math.floor(NOW / HOUR) * HOUR - HOUR;
 const prices = price => Array.from({ length: 25 }, (_, i) => [
   closeTime - (24 - i) * HOUR, 100, Math.max(i === 24 ? price : 100, 101),
   Math.min(i === 24 ? price : 100, 99), i === 24 ? price : 100,
@@ -55,7 +55,8 @@ test('long and short need closed-candle breakout plus aligned sentiment', () => 
 });
 
 test('source filters reject injection, stale candles and malformed inference', async () => {
-  const run = async ({ stale = false, badModel = false } = {}) => collectCryptoSignals({
+  const run = async ({ stale = false, badModel = false, incomplete = false, missing = false,
+    gap = false, withForming = false } = {}) => collectCryptoSignals({
     now: NOW, config: { ollama: new URL('http://127.0.0.1:11434/api/generate'), marketKey: 'test' },
     fetchImpl: async (raw, options) => {
       const url = new URL(raw);
@@ -68,7 +69,14 @@ test('source filters reject injection, stale candles and malformed inference', a
         })));
       }
       if (url.hostname === 'pro-api.coingecko.com') {
-        return Response.json(stale ? prices(105).map(([t, ...row]) => [t - 4 * HOUR, ...row]) : prices(105));
+        const candles = prices(105);
+        if (stale) return Response.json(candles.map(([t, ...row]) => [t - 4 * HOUR, ...row]));
+        if (incomplete) return Response.json(candles.map(([t, ...row]) => [t + HOUR, ...row]));
+        if (missing) return Response.json(candles.slice(1));
+        if (gap) return Response.json(candles.map((row, index) =>
+          index === 10 ? [row[0] + HOUR, ...row.slice(1)] : row));
+        if (withForming) return Response.json([...candles, [closeTime + HOUR, 100, 106, 99, 105]]);
+        return Response.json(candles);
       }
       const body = JSON.parse(options.body);
       assert.deepEqual(JSON.parse(body.prompt), [{ title: 'Network payments restored', excerpt: '' }]);
@@ -80,6 +88,10 @@ test('source filters reject injection, stale candles and malformed inference', a
   assert.equal(signals.length, 3);
   assert.ok(signals.every(s => s.sources.length === 1 && s.signal === 'BUY'));
   assert.equal((await run({ stale: true })).length, 0);
+  assert.equal((await run({ incomplete: true })).length, 0);
+  assert.equal((await run({ missing: true })).length, 0);
+  assert.equal((await run({ gap: true })).length, 0);
+  assert.equal((await run({ withForming: true })).length, 3);
   assert.equal((await run({ badModel: true })).length, 0);
 });
 
