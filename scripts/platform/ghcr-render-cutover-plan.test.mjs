@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { evaluateGhcrRenderCutoverPlan } from './ghcr-render-cutover-plan.mjs';
 
 const sha = 'a'.repeat(40);
@@ -56,7 +57,8 @@ test('forged approval fields, digest and registry credential do not authorize mi
   f.providerClaims = { digest: 'sha256:' + '1'.repeat(64), signature: 'VERIFIED',
     registryAuth: 'VERIFIED', cutoverApproved: true, costsApproved: true };
   const r = evaluateGhcrRenderCutoverPlan(f);
-  assert.equal(check(r, 'REDISTRIBUTION_RIGHTS'), 'VERIFIED'); // only existing structural rights guard
+  assert.equal(check(r, 'REDISTRIBUTION_RIGHTS'), 'NOT_PROVEN'); // synthetic legal inputs have no independent authority
+  assert.equal(r.evidenceAuthority, 'SUPPLIED_SNAPSHOT_CONSISTENCY_ONLY');
   assert.equal(check(r, 'VERIFIED_GITHUB_ATTESTATIONS'), 'NOT_PROVEN');
   assert.equal(check(r, 'RENDER_REGISTRY_PULL_AUTHORITY'), 'NOT_PROVEN');
   assert.equal(check(r, 'CUTOVER_COST_AND_OWNER_APPROVAL'), 'NOT_PROVEN');
@@ -81,4 +83,33 @@ test('no optional instance creation, secret handling or deployment action exists
   assert.deepEqual(r.execution, { registryPush: 'NONE', sourceSwitch: 'NONE',
     renderDeploy: 'NONE', registryPermissionsChanged: 'NONE', costsActivated: 'NONE' });
   assert.equal(Object.keys(r).includes('token'),false);
+});
+
+test('actual historical rights ledger remains blocked against current pinned Dockerfile', () => {
+  const rights = JSON.parse(readFileSync(new URL('../../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  const docker = readFileSync(new URL('../../Dockerfile', import.meta.url), 'utf8');
+  const profile = JSON.parse(readFileSync(new URL('../../deploy/render-image-profile.json', import.meta.url), 'utf8'));
+  const input = baseline();
+  input.dockerfile = docker;
+  input.license = rights;
+  input.profile = profile;
+  const r = evaluateGhcrRenderCutoverPlan(input);
+  assert.equal(rights.status, 'REVIEW_OPEN');
+  assert.equal(rights.deployEligible, false);
+  assert.ok(Array.isArray(rights.remainingGates) && rights.remainingGates.length > 0);
+  assert.equal(check(r, 'REDISTRIBUTION_RIGHTS'), 'BLOCKED');
+  assert.ok(r.rightsBlockers.includes('SOURCE_EVIDENCE_SHA_MISMATCH'));
+  assert.ok(r.rightsBlockers.includes('BASE_IMAGE_EVIDENCE_MISMATCH'));
+  assert.ok(r.rightsBlockers.includes('REMAINING_GATES_OPEN'));
+  assert.equal(r.readyForCutover, false);
+});
+
+test('the plan never reclassifies a fabricated legal reference as signed evidence', () => {
+  const input = baseline();
+  input.license = { status: 'APPROVED', deployEligible: true, applicationSourceSha: sha,
+    baseImage: pinned, remainingGates: [], legalApproval: { reference: 'invented-license-evidence' } };
+  const output = evaluateGhcrRenderCutoverPlan(input);
+  assert.equal(check(output, 'REDISTRIBUTION_RIGHTS'), 'NOT_PROVEN');
+  assert.equal(output.admission, 'BLOCKED');
+  assert.equal(output.readyForCutover, false);
 });
