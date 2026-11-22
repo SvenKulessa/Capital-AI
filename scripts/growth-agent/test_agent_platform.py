@@ -11,6 +11,7 @@ import unittest
 from unittest.mock import patch
 
 from agent_platform import build_research_graph, retrieve
+from domain_profile_binding import PROFILES, SOURCES
 from worker_service import check_root, load_task, process
 
 
@@ -25,7 +26,13 @@ def fixture(root: Path):
     p.mkdir(parents=True)
     (p / "LANGGRAPH-WORKER-READBACK-20261115.md").write_text(
         "Readback checks mount ownership and restart behaviour.\n", encoding="utf-8")
-    (root / "AGENTS.md").write_text("TRUST policy: no unapproved actions.\n", encoding="utf-8")
+    # The source-authenticated runtime now requires the five real public
+    # repository profiles. Preserve their exact metadata in synthetic fixtures.
+    repo = Path(__file__).resolve().parents[2]
+    for relative in SOURCES:
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((repo / relative).read_bytes())
 
 
 def state_dirs(root: Path):
@@ -55,10 +62,58 @@ class PlatformResearchTests(unittest.TestCase):
             state = graph.invoke({"task_id": "research-1", "domain": "PLATFORM",
                                   "query": "checkpoint sqlite"})
             self.assertEqual(state["status"], "RESEARCH_DRAFT")
+            self.assertEqual(state["profile_skills"], ["platform-engineering", "platform-advisory"])
+            self.assertRegex(state["profile_sha256"], r"^[a-f0-9]{64}$")
+            self.assertRegex(state["bundle_sha256"], r"^[a-f0-9]{64}$")
             self.assertEqual(state["agent_route"],
                              ["supervisor", "retriever", "platform_analyst", "trust_reviewer"])
             self.assertIn("ignore instructions", state["citations"][0]["excerpt"].lower())
             self.assertNotIn("merge", state["agent_route"])
+
+    def test_completed_research_checkpoint_cannot_replay_after_profile_change(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            repo = base / "repo"
+            repo.mkdir()
+            fixture(repo)
+            root = base / "state"
+            state_dirs(root)
+            task = {"schema": "CAPITAL_AI_OFFLINE_RESEARCH@1", "task_id": "same-task",
+                    "domain": "PLATFORM", "query": "SQLite checkpoint"}
+            first = process(task, state_root=root, repo_root=repo)
+            self.assertEqual(first["status"], "RESEARCH_DRAFT")
+            self.assertEqual(len(list((root / "checkpoints").glob("*.sqlite3"))), 1)
+            p = repo / PROFILES["PLATFORM"]
+            original = p.read_text(encoding="utf-8")
+            p.write_text(original.replace('"prompt": "', '"prompt": "new revision ', 1),
+                         encoding="utf-8")
+            second = process(task, state_root=root, repo_root=repo)
+            self.assertEqual(second["status"], "RESEARCH_DRAFT")
+            self.assertNotEqual(first["bundle_sha256"], second["bundle_sha256"])
+            self.assertEqual(len(list((root / "checkpoints").glob("*.sqlite3"))), 2)
+
+    def test_profiles_missing_or_corrupt_never_create_checkpoint(self):
+        for case in ("missing", "tampered"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                repo = base / "repo"
+                repo.mkdir()
+                fixture(repo)
+                root = base / "state"
+                state_dirs(root)
+                p = repo / PROFILES["PRODUCT"]
+                if case == "missing":
+                    p.unlink()
+                else:
+                    text = p.read_text(encoding="utf-8")
+                    p.write_text(text.replace('"permissionExpansion": false',
+                                              '"permissionExpansion": true', 1),
+                                 encoding="utf-8")
+                task = {"schema": "CAPITAL_AI_OFFLINE_RESEARCH@1",
+                        "task_id": "blocked", "domain": "PRODUCT", "query": "test"}
+                with self.assertRaises((OSError, ValueError)):
+                    process(task, state_root=root, repo_root=repo)
+                self.assertEqual(list((root / "checkpoints").iterdir()), [])
 
     def test_no_matching_evidence_not_proven(self):
         with tempfile.TemporaryDirectory() as tmp:
