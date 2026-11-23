@@ -130,3 +130,87 @@ Source of truth für **diesen** Readback: GitHub Branch-/PR-/Check-Run- und Rule
 | Rights-/OCI-Gates | Ledger `REVIEW_OPEN`, `deployEligible=false`; die Render-Service- und Deploy-Antworten lieferten keinen unveränderlichen Runtime-OCI-Manifest-Digest | `REDISTRIBUTION_RIGHTS=BLOCKED`, `REGISTRY_IMAGE_IDENTITY=NOT_PROVEN`, `SOURCE_DELIVERY=NOT_PROVEN`, `RENDER_SOURCE_SWITCH=HOLD` |
 
 **Entscheid:** PR #913 bleibt Draft; weder Main-Merge noch Registry-Publish oder Source-Switch. Der Quell-/Lizenz-/Attestation-Status wird durch den Ruleset- und Provider-Metadatenabgleich **nicht** zu VERIFIED. Der nicht erreichbare externe `/healthz`-Abruf in dieser Sitzung ist ausdrücklich **NOT_PROVEN**; Deploy-Metadaten nicht als Health- oder Runtime-Binding-Test ausgeben. Kein Secret-Wert gelesen oder dokumentiert.
+
+
+## 2026-11-23 post-#926 OCI identity readback and conservative main reconciliation
+
+Evidence status: **SOURCE_ONLY / NON-AUTHORIZING**. GitHub current main at readback:
+`3b92f054ca18b1521fde570ba082acca2b5ec601` (merged #926).
+The existing PR #913 branch was synchronized by a two-parent, non-forced
+fast-forward ref update to `d0b9a7f12fbf3e6622976cfdf9e8e8ca71945bd3`:
+the four files introduced on main by #926 have no path intersection with
+the 26 scoped PR files. GitHub comparison after sync: 52 ahead / 0 behind;
+PR remains DRAFT. This merge commit is **branch-only**, not a main merge.
+Do not interpret this section as a new release gate or rights approval.
+
+### Verified source and CI evidence
+
+- GitHub main [Docker Security Gate 45243073134](https://github.com/SvenKulessa/Capital-AI/actions/runs/45243073134)
+  at exact current main SHA = SUCCESS, source-image license and security scan passed.
+- Real job log for job `137932582312` explicitly reports **CI BuildKit OCI export
+  manifest** `sha256:3d53c680e0f7b15f021c1621f174325c16d109f56ab7e1398a2d1240bfb6d500`
+  and **CI image CONFIG digest** `sha256:21ef93a870f9b15fd982a320e99085fbd2ba1e92f71d0baf649a68eceddcaa12`.
+  Container evidence still has `ociIndexDigest=null`,
+  `platformManifestDigest=null`, `runtimeProviderDigest=null`; the CI
+  BuildKit export digest has **not** been matched to a GHCR registry-pulled
+  platform manifest, signed attestation or the Render runtime. Do not
+  promote this local digest to a registry/runtime identity.
+- GitHub Actions artifact `docker-security-3b92f054ca18b1521fde570ba082acca2b5ec601`
+  ID `14851887854`, ZIP digest metadata
+  `sha256:c11dd99001a79b563e0eff03e6133fda2631127207356a0fd18a2b91139652ca`,
+  `253378` bytes. The ZIP was **not downloaded and independently re-hashed**
+  in this readback; its metadata digest is NOT an OCI image digest.
+- Main `publish_candidate` and `Production Handoff Gate` both `SKIPPED`.
+  GHCR exposes older **public package versions** at
+  https://github.com/SvenKulessa/Capital-AI/pkgs/container/capital-ai ;
+  the current source's immutable GHCR manifest and subject-matched signature
+  and provenance/SBOM attestation remain **NOT_PROVEN**.
+  Anonymous registry tags-list returned HTTP 401; this is not proof of absence.
+
+### Render deployment and HTTP evidence (read-only)
+
+- AICapital workspace `tea-d90o4rj7uimc739i86ug`, service
+  `srv-dau1rp893c1s73cdhm1g`, Git-backed `main`/`./Dockerfile` service.
+  Existing autodeploy `dep-dc28prc9v7es73dd6jq0` reports `live` for
+  source `3b92f054ca18b1521fde570ba082acca2b5ec601`.
+- Both public `/healthz` JSON responses report `status=ok`,
+  `runtimeIdentity.sourceSha=3b92f054ca18b1521fde570ba082acca2b5ec601`,
+  `renderGitBuildIdentity.evidence=RENDER_GIT_BUILD_ARG_UNATTESTED`,
+  `buildIdentity.bound=false`, `buildIdentity.sourceSha=null`.
+  Source-SHA association is verified; builder/OCI attestation is not.
+- Render service and deploy do **not** expose a running immutable OCI
+  platform-manifest digest. A configured GHCR registry credential alone
+  does not prove a GHCR pull.
+
+### Real outstanding source-delivery and rights constraints
+
+- Current branch rights file remains `REVIEW_OPEN`, `deployEligible=false`,
+  `legalApproval=null`, source-bound to obsolete
+  `ed594ef93f66ee8f13f67d75dde56f46a95b1cd6`, with old base
+  `node:24.19.0-alpine`; current Dockerfile is pinned to
+  `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`.
+- Six existing ledger obligations remain open: OS corresponding sources
+  and recipient delivery; exact base-to-source provenance/NOTICE packaging;
+  JPEG creation and use terms; inline logos and marks; actual
+  provider display/API/export contracts; final-published-image font
+  bytes and OFL. Existing CI byte-checked font/NOTICE and offline Alpine
+  source mirror evidence reduces *technical unknowns* but does not certify
+  commercial rights, signed delivery, legal owner consent, or the image
+  actually running on Render.
+- **REDISTRIBUTION_RIGHTS=BLOCKED** until a current source/base-bound
+  review and genuine legal/recipient obligations are evidenced.
+  `CURRENT_SHA_GHCR_PLATFORM_MANIFEST=NOT_PROVEN`,
+  `REGISTRY_SIGNATURE=NOT_PROVEN`, `ATTESTATION=NOT_PROVEN`,
+  `RENDER_RUNTIME_MANIFEST=NOT_PROVEN`, `CUTOVER=HOLD`.
+
+### Validation and rollback
+
+- This update is documentary reconciliation only. The existing PR
+  negative/security tests, `Docker Security Gate`, `Domain Governance`,
+  CodeQL and isolated source-mirror checks must be read at the **new PR HEAD**.
+- No new GHCR push, cost, provider secret, config, source switch,
+  manual deploy, live Stripe or main-branch mutation was performed.
+- Roll back the branch-only main sync by reverting its isolated merge
+  through a normal follow-up commit (or by restoring the prior head
+  `af643e746036222d10465e239e651d67f263420f` with verified lease if
+  explicitly authorized). Existing live Git-backed deploy is unaffected.
