@@ -306,3 +306,132 @@ was produced. `GHCR_PUBLISH=BLOCKED`, `RENDER_CUTOVER=HOLD`.
 this addendum on the existing Draft PR branch; no live state, secrets,
 Registry, customers or billing touched. Each new PR head needs its own
 existing CI checks; prior CI run IDs remain historical evidence.
+
+
+## SaaS-only Render hosting decision — 2026-11-23
+
+**Owner-supplied product boundary:** CAPITAL-AI is operated exclusively as a
+**hosted SaaS service on the existing Render Git-backed Docker service**.
+No OCI/container image, installation package, server binary, SDK bundle or
+CLI is to be delivered to B2B customers. **This is a product-scope decision,
+not a legal approval, not a statement that no software copies are conveyed
+to the hosting provider, and not permission to publish GHCR images.**
+Do not switch the Render source, publish a registry candidate or loosen the
+existing `docs/security/evidence/license-rights-review.json` guard.
+
+**Authority / immutable readback:** current main
+`3b92f054ca18b1521fde570ba082acca2b5ec601`,
+Root `AGENTS.md` blob `3d5ad12cb6e0f055dac6db427422a903937c91dd`
+(`SOLO_MAINTAINER_FLOW@2`). Existing Render workspace
+`tea-d90o4rj7uimc739i86ug`, service `srv-dau1rp893c1s73cdhm1g`,
+source `main` / `./Dockerfile`, live deploy
+`dep-dc28prc9v7es73dd6jq0` at the same main SHA.
+This is **Git-built**, not a verified GHCR-pulled image.
+No B2B-customer image delivery is intended; actual third-party copies
+and contractual licensing to Render remain a separate legal fact check.
+
+### Trigger classification, not a blanket legal waiver
+
+| Usage class in this chosen model | Actual evidence / obligation | Classification |
+| --- | --- | --- |
+| `SERVER_RUNTIME_ONLY`: Alpine/Node/Python, ClamAV, server-only dependencies | Merely invoking software remotely generally does not itself deliver an executable copy to the website user. Scope of GPL/LGPL/MPL obligations depends on actual copies, modifications, linking, selected licence and provider contracts. The pinned base and exact runtime package counts have CI evidence, **not** full source-to-binary proof. | `HOSTED_USE_SCOPED`; source delivery to website customers not automatically triggered, **hosting-provider copy/NOTICE and exact obligations REVIEW_REQUIRED** |
+| `BUILD_ONLY`: build/scan dependencies | Do not count build-only tools as browser or final-runtime delivered solely because they are in lockfiles. Verify inclusion with the existing final-image inventory; any separately copied CI/build image needs its own classification. | `CI_SCOPED`; `NOT_PROVEN` for other actual conveyance |
+| `BROWSER_DISTRIBUTED`: emitted JS, self-hosted TTFs, JPEGs, SVGs and other frontend assets | The browser downloads copies; notices, source obligations (if licence-triggered), font copyright/OFL, asset provenance and trademark permissions remain in scope **even though no container is sent to customers**. Actual CI `THIRD_PARTY_NOTICES.txt`, Node licence and `fonts/OFL.txt` hashes are linked in the preceding six-gate audit, but completeness and live public readback are separate claims. | `NOTICE_BYTE_CI_VERIFIED`; `BROWSER_RIGHTS_REVIEW_REQUIRED` |
+| `NETWORK_COPYLEFT` (e.g. Cryptofeed, AGPL-3.0-or-later) | `server/oss-provider-adapters.mjs` declares Cryptofeed as an **adapter candidate**, `activationReviewRequired:true`; listing software is not proof it is installed, modified or running. If a modified AGPL-covered server program interacts with users over the network, §13 obligations may apply **without delivering a container**. Verify exact runtime activation and source/modification status before admission. | `ACTIVATION_NOT_PROVEN`; `AGPL_NETWORK_REVIEW_REQUIRED_IF_ENABLED` |
+| `HOSTING_PROVIDER_COPY`: Render Git-based Docker build | Render may receive source/build context or create/hold an image in the hosting arrangement. Determine actual copy/conveyance, provider relationship and exact software licences, including any GPL/LGPL/MPL source/NOTICE conditions; **do not classify it as automatically internal or as a completed B2B customer delivery**. | `LEGAL_REVIEW_REQUIRED`; no new deployment |
+| `PUBLIC_MARKET_DATA_DISPLAY`: provider quotes, derived scores, charts, customer-visible content, caches or exports | SaaS service terms do not grant exchange/provider data display, derivative, retention or redistribution rights. Existing Kraken and Massive replies are nonbinding, Twelve Data is conditional and neither selected licensed plan nor entity/feed is evidenced. Open/public reference data and private BYOK are independent scopes. | `PROVIDER_CONTRACT_SCOPE_UNVERIFIED`, keep guards fail-closed |
+| `GHCR_IMAGE_PUBLICATION` or `IMAGE_TO_B2B` | **Not selected** as the operational target. Historical public GHCR package versions do not prove a current publish or license; a later candidate would still require the existing exact-source/base Rights Gate and independent registry attestation. | `DEFERRED_NOT_IN_SAAS_SCOPE`; existing `GHCR_PUBLICATION=BLOCKED`, `RENDER_CUTOVER=HOLD` |
+
+### Six existing ledger entries under the SaaS-only decision
+
+1. **OS source/delivery.** Technical CI inventory: 50 Alpine packages and
+   34 independently mirrored historical source recipes / 229 source-file
+   SHA-512 verifications, with `sourceDeliveryProven=false` and
+   `redistributionApproved=false`. Do **not** demand a customer container
+   source-offer as an already triggered SaaS distribution duty. Establish
+   whether the Render hosting workflow legally conveys copies and, if so,
+   corresponding-source, patch, build-input and recipient-access scope
+   for those exact binaries. **Status: CONDITIONAL_REVIEW / no legal release.**
+2. **Exact base and NOTICE.** Current Docker base pinned to
+   `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`.
+   Existing same-CI-image scan correlated the frontend, Node and OFL
+   notice hashes. These do not demonstrate that every runtime notice, base
+   source or provider-conveyance obligation is met. Preserve exact byte
+   evidence and evaluate only the actual SaaS/provider/browser distributions.
+   **Status: CI_SUBGATES_VERIFIED / COMPLETENESS_NOT_PROVEN.**
+3. **JPEG origin.** Owner-authorized project logo file
+   `public/branding/capital-ai-logo.jpg` is distinct from the
+   `glowing_earth_nodes_1789997454893.jpg` hero image whose generating
+   account, creation artifact, commercial terms and derivative permissions
+   are still missing from the ledger. Both are publicly delivered if served.
+   Repository/CI byte hashes cannot confer those rights.
+   **Status: OWNER_LOGO_PROJECT_USE_EVIDENCED / EARTH_RIGHTS_NOT_PROVEN.**
+4. **Inline logos and marks.** `src/components/AssetLogo.tsx` embeds
+   instrument/company-related symbols. Verify provenance of the actual
+   vectors and public brand depiction; use descriptive text/ticker-only
+   alternatives for symbols lacking rights rather than assuming trademark
+   clearance from code hashes. **Status: REVIEW_REQUIRED.**
+5. **Market-data licences.** Only review providers **actually active**
+   for public customer display, derived outputs, retention, API/export,
+   brand attribution and geographical/entity scope. Existing ledger has
+   `kraken`/`polygon` `CONTRACT_SCOPE_UNVERIFIED` and conditional
+   `twelvedata` evidence, not a signed chosen feed entitlement.
+   Do not unlock previously blocked feeds from SaaS selection.
+   **Status: CONTRACT_SCOPE_UNVERIFIED / COMMERCIAL_DISPLAY_BLOCKED
+   absent exact evidence.**
+6. **Fonts / OFL.** `public/fonts/provenance.json` binds unmodified Plus
+   Jakarta Sans Regular/Italic and `public/fonts/OFL.txt` to known upstream
+   bytes. Existing CI test extracts and compares the same font+licence bytes
+   inside the *scanned CI image* (three file hashes) and existing frontend
+   bundle serves font files to browsers. Preserve OFL and upstream copyright
+   with distributed font files and respect reserved names if modified.
+   Published GHCR / independently built Render binary identity is
+   **NOT_PROVEN**; no claim that this image was tested byte-for-byte.
+   **Status: CI_FONT_BYTES_VERIFIED / BROWSER_NOTICE_REVIEW /
+   LIVE_IMAGE_MATCH_NOT_PROVEN.**
+
+### Exact technical next work vs. personal legal evidence
+
+**Technical work already evidenced:** CI Docker Security Gate, isolated
+Source Mirror and CodeQL on PR head
+`8f6d67ced78cdb6a9c84d708d9ff19d1e4b53089` passed;
+browser-emitted inventory and font/notice SHA checks passed on the
+referenced CI merge artifact. The newly added test in
+`scripts/assert-ghcr-publication-rights.test.mjs` asserts that injecting
+`HOSTED_SAAS_ONLY` or `customerImageDelivery=false` into the rights
+ledger does **not** bypass current-source/base, missing approval or remaining
+gates. It is a fail-closed unit test, not a simulated legal permission.
+
+**Owner/source-specific evidence needed before changing any legal
+admission:** (a) exact generated hero-image creation artifact and
+commercial/derivative terms for the account used; (b) third-party logo
+and mark creation/permission provenance, or approval to replace
+unverified symbols with descriptive alternatives; (c) signed provider
+order/terms for **each enabled** commercial data feed with identity,
+region, display, caching, derived/export and attribution rights; and
+(d) if legally material for the actual Render/CI workflow, review of
+the host's software-copy/recipient relationship and matching source/
+NOTICE terms. No new licensing representation is inferred from an
+owner product-model decision.
+
+**Existing rights guard unchanged:** ledger `REVIEW_OPEN`,
+`deployEligible=false`, `legalApproval=null`, all six
+`remainingGates` retained. `GHCR_PUBLISH=BLOCKED`,
+`RENDER_SOURCE_SWITCH=HOLD`. This SaaS scope reduces unnecessary
+customer-image delivery work; it cannot erase browser distribution,
+network-copyleft triggers, provider data rights or applicable host-copy
+obligations. The original `GHCR -> Render` PR is retained as Draft
+offline engineering evidence, not the currently selected deployment goal.
+
+### Primary licence reading (not a substitute for advice)
+
+- OSI FAQ (network use vs distribution): https://opensource.org/faq
+- GNU GPL FAQ: https://www.gnu.org/licenses/gpl-faq.html
+- GNU AGPLv3 (section 13): https://www.gnu.org/licenses/agpl-3.0.html
+- Apache-2.0 section 4: https://www.apache.org/licenses/LICENSE-2.0.html
+- OFL FAQ: https://openfontlicense.org/ofl-faq/
+
+**Rollback:** revert only this paragraph append and the scoped GHCR
+negative test on the existing Draft PR branch. No change to `main`,
+the Render service, package registry, rights ledger, provider credentials,
+customer records, checkout or billing.
