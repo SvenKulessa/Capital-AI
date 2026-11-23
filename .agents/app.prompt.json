@@ -111,5 +111,66 @@
     "createsRequiredChecks": false,
     "createsScheduler": false,
     "noInventedEfficiencyClaims": true
+  },
+  "solo2DomainLoop": {
+    "schema": "CAPITAL_AI_SOLO2_DOMAIN_LOOP@1",
+    "kind": "NON_AUTHORIZING_EXECUTION_PROFILE",
+    "authority": "AGENTS.md",
+    "contract": "SOLO_MAINTAINER_FLOW@2",
+    "repository": "SvenKulessa/Capital-AI",
+    "projectIsolation": "STRICT",
+    "domainRegistry": ".agents/skills/registry.json",
+    "domainProfiles": "domainPrompts",
+    "orchestrator": "scripts/growth-agent/auto_loop.py",
+    "offlineResearch": "scripts/growth-agent/agent_platform.py",
+    "durableCheckpoints": "scripts/growth-agent/checkpoint_store.py",
+    "schedulerPolicy": "REUSE_EXISTING_ONLY",
+    "permissionExpansion": false,
+    "runtimeActivation": "NOT_PROVEN",
+    "decisionSequence": [
+      "LOAD_LIVE_AGENTS_MAIN_AND_SCOPED_SKILLS",
+      "RECONCILE_EXISTING_PRS_AND_CONTRACT_OVERLAP",
+      "PRIORITIZE_OWNER_SCOPE_AND_P0_RISKS",
+      "SELECT_ONE_MUTATING_SCOPE",
+      "REPRODUCE_AND_IMPLEMENT_MINIMAL_FIX",
+      "EXECUTE_TARGETED_POSITIVE_NEGATIVE_TESTS",
+      "VERIFY_REAL_CURRENT_BASE_HEAD_CI_RULESETS",
+      "MERGE_ONLY_IF_EXISTING_DELEGATION_AND_CHECKS_PROVEN",
+      "READBACK_MAIN_IMAGE_DEPLOYMENT_AND_RUNTIME_SEPARATELY"
+    ],
+    "orchestration": {
+      "readOnlyAnalysisMayParallelize": true,
+      "writesSerialized": true,
+      "oneMutatingScopePerRepository": true,
+      "crossDomainSkillsOnDemand": true,
+      "independentQualityPerspective": true,
+      "trustPerspectiveOnAffectedBoundaries": true,
+      "maxDistinctRepairAttempts": 2,
+      "reuseStillValidEvidenceOnlyOnSameScopeAndSha": true,
+      "preferExistingPR": true,
+      "blockedIndependentWorkMayContinue": true
+    },
+    "stateSemantics": {
+      "UNKNOWN": "NOT_PROVEN_OR_BLOCKED",
+      "STALE": "REVALIDATE",
+      "FAILED": "BLOCKED",
+      "PENDING": "WAIT",
+      "success": "REQUIRE_SOURCE_BOUND_EVIDENCE"
+    },
+    "evidenceLevels": [
+      "CONTROL_PRESENT",
+      "CONTROL_TESTED",
+      "CI_VERIFIED",
+      "PRODUCTION_VERIFIED"
+    ],
+    "claims": {
+      "projectPolicyChanges": false,
+      "grantsToolAccess": false,
+      "createsRequiredChecks": false,
+      "createsNewScheduler": false,
+      "allowsManualDeployment": false,
+      "allowsUnauthorizedProviderActivation": false
+    },
+    "limitations": "Declarative chat/domain configuration only; no claim of live worker activation, hosted scheduler wiring, or completed CI."
   }
 }

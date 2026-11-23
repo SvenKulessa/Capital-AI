@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateSkillCatalog } from '../../scripts/skill-bundles.mjs';
 export const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 export const DOMAINS = ['PRODUCT','MARKET','PLATFORM','TRUST','GROWTH'];
 export const SECTIONS = ['Mission','Scope','Inputs','Outputs','Dependencies','Domain Ownership','KPIs','Evidence Requirements','Security Constraints','Failure Conditions','Validation Rules','Acceptance Criteria','Escalation Matrix'];
@@ -54,6 +55,8 @@ export function inspect(root=ROOT) {
    registry.skillGovernanceVersion!=='CAPITAL_AI_SKILL_GOVERNANCE@1') errors.registry.push('schema/authority mismatch');
  if(!registry.domains || Object.keys(registry.domains).length!==5 ||
    DOMAINS.some(d=>!registry.domains[d])) errors.registry.push('exactly five domains required');
+ try { validateSkillCatalog(registry); }
+ catch (error) { errors.registry.push(error.message); }
  const governs=registry.skillGovernance;
  if(!governs || typeof governs!=='object' || Array.isArray(governs)) errors.registry.push('invalid skillGovernance');
  const owners=governs && typeof governs==='object' && !Array.isArray(governs) ? governs : {};
@@ -95,6 +98,7 @@ export function inspect(root=ROOT) {
    const parts=Object.fromEntries(DOCS.map(f=>[f,read(root,'.agents/skills/'+id+'/'+f)]));
    const all=DOCS.map(f=>parts[f]).join('\n');
    for(const file of DOCS) if(!parts[file]) errors.skills.push(id+': missing '+file);
+   if(all.includes('SOLO_MAINTAINER_FLOW@1')) errors.skills.push(id+': obsolete SOLO contract');
    if(!new RegExp('^---\\nname:\\s*'+id+'\\n').test(parts['SKILL.md']))
      errors.skills.push(id+': invalid SKILL frontmatter name');
    for(const section of SECTIONS) if(!heading(all,section)) errors.skills.push(id+': missing section '+section);
