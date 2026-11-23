@@ -48,7 +48,10 @@ export function planTwentyProductActivation(input) {
       && f.isActive === true && f.writeAllowed === true),
   'TWENTY_FIELDS_NOT_PROVEN');
   const selected = fieldInventory.filter(f => f.name === activationField);
-  requireMatch(selected.length === 1 && selected[0].allowedValues?.includes(activationValue)
+  // A string has .includes() too: 'INACTIVE'.includes('ACTIVE') is true.
+  // Require a concrete allowlisted value array with exact membership.
+  requireMatch(selected.length === 1 && Array.isArray(selected[0].allowedValues)
+    && selected[0].allowedValues.includes(activationValue)
     && typeof activationValue === 'string' && activationValue.length > 0,
   'TWENTY_ACTIVATION_FIELD_NOT_PROVEN');
   requireMatch(Buffer.isBuffer(sourceBytes) && Buffer.isBuffer(assetBytes)
