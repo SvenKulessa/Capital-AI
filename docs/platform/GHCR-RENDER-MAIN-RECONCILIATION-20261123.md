@@ -39,6 +39,49 @@ Status: **EVIDENCE ONLY / NO GHCR PUBLICATION / NO RENDER SOURCE SWITCH**. Proje
 - Das ZIP enthält **keine vollständigen tatsächlichen Quellarchive, Fonts/JPEG-Binärdateien des späteren registry-pulled Images, OCI-Index-/Plattformmanifest-Digests, Signaturprüfung oder juristische Lizenzfreigabe**. Die sechs folgenden Rechte-Nachweise bleiben daher auch nach der technischen Byte-Korrelation offen.
 - Git-basierter Render-Service `srv-dau1rp893c1s73cdhm1g`: Deploy `dep-dc1ogavb9u1s738ik7m0` steht `live` mit Git-SHA `fe4cc7a5784af1b4924c8bbb8c5af49af8b29e34`. Öffentlicher `GET /healthz` vom 23.11.2026 00:33:01 UTC: HTTP 200, `status=ok`, `runtimeIdentity.sourceSha=fe4cc7a5784af1b4924c8bbb8c5af49af8b29e34`; `buildIdentity.bound=false`, `renderGitBuildIdentity.evidence=RENDER_GIT_BUILD_ARG_UNATTESTED`. Git-SHA-Korrelation ist kein OCI-Provenance-Beweis.
 
+## Unabhängiger Source-/Asset-Byte-Readback für PR #913 (23.11.2026)
+
+**Zweck:** Weiterführung der sechs vorhandenen Rechte- und Herkunftsnachweise; keine neue Rechts- oder Deployment-Freigabe. Getestete Referenzen: Main `331170a4fe27580fb9e7305a83851ffafb413f68`, PR-Head `98dc3c5a219de7b3d5045117bd5e16ccf463e70c`, PR-GitHub-Test-Merge `7a6c9660ad88a587642c8b6f1beac85026de7b26`. Die Hashprüfung wurde gegen tatsächlich geladene Bytes ausgeführt, nicht aus JSON-Zuständen als Erfolg gefolgert.
+
+### 1. Originale Alpine-Quellen: tatsächlich nachgerechneter SHA-512-Readback
+
+- [Isolierter OS-Source-Mirror Run 45095621730](https://github.com/SvenKulessa/Capital-AI/actions/runs/45095621730), **SUCCESS**, GitHub-Artefakt **14782739944** (`ghcr-aports-source-pr913-7a6c9660ad88a587642c8b6f1beac85026de7b26`), **288333769** ZIP-Bytes, **41** ZIP-Einträge, ZIP CRC erfolgreich. Unabhängig berechneter ZIP-SHA-256 `33dc09f2d8cb7d5d2278f73027ce164c63b7bced043552d260404b9e76eb887f`, identisch zu GitHubs veröffentlichtem Artifact-Digest.
+- Inneres `source-mirror.tar.gz`: **288226135** Bytes, SHA-256 `fe16affa77e0fc28f4b8955d49133edbb6ee76b965f00fec1c6e41bf9428d72e`, unabhängig identisch zu `source-mirror.tar.gz.sha256` und `collection-summary.json.privateMirrorArchiveSha256`.
+- Das TAR enthält **34** tatsächliche `APKBUILD`-Rezeptdateien. Jede einzelne der **229** durch diese APKBUILDs deklarierten SHA-512-Quell-/Patchdateien wurde aus den TAR-Bytes neu gehasht: **229/229 identisch**, **0 fehlende Dateien**, **0 Abweichungen**, **0 Parser-/Formatfehler**. `alpine-base` enthält in diesem Snapshot keine deklarierten SHA-512-Quelldateien und darf nicht fälschlich als zusätzlich gehashter Input zählen.
+- `recipes.tsv` enthält zu allen **34/34** PR-Image-Quellreferenzen denselben source-package-Namen und exakt denselben Aports-Commit. Darüber hinaus sind die **50 installierten Binärpakete samt Version/Quellenzuordnung**, die **34 Rezept-Locators** und der APK-DB-Hash `sha256:263c775b75102a70b050dcf8bfde0da4e728ab316c8ebea31cd51735fdc16f64` zwischen Main-CI-Inventar `331170a...` und PR-Testimage **identisch**.
+- **Identitätsgrenze:** Der Source-Mirror enthält die ältere explizite `sourceSha=fa706af9aa698d702dc782f3f95a95c7f7572a22` / Image-CONFIG `sha256:5f76597529b8ef14ead01b686879b577c9ba35a455c03ae5aa021c1a8ae7d1d7`; Main-CI-Image `sha256:0203f893831df9f2949c2ad6baae90101b0eff1178989d675f0c1de76a529472`; neuer PR-Test-Merge-Image-CONFIG `sha256:931ca59734c2ab661c3977f6562ac8ff24b49396e61bcf5b0516a1f9bd74d2ee`. **Diese drei Builds sind nicht byteidentisch.** Die festgestellte Quellen-/Paketkontinuität beweist keine reproduzierbare Binary-to-Source-Rebuild-Gleichheit und ist keine vollständige Source-Delivery, kein Offer oder eine Empfängerquittung. `sourceDeliveryProven=false`, `redistributionApproved=false` bleiben unverändert.
+
+### 2. Aktuelle Asset-/Marken-Dateien: unabhängiger Bytehash gegen bestehendes Rights-Ledger
+
+Jede folgende Datei wurde direkt am PR-Head über den GitHub-Contents-Readback bezogen und mit einer gegen `SHA-256("abc")` selbstgetesteten SHA-256-Implementierung über den tatsächlichen Bytepuffer neu gehasht. Die Ledger-Werte wurden **nicht** als Hashalgorithmus-Ersatz verwendet.
+
+| Aktueller Datei-Pfad | Bytes | Nachgerechneter SHA-256 | Ledger-/Provenienzabgleich | Nicht nachgewiesen |
+| --- | ---: | --- | --- | --- |
+| `public/branding/capital-ai-logo.jpg` | 224129 | `6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3` | **MATCH**; `docs/licenses/Capital-AI-BRANDING.md` Owner-Projektnutzung | Eigenständige Markenregistrierung/Drittrechte, allgemeine Weitergaberechte |
+| `src/assets/images/glowing_earth_nodes_1789997454893.jpg` | 870199 | `aae548443cb6ec1be4c7d9f9389c52cc1e01b28df28fbc4e985750dd424bb671` | **MATCH**; `docs/security/evidence/asset-mockup-history-review.json` dokumentiert Finance→CAPITAL-AI-Kopierkette / Git-Blob `9bd051fcbbf1bf30d38a98795638c7cf80c84ac4` | Konkreter Generierungslauf, Modell/Tool, Generationstermin, wirksame kommerzielle Output-/Drittrechte |
+| `src/components/AssetLogo.tsx` | 29660 | `b2c1401e6c39116aa81c0d426d5403134fcb2b36b8729ab5e5fd976c01d7213f` | **MATCH** zu historischer Rechteakte; enthält wiedererkennbare inline generierte Symbolgrafiken | Originale Vorlagen-/Urheberherkunft jedes Symbols und ggf. Markennutzungsrechte |
+| `public/fonts/PlusJakartaSans-Regular.ttf` | 176288 | `89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8` | **MATCH** zu Ledger und `public/fonts/provenance.json` | Binär-Bytes des späteren registry-pulled Images / tatsächliche Empfängerauslieferung |
+| `public/fonts/PlusJakartaSans-Italic.ttf` | 183188 | `9529eb888668b6a3c6dd75b6341a2fc5263fb6c9e788822e6117c29dd9e8b115` | **MATCH** zu Ledger und `public/fonts/provenance.json` | Binär-Bytes des späteren registry-pulled Images / tatsächliche Empfängerauslieferung |
+| `public/fonts/OFL.txt` | 4402 | `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99` | **MATCH** zu `public/fonts/provenance.json`, `docs/security/evidence/license-sources/Plus-Jakarta-Sans-OFL.txt` und `runtime-font-ofl.txt` des PR-CI-Images | Vollständigkeit der späteren OCI-Auslieferung und Einhaltung aller Bedingungen |
+
+**Konkret belegter Dokumentationsmangel:** Das historische Rights-Ledger referenziert für die Earth-JPEG `LICENSE-RIGHTS.md#herkunftsbestätigung`, dieser Pfad ist im aktuellen PR-Repository **nicht vorhanden (404)**. Der tatsächlich vorhandene Teilnachweis liegt in `docs/security/evidence/asset-mockup-history-review.json` (Git-Blob `3052c7bae4a2b08af461c87f8c896c938e7f8a1d`). Die alte Referenz wird hier nachvollziehbar aufgelöst; ein `OWNER_STATEMENT` zur Finance-/Gemini-Weiterverarbeitung ist **kein** unabhängig bezeugter ursprünglicher Generierungslauf. Historische Lizenzakten bleiben unverändert, statt ihre Genehmigungsfelder zu fälschen.
+
+### 3. Providerrechte und verbleibende End-to-End-Gates
+
+Das tatsächlich vorhandene `docs/market-data/evidence/twelve-data-rights-20261005.json` (Git-Blob `0934784689d50fb87a6d62417acdc386c8d7425c`) dokumentiert eine **schriftliche bedingte** Twelve-Data-Antwort zu kundenorientierter Anzeige und nicht-rekonstruierbaren abgeleiteten Outputs, mit `productionAdmission=false` und `deployEligible=false`. Account/Tier/Feeds/Handelsplätze, Broker-/Backup-/Replay- und Reseller-/Sublizenzrechte sind nicht gebunden; alle anderen Provider verbleiben in der bestehenden Vertragsprüfliste. Eine Providerantwort ist weder ein pauschaler Datennutzungs- noch ein OCI-Veröffentlichungsvertrag.
+
+| Bereits technisch nachgewiesener Anteil | Offener rechtlicher bzw. providergebundener Anteil |
+| --- | --- |
+| OS-Originalinput SHA-512 **229/229**, Aports-Rezepte **34/34** | Korrespondierende Sources/Notices und tatsächliche Recipient-Delivery **NOT_PROVEN** |
+| Aktuelle Branding-JPEG-Bytes und Earth-Kopierhistorie | Generierungsbedingungen, Dritt- und Markenrechte **NOT_PROVEN** |
+| Aktueller `AssetLogo.tsx`-Bytehash | Originäre Symbol-/Markennutzungsrechte **NOT_PROVEN** |
+| Beide TTFs + OFL im Repo byteidentisch, OFL im PR-CI-Image | Vollständiger Font-/OFL-Transport im registry-pulled Image **NOT_PROVEN** |
+| Twelve-Data-Antwort vorhanden, konditionale Nutzungsart dokumentiert | Konkrete Vertrags-/Daten-/Reseller-/Attributionsberechtigungen **BLOCKED** |
+| PR-Image CONFIG, SBOM, Notices und GitHub-CI **VERIFIED** | OCI-Index/Plattformdigest, Signaturen, Render-Image-Pull/-Identität **NOT_PROVEN** |
+
+**Sicherheitsentscheidung:** `RIGHTS_REVIEW=REVIEW_OPEN`, `sourceDeliveryProven=false`, `redistributionApproved=false`, `legalApproval=null` und `deployEligible=false` bleiben bewusst erhalten. Kein GHCR-Push, kein Render-Source-Switch, keine Live-Provideraktivierung und keine neue kostenpflichtige Ressource. Die nächsten unabhängigen Belege wären ein echter Asset-Erstellungs-/Providerrechtsnachweis, ein vervollständigtes rechtlich zulässiges Source-Delivery-Paket sowie später attestierte OCI-/Render-Identität. Dieser Bericht ist technische Evidence, kein selbst erteilter Rechtsbescheid.
+
+
 ## Sechs Rechte- und Herkunftsnachweise — genaue Trennung der Evidenzstufen
 
 | Thema | Tatsächlich belegter technischer Teil | Weiter offener Nachweis / Status |
