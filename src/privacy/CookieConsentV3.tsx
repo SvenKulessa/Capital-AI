@@ -105,7 +105,7 @@ export function CookieConsentV3() {
       )}
       {error && <p role="alert" className="mt-2 text-sm text-rose-200">{error}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
-        <button type="button" onClick={() => store(false, false)}
+        <button type="button" data-consent-choice="necessary" onClick={() => store(false, false)}
           className="min-h-11 flex-1 rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-white hover:border-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
           {copy.reject}
         </button>

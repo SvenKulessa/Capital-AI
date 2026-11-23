@@ -42,8 +42,15 @@ async function navigate() {
   await until(() => loaded, 'PAGE_LOAD');
   await until(() => evaluate("document.readyState === 'complete' && !!document.querySelector('.capital-ai-hero .brand-globe-art')"), 'HERO');
   assert.equal(await evaluate('location.origin'), origin);
-  await evaluate("[...document.querySelectorAll('[aria-labelledby=\"cookie-consent-v3-title\"] button')].find(b=>b.textContent.trim()==='Nur notwendige')?.click()");
-  await until(() => evaluate("!document.getElementById('cookie-consent-v3-title')"), 'CONSENT_PANEL_CLOSED');
+  await until(() => evaluate(`(() => {
+    const panel = document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
+    if (panel) {
+      panel.querySelector('[data-consent-choice="necessary"]')?.click();
+      return false;
+    }
+    const choice = JSON.parse(localStorage.getItem('capital-ai-cookie-consent-v3') || 'null');
+    return choice?.analytics === false && choice?.marketing === false;
+  })()`), 'CONSENT_PANEL_CLOSED');
   await evaluate("window.scrollTo({ top: 0, behavior: 'instant' })");
 }
 async function shot(name, clip) {
