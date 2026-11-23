@@ -108,7 +108,7 @@ test('no unlicensed videos are marketed as available and public learning CTA sta
   assert.doesNotMatch(html, /iframe|VideoObject|Kostenlos: ein freigegebenes Video/);
 });
 test('anonymous glossary surfaces render every canonical definition, including Quant level',()=>{
- const page=renderToStaticMarkup(<LearningPortalPage/>);
+ const page=renderToStaticMarkup(<LearningPortalPage initialTab="glossar" />);
  const modal=renderToStaticMarkup(<MarketVocabularyModal isOpen onClose={()=>{}}/>);
  for(const html of [page,modal]) {
    assert.equal((html.match(/data-vocabulary-category=/g)??[]).length,VOCABULARY_TERMS.length);

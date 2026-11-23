@@ -27,6 +27,7 @@ import {
 } from '../../data/pricingCatalog';
 import { ADDITIONAL_PRODUCTS_CATALOG } from '../../data/additionalProductsCatalog';
 import { INITIAL_COMMERCE_STATE, readCommerceState } from './commerceState';
+import { NewsDesignCatalog } from './NewsDesignCatalog';
 
 
 interface MonetizationModalProps {
@@ -394,7 +395,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
             <div className="rounded-2xl border border-slate-800 bg-[#030716] p-4">
               <h3 className="text-sm font-bold text-white">Zusatzprodukte</h3>
               <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                Hier sind ausschließlich bestehende Lernprodukte aufgeführt. Sponsoring und Investor Relations werden unabhängig vom Preiskatalog über den Studio-Kontakt behandelt.
+                Lernprodukte und individuell angefragte Designleistungen. Sponsoring und Investor Relations laufen über den Studio-Kontakt.
               </p>
             </div>
 
@@ -438,6 +439,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </div>
               </section>
             ))}
+            <NewsDesignCatalog />
             <section
               aria-labelledby="screener-blueprint-preview"
               className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-400/10 via-[#071a36] to-purple-500/10 p-4 sm:p-5"

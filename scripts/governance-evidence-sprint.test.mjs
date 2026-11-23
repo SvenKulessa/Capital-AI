@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolveAppRoute } from '../src/utils/appNavigation.ts';
 import { resolveSeoIndexingPolicy, SEO_INDEXING_STATES } from '../shared/seo-indexing-policy.mjs';
+import { isAnalyticsMeasurable } from '../shared/analytics-measurement-policy.mjs';
 
 const page = readFileSync(new URL('../src/features/home/GovernanceEvidenceSprintPage.tsx', import.meta.url), 'utf8');
 const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
@@ -11,6 +12,8 @@ const commerce = readFileSync(new URL('../src/features/home/CommerceEntrySection
 const sample = readFileSync(new URL('../docs/growth/GOVERNANCE-EVIDENCE-SPRINT-MUSTERBERICHT-20261119.md', import.meta.url), 'utf8');
 const inquiry = readFileSync(new URL('../server/learning-inquiry.mjs', import.meta.url), 'utf8');
 const routeAnalytics = readFileSync(new URL('../src/platform/analytics/useRouteAnalytics.ts', import.meta.url), 'utf8');
+const measurable = readFileSync(new URL('../shared/analytics-measurement-policy.mjs', import.meta.url), 'utf8');
+const consented = readFileSync(new URL('../src/utils/consentedAnalytics.ts', import.meta.url), 'utf8');
 
 test('sprint route is public, canonical and discoverable on the homepage', () => {
   assert.equal(resolveAppRoute('/governance-evidence-sprint'), '/governance-evidence-sprint');
@@ -77,4 +80,24 @@ test('organic campaign contains three qualified human-reviewed draft messages wi
   assert.match(agentCampaign, /NOT_PROVEN/);
   assert.match(agentCampaign, /[Kk]eine neue Tracker-Initialisierung/);
   assert.doesNotMatch(agentCampaign, /STRIPE_SECRET_KEY|OPENAI_API_KEY|<script|AGENT_OPERATIONS_PILOT_ENABLED\s*=\s*true/i);
+});
+
+test('B2B conversion attribution is consented and emits only after SMTP receipt', () => {
+  assert.ok(measurable.includes("'/governance-evidence-sprint'"));
+  assert.ok(page.includes('trackReceivedGovernanceSprintInquiry(result.receipt)'));
+  assert.ok(page.indexOf("result.status !== 'MAIL_SERVER_ACCEPTED'") <
+    page.indexOf('trackReceivedGovernanceSprintInquiry(result.receipt)'));
+  assert.ok(consented.includes("window.location.origin !== 'https://capital-ai.online'"));
+  assert.ok(consented.includes("window.location.pathname !== '/governance-evidence-sprint'"));
+  assert.ok(consented.includes("lead_type: 'governance_evidence_sprint_inquiry'"));
+  assert.doesNotMatch(page, /trackEvent\(|localStorage|sessionStorage|GA4_MEASUREMENT_ID|STRIPE_SECRET_KEY/);
+});
+
+test('B2B pageview allowlist remains separate from SEO and private-surface denial', () => {
+  assert.equal(resolveSeoIndexingPolicy('/governance-evidence-sprint').classification, SEO_INDEXING_STATES.NOINDEX);
+  assert.equal(isAnalyticsMeasurable('/governance-evidence-sprint'), true);
+  for (const path of ['/profile', '/api/public/contact', '/governance-evidence-sprint?email=private@example.invalid',
+    '/governance-evidence-sprint#receipt', 'https://unknown.invalid/governance-evidence-sprint']) {
+    assert.equal(isAnalyticsMeasurable(path), false, path);
+  }
 });

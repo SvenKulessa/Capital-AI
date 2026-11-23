@@ -3,6 +3,7 @@
  * Pure planning: it never creates delivery jobs, marks posts SCHEDULED or publishes.
  */
 import { z } from 'zod';
+import { type OriginalGraphicOwnerGrant } from './originalGraphicLicense.ts';
 import { ContentSocialPackageManifestSchema, findContentSocialApproval, type ContentSocialPackageManifest } from './contentSocialPackage.ts';
 import { CURRENT_SOCIAL_PUBLISHER_ADAPTERS, SocialPublisherChannelSchema } from './socialPublisherAdapter.ts';
 
@@ -16,7 +17,8 @@ export type SocialReviewRequest = z.infer<typeof SocialReviewRequestSchema>;
 type ReviewState = 'APPROVAL_REQUIRED' | 'PROVIDER_INTEGRATION_PENDING' | 'HUMAN_APPROVED_REVIEW_ONLY';
 
 export function planNonAudioSocialReview(
-  input: { manifest: ContentSocialPackageManifest; requests: readonly SocialReviewRequest[]; now: string },
+  input: { manifest: ContentSocialPackageManifest; requests: readonly SocialReviewRequest[]; now: string;
+    graphicOwnerGrants?: readonly OriginalGraphicOwnerGrant[] },
 ) {
   const manifest = ContentSocialPackageManifestSchema.parse(input.manifest);
   const requests = z.array(SocialReviewRequestSchema).min(1).max(100).parse(input.requests);
@@ -41,7 +43,7 @@ export function planNonAudioSocialReview(
         throw new Error('SOCIAL_REVIEW_PLANNED_TIME_INVALID');
       }
     }
-    const approval = findContentSocialApproval(manifest, request.assetId, request.channel);
+    const approval = findContentSocialApproval(manifest, request.assetId, request.channel, input.graphicOwnerGrants);
     const state: ReviewState = !approval
       ? 'APPROVAL_REQUIRED'
       : CURRENT_SOCIAL_PUBLISHER_ADAPTERS[request.channel] !== 'READY'

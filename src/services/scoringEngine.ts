@@ -1,3 +1,5 @@
+import { computeSolanaRiskResearch } from './solanaRiskResearch';
+import type { SolanaRiskResearchInput } from '../contracts/solanaRiskResearch';
 import { AssetIdentity, AssetIdentitySchema, FeatureValue, FeatureValueSchema,
   FinalRankResult, FinalRankResultSchema } from '../contracts/canonicalContracts';
 import { componentActivationReasons } from '../contracts/analysisComponentRegistryValidator';
@@ -26,6 +28,11 @@ const REQUIRED_COMPONENTS = ['market_integrity_gate', 'data_quality_scorer', 'li
 
 /** Foundation admission: no inference from quotes or ranking without a validated universe. */
 export class ScoringEngineService {
+  /** Canonical, research-only entrypoint. Never grants score, alert or trading eligibility. */
+  public static inspectSolanaRiskResearch(input: SolanaRiskResearchInput) {
+    return computeSolanaRiskResearch(input);
+  }
+
   public static readonly SHADOW_MODEL_VERSION = '1.0.0';
   /** Model + UAI + validated DATA + weights are correlated here, never in a Finance dispatcher. */
   public static inspectFinanceModelResearch(input: FinanceResearchModelEvaluationRequest) {

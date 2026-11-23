@@ -1,3 +1,4 @@
+import { ANALYSIS_DOCUMENTATION } from './analysis-documentation.mjs';
 import { SUPPORTED_LOCALES, localizedLandingPath } from './locale-policy.mjs';
 import { HUB_ROUTES, DOCUMENT_ROUTES } from './hub-routes.mjs';
 
@@ -64,6 +65,7 @@ const routes = [
   { path: '/studio', classification: 'NOINDEX', contentType: 'product-tool', reason: 'Interaktiver Studio-Hub; kein freigegebener SEO-Landingpage-Contract.' },
   { path: '/marketscreener', classification: 'NOINDEX', contentType: 'product-tool', reason: 'Interaktiver Screener; Datenrechte, Crawl-Fallback und Metadata werden separat gehärtet.' },
   { path: '/marketscreener/dokumentation', classification: 'NOINDEX', contentType: 'documentation', reason: 'Öffentliche synthetische Blueprint-Demos; eigenständige crawlbare Produkt-/Methodik-Landingpage mit belastbaren Angebotsangaben und Canonical noch nicht vollständig.' },
+  { path: ANALYSIS_DOCUMENTATION, classification: 'NOINDEX', contentType: 'documentation', reason: 'Dokumentationsartikel ohne Search-Promotion.' },
   { path: '/dokumentation', classification: 'NOINDEX', contentType: 'documentation', reason: 'Öffentlicher Dokumentations-Hub; Promotion erst nach eigenständiger crawlbarer Metadata/Canonical-Abnahme.' },
   { path: '/pricing', classification: 'NOINDEX', contentType: 'product-state', reason: 'Öffentlicher Tarif-Fallback vorhanden; vollständige Preis-, Checkout- und Entitlement-Belege für eine eigenständige Commerce-Landingpage fehlen noch.' },
 

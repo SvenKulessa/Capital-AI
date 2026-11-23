@@ -5,6 +5,7 @@ import { safeGa4FailureReason } from './google-analytics-readback.mjs';
 import { ACODEX_P1_V2_ARCHIVE } from './acodex-p1-v2-archive.mjs';
 const PATH = '/api/profile/evidence-dashboard-readback';
 const REPOSITORY = 'SvenKulessa/Capital-AI';
+const TS7_EVIDENCE = 'docs/security/evidence/dependency-decisions/typescript-7.0.2.json';
 const SERVICE_ID = 'srv-dau1rp893c1s73cdhm1g';
 const WORKSPACE_ID = 'tea-d90o4rj7uimc739i86ug';
 const SHA = /^[a-f0-9]{40}$/;
@@ -50,6 +51,40 @@ async function readJson(fetchImpl, address, token, signal) {
   return JSON.parse(raw);
 }
 
+// Only an immutable main-SHA GitHub contents read can establish the repository
+// decision. The historical scan is NOT a fresh binary scan or an upgrade approval.
+function projectTs7Decision(file, mainSha) {
+  if (file?.type !== 'file' || file?.path !== TS7_EVIDENCE || file?.encoding !== 'base64' ||
+      typeof file?.sha !== 'string' || !SHA.test(file.sha) || typeof file?.content !== 'string' || file.content.length > 60_000)
+    throw Error('TS7_INVALID_SOURCE');
+  const encoded = file.content.replace(/\s/g, '');
+  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded) ||
+      !encoded.length) throw Error('TS7_INVALID_ENCODING');
+  const record = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
+  const dep = record?.dependency, decision = record?.decision, native = record?.fingerprint?.nativeArtifact;
+  const semver = /^[0-9]+\.[0-9]+\.[0-9]+$/;
+  const reviewDate = decision?.reviewOnOrAfter;
+  const reviewTime = typeof reviewDate === 'string' ? Date.parse(reviewDate + 'T00:00:00Z') : NaN;
+  if (record?.schema !== 'CAPITAL_AI_SH_SUPPLY_CHAIN_DEPENDENCY_RECOVERY@1' ||
+      dep?.name !== 'typescript' || dep?.candidateVersion !== '7.0.2' ||
+      typeof dep?.currentVersion !== 'string' || !semver.test(dep.currentVersion) || decision?.state !== 'BLOCKED' ||
+      decision?.classification !== 'BINARY_AFFECTED' ||
+      decision?.reasonCode !== 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY' ||
+      !Number.isFinite(reviewTime) || new Date(reviewTime).toISOString().slice(0, 10) !== reviewDate ||
+      typeof decision?.evaluatedAt !== 'string' || !Number.isFinite(Date.parse(decision.evaluatedAt)) ||
+      typeof native?.binarySha256 !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(native.binarySha256))
+    throw Error('TS7_INVALID_DECISION');
+  return {
+    status: 'VERIFIED_PROVIDER_READ', state: 'BLOCKED', classification: 'BINARY_AFFECTED',
+    dependency: 'typescript', currentVersion: dep.currentVersion, candidateVersion: '7.0.2',
+    evaluatedAt: decision.evaluatedAt, reviewOnOrAfter: decision.reviewOnOrAfter,
+    reasonCode: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY',
+    binarySha256: native.binarySha256,
+    evidenceScope: 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION',
+    evidenceUrl: 'https://github.com/' + REPOSITORY + '/blob/' + mainSha + '/' + TS7_EVIDENCE,
+  };
+}
+
 async function readGitHub(fetchImpl, env, signal, now) {
   const origin = `https://api.github.com/repos/${REPOSITORY}`;
   const token = typeof env.GITHUB_TOKEN === 'string' ? env.GITHUB_TOKEN.trim() : '';
@@ -86,6 +121,11 @@ async function readGitHub(fetchImpl, env, signal, now) {
       };
     } else ci = { status: 'NOT_PROVEN', reason: 'CHECK_RUNS_TRUNCATED_OR_INVALID', runs: [] };
   } catch { /* A failed check-run read must not erase independently verified GitHub metadata. */ }
+  let typescript = { status: 'NOT_PROVEN', reason: 'TS7_EVIDENCE_UNAVAILABLE' };
+  try {
+    const source = await readJson(fetchImpl, origin + '/contents/' + TS7_EVIDENCE + '?ref=' + commit.sha, token, signal);
+    typescript = projectTs7Decision(source, commit.sha);
+  } catch { /* A missing or malformed decision never becomes an approval. */ }
   return {
     status: 'VERIFIED_PROVIDER_READ', observedAt: new Date(now()).toISOString(),
     repository: REPOSITORY, mainSha: commit.sha,
@@ -93,7 +133,7 @@ async function readGitHub(fetchImpl, env, signal, now) {
     openPrCountStatus: prs.length < 100 ? 'VERIFIED' : 'NOT_PROVEN_TRUNCATED',
     pullRequests: prItems,
     pullRequestsStatus: prs.length >= 100 ? 'NOT_PROVEN_TRUNCATED' : prs.length > 50 ? 'PARTIAL_FIRST_50' : 'VERIFIED',
-    ci,
+    ci, typescript,
     evidence: 'https://github.com/' + REPOSITORY + '/commit/' + commit.sha,
   };
 }
@@ -127,17 +167,58 @@ async function readRender(fetchImpl, env, signal, now) {
   };
 }
 
+// Only allowlisted diagnostic categories may cross the owner-only readback boundary.
+// Never serialize raw provider errors, process stderr, credential paths or token hints.
+const GA4_SAFE_DIAGNOSTICS = Object.freeze({
+  GA4_PROPERTY_NUMBER_NOT_CONFIGURED: 'GA4_PROPERTY_CONFIG_MISSING',
+  GA4_MCP_CLOUD_PROJECT_NOT_CONFIGURED: 'GA4_PROJECT_CONFIG_MISSING',
+  GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED: 'GA4_CREDENTIAL_CONFIG_MISSING',
+  GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON: 'GA4_CREDENTIAL_CONFIG_INVALID',
+  GA4_MCP_SERVICE_ACCOUNT_INVALID: 'GA4_CREDENTIAL_CONFIG_INVALID',
+  GA4_MCP_PROJECT_MISMATCH: 'GA4_PROJECT_BINDING_MISMATCH',
+  GA4_PROPERTY_NOT_ACCESSIBLE: 'GA4_PROPERTY_ACCESS_NOT_PROVEN',
+  GA4_PROPERTY_DETAILS_NOT_BOUND: 'GA4_PROPERTY_BINDING_NOT_PROVEN',
+  GA4_PROPERTY_DETAIL_MISMATCH: 'GA4_PROPERTY_BINDING_NOT_PROVEN',
+  GA4_MCP_PROCESS_START_FAILED: 'GA4_MCP_RUNTIME_UNAVAILABLE',
+  GA4_MCP_PROCESS_EXITED: 'GA4_MCP_RUNTIME_UNAVAILABLE',
+  GA4_MCP_JSONRPC_ERROR: 'GA4_MCP_PROVIDER_REJECTED',
+  GA4_MCP_TOOL_ERROR: 'GA4_MCP_PROVIDER_REJECTED',
+  GA4_MCP_TOOL_ERROR_PAYLOAD: 'GA4_MCP_PROVIDER_REJECTED',
+  GA4_READBACK_TIMEOUT: 'GA4_READBACK_TIMEOUT',
+  GA4_EVENT_COUNT_INVALID: 'GA4_PROVIDER_RESPONSE_INVALID',
+  GA4_INVALID_EVENT_COUNT: 'GA4_PROVIDER_RESPONSE_INVALID',
+  INVALID_GA4_EVENTS: 'GA4_PROVIDER_RESPONSE_INVALID',
+  INVALID_GA4_VALUE: 'GA4_PROVIDER_RESPONSE_INVALID',
+  INVALID_GA4_REALTIME_VALUE: 'GA4_PROVIDER_RESPONSE_INVALID',
+});
+function safeGa4Diagnostic(error) {
+  // Preserve the existing owner-only public reason contract before adding new safe categories.
+  const existing = safeGa4FailureReason(error);
+  if (existing !== 'GA4_READBACK_FAILED') return existing;
+  const code = error instanceof Error ? error.message : '';
+  if (Object.hasOwn(GA4_SAFE_DIAGNOSTICS, code)) return GA4_SAFE_DIAGNOSTICS[code];
+  if (['GA4_MCP_TIMEOUT_initialize', 'GA4_MCP_TIMEOUT_tools/list', 'GA4_MCP_TIMEOUT_tools/call'].includes(code)) return 'GA4_MCP_RUNTIME_TIMEOUT';
+  return safeGa4FailureReason(error);
+}
+
 async function readGa4(ga4Readback, now) {
   const source = await ga4Readback.load();
   if (source?.status !== 'PROVIDER_READ_VERIFIED' || !/^properties\/[1-9]\d{0,19}$/.test(source?.property?.resourceName || '')) throw Error('GA4_NOT_VERIFIED');
   if (!Array.isArray(source?.sevenDay?.events)) throw Error('INVALID_GA4_EVENTS');
   const filtered = source.sevenDay.events.filter(row => EVENTS.has(row?.eventName));
   if (filtered.some(row => N(row.eventCount) === null)) throw Error('INVALID_GA4_VALUE');
+  // Real-time measurements have their own scope; never replace absent real-time
+  // reads with zero, or mix them into the seven-day event totals.
+  const hasRealtime = Array.isArray(source.realtime?.events);
+  const realtime = hasRealtime ? source.realtime.events.filter(row => EVENTS.has(row?.eventName)) : [];
+  if (realtime.some(row => N(row.eventCount) === null)) throw Error('INVALID_GA4_REALTIME_VALUE');
   return {
     status: 'VERIFIED_PROVIDER_READ', observedAt: new Date(now()).toISOString(),
     property: source.property.resourceName,
-    period: 'LAST_7_DAYS_INCLUDING_TODAY',
+    period: 'LAST_7_CALENDAR_DAYS_INCLUDING_TODAY',
     events: filtered.map(({ eventName, eventCount }) => ({ eventName, eventCount })),
+    realtimeStatus: hasRealtime ? 'VERIFIED_PROVIDER_READ' : 'NOT_PROVEN',
+    realtimeEvents: realtime.map(({ eventName, eventCount }) => ({ eventName, eventCount })),
     eventCoverage: 'ALLOWLIST_ONLY_NOT_ALL_EVENTS',
     revenue: null, revenueStatus: 'NOT_PROVEN_NOT_QUERIED',
     historical30DayValues: null,
@@ -162,7 +243,7 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
     inflight = Promise.all([
       attempt(() => readGitHub(fetchImpl, env, controller.signal, now)),
       attempt(() => readRender(fetchImpl, env, controller.signal, now)),
-      attempt(() => readGa4(ga4Readback, now), safeGa4FailureReason),
+      attempt(() => readGa4(ga4Readback, now), safeGa4Diagnostic),
     ]).then(([github, render, ga4]) => {
       const value = Object.freeze({
         schema: 'CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1',

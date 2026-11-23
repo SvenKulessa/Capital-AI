@@ -1,18 +1,15 @@
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { Resvg, initWasm } from '@resvg/resvg-wasm';
+import { Resvg } from '@resvg/resvg-wasm';
+import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 import { createOperationsPublicTemplateSvg, OWNER_OPERATIONS_VISUAL_KIT } from '../../src/platform/SocialMediaEngine/Editing/OwnerOperationsVisualKit.ts';
 
 let init;
 export async function renderOwnerOperationsSocialDraft() {
   // Exact, static first-party SVG; no private snapshot, browser auth, external URL or provider request.
-  const wasm = new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm'));
   const fontUrl = new URL('../../public/fonts/PlusJakartaSans-Regular.ttf', import.meta.url);
-  init ??= Promise.all([readFile(wasm),readFile(fontUrl)]).then(async ([binary,font]) => {
-    await initWasm(binary);
-    return font;
-  });
+  init ??= Promise.all([ensureResvgWasmInitialized(),readFile(fontUrl)]).then(([,font]) => font);
   const font = await init;
   const svg = createOperationsPublicTemplateSvg();
   const renderer = new Resvg(svg, { font: { fontBuffers:[font], defaultFontFamily:'Plus Jakarta Sans' } });

@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Activity, GitPullRequest, RefreshCw, ShieldCheck, Server, TrendingUp } from 'lucide-react';
 import {
-  AGENT_ROLES, evidenceState, ga4EventCount, isSnapshotStale, isVerified,
+  AGENT_ROLES, evidenceState, ga4DiagnosticLabel, ga4EventCount, ga4RealtimeEventCount, isSnapshotStale, isVerified,
   readDashboardSnapshot, visiblePullRequests,
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
 import { OwnerOperationsVisualOverview } from './OwnerOperationsVisualOverview';
+import { readGa4ConfigResult, type Ga4ConfigResult } from './ownerGa4ConfigModel';
+import { OwnerGa4ConfigView } from './OwnerGa4ConfigView';
 
 const ENDPOINT = '/api/profile/evidence-dashboard-readback';
+const GA4_CONFIG_ENDPOINT = '/api/profile/google-analytics-config-diagnostic';
 const VIEWS: { id: OperationsView; label: string }[] = [
   { id: 'overview', label: 'Übersicht' }, { id: 'github', label: 'GitHub & CI' },
   { id: 'render', label: 'Deployments' }, { id: 'analytics', label: 'Analytics' },
@@ -53,6 +56,8 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   const [agent, setAgent] = useState<AgentRole | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const [ga4Config, setGa4Config] = useState<Ga4ConfigResult | null>(null);
+  const [ga4ConfigFailure, setGa4ConfigFailure] = useState(false);
   const [busy, setBusy] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -64,6 +69,8 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
     setError('');
     // Do not retain owner data across session switches or failed revalidation.
     setSnapshot(null);
+    setGa4Config(null);
+    setGa4ConfigFailure(false);
     try {
       await verifySession(userId, controller.signal);
       const response = await fetch(ENDPOINT, {
@@ -74,6 +81,19 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
       const body = readDashboardSnapshot(await response.json());
       if (!body) throw Error('INVALID_READBACK');
       if (!controller.signal.aborted) setSnapshot(body);
+      // A missing or failed diagnostic never invalidates independently verified dashboard evidence.
+      try {
+        const configResponse = await fetch(GA4_CONFIG_ENDPOINT, {
+          method: 'GET', credentials: 'same-origin', cache: 'no-store',
+          signal: controller.signal, headers: { Accept: 'application/json' },
+        });
+        if (!configResponse.ok) throw Error('CONFIG_DIAGNOSTIC_UNAVAILABLE');
+        const result = readGa4ConfigResult(await configResponse.json());
+        if (!result) throw Error('CONFIG_DIAGNOSTIC_INVALID');
+        if (!controller.signal.aborted) setGa4Config(result);
+      } catch {
+        if (!controller.signal.aborted) setGa4ConfigFailure(true);
+      }
     } catch {
       if (!controller.signal.aborted) setError('Owner-Readback nicht verfügbar. Keine Ersatzdaten oder gespeicherten Kennzahlen angezeigt.');
     } finally {
@@ -94,9 +114,13 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   }, [refresh]);
 
   const gh = snapshot?.github, render = snapshot?.render, ga4 = snapshot?.ga4;
+  const ts7 = gh?.typescript;
   const prs = snapshot ? visiblePullRequests(snapshot, agent, search) : [];
   const checks = agent === 'ALL' || agent === 'PLATFORM' || agent === 'SECURITY' ? gh?.ci?.runs ?? [] : [];
   const views = snapshot ? ga4EventCount(snapshot, 'page_view') : null;
+  const sessionStarts = snapshot ? ga4EventCount(snapshot, 'session_start') : null;
+  const itemViews = snapshot ? ga4EventCount(snapshot, 'view_item') : null;
+  const realtimeViews = snapshot ? ga4RealtimeEventCount(snapshot, 'page_view') : null;
   const leads = snapshot ? ga4EventCount(snapshot, 'generate_lead') : null;
   const purchaseEvents = snapshot ? ga4EventCount(snapshot, 'purchase') : null;
   const evidence = snapshot ? [
@@ -149,18 +173,23 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
       <div role="tablist" aria-label="Operations-Ansichten" className="flex flex-wrap gap-2">
         {VIEWS.map(item => <button key={item.id} type="button" role="tab" aria-selected={view === item.id}
           onClick={() => setView(item.id)}
+          // Certain mobile Chromium touch streams do not synthesize a click.
+          // Touch-only pointer activation is idempotent with any later click.
+          onPointerUp={event => {
+            if (event.isPrimary && event.pointerType === 'touch') setView(item.id);
+          }}
           className={'min-h-11 rounded-lg border px-3 text-xs font-semibold ' +
             (view === item.id ? 'border-indigo-300 bg-indigo-500/25 text-white' : 'border-white/10 text-slate-300')}>
           {item.label}
         </button>)}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="agent-ops-filter" className="text-xs text-slate-300">Agenten-Domain</label>
+      {(view === 'overview' || view === 'github') && <div className="flex flex-wrap items-center gap-2">
+        <label htmlFor="agent-ops-filter" className="text-xs text-slate-300">PR-Agenten-Domain</label>
         <select id="agent-ops-filter" value={agent} onChange={event => setAgent(event.target.value as AgentRole | 'ALL')}
           className="min-h-11 rounded-xl border border-white/15 bg-slate-900 px-3 text-sm text-white">
           <option value="ALL">Alle Rollen</option>{AGENT_ROLES.map(role => <option key={role} value={role}>{role}</option>)}
         </select>
-      </div>
+      </div>}
       {(view === 'overview' || view === 'evidence') && <div className="space-y-3" role="tabpanel">
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           <Metric title="Offene GitHub-PRs" value={isVerified(gh) && gh?.openPrCountStatus === 'VERIFIED' ? gh.openPrCount ?? '–' : '–'} note={gh?.openPrCountStatus || 'NOT_PROVEN'}/>
@@ -183,6 +212,31 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
               <strong className={'text-xs ' + tint(row.state)}>{row.state}</strong>
             </div>)}
           </div>
+        </Section>}
+        {view === 'evidence' && <Section title="TypeScript 7 · Sicherheitsentscheidung">
+          {isVerified(gh) && ts7?.status === 'VERIFIED_PROVIDER_READ' ? <div className="space-y-3 text-sm">
+            <p><strong className="font-bold text-rose-300">{ts7.state}</strong>
+              {' · '}{ts7.classification}{' · '}nur Repository-Entscheidung, kein neuer Binary-Scan.</p>
+            <dl className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
+              <div><dt className="text-slate-400">Installierte / blockierte Version</dt>
+                <dd>{ts7.currentVersion} / {ts7.candidateVersion}</dd></div>
+              <div><dt className="text-slate-400">Nächste Überprüfung (UTC)</dt>
+                <dd>{ts7.reviewOnOrAfter}</dd></div>
+              <div><dt className="text-slate-400">Letzte Evidence-Auswertung</dt>
+                <dd>{dateText(ts7.evaluatedAt)}</dd></div>
+              <div><dt className="text-slate-400">Begründung</dt>
+                <dd>{ts7.reasonCode}</dd></div>
+            </dl>
+            <p className="break-all text-xs text-slate-400">Historischer Binary-Fingerprint: {ts7.binarySha256}</p>
+            <a href={ts7.evidenceUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center font-semibold text-indigo-200 underline underline-offset-2">
+              Evidence auf exakt diesem Main-SHA öffnen
+            </a>
+            <p className="text-xs text-amber-200">Keine TypeScript-7-Freigabe. Die automatische
+              Suppression-Fristdurchsetzung wurde in PR #808 entfernt; diese Ansicht validiert nur
+              den GitHub-Evidence-Eintrag, nicht die aktuelle Registry- oder Scanner-Lage.</p>
+          </div> : <p className="text-sm text-amber-200">NOT_PROVEN · TypeScript-Entscheidung
+            aus der unveränderlichen Main-Evidence nicht nachgewiesen.</p>}
         </Section>}
         {view === 'evidence' && <Section title="AcodeX P1-v2 · archivierte Geräteabnahme">
           {snapshot.acodex ? <div className="space-y-3 text-sm">
@@ -256,16 +310,21 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
           </li>)}</ul> : <p className="text-sm text-amber-200">Keine verifizierten Deployments.</p>}
       </Section></div>}
       {view === 'analytics' && <div role="tabpanel" className="space-y-3">
+        <OwnerGa4ConfigView config={ga4Config} unavailable={ga4ConfigFailure}/>
         <Section title="GA4 / 7-Tage-Eventmessung">
           <Source status={ga4?.status}/>
           <p className="my-2 text-xs text-slate-400">{ga4?.period || 'NOT_PROVEN'} · {ga4?.property || 'Keine bestätigte Property'}</p>
-          {!isVerified(ga4) && ga4?.reason && <p role="status" className="my-2 break-all rounded-lg border border-amber-300/25 bg-amber-300/5 p-2 text-xs text-amber-100">Diagnosecode: {ga4.reason}</p>}
-          <div className="grid grid-cols-2 gap-2">
+          {!isVerified(ga4) && ga4?.reason && <p role="status" className="my-2 break-all rounded-lg border border-amber-300/25 bg-amber-300/5 p-2 text-xs text-amber-100">Diagnose: {ga4DiagnosticLabel(ga4.reason)} · Code: {ga4.reason}</p>}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <Metric title="page_view Events" value={views ?? '–'}/>
+            <Metric title="session_start Events" value={sessionStarts ?? '–'}/>
+            <Metric title="view_item Events" value={itemViews ?? '–'}/>
             <Metric title="generate_lead Events" value={leads ?? '–'}/>
             <Metric title="purchase Events" value={purchaseEvents ?? '–'} note="Event, keine Zahlungsbestätigung"/>
-            <Metric title="Umsatz / MRR" value="–" note="NOT_PROVEN"/>
+            <Metric title="page_view Echtzeit" value={realtimeViews ?? '–'} note={ga4?.realtimeStatus || 'NOT_PROVEN'}/>
+            <Metric title="Umsatz / MRR" value="–" note="NOT_PROVEN · Kein Zahlungsnachweis"/>
           </div>
+          <p className="mt-3 text-xs text-slate-400">Provider-Ereignisse werden nicht als Besucherzahlen, Zahlungen oder Umsatzbelege interpretiert; Echtzeitwerte bleiben getrennt.</p>
           {isVerified(ga4) && ga4?.events?.length ? <div className="mt-4 space-y-3">
             {ga4.events.filter(row => Number.isSafeInteger(row.eventCount) && row.eventCount >= 0).map(row => {
               const largest = Math.max(1, ...(ga4.events || []).map(v => v.eventCount));

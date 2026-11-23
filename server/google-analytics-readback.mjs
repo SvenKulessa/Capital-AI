@@ -42,6 +42,39 @@ export function safeGa4FailureReason(error) {
   return 'GA4_READBACK_FAILED';
 }
 
+
+// Owner-only diagnostic of the already-loaded Render runtime environment.
+// No Render API access, credential transport, MCP process spawn, or secret logging.
+export function diagnoseGa4RuntimeConfig(env = {}) {
+  const raw = env.GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON;
+  if (typeof raw !== 'string' || !raw.trim())
+    return Object.freeze({ JSON_VALID: null, PROJECT_MATCH: null, reason: 'GA4_MCP_SERVICE_ACCOUNT_NOT_CONFIGURED' });
+
+  let account;
+  try { account = JSON.parse(raw); }
+  catch {
+    return Object.freeze({ JSON_VALID: false, PROJECT_MATCH: null, reason: 'GA4_MCP_SERVICE_ACCOUNT_INVALID_JSON' });
+  }
+
+  if (!account || typeof account !== 'object' || Array.isArray(account) ||
+      account.type !== 'service_account' ||
+      typeof account.project_id !== 'string' || !account.project_id.trim() ||
+      typeof account.client_email !== 'string' || !account.client_email.trim() ||
+      typeof account.private_key !== 'string' || !account.private_key.trim())
+    return Object.freeze({ JSON_VALID: true, PROJECT_MATCH: null, reason: 'GA4_MCP_SERVICE_ACCOUNT_INVALID' });
+
+  const project = env.GOOGLE_ANALYTICS_CLOUD_PROJECT;
+  if (typeof project !== 'string' || !project.trim())
+    return Object.freeze({ JSON_VALID: true, PROJECT_MATCH: null, reason: 'GA4_MCP_CLOUD_PROJECT_NOT_CONFIGURED' });
+
+  const matches = account.project_id === project.trim();
+  return Object.freeze({
+    JSON_VALID: true,
+    PROJECT_MATCH: matches,
+    reason: matches ? 'GA4_CONFIG_VALID' : 'GA4_MCP_PROJECT_MISMATCH',
+  });
+}
+
 function configuredOwner(env) {
   const userId = String(env.CAPITAL_AI_RENDER_OWNER_USER_ID || '').trim();
   const email = String(env.CAPITAL_AI_RENDER_OWNER_EMAIL || '').trim().toLowerCase();
@@ -153,7 +186,7 @@ export async function buildGoogleAnalyticsReadback({
   });
   const sevenDayRaw = await client.callTool('run_report', {
     property_id: propertyNumber,
-    date_ranges: [{ start_date: '7daysAgo', end_date: 'today' }],
+    date_ranges: [{ start_date: '6daysAgo', end_date: 'today' }],
     dimensions: ['eventName'],
     metrics: ['eventCount'],
     limit: 25,
@@ -240,7 +273,8 @@ export function createGoogleAnalyticsReadback({
   }
 
   async function handle(req, res, url, json) {
-    if (url.pathname !== PATH) return false;
+    const diagnostic = url.pathname === '/api/profile/google-analytics-config-diagnostic';
+    if (url.pathname !== PATH && !diagnostic) return false;
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Vary', 'Cookie');
@@ -256,6 +290,15 @@ export function createGoogleAnalyticsReadback({
     }
     if (url.search) {
       json(res, 400, { error: 'unexpected_query' });
+      return true;
+    }
+
+    if (diagnostic) {
+      json(res, 200, Object.freeze({
+        schema: 'CAPITAL_AI_GA4_OWNER_CONFIG_DIAGNOSTIC@1',
+        status: 'CONFIG_DIAGNOSTIC_ONLY',
+        ...diagnoseGa4RuntimeConfig(env),
+      }));
       return true;
     }
 

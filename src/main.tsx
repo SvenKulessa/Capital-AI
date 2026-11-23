@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { AppErrorBoundary } from './shared/ui/AppErrorBoundary';
 import App from './App.tsx';
 import './index.css';
+import './features/learning/learningUniverseOverview.css';
+import './features/learning/learningUniverseTabScene.css';
+import './features/learning/learningSimulatorUniverse.css';
 
 import { captureCheckoutConfirmation } from './utils/checkoutConfirmation';
 captureCheckoutConfirmation();

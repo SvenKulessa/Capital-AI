@@ -1,11 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import { Resvg, initWasm } from '@resvg/resvg-wasm';
+import { Resvg } from '@resvg/resvg-wasm';
+import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
 export const PIPELINE_GRAPHIC_ALT = 'Fünf Schritte: Quellen prüfen, Inhalt entwerfen, Grafik rendern, Qualität prüfen und redaktionell freigeben.';
 export const PIPELINE_GRAPHIC_WIDTH = 1440;
 export const PIPELINE_GRAPHIC_HEIGHT = 810;
 const fontName = 'Plus Jakarta Sans';
-const wasm = new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm'));
 const font = new URL('../../public/fonts/PlusJakartaSans-Regular.ttf', import.meta.url);
 const tokens = new URL('../../public/branding/asset-pack/meta/social-render-tokens.json', import.meta.url);
 let renderer;
@@ -73,9 +73,8 @@ function drawGraphic(colors) {
 
 export async function renderSocialPipelineGraphic() {
   // The only SVG input is the fixed template. Fonts, palette and WASM are local.
-  renderer ??= Promise.all([readFile(wasm), readFile(font), readFile(tokens, 'utf8')])
-    .then(async ([binary, fontBytes, palette]) => {
-      await initWasm(binary);
+  renderer ??= Promise.all([ensureResvgWasmInitialized(), readFile(font), readFile(tokens, 'utf8')])
+    .then(async ([, fontBytes, palette]) => {
       return { fontBytes, svg: drawGraphic(JSON.parse(palette).color) };
     });
   const { fontBytes, svg } = await renderer;

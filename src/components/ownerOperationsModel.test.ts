@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  AGENT_ROLES, agentFromTitle, evidenceState, ga4EventCount,
+  AGENT_ROLES, agentFromTitle, evidenceState, ga4DiagnosticLabel, ga4EventCount, ga4RealtimeEventCount,
   isSnapshotStale, readDashboardSnapshot, visiblePullRequests,
 } from './ownerOperationsModel';
 const sha = 'a'.repeat(40);
@@ -15,6 +15,8 @@ const base = {
   render: { status: 'NOT_PROVEN', reason: 'RENDER_CREDENTIAL_NOT_CONFIGURED' },
   ga4: { status: 'VERIFIED_PROVIDER_READ', events: [
     { eventName: 'page_view', eventCount: 3 }, { eventName: 'purchase', eventCount: 0 },
+  ], realtimeStatus: 'VERIFIED_PROVIDER_READ', realtimeEvents: [
+    { eventName: 'page_view', eventCount: 2 },
   ], revenue: null, revenueStatus: 'NOT_PROVEN_NOT_QUERIED' },
   comparison: { mainVsDeploy: 'NOT_PROVEN', runtimeBuildIdentity: 'NOT_PROVEN_INDEPENDENT_READBACK' },
 };
@@ -24,8 +26,33 @@ test('rejects synthetic, public and malformed trust-boundary payloads', () => {
   assert.equal(readDashboardSnapshot({ ...base, readOnly: false }), null);
   assert.equal(readDashboardSnapshot({ ...base, generatedAt: '' }), null);
   assert.equal(readDashboardSnapshot({ ...base, github: { ...base.github, pullRequests: {} } }), null);
+  assert.equal(readDashboardSnapshot({ ...base, ga4: { ...base.ga4, realtimeEvents: {} } }), null);
   assert.ok(readDashboardSnapshot(base));
 });
+test('TypeScript evidence requires blocked repo decision and exact immutable main provenance', () => {
+  const ts = {
+    status: 'VERIFIED_PROVIDER_READ', state: 'BLOCKED', classification: 'BINARY_AFFECTED',
+    dependency: 'typescript', currentVersion: '6.0.3', candidateVersion: '7.0.2',
+    evaluatedAt: '2026-11-19T06:10:46.574Z', reviewOnOrAfter: '2026-12-03',
+    reasonCode: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY', binarySha256: 'sha256:' + 'f'.repeat(64),
+    evidenceScope: 'REPOSITORY_DECISION_HISTORICAL_SCAN_NOT_LIVE_BINARY_VERIFICATION',
+    evidenceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/' + sha +
+      '/docs/security/evidence/dependency-decisions/typescript-7.0.2.json',
+  };
+  assert.ok(readDashboardSnapshot({ ...base, github: { ...base.github, typescript: ts } }));
+  for (const change of [
+    { state: 'APPROVED' }, { classification: 'NOT_AFFECTED' }, { evidenceUrl: 'https://evil.example/decision' },
+    { evidenceUrl: ts.evidenceUrl.replace(sha, 'b'.repeat(40)) }, { binarySha256: 'oops' },
+    { currentVersion: ['6.0.3'] }, { reviewOnOrAfter: '2026-02-31' },
+  ]) {
+    assert.equal(readDashboardSnapshot({ ...base, github: { ...base.github, typescript: { ...ts, ...change } } }), null);
+  }
+  assert.ok(readDashboardSnapshot({ ...base, github: { ...base.github,
+    typescript: { status: 'NOT_PROVEN', reason: 'TS7_EVIDENCE_UNAVAILABLE' } } }));
+  assert.equal(readDashboardSnapshot({ ...base, github: { ...base.github,
+    typescript: { status: 'NOT_PROVEN', reason: 'secret-provider-error' } } }), null);
+});
+
 test('agent filters use anchored PR labels without inventing runtime statuses', () => {
   const s = readDashboardSnapshot(base)!;
   assert.deepEqual(AGENT_ROLES, ['TRUST','SECURITY','PLATFORM','PRODUCT','MARKET','GROWTH']);
@@ -42,6 +69,8 @@ test('agent filters use anchored PR labels without inventing runtime statuses', 
 test('no inferred revenue, lead, CI success or Render success', () => {
   const s = readDashboardSnapshot(base)!;
   assert.equal(ga4EventCount(s, 'purchase'), 0);
+  assert.equal(ga4RealtimeEventCount(s, 'page_view'), 2);
+  assert.equal(ga4RealtimeEventCount(s, 'generate_lead'), null);
   assert.equal(ga4EventCount(s, 'generate_lead'), null);
   assert.equal(evidenceState(s, 'revenue'), 'NOT_PROVEN');
   assert.equal(evidenceState(s, 'runtime'), 'NOT_PROVEN');
@@ -54,6 +83,25 @@ test('age and future clock drift invalidate claimed snapshot freshness', () => {
   assert.equal(isSnapshotStale(s, Date.parse('2026-11-19T04:05:00Z')), false);
   assert.equal(isSnapshotStale(s, Date.parse('2026-11-19T04:11:00Z')), true);
   assert.equal(isSnapshotStale(s, Date.parse('2026-11-19T03:58:00Z')), true);
+});
+
+test('GA4 realtime values remain NOT_PROVEN if source is missing, unverified or malformed', () => {
+  const s = readDashboardSnapshot(base)!;
+  s.ga4.realtimeStatus = 'NOT_PROVEN';
+  assert.equal(ga4RealtimeEventCount(s, 'page_view'), null);
+  s.ga4.realtimeStatus = 'VERIFIED_PROVIDER_READ';
+  s.ga4.realtimeEvents = [{ eventName: 'page_view', eventCount: -1 }];
+  assert.equal(ga4RealtimeEventCount(s, 'page_view'), null);
+  s.ga4.status = 'NOT_PROVEN';
+  assert.equal(ga4RealtimeEventCount(s, 'page_view'), null);
+});
+
+test('owner-only GA4 diagnostic labels reject arbitrary provider error text', () => {
+  assert.match(ga4DiagnosticLabel('GA4_PROPERTY_CONFIG_MISSING'), /Property/);
+  assert.match(ga4DiagnosticLabel('GA4_MCP_RUNTIME_UNAVAILABLE'), /MCP/);
+  assert.match(ga4DiagnosticLabel('GA4_PROPERTY_ACCESS_NOT_PROVEN'), /Zugriff/);
+  assert.equal(ga4DiagnosticLabel('GA4_MCP_RUNTIME_UNAVAILABLE secret-token'), 'GA4-Readback nicht nachgewiesen');
+  assert.equal(ga4DiagnosticLabel('confidential provider error'), 'GA4-Readback nicht nachgewiesen');
 });
 
 test('AcodeX archive is separately validated and never promoted to live provider status', () => {

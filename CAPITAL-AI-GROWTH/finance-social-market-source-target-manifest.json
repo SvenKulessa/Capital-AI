@@ -61,7 +61,7 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "fdeb58f4a35103b1818463166f87afca20b9347f",
+      "blobSha": "777e2d34142401f7d1efc6c2e01dd71e4313155e",
       "role": "Current scoring execution boundary",
       "recorrelatedAt": "2026-10-08",
       "recorrelationBaseMain": "e94d47cddde8ae32da749d08bc161daad323b914",
@@ -82,8 +82,11 @@
     {
       "id": "TA-MARKET-RIGHTS",
       "path": "src/contracts/marketDataRightsEligibility.ts",
-      "blobSha": "71a15e5d98b2f72856becdd6c78795250f450126",
-      "role": "Fail-closed market-data rights authority"
+      "blobSha": "fd86315eb851c7cfafa9c5ea1b333ee40df2b8fc",
+      "role": "Fail-closed market-data rights authority",
+      "recorrelatedAt": "2026-11-22",
+      "recorrelationBaseMain": "fa706af9aa698d702dc782f3f95a95c7f7572a22",
+      "recorrelationReason": "PR #915: MARKET rights evaluator rejects empty use-case lists, future-dated reviews, expired validity at boundary and invalid evaluation time. No new provider admission, licensing grant or production authority."
     },
     {
       "id": "TA-COMMERCIAL-LANE",
