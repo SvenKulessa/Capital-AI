@@ -127,3 +127,13 @@ The official API documentation at https://docs.twenty.com/developers/extend/api 
 \`server/twenty/product-activation-plan.test.mjs\` covers cross-tenant/cross-project, product ID mismatch, unapproved field values, source/asset tampering, stale record version, missing rollback, duplicate/reused idempotency and already-active records. Run with \`npm run test:twenty-cloud-readonly\`. A dry-run plan is **not** an idempotent transaction: the real implementation must separately prove atomic receipt reservation, conditional versioned mutation, post-write readback and compensating rollback before any productive write.
 
 Gate: \`TWENTY_PRODUCT_WRITE=BLOCKED\` until real authenticated readback, role verification, approved product ID/field schema, SHA-256 provenance, atomic idempotency and tested rollback are VERIFIED. \`MERGE=BLOCKED\`, \`DEPLOY=BLOCKED\` until exact HEAD/TEST-MERGE CodeQL, required checks, Rulesets and Twenty contracts VERIFIED. No provider activation, mutation, merge or deployment was executed.
+
+### Server-only Render Twenty secret binding (2026-11-23)
+
+Owner confirms TWENTY_API_KEY is configured in the Render CAPITAL-AI web service (OWNER_CONFIRMED, not independently authenticated). A non-HTTP opt-in CLI at scripts/twenty/owner-readback.mjs reads this key only from the server process environment. It is disabled unless TWENTY_READBACK_ENABLED=true is supplied for the process. It executes only fixed metadata GraphQL queries through POST https://api.twenty.com/metadata and emits sanitized workspace and Products object identifiers or generic errors. It does not read product records, prove role rights, publish a public endpoint, or mutate anything.
+
+Run in an authorized server environment with injected key:
+
+    TWENTY_READBACK_ENABLED=true npm run twenty:readback
+
+Synthetic negative tests: npm run test:twenty-cloud-readonly. The connected Render tool has no shell/runtime execution capability; this CLI has NOT been run against the live tenant and has NOT been deployed. No key values should be pasted or logged. The provider bridge remains suspended. No product activation, merge or deployment is authorized until exact-SHA and Twenty gates pass.
