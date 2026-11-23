@@ -130,3 +130,31 @@ test('non-binding provider support replies are evidence only and do not authoriz
   assert.ok(assessed.blockers.includes('LEGAL_APPROVAL_REFERENCE_MISSING'));
   assert.throws(() => assertGhcrPublicationRights({ license: attempted, sourceSha: sha, dockerfile }));
 });
+
+test('hosted SaaS-only selection cannot bypass GHCR or recipient rights guards', () => {
+  const ledger = JSON.parse(readFileSync(new URL('../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  const currentDockerfile = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  const currentMainSha = '3b92f054ca18b1521fde570ba082acca2b5ec601';
+  const nonAuthorizingDeploymentChoices = [
+    { deploymentModel: 'HOSTED_SAAS_ONLY', customerImageDelivery: false },
+    { deploymentModel: 'HOSTED_SAAS_ONLY', publicGhcrPush: false, providerBuild: 'RENDER_GIT_DOCKERFILE' },
+    { deploymentModel: 'HOSTED_SAAS_ONLY', licenseDelivery: 'NOT_REQUIRED_BY_OWNER_STATEMENT' },
+  ];
+  for (const choices of nonAuthorizingDeploymentChoices) {
+    const assessment = assessGhcrPublicationRights({
+      license: { ...ledger, ...choices },
+      dockerfile: currentDockerfile,
+      sourceSha: currentMainSha,
+    });
+    assert.equal(assessment.status, 'BLOCKED');
+    for (const code of [
+      'REDISTRIBUTION_REVIEW_OPEN', 'DEPLOY_ELIGIBILITY_NOT_GRANTED',
+      'SOURCE_EVIDENCE_SHA_MISMATCH', 'BASE_IMAGE_EVIDENCE_MISMATCH',
+      'REMAINING_GATES_OPEN', 'LEGAL_APPROVAL_REFERENCE_MISSING',
+    ]) assert.ok(assessment.blockers.includes(code), code);
+    assert.throws(() => assertGhcrPublicationRights({
+      license: { ...ledger, ...choices }, dockerfile: currentDockerfile,
+      sourceSha: currentMainSha,
+    }));
+  }
+});
