@@ -107,3 +107,26 @@ test('fully documented synthetic fixture matches only the input contract, never 
   assert.deepEqual(assessed.blockers, []);
   assert.equal(assessed.pinnedBaseImage, pinned);
 });
+
+test('non-binding provider support replies are evidence only and do not authorize GHCR publication', () => {
+  const ledger = JSON.parse(readFileSync(new URL('../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  for (const id of ['kraken', 'polygon']) {
+    const provider = ledger.providers.find(item => item.id === id);
+    assert.equal(provider.deployEligible, false);
+    assert.equal(provider.status, 'CONTRACT_SCOPE_UNVERIFIED');
+    assert.match(provider.nonBindingVendorReply.sourceReference, /^Gmail message /);
+    assert.equal(provider.nonBindingVendorReply.executedAgreement, false);
+    assert.equal(provider.nonBindingVendorReply.contractingEntityBound, false);
+    assert.equal(provider.nonBindingVendorReply.commercialAdmission, false);
+    assert.equal(provider.contractEvidence.contractOrPermissionReference, null);
+  }
+  assert.equal(ledger.status, 'REVIEW_OPEN');
+  assert.equal(ledger.deployEligible, false);
+  assert.equal(ledger.legalApproval, null);
+  assert.equal(ledger.remainingGates.length, 6);
+  const attempted = { ...approved(), providers: ledger.providers, legalApproval: null };
+  const assessed = assessGhcrPublicationRights({ license: attempted, sourceSha: sha, dockerfile });
+  assert.equal(assessed.status, 'BLOCKED');
+  assert.ok(assessed.blockers.includes('LEGAL_APPROVAL_REFERENCE_MISSING'));
+  assert.throws(() => assertGhcrPublicationRights({ license: attempted, sourceSha: sha, dockerfile }));
+});
