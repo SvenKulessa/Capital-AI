@@ -4,6 +4,16 @@ Status: **EVIDENCE ONLY / NO GHCR PUBLICATION / NO RENDER SOURCE SWITCH**. Proje
 
 ## Unveränderliche Git-/CI-Referenzen
 
+### Aktueller Main-Readback nach den ursprünglichen fe4cc7a-Evidence-Belegen
+
+- Nach der oben dokumentierten, SHA-gebundenen fe4cc7a-Artefaktprüfung liegt der neuere Main auf `331170a4fe27580fb9e7305a83851ffafb413f68`. Die ursprünglichen `fe4cc7a...`-Hashes bleiben **historische, SHA-gebundene Evidence** und dürfen nicht als Bytes des neueren Builds ausgegeben werden.
+- GitHub [Main Docker Security Gate Run 45094553010](https://github.com/SvenKulessa/Capital-AI/actions/runs/45094553010), Job `137431343517`: `completed/success`. Im tatsächlichen Joblog steht für `scripts/os-source-inventory.mjs` `{"status":"IMAGE_INVENTORY_BOUND_SOURCE_DELIVERY_NOT_PROVEN","image":"sha256:0203f893831df9f2949c2ad6baae90101b0eff1178989d675f0c1de76a529472","packages":50,"missingSourceMetadata":0}`. Der SHA-256 ist ausschließlich der neu ermittelte lokale Docker-**CONFIG**-Digest; kein OCI-Manifest, Registry-Pull, Attest oder Source-Delivery.
+- Das Run-Artefakt `docker-security-331170a4fe27580fb9e7305a83851ffafb413f68` hat GitHub-Artifact-ID `14782603161` und ist laut Artifact-API nicht abgelaufen. Seine **ZIP-Bytes und tatsächlichen Datei-Hashes wurden in diesem Readback nicht unabhängig heruntergeladen oder geprüft**. Status: `ARTIFACT_METADATA=VERIFIED`, `NEW_MAIN_ARTIFACT_BYTE_VALIDATION=NOT_PROVEN`.
+- Der separate [PR-#913 Docker Run 45090481063](https://github.com/SvenKulessa/Capital-AI/actions/runs/45090481063) (`success`) testete Head `a3c0a331fac9088315934bb69f9d9403702d09dc` auf GitHubs test-merge `df8266079a961b9c8b9cc34e87ad623e16a301aa` gegen Basis `fe4cc7a...`. Sein Image-CONFIG-Digest `sha256:da884001b942dbe06c396f84f89c6ceaa32b7437a9d6a0e8552d6f956b21c69d` ist weder der fe4cc7a- noch der neue 331170a-Main-Image-Digest.
+- [PR-#913 isolierter Source-Mirror Run 45090481050](https://github.com/SvenKulessa/Capital-AI/actions/runs/45090481050) meldet im Joblog `SOURCE_HASHES_VERIFIED_NON_AUTHORIZING`, `externalFetchFailures=0`, `sourceDeliveryProven=false`, `redistributionApproved=false`. Das ist ein positiver Byte-/Hash-Sicherheitsbeleg für den früheren PR-Teststand, **keine** neue rechtliche Quellcode-Auslieferungsfreigabe.
+- Die neuerliche Main-Änderung gegenüber `fe4cc7a...` umfasst **nur** `docs/growth/LEGAL-DATA-HUNTER-COMMERCIAL-READBACK-20261121.md`, `scripts/growth/growth-intelligence-drafts.mjs` und `scripts/growth/growth-intelligence-drafts.test.mjs`; keine Dateischnittmenge mit den Scope-Pfaden von PR #913. Ein konservativer Merge dieser Main-Änderungen in den bestehenden Draft-Branch ersetzt keine PR-Head-CI und ändert keine Runtime-Rechte.
+
+
 - Main vor Synchronisierung: `fe4cc7a5784af1b4924c8bbb8c5af49af8b29e34`; PR #913 vorheriger Head: `c7fcbed8c951f483d6606142f85d255438eb2d34`, frühere Merge-Basis: `fa706af9aa698d702dc782f3f95a95c7f7572a22`.
 - Branch-Synchronisierung: Die 22 PR-Pfade und die 33 geänderten Main-Pfade sind laut GitHub-Compare **ohne Dateischnittmenge**. Bei neuem Head die GitHub-Required-Checks erneut auswerten.
 - Main Docker Security Gate: [Run 45088125138](https://github.com/SvenKulessa/Capital-AI/actions/runs/45088125138), Job `137411279074`: `completed/success`. [CodeQL 45088124543](https://github.com/SvenKulessa/Capital-AI/actions/runs/45088124543): `completed/success`.
@@ -41,7 +51,7 @@ Status: **EVIDENCE ONLY / NO GHCR PUBLICATION / NO RENDER SOURCE SWITCH**. Proje
 ## Technische Weiterbearbeitung / Akzeptanz
 
 1. Bestehende Tests `scripts/platform/*test.mjs`, `scripts/verify-os-source-mirror.test.mjs` und vorhandene Workflow-Gates am nach Main synchronisierten Head laufen lassen; Test-/Merge-SHA und Run-IDs im PR-Kommentar dokumentieren, fehlende Tests **NOT_PROVEN** lassen.
-2. Byteweise Prüfung des aktuellen CI-Artifacts `14779983571` gegen SBOM, OS- und Fonts-Notices durchführen, sobald ein authentifizierter ZIP-Readback verfügbar ist. Bis dahin ist nur die Log-Evidence gültig.
+2. Der authentifizierte ZIP-Byte-Readback für das Main-CI-Artifact `14779983571` zu `fe4cc7a...` ist oben bereits dokumentiert; keine zweite manuelle Prüfung desselben Artefakts erforderlich. Für das neuere Main-CI-Artefakt `14782603161` sind die **neuen ZIP-Bytes und Hashes weiterhin NOT_PROVEN**, bis sie tatsächlich geprüft wurden. GitHub-Run-Erfolg allein belegt diese Bytes nicht.
 3. Pro offener Rechtekategorie nur echte Autor-/Vertrags-/Upstream-Quellen und die konkrete, aktuelle Image-Auslieferung belegen. Keine Rechte-„Reparatur“ aus Dateinamen, Hash-Gleichheit oder grünem Scanner.
 4. Das bestehende `scripts/assert-ghcr-publication-rights.mjs` bleibt fail-closed; Registry-Push, GitHub-Attestations-Bewertung und Render-Image-Cutover nur über den bereits bestehenden freigegebenen Pfad nach vollständigen tatsächlichen Rechten, Signaturen, Ruleset-/Kostenfreigaben.
 
