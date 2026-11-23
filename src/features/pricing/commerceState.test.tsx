@@ -40,6 +40,7 @@ test('Phase A inquiry does not expose customer PII, payment events or create lic
   const html = renderToStaticMarkup(<LearningUniverseB2BInquirySection />);
   assert.match(html, /Bitte zunächst keine vertraulichen Dokumente übermitteln/);
   assert.match(html, /Eine Anfrage begründet weder einen Vertrag/);
+  assert.match(html, /href="\/datenschutz\/"/);
   assert.doesNotMatch(html, /name="email"|type="email"|data-customer|signedAgreement|ownerGrantId|paymentEvidenceRef/);
   assert.doesNotMatch(html, /€|EUR\s*\d|jetzt kaufen|Bestellen|Sofort kaufen/);
 });
