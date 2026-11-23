@@ -184,3 +184,18 @@ test('unverified third-party AssetLogo SVGs are replaced by accessible ticker-on
   assert.ok(!component.includes('RENDER_LOGO_LICENSE_APPROVED'));
   // This proves only one component's rendering: other artwork and trademark usage still need review.
 });
+
+
+test('owner-reported Grok ChatGPT AI Studio hero provenance never grants image rights', () => {
+  const ledger = JSON.parse(readFileSync(new URL('../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  const hero = ledger.assets.find(asset => asset.path === 'src/assets/images/glowing_earth_nodes_1789997454893.jpg');
+  assert.ok(hero);
+  assert.deepEqual(hero.originEvidence.supplementalOwnerStatement.toolsNamed, ['Grok', 'ChatGPT', 'Google AI Studio']);
+  assert.equal(hero.originEvidence.supplementalOwnerStatement.verification, 'OWNER_STATEMENT_ONLY_NOT_CREATION_CHAIN_OR_LICENCE_EVIDENCE');
+  assert.equal(hero.originEvidence.supplementalOwnerStatement.commercialRightsVerified, false);
+  assert.equal(hero.license, null);
+  assert.equal(ledger.status, 'REVIEW_OPEN');
+  assert.equal(ledger.deployEligible, false);
+  assert.equal(ledger.legalApproval, null);
+  assert.ok(ledger.remainingGates.some(gate => gate.includes('JPEG usage terms')));
+});
