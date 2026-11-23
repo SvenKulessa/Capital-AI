@@ -1,6 +1,8 @@
 import { randomUUID, createHash, timingSafeEqual } from 'node:crypto';
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[A-Za-z]{2,}$/;
+// Never persist control, bidi-spoofing or tag-delimiter bytes from contact input.
+const UNSAFE_CONTACT = /[<>\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u;
 const REPO = /^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/;
 // A syntactically valid path can still contain dot-segment traversal (e.g. ../private).
 const validRepository = value => REPO.test(value) && value.split('/').every(part => part !== '.' && part !== '..');
@@ -24,7 +26,8 @@ export function createB2BLeadIntake({resolveTenant, persist, now=()=>Date.now(),
     const normalizedOrganization=typeof organization==='string'?organization.trim():'';
     if (normalizedOrganization.length<2 || normalizedOrganization.length>120 ||
         /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u.test(normalizedOrganization) ||
-        typeof email!=='string' || !EMAIL.test(email) || typeof repository!=='string' || !validRepository(repository)) return {status:400,code:'INVALID_INPUT'};
+        typeof email!=='string' || !EMAIL.test(email) || UNSAFE_CONTACT.test(email) ||
+        typeof repository!=='string' || !validRepository(repository)) return {status:400,code:'INVALID_INPUT'};
     if (body.consent!==true || body.privacyVersion!==privacyVersion || body.purpose!=='b2b_evidence_audit_contact') return {status:422,code:'CONSENT_REQUIRED'};
     // Request IDs can be forwarded to audit logs. Bound the exact persisted
     // bytes; reject control/bidi/whitespace rather than truncating hostile input.
