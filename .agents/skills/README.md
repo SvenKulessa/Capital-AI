@@ -61,3 +61,11 @@ Die Verbindungsprofile beschreiben Protokollquellen und Abnahmeschritte. Für ei
 Die vorhandene **Daily Dependency and CVE Watch** protokolliert Erreichbarkeit, Textanker und fällige Quellenreviews im bestehenden Run-Artefakt. Ein gefundener Textanker belegt nur den Abruf. Für ein Review liest die zuständige Domain die offizielle Spezifikation und relevante Release Notes oder Rechtsänderungen, prüft die Anwendbarkeit und aktualisiert Version sowie Prüfdatum im normalen Repository-Workflow. Ein nicht unterstützter Redirect, fehlender Anker, abgelaufener oder fehlender Nachweis bleibt sichtbar. Produktive Implementierung und rechtliche Anwendbarkeit brauchen jeweils eigene Evidence.
 
 **Bewertungsgrundlage.** Die unveränderten 76 kuratierten Aufgaben prüfen das Legacy-Signal-Routing. Zusätzlich decken Regressionstests neue Signale, falsche Bundle-Auswahl, Review-Datumsgrenzen und Quellenfehler ab. Struktur- und Routing-Ergebnisse liefern keine Messwerte zur tatsächlichen Skill-Ausführung. Dafür fordert der Skill agent-evaluation eine belegte Run-ID, die Skill-ID, Zeiten und eine Quellreferenz. Reine Empfehlungen bleiben als solche sichtbar.
+
+## Domainübergreifende Beratung
+
+In advisoryRouting.domains pflegt jede Domain ihr fachliches Berater-Team und empfohlene Verbindungen. Alle anderen Domains können bei passender Aufgabe hinzugezogen werden. Im Skill-Plan ergänzt das Routing passende Domains über konkrete Textsignale oder über die Option related. Die Primärdomain bleibt verantwortlich.
+
+    node scripts/skill-routing.mjs --plan --domain PRODUCT --related PLATFORM,TRUST "B2B-Onboarding mit DSGVO und OpenAPI"
+
+Im privaten Profil-Dashboard zeigt **Skill-Routing** die Primärdomain, ihre Berater-Skills und wählbare weitere Domains. Die Auswahl bleibt lokal für die Vorschau. Der Server liefert eine reduzierte Projektion an verifizierte IAM-Accounts (Owner, Admin, Supervisor) und Accounts mit gültigem Enterprise-Entitlement. Weitere B2B-Rollen erfordern ein belegtes Entitlement.
