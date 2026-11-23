@@ -289,7 +289,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     dependencies: ['nats-jetstream', 'valkey'],
     alternatives: [
       { name: 'CCXT', role: 'fallback', license: 'MIT' },
-      { name: 'Cryptofeed', role: 'optimization', license: 'BSD-3-Clause' },
+      { name: 'Cryptofeed', role: 'optimization', license: 'AGPL-3.0-or-later' },
       { name: 'Hummingbot', role: 'complement', license: 'Apache-2.0' },
     ],
     evidence: ['server/market.mjs', 'docs/security/LICENSE-RIGHTS.md'],
@@ -303,7 +303,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     dependencies: ['nats-jetstream', 'valkey'],
     alternatives: [
       { name: 'CCXT', role: 'fallback', license: 'MIT' },
-      { name: 'Cryptofeed', role: 'optimization', license: 'BSD-3-Clause' },
+      { name: 'Cryptofeed', role: 'optimization', license: 'AGPL-3.0-or-later' },
       { name: 'Hummingbot', role: 'complement', license: 'Apache-2.0' },
     ],
     evidence: ['server/market.mjs', 'docs/security/LICENSE-RIGHTS.md'],
