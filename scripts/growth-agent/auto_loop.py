@@ -10,6 +10,8 @@ import os
 import re
 from typing import TypedDict
 
+from domain_profile_binding import BoundDomainTask, REPOSITORY, bind_domain_task, load_domain_profiles
+
 os.environ["LANGGRAPH_STRICT_MSGPACK"] = "true"
 os.environ["LANGSMITH_TRACING"] = "false"
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
@@ -20,6 +22,11 @@ from langgraph.checkpoint.memory import InMemorySaver
 
 class LoopState(TypedDict, total=False):
     task_id: str
+    domain: str
+    query: str
+    bundle_sha256: str
+    profile_sha256: str
+    profile_skills: list[str]
     status: str
     attempts: int
     evidence: dict
@@ -67,14 +74,42 @@ def merge_evidence_verified(evidence: object) -> bool:
                 "scope_complete", "current_main", "no_active_hold"))
 
 
-def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_after=None):
+def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_after=None,
+                bound_task: BoundDomainTask | None = None, repo_root=None):
     """Compile LangGraph without granting authority to runtime inputs.
 
     Trusted actions: analyze, implement, test, repair, evidence, merge,
     observe_deployment, verify_runtime. Methods receive a snapshot of state
     and return dicts; missing/raising methods fail closed.
     """
+    if bound_task is not None and (
+            not isinstance(bound_task, BoundDomainTask) or repo_root is None
+    ):
+        raise ValueError("bound graph requires validated task and repository source")
+
+    def binding_valid(state) -> bool:
+        if bound_task is None:
+            return True
+        if not bound_task.matches_state(state):
+            return False
+        try:
+            current = load_domain_profiles(repo_root)
+            route = current["domains"][bound_task.domain]
+            return (
+                current["bundle_sha256"] == bound_task.bundle_sha256
+                and route["profile_sha256"] == bound_task.profile_sha256
+                and tuple(route["skills"]) == bound_task.skills
+                and not current["permission_expansion"]
+                and not current["provider_access"]
+            )
+        except (OSError, ValueError, KeyError, TypeError):
+            return False
+
     def call(method, state):
+        # Check the exact source-bound task before EVERY trusted adapter call,
+        # including after an interrupted or resumed checkpoint.
+        if not binding_valid(state):
+            return {}
         fn = getattr(actions, method, None)
         if not callable(fn):
             return {}
@@ -89,6 +124,8 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
         return {"history": [*state.get("history", []), step], **updates}
 
     def analyze(state):
+        if not binding_valid(state):
+            return event(state, "task_binding_denied", status="BLOCKED")
         ok = call("analyze", state).get("ok") is True
         return event(state, "analyze", status="ANALYZED" if ok else "BLOCKED")
 
@@ -108,6 +145,8 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
         return event(state, "repair", attempts=attempts, status="REPAIRED" if ok else "BLOCKED")
 
     def evidence(state):
+        if not binding_valid(state):
+            return event(state, "task_binding_denied", status="BLOCKED")
         raw = call("evidence", state)
         filtered = {key: raw[key] for key in EVIDENCE_KEYS if key in raw}
         if authority.read_only:
@@ -256,3 +295,61 @@ def execute_durable(actions, authority: Authority, task_id: str, db_path: str) -
     finally:
         fcntl.flock(lockfd, fcntl.LOCK_UN)
         os.close(lockfd)
+
+
+
+def execute_bound_readonly(actions, repo_root, task: dict, *,
+                           tenant: str = "owner-local",
+                           repository: str = REPOSITORY) -> LoopState:
+    """Read-only use of the SAME existing execution graph and offline identity.
+
+    Does not construct an additional orchestrator or admit ONLINE/customer
+    permissions. No profile attribute can override Authority(read_only=True).
+    """
+    binding = bind_domain_task(
+        repo_root, tenant=tenant, repository=repository, task=task
+    )
+    state = build_graph(
+        actions, Authority(read_only=True), bound_task=binding, repo_root=repo_root
+    ).invoke(
+        binding.initial_state(),
+        {"configurable": {"thread_id": binding.thread_id}, "recursion_limit": 24},
+    )
+    if not binding.matches_state(state) or not _bound_sources_current(repo_root, binding):
+        raise ValueError("stale bound execution result")
+    return state
+
+
+def _bound_sources_current(repo_root, binding: BoundDomainTask) -> bool:
+    try:
+        current = load_domain_profiles(repo_root)
+        route = current["domains"][binding.domain]
+        return (
+            current["bundle_sha256"] == binding.bundle_sha256
+            and route["profile_sha256"] == binding.profile_sha256
+            and tuple(route["skills"]) == binding.skills
+        )
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+def execute_bound_durable_readonly(actions, repo_root, task: dict, db_path: str, *,
+                                   tenant: str = "owner-local",
+                                   repository: str = REPOSITORY) -> LoopState:
+    """Reuse the existing SQLite lock and file binding; fail closed on replay."""
+    from checkpoint_store import execute_durable_graph
+
+    binding = bind_domain_task(
+        repo_root, tenant=tenant, repository=repository, task=task
+    )
+    state = execute_durable_graph(
+        lambda saver: build_graph(
+            actions, Authority(read_only=True), checkpointer=saver,
+            bound_task=binding, repo_root=repo_root,
+        ),
+        binding.thread_id, db_path, binding.initial_state(),
+        enforce_offline_binding=True,
+    )
+    if not binding.matches_state(state) or not _bound_sources_current(repo_root, binding):
+        raise ValueError("stale bound checkpoint result")
+    return state

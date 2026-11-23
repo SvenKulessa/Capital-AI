@@ -6,6 +6,9 @@ on:
       - 'deploy/Dockerfile.langgraph-worker'
       - 'deploy/Dockerfile.langgraph-worker.dockerignore'
       - 'scripts/growth-agent/agent_platform.py'
+      - 'scripts/growth-agent/auto_loop.py'
+      - 'scripts/growth-agent/test_auto_loop.py'
+      - 'scripts/growth-agent/test_domain_task_contract.py'
       - 'scripts/growth-agent/domain_profile_binding.py'
       - 'scripts/growth-agent/test_domain_profile_binding.py'
       - 'scripts/growth-agent/test_agent_platform.py'
@@ -109,6 +112,19 @@ jobs:
             -m unittest discover -s /app/scripts/growth-agent \
             -p test_domain_profile_binding.py -v
           echo "FIVE_DOMAIN_PROFILE_BINDING_TESTED"
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_auto_loop.py -v
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint python3 "$image" \
+            -m unittest discover -s /app/scripts/growth-agent \
+            -p test_domain_task_contract.py -v
+          echo "BOUND_OFFLINE_TASK_SCOPE_NEGATIVES_TESTED"
           docker run --rm --network none --read-only \
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --cap-drop ALL --security-opt no-new-privileges \
