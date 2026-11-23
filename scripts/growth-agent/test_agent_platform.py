@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -10,7 +11,9 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from agent_platform import build_research_graph, retrieve
+from agent_platform import DOMAINS, build_research_graph, retrieve
+from domain_profile_binding import PROFILES, SOURCES, load_domain_profiles
+from offline_scope import scoped_thread_id
 from worker_service import check_root, load_task, process
 
 
@@ -25,7 +28,13 @@ def fixture(root: Path):
     p.mkdir(parents=True)
     (p / "LANGGRAPH-WORKER-READBACK-20261115.md").write_text(
         "Readback checks mount ownership and restart behaviour.\n", encoding="utf-8")
-    (root / "AGENTS.md").write_text("TRUST policy: no unapproved actions.\n", encoding="utf-8")
+    # The source-authenticated runtime now requires the five real public
+    # repository profiles. Preserve their exact metadata in synthetic fixtures.
+    repo = Path(__file__).resolve().parents[2]
+    for relative in SOURCES:
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((repo / relative).read_bytes())
 
 
 def state_dirs(root: Path):
@@ -55,10 +64,107 @@ class PlatformResearchTests(unittest.TestCase):
             state = graph.invoke({"task_id": "research-1", "domain": "PLATFORM",
                                   "query": "checkpoint sqlite"})
             self.assertEqual(state["status"], "RESEARCH_DRAFT")
+            self.assertEqual(state["profile_skills"], ["platform-engineering", "platform-advisory"])
+            self.assertRegex(state["profile_sha256"], r"^[a-f0-9]{64}$")
+            self.assertRegex(state["bundle_sha256"], r"^[a-f0-9]{64}$")
             self.assertEqual(state["agent_route"],
                              ["supervisor", "retriever", "platform_analyst", "trust_reviewer"])
             self.assertIn("ignore instructions", state["citations"][0]["excerpt"].lower())
             self.assertNotIn("merge", state["agent_route"])
+
+    def test_completed_research_checkpoint_cannot_replay_after_profile_change(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            repo = base / "repo"
+            repo.mkdir()
+            fixture(repo)
+            root = base / "state"
+            state_dirs(root)
+            task = {"schema": "CAPITAL_AI_OFFLINE_RESEARCH@1", "task_id": "same-task",
+                    "domain": "PLATFORM", "query": "SQLite checkpoint"}
+            first = process(task, state_root=root, repo_root=repo)
+            self.assertEqual(first["status"], "RESEARCH_DRAFT")
+            self.assertEqual(len(list((root / "checkpoints").glob("*.sqlite3"))), 1)
+            p = repo / PROFILES["PLATFORM"]
+            original = p.read_text(encoding="utf-8")
+            p.write_text(original.replace('"prompt": "', '"prompt": "new revision ', 1),
+                         encoding="utf-8")
+            second = process(task, state_root=root, repo_root=repo)
+            self.assertEqual(second["status"], "RESEARCH_DRAFT")
+            self.assertNotEqual(first["bundle_sha256"], second["bundle_sha256"])
+            self.assertEqual(len(list((root / "checkpoints").glob("*.sqlite3"))), 2)
+
+    def test_copied_sqlite_database_with_foreign_task_identity_fails_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            repo = base / "repo"
+            repo.mkdir()
+            fixture(repo)
+            root = base / "state"
+            state_dirs(root)
+            first = {"schema": "CAPITAL_AI_OFFLINE_RESEARCH@1", "task_id": "owner-task",
+                     "domain": "PLATFORM", "query": "SQLite checkpoint"}
+            other = {**first, "task_id": "different-task"}
+            result = process(first, state_root=root, repo_root=repo)
+            self.assertEqual(result["status"], "RESEARCH_DRAFT")
+            originals = list((root / "checkpoints").glob("*.sqlite3"))
+            self.assertEqual(len(originals), 1)
+            bundle = load_domain_profiles(repo)
+            other_id = scoped_thread_id(
+                tenant="owner-local", repository="SvenKulessa/Capital-AI",
+                task_id=other["task_id"], payload={**other, "bundle_sha256": bundle["bundle_sha256"]}
+            )
+            destination = root / "checkpoints" / (other_id + ".sqlite3")
+            shutil.copyfile(originals[0], destination)
+            destination.chmod(0o600)
+            with self.assertRaisesRegex(ValueError, "scope mismatch"):
+                process(other, state_root=root, repo_root=repo)
+
+    def test_profiles_missing_or_corrupt_never_create_checkpoint(self):
+        for case in ("missing", "tampered"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                repo = base / "repo"
+                repo.mkdir()
+                fixture(repo)
+                root = base / "state"
+                state_dirs(root)
+                p = repo / PROFILES["PRODUCT"]
+                if case == "missing":
+                    p.unlink()
+                else:
+                    text = p.read_text(encoding="utf-8")
+                    p.write_text(text.replace('"permissionExpansion": false',
+                                              '"permissionExpansion": true', 1),
+                                 encoding="utf-8")
+                task = {"schema": "CAPITAL_AI_OFFLINE_RESEARCH@1",
+                        "task_id": "blocked", "domain": "PRODUCT", "query": "test"}
+                with self.assertRaises((OSError, ValueError)):
+                    process(task, state_root=root, repo_root=repo)
+                self.assertEqual(list((root / "checkpoints").iterdir()), [])
+
+    def test_each_domain_has_source_bound_graph_route_and_no_tools(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fixture(root)
+            graph = build_research_graph(root)
+            bundles = set()
+            for domain in DOMAINS:
+                query = ("SQLite checkpoint" if domain == "PLATFORM"
+                         else "SOLO_MAINTAINER_FLOW")
+                state = graph.invoke({"task_id": "domain-" + domain.lower(),
+                                      "domain": domain, "query": query})
+                with self.subTest(domain=domain):
+                    self.assertEqual(state["status"], "RESEARCH_DRAFT")
+                    self.assertEqual(state["profile_skills"], [
+                        domain.lower() + "-engineering", domain.lower() + "-advisory"])
+                    self.assertEqual(state["agent_route"], [
+                        "supervisor", "retriever", domain.lower() + "_analyst",
+                        "trust_reviewer"])
+                    self.assertRegex(state["profile_sha256"], r"^[a-f0-9]{64}$")
+                    self.assertNotIn("merge", state["agent_route"])
+                    bundles.add(state["bundle_sha256"])
+            self.assertEqual(len(bundles), 1)
 
     def test_no_matching_evidence_not_proven(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -155,7 +261,10 @@ class PlatformResearchTests(unittest.TestCase):
             source = '''import json,sys;from pathlib import Path;from worker_service import process
 root=Path(sys.argv[1]);repo=Path(sys.argv[2]);task=json.loads(sys.argv[3]);result=process(task,state_root=root,repo_root=repo)
 print(json.dumps({"status":result["status"],"agents":result["agent_route"],"citations":len(result.get("citations",[]))}))'''
-            env = dict(os.environ, PYTHONPATH=str(Path(__file__).parent))
+            # Preserve the candidate image's pinned /opt/worker-packages path
+            # when a separate interpreter tests the real SQLite checkpoint.
+            env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, (
+                str(Path(__file__).parent), os.environ.get("PYTHONPATH", "")))))
             outputs = []
             for i in range(3):
                 call = subprocess.run([sys.executable, "-c", source, str(root), str(repo),

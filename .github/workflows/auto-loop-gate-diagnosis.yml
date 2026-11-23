@@ -1,0 +1,93 @@
+name: Auto Loop Gate Diagnosis
+on:
+  workflow_run:
+    workflows: ["Docker Build Sicherheit"]
+    types: [completed]
+permissions:
+  actions: write
+  contents: read
+  pull-requests: write
+concurrency:
+  group: auto-loop-gate-diagnosis-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Bind failed run to exact open PR and Docker job
+        id: bind
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$HEAD_SHA" =~ ^[a-f0-9]{40}$ ]]
+          branch=$(jq -er .workflow_run.head_branch "$GITHUB_EVENT_PATH")
+          head_repo=$(jq -er .workflow_run.head_repository.full_name "$GITHUB_EVENT_PATH")
+          [[ "$head_repo" == "$GH_REPOSITORY" ]]
+          [[ "$branch" =~ ^[a-zA-Z0-9._/-]+$ ]]
+          pr=$(gh api --paginate "repos/$GH_REPOSITORY/pulls?state=open&head=${GH_REPOSITORY%%/*}:$branch&per_page=100" --jq "[.[] | select(.head.sha == \"$HEAD_SHA\")] | if length == 1 then .[0].number else error(\"expected one exact open PR\") end")
+          job=$(gh api --paginate "repos/$GH_REPOSITORY/actions/runs/$RUN_ID/jobs?filter=latest&per_page=100" --jq '[.jobs[] | select(.name == "Docker Security Gate" and .conclusion == "failure")] | if length == 1 then .[0].id else error("expected one failed Docker gate") end')
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+          echo "job=$job" >> "$GITHUB_OUTPUT"
+      - name: Download exact failed job log
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          JOB_ID: ${{ steps.bind.outputs.job }}
+        run: |
+          set -euo pipefail
+          mkdir -p gate-diagnosis
+          gh api "repos/$GH_REPOSITORY/actions/jobs/$JOB_ID/logs" > gate-diagnosis/raw.log
+          test -s gate-diagnosis/raw.log
+      - name: Classify sanitize and fingerprint
+        id: classify
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          JOB_ID: ${{ steps.bind.outputs.job }}
+        run: |
+          set -euo pipefail
+          result=$(node scripts/auto-loop/gate-diagnosis.mjs gate-diagnosis/raw.log gate-diagnosis/report.json "$RUN_ID" "$RUN_ATTEMPT" "$HEAD_SHA" "$JOB_ID")
+          IFS=$'\t' read -r classification rerun fingerprint <<< "$result"
+          echo "classification=$classification" >> "$GITHUB_OUTPUT"
+          echo "rerun=$rerun" >> "$GITHUB_OUTPUT"
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
+          rm gate-diagnosis/raw.log
+      - name: Publish bounded diagnosis to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.bind.outputs.pr }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          CLASSIFICATION: ${{ steps.classify.outputs.classification }}
+          FINGERPRINT: ${{ steps.classify.outputs.fingerprint }}
+          RERUN: ${{ steps.classify.outputs.rerun }}
+        run: |
+          set -euo pipefail
+          jq -r '.evidenceLines[] | "- `" + . + "`"' gate-diagnosis/report.json > gate-diagnosis/evidence.md
+          body=$(printf '### Auto-Loop Gate Diagnosis\n\n- Run: `%s`\n- Classification: `%s`\n- Fingerprint: `%s`\n- Bounded automatic rerun: `%s`\n- Security bypass: `false`\n\n#### Sanitized evidence\n' "$RUN_ID" "$CLASSIFICATION" "$FINGERPRINT" "$RERUN"; cat gate-diagnosis/evidence.md)
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPOSITORY" --body "$body"
+      - name: Upload machine-readable diagnosis
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gate-diagnosis-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          path: gate-diagnosis/report.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: One bounded rerun for proven transient failure
+        if: steps.classify.outputs.rerun == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          JOB_ID: ${{ steps.bind.outputs.job }}
+        run: gh api --method POST "repos/$GH_REPOSITORY/actions/jobs/$JOB_ID/rerun"
