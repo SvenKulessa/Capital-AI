@@ -4,14 +4,14 @@ Stand: 2026-11-23 · PR #911 · **DRAFT_ONLY / OWNER_PUBLICATION_APPROVAL_PENDIN
 ## Beauftragter Launch-Scope
 - Ein einziger zusätzlicher B2B-Anfrageabschnitt **innerhalb des vorhandenen** `NewsDesignCatalog` (keine neue Route, kein Shop).
 - Drei klar als **Konzepte** bezeichnete Angebote: Publisher Pack, Studio, B2B-Partnerschaft. Darstellungen dienen der Bedarfsermittlung, nicht der Erteilung von Nutzungsrechten.
-- Für jede Karte ein klickbarer `mailto:support@capital-ai.online`-Link mit Produktthema als Betreff; der Benutzer sendet die Nachricht **eigenständig** im E-Mail-Programm. Keine serverseitige Kontaktverarbeitung in diesem neuen Slice, keine zusätzlichen Logs/Analytics/CRM-Schreibvorgänge, keine bestätigte E-Mail-Zustellgarantie.
+- **Aktueller SMTP-550-HOLD:** Die drei B2B-Karten und die vorhandene News-Design-Anfrage zeigen nur einen nicht anklickbaren Hinweis `BLOCKED_SMTP_550`; keine `mailto:`-Links, solange die Zustellung nach Issue #921 nicht nachgewiesen ist. Keine serverseitige Kontaktverarbeitung, zusätzliche Logs/Analytics/CRM-Schreibvorgänge oder Zustellbehauptung. Nach Recovery ist ein eigener getesteter Fix nötig.
 - Existierender Datenschutz-Link `/datenschutz/`, keine separaten eingegebenen Kontaktfelder und keine automatischen Datentransfers durch die neuen Karten.
 - **Keine** Preise, Streichpreise, Rabatte, Zahlungs-/Checkout-Links, Lizenz-/Entitlement-/Publishing-Grants, Reseller-Rohdateiübertragung, Tracking, Produktiv-Provider, neue Domains oder Asset-Mutationen.
 - Bisherige zehn SVG-Katalogvorschauen/Hashes unverändert; Marketing-Sprache „Designvorschau“ statt unbelegter vermarktungsbezogener Originalitätszusagen.
 
 ## Technische Evidence (nicht mit Produktionsfreigabe verwechseln)
 - Implementierung: `src/features/pricing/NewsDesignCatalog.tsx`, bestehende Design-Katalog-Komponente. Das Rendering verweigert den gesamten B2B-Anfrageabschnitt, sobald das importierte Commercial-Draft-Modell nicht mehr `DRAFT_ONLY / INQUIRY_ONLY` und ohne Kauf-/Rechteautorität ist.
-- Regressionen: `src/features/pricing/commerceState.test.tsx` – drei Konzeptkarten, drei echte `mailto:`-Links, unverbindliche Texte, kein Preis-/Rabatt-/Checkout-/Kunden-PII-Vertrag, bestehender `/datenschutz/`-Link, Rendering innerhalb des vorhandenen Katalogs.
+- Regressionen: `src/features/pricing/commerceState.test.tsx` – drei Konzeptkarten und vier deaktivierte Anfrage-Hinweise im Gesamtkatalog, keine `mailto:`-Links zu dem nachweislich nicht zustellbaren Postfach, unverbindliche Texte, kein Preis-/Rabatt-/Checkout-/Kunden-PII-Vertrag, bestehender `/datenschutz/`-Link, Rendering innerhalb des vorhandenen Katalogs. Die Regression wird erst bei erfolgreichem CI-Lauf `CI_VERIFIED`.
 - Dieser Slice entsteht **ausschließlich** auf dem bestehenden Draft-PR; `main` und produktive Dienste bleiben unverändert. CI für den **finalen** PR-Head separat als VERIFIED/FAILED/NOT_PROVEN erfassen; frühere CI-Befunde werden nicht vererbt.
 
 ## P0 – vom Owner und/oder zuständigen Fachpersonen nachzuweisen, bevor öffentlich
@@ -21,7 +21,7 @@ Stand: 2026-11-23 · PR #911 · **DRAFT_ONLY / OWNER_PUBLICATION_APPROVAL_PENDIN
 | BRAND / Markenverwendung | NOT_PROVEN | Ausdrückliche Owner-Bestätigung, dass CAPITAL-AI/Logo/Design im B2B-Anfragekatalog in eigenem Namen gezeigt werden darf; Dritt-/Ähnlichkeitsprüfung soweit erforderlich |
 | Bild-/Gestaltungsvorschau | NOT_PROVEN für Drittrechte | Per-Asset-Prüfentscheidungen und Rechteketten außerhalb des öffentlichen Git; [Evidence-Gap-Matrix](../licenses/2026-11-23_PRODUCT_CHATGPT_LEARNING_SOURCE_RIGHTS_EVIDENCE_GAP_MATRIX_v1.md) |
 | Angebotstext und Leistungsversprechen | OWNER_APPROVAL_PENDING | Die drei Konzepttexte und Hinweis auf noch ungeprüfte Rechte dem Owner zur Freigabe vorlegen; keine Vorwegnahme einer Liefer-/Nutzungszusage |
-| Datenschutz / Kommunikation | NOT_PROVEN für tatsächliche Zustellung | Bestehenden `/datenschutz/`-Inhalt für E-Mail-Anfragen und `/impressum/` prüfen; Empfang `support@capital-ai.online` mit tatsächlich empfangener Test-E-Mail bestätigen, keine Kundendaten veröffentlichen |
+| Datenschutz / Kommunikation | BLOCKED_SMTP_550; Inbox-Zustellung FAILED | Issue #921: echte Gmail-DSN meldete SMTP 550, während das Postfach in IONOS-Webmail sichtbar ist. Kein erneuter Versand ohne gesonderte Freigabe. Erst nach Inbound-Receipt und Privacy-Review dürfen Anfrage-Links wieder aktiviert werden. Keine Kundendaten veröffentlichen |
 | Veröffentlichung / Zielseite | BLOCKED | Explizite Owner-Freigabe für genau den finalen HEAD-SHA, die bestehende Zielseite und den genehmigten Wortlaut. Noch **kein** Merge oder produktives Deploy |
 | Required Checks und Accessibility | NOT_PROVEN bis finaler CI-Readback | Docker Security Gate, Domain Governance, TRUST/Lint/Tests, Browser QA, CodeQL am finalen SHA; keine erfundenen PASS-Daten |
 
