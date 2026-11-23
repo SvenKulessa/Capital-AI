@@ -87,28 +87,28 @@ Official Twenty documentation: https://docs.twenty.com/l/de/developers/extend/ap
 ### Twenty Cloud API schema, tenancy and rights hardening (2026-11-23)
 
 Official Twenty docs (verified publicly, **not** workspace-specific):
-- https://docs.twenty.com/developers/extend/api — Twenty Cloud API origin is \`https://api.twenty.com/\`, not the user-facing \`capital-ai.twenty.com\` UI origin. The metadata GraphQL API lives at \`/metadata\`, metadata REST at \`/rest/metadata/\`; API contracts are generated separately per workspace.
-- https://docs.twenty.com/developers/extend/apps/logic/logic-functions — \`MetadataApiClient\` documents read-only \`objects(filter:{},paging:{first:N})\` GraphQL query and fields \`id\`, \`nameSingular\`, \`namePlural\`, \`labelSingular\`, \`isCustom\`.
-- https://docs.twenty.com/developers/extend/oauth — OAuth \`api\` scope grants **read/write** API access; it does *not* prove a read-only role. An API key must be restricted by the actual Twenty Workspace role assignment.
-- https://docs.twenty.com/user-guide/settings/capabilities/community-settings — new metadata REST field response differs from old \`data.fields\` wrapper; unsupported or paginated shapes fail closed.
-- Twenty upstream source reads \`currentWorkspace { id workspaceUrls { subdomainUrl customUrl } }\` against \`/metadata\`. No unsupported workspace URL to API-host equality assumption is made.
+- https://docs.twenty.com/developers/extend/api — Twenty Cloud API origin is `https://api.twenty.com/`, not the user-facing `capital-ai.twenty.com` UI origin. The metadata GraphQL API lives at `/metadata`, metadata REST at `/rest/metadata/`; API contracts are generated separately per workspace.
+- https://docs.twenty.com/developers/extend/apps/logic/logic-functions — `MetadataApiClient` documents read-only `objects(filter:{},paging:{first:N})` GraphQL query and fields `id`, `nameSingular`, `namePlural`, `labelSingular`, `isCustom`.
+- https://docs.twenty.com/developers/extend/oauth — OAuth `api` scope grants **read/write** API access; it does *not* prove a read-only role. An API key must be restricted by the actual Twenty Workspace role assignment.
+- https://docs.twenty.com/user-guide/settings/capabilities/community-settings — new metadata REST field response differs from old `data.fields` wrapper; unsupported or paginated shapes fail closed.
+- Twenty upstream source reads `currentWorkspace { id workspaceUrls { subdomainUrl customUrl } }` against `/metadata`. No unsupported workspace URL to API-host equality assumption is made.
 
 Scoped controls on this PR branch:
-- \`server/twenty/cloud-readonly.mjs\`: fixed \`https://api.twenty.com\` API origin, separately pinned \`https://capital-ai.twenty.com\` expected Workspace UI identity, query-only GraphQL POST, read-only REST metadata field GET, redirect/HTTP/body-byte limits, no Core API, no POST mutation and no customer record reads.
+- `server/twenty/cloud-readonly.mjs`: fixed `https://api.twenty.com` API origin, separately pinned `https://capital-ai.twenty.com` expected Workspace UI identity, query-only GraphQL POST, read-only REST metadata field GET, redirect/HTTP/body-byte limits, no Core API, no POST mutation and no customer record reads.
 - The first metadata query obtains workspace UUID and canonical workspace URL from the *authenticated provider response*. Products discovery uses the documented object query, bounded to 100. Incomplete/ambiguous object lists are rejected.
-- \`readProductsFieldSchema(requiredFields)\` performs a schema **candidate** match only; requires one active Products object, object-bound UUID fields and explicit expected field name/type map, unique field IDs/names, and complete \`/rest/metadata/fields\` response. Unknown response forms, pagination and mismatched fields fail closed, not silent partial success.
-- \`validateProductEvidence()\` requires a nonserializable in-process provider readback and its paired field schema evidence. It checks exact tenant workspace UUID, Products object UUID, project isolation (\`CAPITAL_AI\` only), SHA-256 of *asset bytes/text*, and equality of candidate source SHA and content package source SHA. Raw caller-supplied \`fieldSchemaVerified: true\` and user-supplied observed tenant strings are no longer accepted as evidence.
-- All successful local matches still return \`writeAllowed=false\`, \`publicationAllowed=false\`, \`commercialRelease=HOLD\`. They do **not** confirm Twenty API-key role privileges, workspace Products field values or a real product record mapping. No product record operations were implemented.
+- `readProductsFieldSchema(requiredFields)` performs a schema **candidate** match only; requires one active Products object, object-bound UUID fields and explicit expected field name/type map, unique field IDs/names, and complete `/rest/metadata/fields` response. Unknown response forms, pagination and mismatched fields fail closed, not silent partial success.
+- `validateProductEvidence()` requires a nonserializable in-process provider readback and its paired field schema evidence. It checks exact tenant workspace UUID, Products object UUID, project isolation (`CAPITAL_AI` only), SHA-256 of *asset bytes/text*, and equality of candidate source SHA and content package source SHA. Raw caller-supplied `fieldSchemaVerified: true` and user-supplied observed tenant strings are no longer accepted as evidence.
+- All successful local matches still return `writeAllowed=false`, `publicationAllowed=false`, `commercialRelease=HOLD`. They do **not** confirm Twenty API-key role privileges, workspace Products field values or a real product record mapping. No product record operations were implemented.
 
 Evidence separation:
-- \`CONTROL_PRESENT\`: branch code and negative tests.
-- \`NOT_PROVEN\`: current Twenty Cloud live workspace metadata, actual Products field names/types, API-key role mapping, paging/response-shape compatibility, real product identity/tenant/asset bind and provider installation. Synthetic fixtures are not live proof.
-- \`BLOCKED\`: live provider activation, productive CRM writes, license grants, publishing, deployment and PR merge under the owner task. CI must be read back on the exact **new** head; old CI evidence does not transfer.
+- `CONTROL_PRESENT`: branch code and negative tests.
+- `NOT_PROVEN`: current Twenty Cloud live workspace metadata, actual Products field names/types, API-key role mapping, paging/response-shape compatibility, real product identity/tenant/asset bind and provider installation. Synthetic fixtures are not live proof.
+- `BLOCKED`: live provider activation, productive CRM writes, license grants, publishing, deployment and PR merge under the owner task. CI must be read back on the exact **new** head; old CI evidence does not transfer.
 
 Reproduce:
-\`\`\`sh
+```sh
 node --test server/twenty/cloud-readonly.test.mjs
 node --import tsx --test src/contracts/__tests__/contentEngine.test.ts
-\`\`\`
+```
 
 Rollback: revert this PR branch's scoped commits only; no real Twenty workspace provider settings or records have been changed.
