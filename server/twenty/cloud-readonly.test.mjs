@@ -33,3 +33,18 @@ test('deny unauthorized, GraphQL errors, ambiguous objects, oversized and malfor
  ];
  for(const [response,error] of cases) await assert.rejects(()=>new TwentyCloudMetadataReadonlyClient({workspaceUrl,accessToken,fetchImpl:async()=>response}).readProductsObject(),error);
 });
+
+test('tenant, digest and field evidence are independently fail-closed', async () => {
+ const { validateProductEvidence } = await import('./cloud-readonly.mjs');
+ const good={expectedWorkspaceOrigin:workspaceUrl,observedWorkspaceOrigin:workspaceUrl,expectedObjectId:id,observedObjectId:id,expectedTenantId:'tenant-A',observedTenantId:'tenant-A',expectedDigest:'a'.repeat(64),observedDigest:'a'.repeat(64),fieldSchemaVerified:true};
+ assert.equal(validateProductEvidence(good).writeAllowed,false);
+ for(const [change,pattern] of [
+  [{observedWorkspaceOrigin:'https://evil.example'},/ORIGIN_BLOCKED/],
+  [{observedObjectId:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'},/OBJECT_ID_MISMATCH/],
+  [{observedTenantId:'tenant-B'},/TENANT_MISMATCH/],
+  [{expectedTenantId:''},/TENANT_MISMATCH/],
+  [{observedDigest:'b'.repeat(64)},/DIGEST_MISMATCH/],
+  [{expectedDigest:'not-a-digest'},/DIGEST_MISMATCH/],
+  [{fieldSchemaVerified:false},/FIELDS_NOT_PROVEN/],
+ ]) assert.throws(()=>validateProductEvidence({...good,...change}),pattern);
+});
