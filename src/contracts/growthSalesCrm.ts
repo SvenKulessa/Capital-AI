@@ -107,10 +107,10 @@ export function buildGrowthSalesCrmDraft(raw: unknown) {
   const economicStatus = !economicsVerified ? 'NOT_PROVEN'
     : unitContributionEurCents < 0 ? 'HOLD' : 'REVIEW_REQUIRED';
 
-  // No AccountId, person, email address, CRM stage, guessed revenue or live Salesforce objects.
+  // No AccountId, person, email address, CRM stage, guessed revenue or live CRM objects.
   const crmDraft = {
     schema: 'CRM_PRODUCT_OPPORTUNITY_DRAFT@1',
-    provider: 'SALESFORCE_OPTIONAL',
+    provider: 'TWENTY_CLOUD_PENDING',
     connection: 'NOT_CONNECTED',
     idempotencyKey: createHash('sha256').update(JSON.stringify([
       candidate.projectId, candidate.productId, candidate.sourceSha256,
