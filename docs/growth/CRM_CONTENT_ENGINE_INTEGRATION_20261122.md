@@ -112,3 +112,18 @@ node --import tsx --test src/contracts/__tests__/contentEngine.test.ts
 ```
 
 Rollback: revert this PR branch's scoped commits only; no real Twenty workspace provider settings or records have been changed.
+
+
+### Product activation REST preflight (2026-11-23; owner conditional authorization)
+
+The owner separately approved *conditional* productive Twenty REST writes **only** to activate the identified CAPITAL-AI product after workspace identity, record ID, field types/permissions, SHA-256, idempotency and rollback are all independently verified. This does not authorize an unverified write.
+
+Current provider access: GitHub repository search returned no configured \`TWENTY_API_KEY\`, \`TWENTY_API_URL\` or \`TWENTY_CLOUD\` connection references on default main. The connected Render integration requires explicit owner selection of a Render workspace before its services can be inspected; no workspace was selected and no Render environment variables were read or changed. No dedicated Twenty connector is available in this execution environment. Thus **no authenticated Twenty workspace, Products schema or record readback was performed**.
+
+The official API documentation at https://docs.twenty.com/developers/extend/api documents the Twenty Cloud API host \`https://api.twenty.com\`, tenant-specific REST object routes, and API keys limited through assigned roles. A \`PATCH /rest/products/{id}\` is only a **proposed endpoint derived from workspace-generated object naming**; its availability and exact field/record response remain **NOT_PROVEN** for this workspace. Product activation field names and values must be discovered from the authenticated workspace; \`state\`, \`DRAFT\` and \`ACTIVE\` in tests are synthetic, not a claimed production contract.
+
+\`server/twenty/product-activation-plan.mjs\` produces a *pure offline intent*, not a provider client or write capability. It requires explicit workspace/object/record IDs, a candidate field inventory, owner/role/schema/workspace evidence references, byte-derived SHA-256 for source and creative asset, a matching record version, a previously rehearsed rollback and an unused tenant-bound idempotency receipt. It returns \`writeAllowed=false\` and \`executeAllowed=false\` even when all supplied offline evidence matches. Synthetic evidence references in tests are never authoritative.
+
+\`server/twenty/product-activation-plan.test.mjs\` covers cross-tenant/cross-project, product ID mismatch, unapproved field values, source/asset tampering, stale record version, missing rollback, duplicate/reused idempotency and already-active records. Run with \`npm run test:twenty-cloud-readonly\`. A dry-run plan is **not** an idempotent transaction: the real implementation must separately prove atomic receipt reservation, conditional versioned mutation, post-write readback and compensating rollback before any productive write.
+
+Gate: \`TWENTY_PRODUCT_WRITE=BLOCKED\` until real authenticated readback, role verification, approved product ID/field schema, SHA-256 provenance, atomic idempotency and tested rollback are VERIFIED. \`MERGE=BLOCKED\`, \`DEPLOY=BLOCKED\` until exact HEAD/TEST-MERGE CodeQL, required checks, Rulesets and Twenty contracts VERIFIED. No provider activation, mutation, merge or deployment was executed.
