@@ -857,7 +857,7 @@
       "creator": null,
       "origin": "Social-Media-Engine aus capital-ai-online/Finance; im Website-Mockup verwendet und durch Gemini eingebettet",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
@@ -1129,7 +1129,7 @@
       "creator": null,
       "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
@@ -1165,7 +1165,7 @@
       "creator": null,
       "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
@@ -1201,7 +1201,7 @@
       "creator": null,
       "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
