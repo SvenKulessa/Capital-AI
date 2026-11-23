@@ -19,7 +19,7 @@ test('invalid repository denied',async()=>{
 });
 test('request ids cannot persist log-injection controls or silently truncated identities',async()=>{
   const {submit,rows}=make();
-  for (const requestId of ['', ' lead ', 'X\\nFAKE', 'X\\r\\nFAKE', 'X\\u202eY', 'a'.repeat(81), 'x\\\\y']) {
+  for (const requestId of ['', ' lead ', 'X'+String.fromCharCode(10)+'FAKE', 'X'+String.fromCharCode(13,10)+'FAKE', 'X'+String.fromCharCode(0x202e)+'Y', 'a'.repeat(81), 'x'+String.fromCharCode(92)+'y']) {
     const r=await submit({...req(),requestId});
     assert.equal(r.status,400,JSON.stringify(requestId));
     assert.equal(r.code,'INVALID_REQUEST_ID');
