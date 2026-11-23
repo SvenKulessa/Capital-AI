@@ -1020,7 +1020,23 @@
         "requiredAttribution": null,
         "validityAndReviewDate": null
       },
-      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT"
+      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT",
+      "nonBindingVendorReply": {
+        "kind": "WRITTEN_NON_BINDING_PROVIDER_SUPPORT_EMAIL",
+        "sourceReference": "Gmail message 1a16ee3a0ba04fdf (Kraken Support, 2026-10-24)",
+        "reviewedAt": "2026-11-23",
+        "observations": {
+          "internalCollectionStorageAnalytics": "CONDITIONALLY_DESCRIBED_FOR_OWN_BENEFIT",
+          "redistributionOrThirdPartyRawDataAccess": "NOT_PERMITTED_WITHOUT_SEPARATE_LICENSE",
+          "derivedData": "SUPPORT_SAYS_USER_MAY_USE_DERIVED_DATA_SUBJECT_TO_APPLICABLE_TERMS",
+          "publicCustomerFacingProduct": "PROVIDER_REVIEW_REQUIRED",
+          "marketDataLicenceForCommercialUse": "NOT_ESTABLISHED"
+        },
+        "executedAgreement": false,
+        "contractingEntityBound": false,
+        "feedScopeBound": false,
+        "commercialAdmission": false
+      }
     },
     {
       "id": "twelvedata",
@@ -1072,7 +1088,27 @@
         "requiredAttribution": null,
         "validityAndReviewDate": null
       },
-      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT"
+      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT",
+      "nonBindingVendorReply": {
+        "kind": "WRITTEN_NON_BINDING_PROVIDER_MARKET_DATA_EMAIL",
+        "sourceReference": "Gmail message 1a1090f7f5c630e0 (Massive Market Data Specialist, 2026-10)",
+        "reviewedAt": "2026-11-23",
+        "observations": {
+          "customerFacingDisplay": "CONDITIONAL_BUSINESS_PLAN",
+          "rawDataApiRedistribution": "SEPARATE_DISTRIBUTION_AGREEMENT_REQUIRED",
+          "nonReconstructableDerivedScoresAndB2bReports": "CONDITIONAL_BUSINESS_PLAN",
+          "internalCacheReplayBackupDuringSubscription": "CONDITIONALLY_DESCRIBED",
+          "rawDataRetentionAfterTermination": "SOURCE_AND_RECONSTRUCTABLE_FACTS_MUST_BE_DELETED",
+          "indices": "ADDITIONAL_INDEX_PROVIDER_LICENSES_REQUIRED",
+          "legacyPolygonEndpoints": "SAME_BUSINESS_ENTITLEMENTS_IF_VALID_ORDER_FORM"
+        },
+        "executedAgreement": false,
+        "orderFormIssued": false,
+        "contractingEntityBound": false,
+        "selectedPlanBound": false,
+        "feedScopeBound": false,
+        "commercialAdmission": false
+      }
     },
     {
       "id": "financialdatanet",
