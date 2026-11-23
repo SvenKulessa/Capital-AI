@@ -1332,5 +1332,158 @@
         ]
       }
     }
+  },
+  "advisoryRouting": {
+    "schema": "CAPITAL_AI_ADVISORY_ROUTING@1",
+    "domains": {
+      "PRODUCT": {
+        "label": "Produkt und UX",
+        "advisers": [
+          {
+            "skill": "product-advisory",
+            "focus": "Produktentscheidungen und UX-Alternativen"
+          },
+          {
+            "skill": "accessibility-advisory",
+            "focus": "Barrierefreiheit und inklusive Navigation"
+          },
+          {
+            "skill": "customer-success",
+            "focus": "Nutzerfeedback, Onboarding und Erfolgskriterien"
+          }
+        ],
+        "recommendedDomains": [
+          "TRUST",
+          "PLATFORM",
+          "GROWTH"
+        ],
+        "signals": [
+          "produktstrategie",
+          "design system",
+          "ux beratung",
+          "product discovery",
+          "barrierefreie navigation"
+        ]
+      },
+      "MARKET": {
+        "label": "Marktdaten und Research",
+        "advisers": [
+          {
+            "skill": "market-advisory",
+            "focus": "Datenanbieter, Scoring und Architekturentscheidungen"
+          },
+          {
+            "skill": "quant-research",
+            "focus": "Modellannahmen, Backtests und Vergleichsmaßstäbe"
+          },
+          {
+            "skill": "data-engineering",
+            "focus": "Datenqualität, Herkunft und Schnittstellen"
+          }
+        ],
+        "recommendedDomains": [
+          "TRUST",
+          "PLATFORM",
+          "PRODUCT"
+        ],
+        "signals": [
+          "marktdaten",
+          "markt daten",
+          "backtesting",
+          "faktormodell",
+          "datenanbieter",
+          "market data"
+        ]
+      },
+      "PLATFORM": {
+        "label": "Architektur und Betrieb",
+        "advisers": [
+          {
+            "skill": "platform-advisory",
+            "focus": "Betriebsmodelle, Architektur und Kosten"
+          },
+          {
+            "skill": "integration-engineering",
+            "focus": "Schnittstellen, Adapter und E2E-Abnahme"
+          },
+          {
+            "skill": "platform-observability",
+            "focus": "Telemetrie, Verfügbarkeit und Betriebsziele"
+          }
+        ],
+        "recommendedDomains": [
+          "TRUST",
+          "PRODUCT",
+          "MARKET"
+        ],
+        "signals": [
+          "architekturberatung",
+          "openapi",
+          "model context protocol",
+          "a2a",
+          "mcp adapter",
+          "betriebsmodell"
+        ]
+      },
+      "TRUST": {
+        "label": "Risiko und Compliance",
+        "advisers": [
+          {
+            "skill": "trust-advisory",
+            "focus": "Sicherheitsrisiken, Datenschutz und Schutzmaßnahmen"
+          },
+          {
+            "skill": "legal-compliance",
+            "focus": "Rechtsrahmen, Lizenzen und Nachweispflichten"
+          },
+          {
+            "skill": "agent-evaluation",
+            "focus": "Nachweise für Routing, Ausführung und manuelle Stopps"
+          }
+        ],
+        "recommendedDomains": [
+          "PLATFORM",
+          "PRODUCT",
+          "MARKET"
+        ],
+        "signals": [
+          "ds gvo",
+          "dsgvo",
+          "datenschutz",
+          "tenant isolation",
+          "lizenzrisiko",
+          "compliance beratung"
+        ]
+      },
+      "GROWTH": {
+        "label": "Vertrieb und Wachstum",
+        "advisers": [
+          {
+            "skill": "growth-advisory",
+            "focus": "Wachstumsstrategie, Kanäle und Positionierung"
+          },
+          {
+            "skill": "sales-enterprise",
+            "focus": "B2B-Vertrieb, Beschaffung und Enterprise-Verträge"
+          },
+          {
+            "skill": "revenue-engineering",
+            "focus": "Angebotsmodelle, Preisstruktur und Entitlements"
+          }
+        ],
+        "recommendedDomains": [
+          "PRODUCT",
+          "TRUST",
+          "PLATFORM"
+        ],
+        "signals": [
+          "preisstrategie",
+          "go to market",
+          "b2b angebot",
+          "enterprise vertrieb",
+          "wachstumsstrategie"
+        ]
+      }
+    }
   }
 }
