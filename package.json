@@ -114,7 +114,8 @@
     "growth:intelligence:dry-run": "node --import tsx scripts/growth/growth-intelligence-drafts.mjs",
     "test:growth-intelligence": "node --import tsx --test src/contracts/__tests__/growthIntelligenceContent.test.ts scripts/growth/growth-intelligence-drafts.test.mjs",
     "growth:image-drafts": "node --import tsx scripts/growth/growth-intelligence-image-drafts.mjs --write",
-    "test:twenty-cloud-readonly": "node --test server/twenty/cloud-readonly.test.mjs server/twenty/product-activation-plan.test.mjs"
+    "test:twenty-cloud-readonly": "node --test server/twenty/cloud-readonly.test.mjs server/twenty/product-activation-plan.test.mjs scripts/twenty/owner-readback.test.mjs",
+    "twenty:readback": "node scripts/twenty/owner-readback.mjs"
   },
   "dependencies": {
     "@google/genai": "^3.6.1",
