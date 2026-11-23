@@ -158,3 +158,16 @@ test('hosted SaaS-only selection cannot bypass GHCR or recipient rights guards',
     }));
   }
 });
+
+
+test('both SaaS candidate inventory entries retain pinned Cryptofeed AGPL licence and blocked admission', () => {
+  const inventory = readFileSync(new URL('../src/data/externalComponentInventory.ts', import.meta.url), 'utf8');
+  const review = JSON.parse(readFileSync(new URL('../docs/licenses/oss-market-stack/commercial-review-20261003.json', import.meta.url), 'utf8'));
+  const cryptofeed = review.candidates.find(candidate => candidate.id === 'cryptofeed');
+  assert.equal(cryptofeed.softwareLicence, 'AGPL-3.0-or-later WITH ADDITIONAL_ATTRIBUTION_TERM');
+  assert.equal(cryptofeed.productAdmission, 'BLOCKED');
+  const rows = inventory.match(/^\s*\{ name: 'Cryptofeed', role: 'optimization', license: '[^']+' \},?$/gm) || [];
+  assert.equal(rows.length, 2);
+  for (const row of rows) assert.match(row, /license: 'AGPL-3\.0-or-later'/);
+  // Candidate metadata does not establish activation, modification or an executable source-offer.
+});
