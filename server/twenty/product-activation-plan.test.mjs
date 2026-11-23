@@ -47,6 +47,10 @@ test('foreign tenant, wrong product, cross-project and unverified field reject',
     {productRecordReadback:{...good.productRecordReadback,projectId:'DEVICE_CARE_KI'}},
     {fieldInventory:[{...good.fieldInventory[0],objectMetadataId:'cccccccc-cccc-cccc-cccc-cccccccccccc'}]},
     {activationValue:'UNREVIEWED'},
+    // A plain string 'INACTIVE' contains the substring 'ACTIVE' but is not an allowed-value list.
+    {fieldInventory:[{...good.fieldInventory[0],allowedValues:'INACTIVE'}]},
+    // A forged includes method must not substitute for real workspace field metadata.
+    {fieldInventory:[{...good.fieldInventory[0],allowedValues:{includes:()=>true}}]},
     {fieldInventory:[{...good.fieldInventory[0],writeAllowed:false}]},
   ]) assert.throws(()=>planTwentyProductActivation({...good,...change}),/TWENTY_/);
 });
