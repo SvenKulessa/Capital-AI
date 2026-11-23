@@ -28,7 +28,8 @@ export function createB2BLeadIntake({resolveTenant, persist, now=()=>Date.now(),
     if (body.consent!==true || body.privacyVersion!==privacyVersion || body.purpose!=='b2b_evidence_audit_contact') return {status:422,code:'CONSENT_REQUIRED'};
     // Request IDs can be forwarded to audit logs. Bound the exact persisted
     // bytes; reject control/bidi/whitespace rather than truncating hostile input.
-    if (typeof requestId==='string' && (requestId.length<1 || requestId.length>80 || /[^A-Za-z0-9_.:-]/u.test(requestId)))
+    if (requestId !== undefined && requestId !== null &&
+        (typeof requestId !== 'string' || requestId.length<1 || requestId.length>80 || /[^A-Za-z0-9_.:-]/u.test(requestId)))
       return {status:400,code:'INVALID_REQUEST_ID'};
     const time=now(), key=hash(tenant+'|'+String(ip??'unknown'));
     for (const [k,v] of buckets) if (time-v.since>=windowMs) buckets.delete(k);
