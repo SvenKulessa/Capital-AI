@@ -254,3 +254,25 @@ test('source probe reports missing anchors, redirects and errors without updatin
   assert.equal(report.sources.a2a.probe.state, 'NOT_PROVEN');
   assert.equal(report.sources.wcag.probe.state, 'REVIEW_SOURCE');
 });
+
+test('cross-domain advice preserves the first domain and incorporates explicit or matching specialists', () => {
+  const plan = selectSkillPlan('OpenAPI und Datenschutz', {
+    domain: 'PRODUCT', relatedDomains: ['GROWTH', 'MARKET'], registry,
+  });
+  assert.equal(plan.primaryDomain, 'PRODUCT');
+  assert.deepEqual(plan.advisoryDomains, ['PRODUCT', 'GROWTH', 'MARKET', 'PLATFORM', 'TRUST']);
+  assert.ok(plan.skills.includes('platform-advisory'));
+  assert.ok(plan.skills.includes('trust-advisory'));
+  assert.ok(plan.skills.includes('growth-advisory'));
+  assert.equal(plan.advisoryTracks.length, 5);
+  assert.ok(plan.advisoryTracks.every(track => track.advisers.length >= 2));
+  assert.ok(!plan.advisoryTracks.some(track => Object.hasOwn(track, 'signals')));
+  assert.throws(() => selectSkillPlan('OpenAPI', { domain: 'PRODUCT', relatedDomains: ['PRODUCT'], registry }),
+    /invalid related advisory domains/);
+  assert.throws(() => selectSkillPlan('OpenAPI', { domain: 'PRODUCT', relatedDomains: ['ROOT'], registry }),
+    /invalid related advisory domains/);
+
+  const malformed = structuredClone(registry);
+  malformed.advisoryRouting.domains.PRODUCT.advisers[1].skill = 'unregistered-skill';
+  assert.throws(() => selectSkillPlan('OpenAPI', { domain: 'PRODUCT', registry: malformed }), /invalid advisory routing profile/);
+});
