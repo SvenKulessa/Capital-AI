@@ -34,6 +34,27 @@ test('rate limit tenant and IP scoped',async()=>{const {submit,rows}=make({limit
 test('failed persistence cannot claim success',async()=>{const submit=createB2BLeadIntake({resolveTenant:async()=> 'tenant-a',persist:async()=>{throw Error('db unavailable')}});await assert.rejects(submit(req()),/db unavailable/)});
 test('tenant cannot be supplied by unauthenticated body',async()=>{const {submit}=make();assert.equal((await submit(req({...payload,tenantId:'tenant-a'},{tenant:'tenant-b'}))).status,403)});
 
+test('email contact rejects control, HTML delimiters and bidi spoofing without persistence',async()=>{
+  const {submit,rows}=make();
+  const invalid=[
+    'buyer<script>@example.com',
+    'buyer'+String.fromCharCode(0x202e)+'@example.com',
+    'buyer'+String.fromCharCode(0x2066)+'@example.com',
+    'buyer'+String.fromCharCode(0)+'@example.com',
+    'buyer'+String.fromCharCode(0x7f)+'@example.com',
+    'buyer'+String.fromCharCode(0x85)+'@example.com',
+  ];
+  for(const email of invalid){
+    const result=await submit(req({...payload,email}));
+    assert.equal(result.status,400,JSON.stringify(email));
+    assert.equal(result.code,'INVALID_INPUT');
+  }
+  assert.equal(rows.length,0);
+  const accepted=await submit(req({...payload,email:'buyer+news@example.co'}));
+  assert.equal(accepted.status,202);
+  assert.equal(rows[0].email,'buyer+news@example.co');
+});
+
 test('organization is validated after normalization and cannot store blank or control text',async()=>{
   const {submit,rows}=make();
   for(const organization of ['  ',' A ','Acme\\nInjected','\\u0000A','A\\u202eB','A\\u2066B']) {
