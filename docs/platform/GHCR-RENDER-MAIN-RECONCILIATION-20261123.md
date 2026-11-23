@@ -113,3 +113,20 @@ Das tatsächlich vorhandene `docs/market-data/evidence/twelve-data-rights-202610
 - GitHub-Checks für `d2d209f0884f8be3f25a8073499b2154b91e9fde`: `Docker Security Gate`, `Domain Governance`, `isolated-os-source-mirror`, `CodeQL` und vier `Analyze`-Jobs `completed/success`. Publishing/Handoff sind `skipped`. Die Checks dieses Dokumentationscommits sind separat erneut auszuwerten.
 - **Präzisierter Gate-6-Status:** `CI_IMAGE_FONT_TTF_OFL_BYTE_PROVENANCE=VERIFIED`; `REGISTRY_PULLED_IMAGE_FONT_PROVENANCE=NOT_PROVEN`; `RECIPIENT_DELIVERY=NOT_PROVEN`. Die ursprüngliche sechste Ledger-Anforderung bleibt deshalb **offen**. Keine Promotion von `REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null`, `sourceDeliveryProven=false` oder `redistributionApproved=false`.
 - Auch dieser CI-Image-Beleg ist weder ein veröffentlichter OCI-Index-/Plattformmanifest-Digest noch eine Signatur oder ein Render-Pull-Nachweis. Keine Rechtsfreigabe, kein GHCR-Push und kein Render-Cutover.
+
+
+## SOLO2 23.11.2026 18:06 MEZ — aktuelle Ruleset-/Render-Abnahme
+
+Source of truth für **diesen** Readback: GitHub Branch-/PR-/Check-Run- und Ruleset-GET sowie Render Service-/Deploy-GET, ohne Provider- oder Registry-Mutation. Die historischen Stände oben bleiben für die ursprünglichen Tests gültig, sind aber kein Beleg für den aktuellen Main.
+
+| Prüffeld | Tatsächlich gelesen | Grenze |
+| --- | --- | --- |
+| GitHub Main / PR-Basis | `2b078f18f4c4f6598b4c3a95fd576bb010f7cfca` | Nicht der PR-eigene Head |
+| PR #913 Head vor dieser Dokumentation | `9249999b1e8e706f599cd58db6378b544842606c` | Alle Prüfläufe eines späteren Commits sind separat zu prüfen |
+| GitHub Ruleset | `main-production-protection` ID `24259174`, `enforcement=active`, kein Bypass; `strict_required_status_checks_policy=true`, Required Checks `Docker Security Gate` und `Domain Governance`; lineare Historie, CodeQL, Review-Thread-Auflösung | Grüner Test allein überstimmt keinen Rechte-/Produktiv-HOLD |
+| PR-Head-Checks | `Docker Security Gate`, `Domain Governance`, `CodeQL`, `isolated-os-source-mirror` und die vier CodeQL-Analysejobs `completed/success`; `publish_candidate`, `Production Handoff Gate` und `Supabase Preview` `skipped` | Kein GHCR-Publishing, keine Render-Handoff-Freigabe |
+| Render-Produktionsservice | `srv-dau1rp893c1s73cdhm1g`, Workspace `tea-d90o4rj7uimc739i86ug`, `branch=main`, `autoDeploy=yes`, `autoDeployTrigger=checksPass`, Dockerfile `./Dockerfile`, ein laufender Service auf bestehendem Plan | **Jeder Main-Merge kann bei grünen Checks einen produktiven Git-Autodeploy auslösen** |
+| Neuester Render-Deploy | `dep-dc265ke1egvs738mp25g`, `status=live`, `trigger=new_commit`, Git-Commit `2b078f18f4c4f6598b4c3a95fd576bb010f7cfca`, `finishedAt=2026-11-23T16:03:06.874418Z` | Provider-Metadaten beweisen weder `/healthz`-Body noch einen OCI-Registry-/Plattformmanifest-Digest |
+| Rights-/OCI-Gates | Ledger `REVIEW_OPEN`, `deployEligible=false`; die Render-Service- und Deploy-Antworten lieferten keinen unveränderlichen Runtime-OCI-Manifest-Digest | `REDISTRIBUTION_RIGHTS=BLOCKED`, `REGISTRY_IMAGE_IDENTITY=NOT_PROVEN`, `SOURCE_DELIVERY=NOT_PROVEN`, `RENDER_SOURCE_SWITCH=HOLD` |
+
+**Entscheid:** PR #913 bleibt Draft; weder Main-Merge noch Registry-Publish oder Source-Switch. Der Quell-/Lizenz-/Attestation-Status wird durch den Ruleset- und Provider-Metadatenabgleich **nicht** zu VERIFIED. Der nicht erreichbare externe `/healthz`-Abruf in dieser Sitzung ist ausdrücklich **NOT_PROVEN**; Deploy-Metadaten nicht als Health- oder Runtime-Binding-Test ausgeben. Kein Secret-Wert gelesen oder dokumentiert.
