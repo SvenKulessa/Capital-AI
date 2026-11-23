@@ -297,6 +297,42 @@ test('valid payment webhook grants once and duplicate replay is idempotent',asyn
   assert.equal((await call('access','GET',undefined,{fixture:f,user:otherUserId})).payload.entitled,false);
 });
 
+
+test('authenticated user isolation rejects spoofed cross-user and tenant hints',async()=>{
+  // This personal SKU is user-scoped. These negatives test spoofed inputs, not
+  // full enterprise tenant-membership isolation, which is not implemented.
+  const fixture=makeFixture();
+  const raw=event('checkout.session.completed',{id:sid});
+  const paid=await call('webhook','POST',raw,{fixture,headers:{'stripe-signature':sign(raw)}});
+  assert.equal(paid.statusCode,200);
+  assert.equal(paid.payload.granted,true);
+  assert.equal((await call('access','GET',undefined,{fixture})).payload.entitled,true);
+  const forgedHeaders=[
+    {'x-user-id':userId,'x-tenant-id':'tenant-owner','x-account-id':userId},
+    {'x-organization-id':'tenant-owner','x-user-id':userId},
+  ];
+  for(const headers of forgedHeaders) {
+    const response=await call('access','GET',undefined,{fixture,user:otherUserId,headers});
+    assert.equal(response.statusCode,200);
+    assert.equal(response.payload.entitled,false);
+  }
+  const before=fixture.calls.length;
+  for(const path of ['access?user_id='+userId,'access?tenant_id=tenant-owner']) {
+    const response=await call(path,'GET',undefined,{fixture,user:otherUserId});
+    assert.equal(response.statusCode,400);
+  }
+  for(const attempted of [
+    {...body,tenantId:'tenant-owner'},
+    {...body,userId},
+    {...body,accountId:userId},
+  ]) {
+    const response=await call('checkout','POST',attempted,{fixture,user:otherUserId});
+    assert.equal(response.statusCode,400);
+  }
+  assert.equal(fixture.calls.length,before,'spoofed parameters must not reach billing or ledger');
+  assert.equal(fixture.ledger.size,1);
+});
+
 test('parallel delivery of identical signed webhook remains idempotent at the fixture boundary',async()=>{
   const fixture=makeFixture();
   const raw=event('checkout.session.completed',{id:sid});
