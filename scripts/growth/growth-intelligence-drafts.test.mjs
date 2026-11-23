@@ -26,6 +26,16 @@ test('offline Social Content Engine CLI projects the imported source snapshot', 
   assert.ok(bundle.drafts.every((draft) => draft.socialPackage.deliveries.length === 0));
 });
 
+test('Legal Data Hunter appears only as a blocked candidate outside the immutable KPI snapshot', () => {
+  const bundle = buildGrowthIntelligenceDraftBundle();
+  assert.deepEqual(bundle.providerCandidates.map(({ id, commercialState, providerEnabled }) =>
+    ({ id, commercialState, providerEnabled })), [{
+    id: 'legal-data-hunter', commercialState: 'BLOCKED_ORDER_FORM_REQUIRED', providerEnabled: false,
+  }]);
+  assert.equal(bundle.providerCalls, 0);
+  assert.ok(bundle.drafts.every(draft => !JSON.stringify(draft).includes('legal-data-hunter')));
+});
+
 test('repeat builds are content-addressed and byte-identical without provider state', () => {
   const a = JSON.stringify(buildGrowthIntelligenceDraftBundle());
   const b = JSON.stringify(buildGrowthIntelligenceDraftBundle());
