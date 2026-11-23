@@ -68,6 +68,7 @@ test('CRM bridge reuses Content Engine and Social drafts without publication rig
   assert.equal(bundle.socialPackage?.assets[0].sha256, bundle.asset.sha256);
   assert.deepEqual(bundle.socialPackage?.approvals, []);
   assert.deepEqual(bundle.socialPackage?.deliveries, []);
+  assert.equal(bundle.crmDraft.provider, 'TWENTY_CLOUD_PENDING');
   assert.equal(bundle.crmDraft.writeAllowed, false);
   assert.equal(bundle.crmDraft.externalOutreachAllowed, false);
   assert.equal(bundle.commercialRelease, 'HOLD');
