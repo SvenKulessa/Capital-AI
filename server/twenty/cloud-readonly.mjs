@@ -139,8 +139,38 @@ export class TwentyCloudMetadataReadonlyClient {
       });
     } catch { throw Error('TWENTY_TRANSPORT_FAILED'); }
     if (!response || response.status !== 200 || response.ok !== true) throw Error('TWENTY_HTTP_DENIED');
+    // Bound provider bytes while streaming; response.text() would allocate the entire
+    // untrusted response before MAX_BYTES can be enforced.
     let body;
-    try { body = await response.text(); } catch { throw Error('TWENTY_BODY_FAILED'); }
+    try {
+      if (response.body && typeof response.body.getReader === 'function') {
+        const reader = response.body.getReader();
+        const chunks = [];
+        let size = 0;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (!(value instanceof Uint8Array)) throw Error('TWENTY_BODY_FAILED');
+            size += value.byteLength;
+            if (size > MAX_BYTES) throw Error('TWENTY_RESPONSE_TOO_LARGE');
+            chunks.push(Buffer.from(value));
+          }
+          body = Buffer.concat(chunks, size).toString('utf8');
+        } catch (error) {
+          try { await reader.cancel(); } catch {}
+          throw error;
+        } finally {
+          reader.releaseLock();
+        }
+      } else {
+        // Synthetic provider fixtures may expose only text(); retain compatibility.
+        body = await response.text();
+      }
+    } catch (error) {
+      if (error?.message === 'TWENTY_RESPONSE_TOO_LARGE') throw error;
+      throw Error('TWENTY_BODY_FAILED');
+    }
     if (typeof body !== 'string' || Buffer.byteLength(body, 'utf8') > MAX_BYTES) throw Error('TWENTY_RESPONSE_TOO_LARGE');
     let parsed;
     try { parsed = JSON.parse(body); } catch { throw Error('TWENTY_JSON_INVALID'); }

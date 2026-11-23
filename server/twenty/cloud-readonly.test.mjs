@@ -172,3 +172,52 @@ test('HTTP failures, GraphQL errors and UTF-8 payload overflow are rejected with
   })();
   await assert.rejects(() => client.readProductsObject(), /RESPONSE_TOO_LARGE/);
 });
+
+test('streamed provider payload is rejected and cancelled at 256 KiB without full buffering', async () => {
+  let pulls = 0;
+  let cancelled = false;
+  let textCalls = 0;
+  const client = new TwentyCloudMetadataReadonlyClient({
+    workspaceUrl: TWENTY_WORKSPACE_ORIGIN, accessToken,
+    fetchImpl: async () => ({
+      status: 200, ok: true,
+      body: new ReadableStream({
+        pull(controller) {
+          pulls += 1;
+          controller.enqueue(new Uint8Array(131073));
+        },
+        cancel() { cancelled = true; },
+      }, { highWaterMark: 0 }),
+      text: async () => { textCalls += 1; throw Error('unexpected bulk body read'); },
+    }),
+  });
+  await assert.rejects(() => client.readProductsObject(), /TWENTY_RESPONSE_TOO_LARGE/);
+  assert.equal(cancelled, true);
+  assert.equal(textCalls, 0);
+  assert.ok(pulls <= 3, 'stop reading as soon as limit is exceeded');
+});
+
+test('streamed valid Twenty metadata is accepted without changing read-only contract', async () => {
+  const client = new TwentyCloudMetadataReadonlyClient({
+    workspaceUrl: TWENTY_WORKSPACE_ORIGIN, accessToken,
+    fetchImpl: async (_url, options) => {
+      const query = JSON.parse(options.body).query;
+      const payload = query.includes('currentWorkspace')
+        ? { data: { currentWorkspace: {
+          id: tenantId,
+          workspaceUrls: { subdomainUrl: TWENTY_WORKSPACE_ORIGIN, customUrl: null },
+        } } }
+        : { data: { objects: { edges: [
+          { node: { id: productObjectId, nameSingular: 'product', namePlural: 'products' } },
+        ] } } };
+      return new Response(JSON.stringify(payload), {
+        status: 200, headers: { 'content-type': 'application/json' },
+      });
+    },
+  });
+  const result = await client.readProductsObject();
+  assert.equal(result.workspaceId, tenantId);
+  assert.equal(result.objectId, productObjectId);
+  assert.equal(result.writeAllowed, false);
+  assert.equal(result.publicationAllowed, false);
+});
