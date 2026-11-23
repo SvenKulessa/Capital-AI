@@ -66,6 +66,7 @@ jobs:
             scripts/assert-ghcr-publication-rights.test.mjs \
             scripts/platform/ghcr-render-cutover-plan.test.mjs \
             scripts/platform/runtime-license-coverage.test.mjs \
+            scripts/platform/runtime-font-provenance.test.mjs \
             scripts/platform/runtime-native-linkage.test.mjs \
             scripts/platform/runtime-unrar-files.test.mjs \
             scripts/platform/elf-needed.test.mjs \
@@ -403,6 +404,20 @@ jobs:
             security-reports/container-identity.json Dockerfile \
             security-reports/runtime-node-license.txt security-reports/runtime-font-ofl.txt \
             security-reports/os-source-inventory.json security-reports/OS-PACKAGE-NOTICES.txt
+      - name: Byte-Herkunft beider TTFs und OFL aus exakt gescanntem CI-Runtime-Image prüfen
+        run: |
+          set -euo pipefail
+          image="capital-ai:${{ github.sha }}"
+          # Extract bytes without network or container write privileges; do not upload font binaries.
+          test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /app/dist/fonts/PlusJakartaSans-Regular.ttf > security-reports/runtime-font-regular.ttf
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /app/dist/fonts/PlusJakartaSans-Italic.ttf > security-reports/runtime-font-italic.ttf
+          cleanup() { rm -f security-reports/runtime-font-regular.ttf security-reports/runtime-font-italic.ttf; }
+          trap cleanup EXIT
+          node scripts/platform/runtime-font-provenance.mjs \
+            public/fonts/provenance.json security-reports/image-id.txt \
+            security-reports/os-source-inventory.json security-reports \
+            security-reports/runtime-font-provenance.json
       - name: CVE-2026-4738 in Build- und Runtime-Scans ausschließen
         run: |
           # Existing severity gate blocks HIGH/CRITICAL; this repaired MEDIUM CVE must not regress.
@@ -479,6 +494,7 @@ jobs:
             security-reports/os-alpine-release.txt
             security-reports/runtime-node-license.txt
             security-reports/runtime-font-ofl.txt
+            security-reports/runtime-font-provenance.json
             security-reports/runtime-license-coverage.json
             security-reports/runtime-native-linkage.json
             security-reports/runtime-native-linkage-summary.json
