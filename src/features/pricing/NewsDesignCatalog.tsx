@@ -136,7 +136,9 @@ export function LearningUniverseB2BInquirySection() {
       <p className="mt-4 text-xs leading-5 text-slate-400">
         Bitte zunächst keine vertraulichen Dokumente übermitteln.
         Eine Anfrage begründet weder einen Vertrag noch Nutzungs-, Wiederverkaufs- oder Veröffentlichungsrechte.
-        Verbindliche Konditionen, Rechte und Datenschutzinformationen werden vor einer möglichen Vereinbarung individuell geklärt.
+        Hinweise zur Verarbeitung Ihrer Anfrage finden Sie in der{' '}
+        <a href="/datenschutz/" className="text-cyan-200 underline focus-visible:outline-2 focus-visible:outline-cyan-200">Datenschutzerklärung</a>.
+        Verbindliche Konditionen und Nutzungsrechte werden vor einer möglichen Vereinbarung individuell geklärt.
       </p>
     </section>
   );
