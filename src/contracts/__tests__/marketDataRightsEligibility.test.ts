@@ -35,6 +35,37 @@ describe('market data rights eligibility', () => {
     assert.equal(evaluateMarketDataRights(base, ['api_redistribution']).decision, 'REVIEW_REQUIRED');
   });
 
+  it('fails closed if no use case is requested, including for otherwise allowed evidence', () => {
+    const result = evaluateMarketDataRights(base, []);
+    assert.equal(result.decision, 'REVIEW_REQUIRED');
+    assert.equal(result.eligible, false);
+    assert.ok(result.reasons.includes('REQUIRED_USE_CASES_EMPTY'));
+  });
+
+  it('rejects future-dated rights review rather than treating it as completed evidence', () => {
+    const result = evaluateMarketDataRights({
+      ...base,
+      reviewedAt: '2026-12-01T00:00:00.000Z',
+    }, ['internal_analysis'], new Date('2026-11-22T12:00:00.000Z'));
+    assert.equal(result.decision, 'REVIEW_REQUIRED');
+    assert.equal(result.eligible, false);
+    assert.ok(result.reasons.includes('RIGHTS_REVIEW_IN_FUTURE'));
+  });
+
+  it('treats rights expiry as exclusive and rejects invalid evaluation time', () => {
+    const now = new Date('2026-11-22T12:00:00.000Z');
+    const expired = evaluateMarketDataRights({
+      ...base,
+      validUntil: '2026-11-22T12:00:00.000Z',
+    }, ['internal_analysis'], now);
+    assert.equal(expired.eligible, false);
+    assert.ok(expired.reasons.includes('RIGHTS_EVIDENCE_EXPIRED'));
+
+    const unknownNow = evaluateMarketDataRights(base, ['internal_analysis'], new Date(NaN));
+    assert.equal(unknownNow.eligible, false);
+    assert.ok(unknownNow.reasons.includes('EVALUATION_TIME_INVALID'));
+  });
+
   it('blocks an explicitly prohibited contractual use case', () => {
     assert.equal(evaluateMarketDataRights(base, ['export_resale']).decision, 'BLOCK');
   });

@@ -1,7 +1,8 @@
 """Independent standard-library TRUST/QUALITY negatives for offline scope."""
+import sqlite3
 import unittest
 
-from offline_scope import scoped_thread_id
+from offline_scope import bind_checkpoint, scoped_thread_id
 
 BASE = dict(tenant="owner-local", repository="SvenKulessa/Capital-AI",
             task_id="synthetic-1", payload={"query": "public synthetic", "domain": "TRUST"})
@@ -71,6 +72,34 @@ class OfflineScopeTests(unittest.TestCase):
     def test_no_implicit_provider_or_authority_fields(self):
         self.assertNotEqual(self.identity(), self.identity(payload=BASE["payload"] | {"consent": False}))
         self.assertNotEqual(self.identity(), self.identity(payload=BASE["payload"] | {"license": "REVOKED"}))
+
+    def test_sqlite_binding_is_stable_and_cross_scope_copy_is_denied(self):
+        first = self.identity()
+        foreign = self.identity(tenant="another-tenant")
+        changed = self.identity(payload={"domain": "TRUST", "query": "changed"})
+        conn = sqlite3.connect(":memory:")
+        try:
+            bind_checkpoint(conn, first)
+            bind_checkpoint(conn, first)
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM capital_offline_scope").fetchone()[0], 1)
+            for different in (foreign, changed, self.identity(repository="SvenKulessa/OtherRepo")):
+                with self.subTest(other=different), self.assertRaisesRegex(ValueError, "scope mismatch"):
+                    bind_checkpoint(conn, different)
+        finally:
+            conn.close()
+
+    def test_unbound_legacy_and_invalid_sqlite_binding_denied(self):
+        conn = sqlite3.connect(":memory:")
+        try:
+            conn.execute("CREATE TABLE checkpoints (id TEXT)")
+            conn.execute("INSERT INTO checkpoints VALUES ('legacy-checkpoint')")
+            with self.assertRaisesRegex(ValueError, "unbound legacy"):
+                bind_checkpoint(conn, self.identity())
+            for identity in ("research-123", "", "offline-" + "z" * 40, None):
+                with self.subTest(identity=identity), self.assertRaises(ValueError):
+                    bind_checkpoint(conn, identity)
+        finally:
+            conn.close()
 
 
 if __name__ == "__main__":

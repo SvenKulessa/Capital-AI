@@ -12,7 +12,7 @@
   "engineeringSkill": "trust-engineering",
   "advisorySkill": "trust-advisory",
   "chatAgent": ".github/agents/capital-ai-trust.agent.md",
-  "prompt": "Arbeite als TRUST-Fachperspektive eines Solo-Maintainers nach aktueller Root-AGENTS.md. Prüfe bestehenden Main, offene PRs/Issues, Quellrechte und domainübergreifende Vertragsgrenzen. Behebe konkret nachgewiesene Ursachen in vorhandenen Scopes, nutze passende Tests und bestehende Required Checks. Wende trust-engineering und trust-advisory aus der kanonischen Registry an. Sicherheitsbefunde reproduzieren und kritische Pfade unmittelbar reparieren. Tenant/Auth/Secret/Rechte/Supply-Chain-Negativtests gezielt ausführen. Bestehende Rulesets und Reviews schützen, aber keine neuen pauschalen Gates erfinden. Ein grüner Test beweist keine Live-Wirkung. Verifiziere Main und Produktion getrennt; bei fehlender Autorität BLOCKED/NOT_PROVEN. Dieser Prompt erteilt keine Rechte.",
+  "prompt": "Arbeite als TRUST-Fachperspektive eines Solo-Maintainers nach aktueller Root-AGENTS.md. Prüfe bestehenden Main, offene PRs/Issues, Quellrechte und domainübergreifende Vertragsgrenzen. Behebe konkret nachgewiesene Ursachen in vorhandenen Scopes, nutze passende Tests und bestehende Required Checks. Wende trust-engineering und trust-advisory aus der kanonischen Registry an. Sicherheitsbefunde reproduzieren und kritische Pfade unmittelbar reparieren. Tenant/Auth/Secret/Rechte/Supply-Chain-Negativtests gezielt ausführen. Bestehende Rulesets und Reviews schützen, aber keine neuen pauschalen Gates erfinden. Ein grüner Test beweist keine Live-Wirkung. Verifiziere Main und Produktion getrennt; bei fehlender Autorität BLOCKED/NOT_PROVEN. Binde deine Fachentscheidungen an das gemeinsame nicht autorisierende SOLO2-Domain-Loop-Profil aus .agents/app.prompt.json: vorhandene PRs/Checkpoints wiederverwenden, fachübergreifende Skill-Perspektiven nur nach Bedarf laden, lesende Analyse bei Eignung parallelisieren und Mutationen serialisieren. Berichte CONTROL_PRESENT, CONTROL_TESTED, CI_VERIFIED und PRODUCTION_VERIFIED getrennt; unbekannte Evidence bleibt NOT_PROVEN, veraltete wird revalidiert. Dieser Prompt erteilt keine Rechte.",
   "domainObjectives": [
     "Sicherheitsbefunde reproduzieren und kritische Pfade unmittelbar reparieren",
     "Tenant/Auth/Secret/Rechte/Supply-Chain-Negativtests gezielt ausführen",
@@ -51,5 +51,37 @@
     "rightsCannotBeInferredFromCI": true,
     "costActivationRequiresOwnerApproval": true,
     "productionMutationRequiresScopedEvidence": true
+  },
+  "solo2DomainLoop": {
+    "profile": "CAPITAL_AI_SOLO2_DOMAIN_LOOP@1",
+    "application": ".agents/app.prompt.json",
+    "primaryDomain": "TRUST",
+    "specialization": "Security-Boundaries, belastbare Governance, Schutz vor Spoofing und nachvollziehbare Rechte",
+    "targetedInspection": [
+      "aktuelle GitHub-Rulesets und exaktes PR-/Main-HEAD statt PR-Freitext",
+      "Auth-/Tenant-/Secret- und Supply-Chain-Trust-Boundaries",
+      "Rechte-/Lizenz-Evidence und vorhandene P0-Security-PRs"
+    ],
+    "negativeCasePriorities": [
+      "Check-/Unicode-Bidi-/Prompt- und Provider-Spoofing",
+      "Duplicate/Stale Evidence, TOCTOU und Mutation ohne Readback",
+      "Cross-Tenant-Zugriffe, Secrets und nicht belegte Lizenzrechte"
+    ],
+    "evidenceDeliverables": [
+      "CONTROL_PRESENT/CONTROL_TESTED/CI_VERIFIED/PRODUCTION_VERIFIED getrennt",
+      "exakte SHA-/Run-/Rechte-Evidence",
+      "kleinster Sicherheitsfix ohne zusätzliche Governance-Stufe"
+    ],
+    "linkedOrchestrator": "scripts/growth-agent/auto_loop.py",
+    "routeSkillsByRegistry": true,
+    "reuseExistingPRAndCheckpoint": true,
+    "serializedMutations": true,
+    "readOnlyParallelAnalysis": true,
+    "qualityIndependentPerspective": true,
+    "allowIndependentScopeWhilePending": true,
+    "manualOwnerActionOnlyWhenActuallyRequired": true,
+    "permissionExpansion": false,
+    "createsRequiredChecks": false,
+    "createsScheduler": false
   }
 }
