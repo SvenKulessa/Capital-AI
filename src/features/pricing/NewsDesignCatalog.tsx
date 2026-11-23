@@ -55,9 +55,9 @@ export function NewsDesignCatalog() {
 
       <section aria-labelledby="learning-universe-catalogue-title" className="mt-6 border-t border-slate-700 pt-5"
         data-learning-universe-catalogue="first-party-preview">
-        <h4 id="learning-universe-catalogue-title" className="text-lg font-bold text-cyan-100">Learning Universe · Originalgrafiken</h4>
+        <h4 id="learning-universe-catalogue-title" className="text-lg font-bold text-cyan-100">Learning Universe · Designvorschau</h4>
         <p className="mt-2 text-sm leading-relaxed text-slate-300">
-          Eigene SVG-Motive aus dem Learning Hub – zur Ansicht in CAPITAL-AI freigegeben.
+          SVG-Motive aus dem Learning Hub – als Designvorschau innerhalb von CAPITAL-AI.
           Keine separate Verkaufs-, Weitergabe- oder Publishing-Lizenz. Die MediaKit-v5-Übernahme
           bleibt bis zur unabhängigen Prüfung ein Entwurf.
         </p>
@@ -66,7 +66,7 @@ export function NewsDesignCatalog() {
             <figure key={asset.id} data-learning-catalogue-asset={asset.id}
               className="min-w-0 overflow-hidden rounded-xl border border-slate-600 bg-slate-950 p-2">
               <img src={asset.publicUrl} width={asset.width} height={asset.height}
-                loading="lazy" decoding="async" alt={'Originalgrafik: ' + asset.alt}
+                loading="lazy" decoding="async" alt={'Designvorschau: ' + asset.alt}
                 className="aspect-[420/260] w-full rounded-lg object-contain" />
               <figcaption className="mt-2 text-sm font-semibold text-slate-100">{asset.title}</figcaption>
               <p className="mt-1 break-all text-xs text-slate-400">SHA-256: {asset.sha256.slice(0, 16)}…</p>
