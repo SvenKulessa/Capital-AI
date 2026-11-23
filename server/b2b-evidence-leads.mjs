@@ -26,6 +26,10 @@ export function createB2BLeadIntake({resolveTenant, persist, now=()=>Date.now(),
         /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u.test(normalizedOrganization) ||
         typeof email!=='string' || !EMAIL.test(email) || typeof repository!=='string' || !validRepository(repository)) return {status:400,code:'INVALID_INPUT'};
     if (body.consent!==true || body.privacyVersion!==privacyVersion || body.purpose!=='b2b_evidence_audit_contact') return {status:422,code:'CONSENT_REQUIRED'};
+    // Request IDs can be forwarded to audit logs. Bound the exact persisted
+    // bytes; reject control/bidi/whitespace rather than truncating hostile input.
+    if (typeof requestId==='string' && (requestId.length<1 || requestId.length>80 || /[^A-Za-z0-9_.:-]/u.test(requestId)))
+      return {status:400,code:'INVALID_REQUEST_ID'};
     const time=now(), key=hash(tenant+'|'+String(ip??'unknown'));
     for (const [k,v] of buckets) if (time-v.since>=windowMs) buckets.delete(k);
     if (!buckets.has(key) && buckets.size>=maxBuckets) return {status:429,code:'RATE_LIMITED'};
@@ -33,7 +37,7 @@ export function createB2BLeadIntake({resolveTenant, persist, now=()=>Date.now(),
     if (b && time-b.since<windowMs && b.count>=limit) return {status:429,code:'RATE_LIMITED'};
     buckets.set(key,{since:b&&time-b.since<windowMs?b.since:time,count:(b&&time-b.since<windowMs?b.count:0)+1});
     const record={id:randomUUID(),tenantId:tenant,organization:normalizedOrganization,email:email.trim().toLowerCase(),repository,
-      consent:{version:privacyVersion,purpose:body.purpose,at:new Date(time).toISOString()},state:'QUALIFIED_PENDING_REVIEW',requestId:typeof requestId==='string'?requestId.slice(0,80):null};
+      consent:{version:privacyVersion,purpose:body.purpose,at:new Date(time).toISOString()},state:'QUALIFIED_PENDING_REVIEW',requestId:typeof requestId==='string'?requestId:null};
     await persist(record); // fail closed: no success on persistence failure
     return {status:202,code:'ACCEPTED',leadId:record.id};
   };

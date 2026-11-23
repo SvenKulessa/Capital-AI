@@ -17,6 +17,19 @@ test('invalid repository denied',async()=>{
   }
   assert.equal(rows.length,0);
 });
+test('request ids cannot persist log-injection controls or silently truncated identities',async()=>{
+  const {submit,rows}=make();
+  for (const requestId of ['', ' lead ', 'X\\nFAKE', 'X\\r\\nFAKE', 'X\\u202eY', 'a'.repeat(81), 'x\\\\y']) {
+    const r=await submit({...req(),requestId});
+    assert.equal(r.status,400,JSON.stringify(requestId));
+    assert.equal(r.code,'INVALID_REQUEST_ID');
+  }
+  assert.equal(rows.length,0);
+  const requestId='CAI:821-2026.11_request';
+  assert.equal((await submit({...req(),requestId})).status,202);
+  assert.equal(rows[0].requestId,requestId);
+});
+
 test('rate limit tenant and IP scoped',async()=>{const {submit,rows}=make({limit:2});assert.equal((await submit(req())).status,202);assert.equal((await submit(req())).status,202);assert.equal((await submit(req())).status,429);assert.equal(rows.length,2)});
 test('failed persistence cannot claim success',async()=>{const submit=createB2BLeadIntake({resolveTenant:async()=> 'tenant-a',persist:async()=>{throw Error('db unavailable')}});await assert.rejects(submit(req()),/db unavailable/)});
 test('tenant cannot be supplied by unauthenticated body',async()=>{const {submit}=make();assert.equal((await submit(req({...payload,tenantId:'tenant-a'},{tenant:'tenant-b'}))).status,403)});
