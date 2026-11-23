@@ -15,7 +15,7 @@ test('news design catalog offers four selectable layouts through a price inquiry
   for (const layout of ['Titelbild', 'Kurzbriefing', 'Zeitachse', 'Vergleich']) assert.match(html, new RegExp(layout));
   assert.match(html, /Preis auf Anfrage/);
   assert.doesNotMatch(html, /mailto:support@capital-ai.online/);
-  assert.match(html, /data-inquiry-delivery="BLOCKED_SMTP_550"/);
+  assert.match(html, /data-inquiry-availability="DISABLED_BY_DEFAULT"/);
   assert.match(html, /Anfrage derzeit nicht verfügbar/);
   assert.doesNotMatch(html, /checkout|price_[A-Za-z0-9]/i);
 });
@@ -28,7 +28,7 @@ test('Learning Universe Phase A inquiry shows three concepts without live commer
     assert.match(html, new RegExp('data-b2b-concept="' + key + '"'));
   }
   assert.equal((html.match(/Anfrage derzeit nicht verfügbar/g) || []).length, 3);
-  assert.equal((html.match(/data-inquiry-delivery="BLOCKED_SMTP_550"/g) || []).length, 3);
+  assert.equal((html.match(/data-inquiry-availability="DISABLED_BY_DEFAULT"/g) || []).length, 3);
   assert.doesNotMatch(html, /mailto:support@capital-ai.online/);
   assert.doesNotMatch(full, /mailto:support@capital-ai.online/);
   assert.match(full, /data-learning-universe-b2b-inquiry="DRAFT_ONLY"/);
@@ -38,7 +38,7 @@ test('Learning Universe Phase A inquiry shows three concepts without live commer
   assert.doesNotMatch(html, /99,00|290,00|74,25|217,50|69,30|203,00|25 %|30 %|Rabatt|Streichpreis/);
   assert.doesNotMatch(html, /stripe|checkout|subscribe|entitlement|price_[a-z0-9]|<form|<input|fetch\(/i);
   assert.doesNotMatch(html, /href="https?:\/\//);
-  assert.equal((full.match(/data-inquiry-delivery="BLOCKED_SMTP_550"/g) || []).length, 4);
+  assert.equal((full.match(/data-inquiry-availability="DISABLED_BY_DEFAULT"/g) || []).length, 4);
 });
 
 test('Phase A inquiry does not expose customer PII, payment events or create license receipts', () => {
