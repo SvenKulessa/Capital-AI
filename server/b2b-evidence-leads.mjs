@@ -17,9 +17,9 @@ export function createB2BLeadIntake({resolveTenant, persist, now=()=>Date.now(),
   const buckets=new Map();
   return async function submit({principal, body, ip, requestId}={}) {
     const tenant=await resolveTenant(principal);
-    if (!tenant || !/^[a-zA-Z0-9_-]{1,80}$/.test(tenant)) return {status:401,code:'UNAUTHORIZED'};
+    if (typeof tenant !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(tenant)) return {status:401,code:'UNAUTHORIZED'};
     if (!body || typeof body!=='object' || Array.isArray(body) || Object.keys(body).some(k=>!allowed.has(k))) return {status:400,code:'INVALID_FIELDS'};
-    if (!eq(body.tenantId??'',tenant)) return {status:403,code:'TENANT_MISMATCH'};
+    if (typeof body.tenantId !== 'string' || !eq(body.tenantId,tenant)) return {status:403,code:'TENANT_MISMATCH'};
     const organization=body.organization, email=body.email, repository=body.repository;
     // Validate the stored form, not the untrimmed input. Deny control/bidi
     // characters before storing or displaying tenant-scoped lead metadata.
