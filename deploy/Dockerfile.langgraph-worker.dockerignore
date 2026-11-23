@@ -9,3 +9,19 @@
 !docs/architecture/EXECUTION-FIRST-LANGGRAPH.md
 !docs/platform/
 !docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md
+
+# Exactly the repo-owned SOLO2 profile metadata, not arbitrary chat content.
+!.agents/
+!.agents/app.prompt.json
+!.agents/skills/
+!.agents/skills/registry.json
+!CAPITAL-AI-PRODUCT/
+!CAPITAL-AI-PRODUCT/domain.prompt.json
+!CAPITAL-AI-MARKET/
+!CAPITAL-AI-MARKET/domain.prompt.json
+!CAPITAL-AI-PLATFORM/
+!CAPITAL-AI-PLATFORM/domain.prompt.json
+!CAPITAL-AI-TRUST/
+!CAPITAL-AI-TRUST/domain.prompt.json
+!CAPITAL-AI-GROWTH/
+!CAPITAL-AI-GROWTH/domain.prompt.json
