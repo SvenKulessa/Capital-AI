@@ -4,7 +4,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readCommerceState } from './commerceState';
 import { MonetizationModal } from './MonetizationModal';
-import { NewsDesignCatalog } from './NewsDesignCatalog';
+import { NewsDesignCatalog, LearningUniverseB2BInquirySection } from './NewsDesignCatalog';
 import { CommerceEntryContent } from '../home/CommerceEntrySection';
 import { LANGUAGES } from '../../i18n/messages';
 
@@ -17,6 +17,33 @@ test('news design catalog offers four selectable layouts through a price inquiry
   assert.match(html, /mailto:support@capital-ai.online/);
   assert.doesNotMatch(html, /checkout|price_[A-Za-z0-9]/i);
 });
+test('Learning Universe Phase A inquiry shows three concepts without live commerce or rights claims', () => {
+  const html = renderToStaticMarkup(<LearningUniverseB2BInquirySection />);
+  const full = renderToStaticMarkup(<NewsDesignCatalog />);
+  assert.match(html, /Learning Universe für Unternehmen/);
+  assert.match(html, /data-learning-universe-b2b-inquiry="DRAFT_ONLY"/);
+  for (const key of ['PUBLISHER', 'STUDIO', 'RESELLER']) {
+    assert.match(html, new RegExp('data-b2b-concept="' + key + '"'));
+  }
+  assert.equal((html.match(/Unverbindlich anfragen/g) || []).length, 3);
+  assert.equal((html.match(/mailto:support@capital-ai.online/g) || []).length, 3);
+  assert.match(full, /data-learning-universe-b2b-inquiry="DRAFT_ONLY"/);
+  assert.match(html, /kein verbindliches Angebot/);
+  assert.match(html, /keine bestätigte Drittvertriebslizenz/);
+  assert.match(html, /keine sofortige Buchung oder Auslieferung/);
+  assert.doesNotMatch(html, /99,00|290,00|74,25|217,50|69,30|203,00|25 %|30 %|Rabatt|Streichpreis/);
+  assert.doesNotMatch(html, /stripe|checkout|subscribe|entitlement|price_[a-z0-9]|<form|<input|fetch\(/i);
+  assert.doesNotMatch(html, /href="https?:\/\//);
+});
+
+test('Phase A inquiry does not expose customer PII, payment events or create license receipts', () => {
+  const html = renderToStaticMarkup(<LearningUniverseB2BInquirySection />);
+  assert.match(html, /Bitte zunächst keine vertraulichen Dokumente übermitteln/);
+  assert.match(html, /Eine Anfrage begründet weder einen Vertrag/);
+  assert.doesNotMatch(html, /name="email"|type="email"|data-customer|signedAgreement|ownerGrantId|paymentEvidenceRef/);
+  assert.doesNotMatch(html, /€|EUR\s*\d|jetzt kaufen|Bestellen|Sofort kaufen/);
+});
+
 function response(authenticated: unknown, enabled: unknown): typeof fetch {
   return async input => Response.json(String(input).endsWith('/session') ? { authenticated } : { enabled });
 }
