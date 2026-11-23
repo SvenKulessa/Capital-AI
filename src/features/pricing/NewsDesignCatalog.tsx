@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { NEWS_DESIGN_OFFER } from '../../data/pricingCatalog';
 import { catalogueLearningUniverseAssets } from '../../platform/SocialMediaEngine/Branding/learningUniverseAssetRegistry.mjs';
+import { buildLearningUniverseCommercialDraft } from '../../platform/SocialMediaEngine/Branding/learningUniverseCommercialLicenseDrafts.mjs';
 
 const layouts = [
   { id: 'hero', name: 'Titelbild', use: 'Für Produktstarts und einzelne Leitmeldungen',
@@ -73,10 +74,70 @@ export function NewsDesignCatalog() {
           ))}
         </div>
       </section>
+      <LearningUniverseB2BInquirySection />
       <a className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-amber-300 px-3 text-base font-semibold text-amber-100 focus-visible:outline-2 focus-visible:outline-cyan-300"
         href={`mailto:support@capital-ai.online?subject=${encodeURIComponent('FinTech News Design Studio · ' + item.name)}`}>
         Angebot für {item.name} anfragen
       </a>
+    </section>
+  );
+}
+
+
+/** Phase A: public-facing copy prepared only in the unmerged Draft PR.
+ * No contact fields, backend write, price, checkout, license or entitlement.
+ * External publication still needs the owner-approved release path. */
+export function LearningUniverseB2BInquirySection() {
+  const concepts = [
+    { key: 'PUBLISHER', title: 'Publisher Pack · Konzept',
+      description: 'Zehn Learning-Universe-Vektormotive als unverbindliche Designbeispiele. Nutzungsumfang und Rechte werden individuell geprüft.' },
+    { key: 'STUDIO', title: 'Publisher Studio · Konzept',
+      description: 'Mögliche Anpassung von Design und Endformaten nach Briefing und gesonderter Machbarkeits- und Rechteprüfung.' },
+    { key: 'RESELLER', title: 'B2B-Partnerschaft · Konzept',
+      description: 'Anfrage zu einer möglichen Zusammenarbeit für fertige Endprodukte. Keine Rohdatei-Weitergabe oder automatische Unterlizenzierung.' },
+  ] as const;
+  // Fail closed if the draft module becomes an authoritative sales/rights object.
+  const drafts = concepts.map(concept => ({
+    ...concept, draft: buildLearningUniverseCommercialDraft(concept.key),
+  }));
+  if (drafts.some(({ draft }) =>
+    draft.status !== 'DRAFT_ONLY' || draft.salesMode !== 'INQUIRY_ONLY' ||
+    draft.amountCents !== null || draft.publicPromotionAllowed !== false ||
+    draft.licensedUseAllowed !== false || draft.publishingAllowed !== false ||
+    draft.buyerEntitled !== false || draft.automaticFulfilmentAllowed !== false ||
+    draft.rawAssetResaleAllowed !== false || draft.sublicensingAllowed !== false)) return null;
+
+  return (
+    <section aria-labelledby="learning-universe-b2b-heading"
+      data-learning-universe-b2b-inquiry="DRAFT_ONLY"
+      className="mt-6 rounded-xl border border-cyan-400/30 bg-slate-950/70 p-4 sm:p-5">
+      <p className="text-xs font-semibold uppercase tracking-wider text-cyan-200">B2B · unverbindliche Anfrage</p>
+      <h4 id="learning-universe-b2b-heading" className="mt-2 text-xl font-bold text-slate-100">
+        Learning Universe für Unternehmen
+      </h4>
+      <p className="mt-2 text-sm leading-6 text-slate-300">
+        Entdecken Sie mögliche Publisher- und Studio-Pakete oder eine Zusammenarbeit.
+        Aktuell ausschließlich zur Bedarfsklärung: Es gibt kein verbindliches Angebot,
+        keine bestätigte Drittvertriebslizenz und keine sofortige Buchung oder Auslieferung.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {drafts.map(concept => (
+          <article key={concept.key} data-b2b-concept={concept.key}
+            className="flex min-w-0 flex-col rounded-lg border border-slate-700 bg-slate-900 p-3">
+            <h5 className="text-base font-semibold text-amber-100">{concept.title}</h5>
+            <p className="mt-2 flex-1 text-sm leading-6 text-slate-300">{concept.description}</p>
+            <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-cyan-300 px-3 text-center text-sm font-semibold text-cyan-100 focus-visible:outline-2 focus-visible:outline-cyan-200"
+              href={`mailto:support@capital-ai.online?subject=${encodeURIComponent('Learning Universe B2B · ' + concept.title)}`}>
+              Unverbindlich anfragen
+            </a>
+          </article>
+        ))}
+      </div>
+      <p className="mt-4 text-xs leading-5 text-slate-400">
+        Bitte zunächst keine vertraulichen Dokumente übermitteln.
+        Eine Anfrage begründet weder einen Vertrag noch Nutzungs-, Wiederverkaufs- oder Veröffentlichungsrechte.
+        Verbindliche Konditionen, Rechte und Datenschutzinformationen werden vor einer möglichen Vereinbarung individuell geklärt.
+      </p>
     </section>
   );
 }
