@@ -33,6 +33,19 @@ test('request ids cannot persist log-injection controls or silently truncated id
 test('rate limit tenant and IP scoped',async()=>{const {submit,rows}=make({limit:2});assert.equal((await submit(req())).status,202);assert.equal((await submit(req())).status,202);assert.equal((await submit(req())).status,429);assert.equal(rows.length,2)});
 test('failed persistence cannot claim success',async()=>{const submit=createB2BLeadIntake({resolveTenant:async()=> 'tenant-a',persist:async()=>{throw Error('db unavailable')}});await assert.rejects(submit(req()),/db unavailable/)});
 test('tenant cannot be supplied by unauthenticated body',async()=>{const {submit}=make();assert.equal((await submit(req({...payload,tenantId:'tenant-a'},{tenant:'tenant-b'}))).status,403)});
+test('tenant identity rejects type-coerced arrays before any persistence',async()=>{
+  const {submit,rows}=make();
+  const invalid=[['tenant-a'],['tenant-a','tenant-b'],{0:'tenant-a'},null,42];
+  for(const tenantId of invalid){
+    const result=await submit(req({...payload,tenantId}));
+    assert.equal(result.status,403,JSON.stringify(tenantId));
+    assert.equal(result.code,'TENANT_MISMATCH');
+  }
+  assert.equal(rows.length,0);
+  const badResolver=make({resolveTenant:async()=>['tenant-a']});
+  assert.equal((await badResolver.submit(req())).status,401);
+  assert.equal(badResolver.rows.length,0);
+});
 
 test('email contact rejects control, HTML delimiters and bidi spoofing without persistence',async()=>{
   const {submit,rows}=make();
