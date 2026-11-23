@@ -171,3 +171,16 @@ test('both SaaS candidate inventory entries retain pinned Cryptofeed AGPL licenc
   for (const row of rows) assert.match(row, /license: 'AGPL-3\.0-or-later'/);
   // Candidate metadata does not establish activation, modification or an executable source-offer.
 });
+
+
+test('unverified third-party AssetLogo SVGs are replaced by accessible ticker-only badges', () => {
+  const component = readFileSync(new URL('../src/components/AssetLogo.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(component, /<svg\b|<img\b|<path\b|<polygon\b|<circle\b/);
+  assert.match(component, /role="img"/);
+  assert.match(component, /aria-label=\{name \?/);
+  assert.match(component, /cleanSymbol\.slice\(0, 4\)/);
+  assert.match(component, /\{displayLabel\}/);
+  assert.match(component, /getCategoryColors/);
+  assert.ok(!component.includes('RENDER_LOGO_LICENSE_APPROVED'));
+  // This proves only one component's rendering: other artwork and trademark usage still need review.
+});
