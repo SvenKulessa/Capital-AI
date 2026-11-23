@@ -25,6 +25,15 @@ export function buildGrowthIntelligenceDraftBundle() {
     providerCalls: 0,
     campaignSpend: 0,
     mediaAssetsProduced: 0,
+    providerCandidates: [{
+      id: 'legal-data-hunter',
+      intendedUse: 'CUSTOMER_FACING_LEGAL_SOURCE_RESEARCH',
+      commercialState: 'BLOCKED_ORDER_FORM_REQUIRED',
+      termsUrl: 'https://legaldatahunter.com/api-mcp-terms',
+      termsEffectiveDate: '2026-08-11',
+      reviewedAt: '2026-11-21',
+      providerEnabled: false,
+    }],
     drafts,
   };
 }
