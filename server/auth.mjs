@@ -519,6 +519,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
           authenticated: true,
           currentLevel,
           mfaRequired,
+          skillRoutingAvailable: !mfaRequired && canReadSkillRouting(account),
           user: {
             id: stored.user.id,
             subject: stored.user.id,
@@ -981,6 +982,26 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     return true;
   }
 
+  function canReadSkillRouting(account) {
+    return account?.available === true && (
+      ['owner', 'admin', 'supervisor'].includes(account.iamRole) ||
+      (account.iamRole === 'user' && normalizeStoredPaidTier(account.subscription) === 'enterprise')
+    );
+  }
+
+  async function skillRoutingPrincipal(req, res) {
+    const config = getConfig();
+    if (!config) return null;
+    try {
+      const stored = await resolveSession(req, res);
+      if (!stored || (tokenAal(stored.accessToken) !== 'aal2' && hasVerifiedTotpFactor(stored._authUser))) return null;
+      const account = await accountProjection(config, stored);
+      return canReadSkillRouting(account) ? stored.user.id : null;
+    } catch {
+      return null;
+    }
+  }
+
   async function authorizeIamRole(req, res, requiredRole = 'owner') {
     const config = getConfig();
     if (!config) return false;
@@ -1045,5 +1066,5 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
   }
 
   return { handle, session, verify, resolvePaidTier, authorizeIamRole, sameOrigin,
-    internalAccessToken };
+    internalAccessToken, skillRoutingPrincipal };
 }
