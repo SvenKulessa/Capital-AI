@@ -1,24 +1,33 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { AccountPageShell } from './AccountPageShell';
 import { OwnerAgentOperationsPanel } from '../../components/OwnerAgentOperationsPanel';
-import { VocabularyAchievementPanel } from '../learning/VocabularyGame';
 import { LearningFavoritesPanel } from '../learning/LearningFavorites';
+import { VocabularyAchievementPanel } from '../learning/VocabularyGame';
 import { readNotes, saveNotes, NotesClientError, type NotesConflict, type NotesSnapshot } from './privateNotesOcc';
 import { NotesConflictPanel } from './NotesConflictPanel';
+import { SkillRoutingPanel } from './SkillRoutingPanel';
 
 const dashboardTabs = [
   { id: 'learning', label: 'Lernfeld' },
   { id: 'vocabulary', label: 'Vocabulary' },
   { id: 'notes', label: 'Notizen' },
   { id: 'saved', label: 'Gespeicherte Notizen' },
+  { id: 'routing', label: 'Skill-Routing' },
   { id: 'operations', label: 'Owner Operations' },
 ] as const;
 type DashboardTab = (typeof dashboardTabs)[number]['id'];
 const changedSessionMessage = 'Deine Anmeldung hat sich geändert. Lade die Seite erneut, bevor du Notizen bearbeitest.';
 
-function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner: boolean }) {
+function PrivateDashboardContent({ userId, isOwner, initialRoutingAccess }: {
+  userId: string;
+  isOwner: boolean;
+  initialRoutingAccess: boolean;
+}) {
   const [tab, setTab] = useState<DashboardTab>('learning');
-  const visibleTabs = isOwner ? dashboardTabs : dashboardTabs.filter(item => item.id !== 'operations');
+  const [routingAccess, setRoutingAccess] = useState(initialRoutingAccess);
+  const visibleTabs = dashboardTabs.filter(item =>
+    (item.id !== 'operations' || isOwner) && (item.id !== 'routing' || routingAccess));
+  const activeTab = visibleTabs.some(item => item.id === tab) ? tab : 'learning';
   const [text, setText] = useState('');
   const [savedText, setSavedText] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -64,7 +73,9 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
   // Browser cookies can change in another tab. Clear private state on a stale identity.
   useEffect(() => {
     const controller = new AbortController();
+    let checkVersion = 0;
     const checkIdentity = async () => {
+      const version = ++checkVersion;
       try {
         const response = await fetch('/api/auth/session', {
           credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
@@ -74,8 +85,14 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
             body?.mfaRequired === true || body?.user?.id !== userId) {
           throw new Error('SESSION_CHANGED');
         }
+        if (!controller.signal.aborted && version === checkVersion && !revoked.current) {
+          setRoutingAccess(body.skillRoutingAvailable === true);
+          if (body.skillRoutingAvailable !== true) setTab(current => current === 'routing' ? 'learning' : current);
+        }
       } catch {
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && version === checkVersion) {
+          setRoutingAccess(false);
+          setTab(current => current === 'routing' ? 'learning' : current);
           revoked.current = true;
           setLoaded(false);
           setRevision(null);
@@ -140,6 +157,8 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
 
   function revokeSession() {
     revoked.current = true;
+    setRoutingAccess(false);
+    setTab(current => current === 'routing' ? 'learning' : current);
     setLoaded(false);
     setRevision(null);
     setConflict(null);
@@ -200,7 +219,7 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
         onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
           event.preventDefault();
-          const index = visibleTabs.findIndex(item => item.id === tab);
+          const index = visibleTabs.findIndex(item => item.id === activeTab);
           const next = event.key === 'Home' ? visibleTabs[0].id :
             event.key === 'End' ? visibleTabs[visibleTabs.length - 1].id :
             visibleTabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + visibleTabs.length) % visibleTabs.length].id;
@@ -209,20 +228,20 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
         }}>
         {visibleTabs.map(item => (
           <button key={item.id} type="button" id={'dashboard-' + item.id + '-tab'}
-            role="tab" tabIndex={tab === item.id ? 0 : -1}
-            aria-selected={tab === item.id} aria-controls={'dashboard-' + item.id}
+            role="tab" tabIndex={activeTab === item.id ? 0 : -1}
+            aria-selected={activeTab === item.id} aria-controls={'dashboard-' + item.id}
             className="hub-tab" onClick={() => setTab(item.id)}>
             {item.label}
           </button>
         ))}
       </div>
-      <div hidden={tab !== 'learning'} id="dashboard-learning" role="tabpanel" aria-labelledby="dashboard-learning-tab">
+      <div hidden={activeTab !== 'learning'} id="dashboard-learning" role="tabpanel" aria-labelledby="dashboard-learning-tab">
         <LearningFavoritesPanel />
       </div>
-      <div hidden={tab !== 'vocabulary'} id="dashboard-vocabulary" role="tabpanel" aria-labelledby="dashboard-vocabulary-tab" className="hub-universe hub-universe--learning">
-        {tab === 'vocabulary' && <VocabularyAchievementPanel key={userId} />}
+      <div hidden={activeTab !== 'vocabulary'} id="dashboard-vocabulary" role="tabpanel" aria-labelledby="dashboard-vocabulary-tab" className="hub-universe hub-universe--learning">
+        {activeTab === 'vocabulary' && <VocabularyAchievementPanel key={userId} />}
       </div>
-      <div hidden={tab !== 'notes'} id="dashboard-notes" role="tabpanel" aria-labelledby="dashboard-notes-tab">
+      <div hidden={activeTab !== 'notes'} id="dashboard-notes" role="tabpanel" aria-labelledby="dashboard-notes-tab">
         <section className="rounded-2xl border border-slate-700 bg-brand-canvas p-5" aria-labelledby="private-notes-heading">
           <h2 id="private-notes-heading" className="text-xl font-bold text-white">Meine Notizen</h2>
           <form onSubmit={save} className="mt-4 space-y-3">
@@ -244,7 +263,7 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
           </form>
         </section>
       </div>
-      <div hidden={tab !== 'saved'} id="dashboard-saved" role="tabpanel" aria-labelledby="dashboard-saved-tab">
+      <div hidden={activeTab !== 'saved'} id="dashboard-saved" role="tabpanel" aria-labelledby="dashboard-saved-tab">
         <section className="rounded-2xl border border-slate-700 bg-brand-canvas p-5" aria-labelledby="saved-notes-heading">
           <h2 id="saved-notes-heading" className="text-xl font-bold text-white">Gespeicherte Notizen</h2>
           <p className="mt-2 text-sm text-slate-300">Hier siehst du den zuletzt vom Server bestätigten Notizentext. Nicht gespeicherte Änderungen werden nicht angezeigt.</p>
@@ -259,7 +278,10 @@ function PrivateDashboardContent({ userId, isOwner }: { userId: string; isOwner:
           </button>
         </section>
       </div>
-      {isOwner && tab === 'operations' && <div id="dashboard-operations" role="tabpanel" aria-labelledby="dashboard-operations-tab">
+      {routingAccess && <div hidden={activeTab !== 'routing'} id="dashboard-routing" role="tabpanel" aria-labelledby="dashboard-routing-tab">
+        {activeTab === 'routing' && <SkillRoutingPanel userId={userId} />}
+      </div>}
+      {isOwner && activeTab === 'operations' && <div id="dashboard-operations" role="tabpanel" aria-labelledby="dashboard-operations-tab">
         <OwnerAgentOperationsPanel userId={userId} />
       </div>}
 
@@ -272,6 +294,7 @@ export function PrivateDashboardPage({ onNavigate }: { onNavigate: (path: string
     <AccountPageShell active="/profile/dashboard" title="Privates Dashboard"
       description="Dein persönliches Lernfeld sowie bearbeitete und gespeicherte Notizen." onNavigate={onNavigate}>
       {session => <PrivateDashboardContent key={session.user!.id} userId={session.user!.id}
+        initialRoutingAccess={session.skillRoutingAvailable === true}
         isOwner={session.account?.available === true && session.account.iamRole === 'owner'} />}
     </AccountPageShell>
   );

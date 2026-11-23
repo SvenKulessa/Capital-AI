@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { skillSourceAudit } from './skill-bundles.mjs';
+import { advisoryTopology } from '../shared/domain-advisory-routing.mjs';
 
 const defaultRegistry = JSON.parse(readFileSync(new URL('../.agents/skills/registry.json', import.meta.url), 'utf8'));
 
@@ -49,7 +51,7 @@ function selectSpecialists(task, { domain, registry } = {}) {
 }
 
 // Advisory plan only: no agent spawning, tool calls or permission changes.
-function selectSkillPlan(task, { domain, registry = defaultRegistry } = {}) {
+function selectSkillPlan(task, { domain, relatedDomains = [], registry = defaultRegistry, asOf } = {}) {
   const specialists = selectSpecialists(task, { domain, registry });
   if (!domain) throw new RangeError('primary domain required for a skill plan');
   const routing = registry.taskSkillRouting;
@@ -68,12 +70,29 @@ function selectSkillPlan(task, { domain, registry = defaultRegistry } = {}) {
     const matched = signals.filter(s => padded.includes(` ${normalizeSkillText(s)} `));
     if (matched.length) extra.push({ skill, signals: matched });
   }
+  if (!Array.isArray(relatedDomains) || relatedDomains.length > 4 ||
+      new Set(relatedDomains).size !== relatedDomains.length ||
+      relatedDomains.some(id => typeof id !== 'string' || id === domain || !Object.hasOwn(registry.domains, id))) {
+    throw new RangeError('invalid related advisory domains');
+  }
+  const topology = registry.advisoryRouting ? advisoryTopology(registry) : [];
+  const matchedDomains = topology.filter(({ id }) => id !== domain &&
+    registry.advisoryRouting.domains[id].signals.some(signal => padded.includes(' ' + normalizeSkillText(signal) + ' ')))
+    .map(({ id }) => id);
+  const advisoryDomains = [...new Set([domain, ...relatedDomains, ...matchedDomains])];
   const primary = registry.domains[domain];
   const skills = [...new Set([primary.engineering, primary.advisory,
+    ...advisoryDomains.slice(1).map(id => registry.domains[id].advisory),
     ...extra.map(x => x.skill), ...specialists.skills, primary.presentation])];
+  const sourceReviews = registry.skillSourceInventory
+    ? skillSourceAudit(registry, asOf).skills.filter(skill => skills.includes(skill.id))
+    : undefined;
   return {
     ...specialists,
-    status: extra.length || specialists.skills.length ? 'MATCHED' : 'REVIEW_REQUIRED',
+    ...(sourceReviews ? { sourceReviews } : {}),
+    status: extra.length || specialists.skills.length || advisoryDomains.length > 1 ? 'MATCHED' : 'REVIEW_REQUIRED',
+    advisoryDomains,
+    advisoryTracks: advisoryDomains.flatMap(id => topology.filter(profile => profile.id === id)),
     agent: primary.chatAgent,
     skills,
     skillFiles: skills.map(skill => `.agents/skills/${skill}/SKILL.md`),
@@ -87,7 +106,7 @@ export { normalizeSkillText, selectSpecialists, selectSkillPlan };
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   if (args.includes('--help')) {
-    process.stdout.write('Usage: node scripts/skill-routing.mjs [--plan] [--domain PRODUCT|MARKET|PLATFORM|TRUST|GROWTH] <Aufgabentext>\n');
+    process.stdout.write('Usage: node scripts/skill-routing.mjs [--plan] [--domain PRODUCT|MARKET|PLATFORM|TRUST|GROWTH] [--related MARKET,TRUST] <Aufgabentext>\n');
   } else {
     const planIndex = args.indexOf('--plan');
     const plan = planIndex !== -1;
@@ -99,9 +118,16 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       args.splice(domainIndex, 2);
     }
     try {
+      const relatedIndex = args.indexOf('--related');
+      let relatedDomains = [];
+      if (relatedIndex !== -1) {
+        if (!plan || !args[relatedIndex + 1]) throw new TypeError('--related requires --plan and a domain list');
+        relatedDomains = args[relatedIndex + 1].split(',');
+        args.splice(relatedIndex, 2);
+      }
       const task = args.join(' ').trim();
       if (!task) throw new TypeError('Aufgabentext fehlt');
-      process.stdout.write(JSON.stringify((plan ? selectSkillPlan : selectSpecialists)(task, { domain, registry: defaultRegistry }), null, 2) + '\n');
+      process.stdout.write(JSON.stringify((plan ? selectSkillPlan : selectSpecialists)(task, { domain, relatedDomains, registry: defaultRegistry }), null, 2) + '\n');
     } catch (error) {
       process.stderr.write(error.message + '\n');
       process.exitCode = 2;

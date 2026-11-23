@@ -1,0 +1,39 @@
+import {test} from 'node:test';
+import {strict as assert} from 'node:assert';
+import {planDriveArtifact,routingContract,acodeContract} from './drive-artifact-router.mjs';
+const TEST_PROVIDER_FOLDER_ID='1TEST_NONSECRET_SYNTHETIC_FOLDER_ID';
+const base={project:'CAPITAL-AI',scope:'PROJECT',category:'TRUST_AUDIT',topic:'EXPOSURE_AUDIT',extension:'md',date:'2026-11-21',sensitivity:'REDACTED',privacyReview:'VERIFIED',rightsReview:'VERIFIED',existingNames:[],listingComplete:true,providerFolderId:TEST_PROVIDER_FOLDER_ID,listedParentId:TEST_PROVIDER_FOLDER_ID,listedFolderPath:routingContract.routes.TRUST_AUDIT.folder,parentChainVerified:true};
+test('TRUST audit uses canonical audit folder and project name',()=>{const p=planDriveArtifact(base);assert.equal(p.status,'ROUTE_READY');assert.equal(p.driveFolder,routingContract.routes.TRUST_AUDIT.folder);assert.equal(p.filename,'2026-11-21_TRUST_EXPOSURE_AUDIT_v1.md');assert.equal(p.driveUpload,'NOT_PROVEN');});
+test('other project files never route to Acode shared',()=>{const p=planDriveArtifact({...base,category:'PRODUCT_BRANDING',topic:'HERO',extension:'png',sensitivity:'PUBLIC'});assert.equal(p.driveFolder,routingContract.routes.PRODUCT_BRANDING.folder);assert.notEqual(p.folderId,acodeContract.driveFolderId);});
+test('Acode uses only existing Acode contract',()=>{const p=planDriveArtifact({...base,scope:'ACODE',category:'ACODE_CODE',domain:'TRUST',extension:'sh',listedParentId:acodeContract.driveFolderId});assert.equal(p.status,'ROUTE_READY');assert.equal(p.filename,'2026-11-21_TRUST_CHATGPT_EXPOSURE_AUDIT_v1.sh');assert.equal(p.folderId,acodeContract.driveFolderId);});
+test('no ordinary report in Acode shared',()=>assert.equal(planDriveArtifact({...base,scope:'ACODE'}).reason,'ACODE_SHARED_IS_ACODE_ONLY'));
+test('isolated repository context',()=>assert.equal(planDriveArtifact({...base,project:'DeviceCare-KI'}).reason,'PROJECT_SCOPE_MISMATCH'));
+test('secrets, raw personal data, unknown privacy status blocked',()=>{for(const val of ['SECRET','PERSONAL_RAW','UNKNOWN',undefined])assert.equal(planDriveArtifact({...base,sensitivity:val}).reason,'CONTENT_PRIVACY_REVIEW_REQUIRED');});
+test('uncategorized never defaults to generic exports',()=>assert.equal(planDriveArtifact({...base,category:'OTHER'}).reason,'CATEGORY_NOT_MAPPED'));
+test('wrong folder parent prevents upload admission',()=>{const p=planDriveArtifact({...base,listedParentId:'fake'});assert.equal(p.status,'WAIT');assert.equal(p.uploadAdmission,'HOLD');});
+test('incomplete listing prevents upload admission',()=>{const p=planDriveArtifact({...base,listingComplete:false});assert.equal(p.status,'WAIT');assert.equal(p.uploadAdmission,'HOLD');});
+test('existing filename version bump without overwrite',()=>{const p=planDriveArtifact({...base,existingNames:['2026-11-21_TRUST_EXPOSURE_AUDIT_v1.md','2026-11-21_TRUST_EXPOSURE_AUDIT_v2.md']});assert.equal(p.filename,'2026-11-21_TRUST_EXPOSURE_AUDIT_v3.md');});
+test('unproven APPROVED status blocked',()=>assert.equal(planDriveArtifact({...base,fileStatus:'APPROVED'}).reason,'APPROVAL_NOT_PROVEN'));
+test('explicit export category routes to 99_Exports',()=>{const p=planDriveArtifact({...base,category:'DISTRIBUTION_EXPORT',domain:'TRUST',topic:'EXPORT_PACKAGE',extension:'zip',listedParentId:TEST_PROVIDER_FOLDER_ID,listedFolderPath:routingContract.routes.DISTRIBUTION_EXPORT.folder});assert.equal(p.status,'ROUTE_READY');assert.equal(p.driveFolder,routingContract.routes.DISTRIBUTION_EXPORT.folder);});
+test('invalid dates and path traversal rejected',()=>{assert.equal(planDriveArtifact({...base,date:'2026-02-31'}).status,'BLOCKED');assert.equal(planDriveArtifact({...base,topic:'../SECRET'}).status,'BLOCKED');});
+test('script name category and domain guards',()=>{assert.equal(planDriveArtifact({...base,scope:'PROJECT',category:'ACODE_CODE'}).status,'BLOCKED');assert.equal(planDriveArtifact({...base,domain:'GROWTH'}).reason,'DOMAIN_CATEGORY_MISMATCH');});
+test('missing privacy or licensing review blocks admission',()=>{for(const k of ['privacyReview','rightsReview']){const v={...base};delete v[k];assert.equal(planDriveArtifact(v).reason,'PRIVACY_OR_RIGHTS_EVIDENCE_MISSING');}});
+test('project routing requires verified canonical folder path and connector identity',()=>{const p=planDriveArtifact({...base,listedFolderPath:'CAPITAL-AI/99_Exports'});assert.equal(p.status,'WAIT');assert.equal(p.uploadAdmission,'HOLD');const q=planDriveArtifact({...base,providerFolderId:null});assert.equal(q.status,'WAIT');});
+test('all manifest routes remain within CAPITAL-AI project hierarchy and contain no private IDs',()=>{assert.ok(Object.keys(routingContract.routes).length>=60);for(const [key,route] of Object.entries(routingContract.routes)){assert.match(key,/^[A-Z0-9_]+$/);assert.ok(route.folder.startsWith('CAPITAL-AI/'));assert.equal(Object.hasOwn(route,'folderId'),false);}});
+test('known additional project areas are classified without defaulting to Acode',()=>{for(const key of ['PLATFORM_AUTHENTICATION','PRODUCT_UX','DATA_DATABASE','MARKET_PRICING','GROWTH_CAMPAIGNS','FINANCE_INVOICES','LEGAL_CONTRACTS']){const route=routingContract.routes[key];assert.ok(route,'missing '+key);const p=planDriveArtifact({...base,category:key,domain:route.domain,listedFolderPath:route.folder});assert.equal(p.status,'ROUTE_READY');assert.notEqual(p.folderId,acodeContract.driveFolderId);}});
+test('minor historical version reserves its major to prevent mistaken initial version',()=>{const p=planDriveArtifact({...base,existingNames:['2026-11-21_TRUST_EXPOSURE_AUDIT_v1.1.md']});assert.equal(p.filename,'2026-11-21_TRUST_EXPOSURE_AUDIT_v2.md');});
+test('placeholder folder IDs never create upload admission',()=>{const p=planDriveArtifact({...base,providerFolderId:'INSERT_VERIFIED_DRIVE_FOLDER_ID',listedParentId:'INSERT_VERIFIED_DRIVE_FOLDER_ID'});assert.equal(p.status,'WAIT');assert.equal(p.uploadAdmission,'HOLD');});
+
+test('append-only numbering never reuses gaps between existing versions',()=>{
+  const p=planDriveArtifact({...base,existingNames:[
+    '2026-11-21_TRUST_EXPOSURE_AUDIT_v1.md',
+    '2026-11-21_TRUST_EXPOSURE_AUDIT_v3.md',
+  ]});
+  assert.equal(p.status,'ROUTE_READY');
+  assert.equal(p.filename,'2026-11-21_TRUST_EXPOSURE_AUDIT_v4.md');
+});
+test('exhausted version number fails closed and does not reuse old names',()=>{
+  const p=planDriveArtifact({...base,existingNames:['2026-11-21_TRUST_EXPOSURE_AUDIT_v9999.md']});
+  assert.equal(p.status,'BLOCKED');
+  assert.equal(p.reason,'VERSION_SPACE_EXHAUSTED');
+});
