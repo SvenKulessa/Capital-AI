@@ -87,10 +87,18 @@ export function evaluateMarketDataRights(
 ): MarketDataRightsEligibility {
   const reasons: string[] = [];
   const obligations = new Set<string>();
+  const evaluatedAt = now.getTime();
 
+  // No requested capability is not evidence of a commercially usable grant.
+  if (requiredUseCases.length === 0) reasons.push('REQUIRED_USE_CASES_EMPTY');
+  if (!Number.isFinite(evaluatedAt)) reasons.push('EVALUATION_TIME_INVALID');
   if (!evidence.feedsSymbolsAndVenues?.length) reasons.push('FEED_SCOPE_UNVERIFIED');
   if (!evidence.reviewedAt) reasons.push('REVIEW_TIMESTAMP_MISSING');
-  if (evidence.validUntil && new Date(evidence.validUntil).getTime() < now.getTime()) reasons.push('RIGHTS_EVIDENCE_EXPIRED');
+  if (evidence.reviewedAt && Number.isFinite(evaluatedAt) &&
+      new Date(evidence.reviewedAt).getTime() > evaluatedAt) reasons.push('RIGHTS_REVIEW_IN_FUTURE');
+  // An expiry instant is exclusive: rights have expired at that instant.
+  if (evidence.validUntil && Number.isFinite(evaluatedAt) &&
+      new Date(evidence.validUntil).getTime() <= evaluatedAt) reasons.push('RIGHTS_EVIDENCE_EXPIRED');
 
   const contractualUseCases = requiredUseCases.filter(useCase => useCase !== 'scientific_research_tdm');
   if (contractualUseCases.length) {
