@@ -75,10 +75,10 @@ export function NewsDesignCatalog() {
         </div>
       </section>
       <LearningUniverseB2BInquirySection />
-      <a className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-amber-300 px-3 text-base font-semibold text-amber-100 focus-visible:outline-2 focus-visible:outline-cyan-300"
-        href={`mailto:support@capital-ai.online?subject=${encodeURIComponent('FinTech News Design Studio · ' + item.name)}`}>
-        Angebot für {item.name} anfragen
-      </a>
+      <p data-inquiry-delivery="BLOCKED_SMTP_550" role="status"
+        className="mt-3 rounded-lg border border-amber-300/50 px-3 py-3 text-base text-amber-100">
+        Angebot für {item.name}: Anfrage derzeit nicht verfügbar. Bitte keine vertraulichen Dokumente senden.
+      </p>
     </section>
   );
 }
@@ -126,10 +126,10 @@ export function LearningUniverseB2BInquirySection() {
             className="flex min-w-0 flex-col rounded-lg border border-slate-700 bg-slate-900 p-3">
             <h5 className="text-base font-semibold text-amber-100">{concept.title}</h5>
             <p className="mt-2 flex-1 text-sm leading-6 text-slate-300">{concept.description}</p>
-            <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-cyan-300 px-3 text-center text-sm font-semibold text-cyan-100 focus-visible:outline-2 focus-visible:outline-cyan-200"
-              href={`mailto:support@capital-ai.online?subject=${encodeURIComponent('Learning Universe B2B · ' + concept.title)}`}>
-              Unverbindlich anfragen
-            </a>
+            <p data-inquiry-delivery="BLOCKED_SMTP_550" role="status"
+              className="mt-4 rounded-lg border border-cyan-300/40 px-3 py-3 text-center text-sm text-cyan-100">
+              Anfrage derzeit nicht verfügbar
+            </p>
           </article>
         ))}
       </div>
