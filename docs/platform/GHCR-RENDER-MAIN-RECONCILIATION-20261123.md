@@ -214,3 +214,95 @@ Do not interpret this section as a new release gate or rights approval.
   through a normal follow-up commit (or by restoring the prior head
   `af643e746036222d10465e239e651d67f263420f` with verified lease if
   explicitly authorized). Existing live Git-backed deploy is unaffected.
+
+
+## Six-gate direct-byte and non-binding contract audit — 2026-11-23
+
+**Authority and evidence scope:** Root `AGENTS.md` (`SOLO_MAINTAINER_FLOW@2`, blob `3d5ad12cb6e0f055dac6db427422a903937c91dd`).
+Main at audit `3b92f054ca18b1521fde570ba082acca2b5ec601`; existing Draft PR #913
+was audited at head `9fddb11da5f12abddb7d92d57c0380be33226dd7` and subsequent
+evidence-only branch changes. The **tested** GitHub PR merge SHA is
+`7d5824752c5b4b61c966cb7a2fd656258a41c3d6`: it is **not** the
+PR head, not the main SHA, and not the Render live-image digest.
+These findings authorize neither public/private registry publication nor customer delivery.
+
+### Independently downloaded and byte-hashed GitHub CI artifacts
+
+- [PR #913 Docker Security Gate 45248707729](https://github.com/SvenKulessa/Capital-AI/actions/runs/45248707729):
+  `completed/success`; downloaded GitHub artifact ID `14856276257`,
+  `docker-security-7d5824752c5b4b61c966cb7a2fd656258a41c3d6`,
+  **258227 bytes**, independently SHA-256 hashed
+  `b5790ffe0343959b1a3d82d87e9a0cb5977e4426bed1b6648b77cc5c60749feb`
+  matching GitHub's artifact digest; ZIP entries actually opened/read.
+  `container-identity.json.source.sourceSha` = PR head,
+  `source.testedSha` = `7d5824752c5b4b61c966cb7a2fd656258a41c3d6`.
+  `image-id.txt` and `container-identity.json.digests.localImageId` match
+  `sha256:33e5d37d404bffbbd5a8134f8952f1058e0f759eab106be6ddf2390eab8f30c1`.
+  This is **CI image CONFIG SHA-256**, not a published OCI manifest digest.
+  `ociIndexDigest`, `platformManifestDigest` and `runtimeProviderDigest` are null.
+- [Isolated OS Source Mirror 45248707735](https://github.com/SvenKulessa/Capital-AI/actions/runs/45248707735):
+  `completed/success`; downloaded GitHub artifact ID `14855605208`,
+  outer ZIP **288330484 bytes**, independently SHA-256 hashed
+  `7c259e7c949124d808149540b1cd82d2b5899e6464e9dd1bca6b5e354ffa9c31`,
+  equal to provider metadata. Inner `source-mirror.tar.gz` was streamed
+  and independently hashed to
+  `6babcf509ec4075e345142184f644ae74fb29510a4b6d56e5c7adf67a796d1dc`,
+  equal to the bundled checksum and `collection-summary.json`.
+  The bundled verifier reports **34 recipes, 229/229 declared SHA-512
+  source files, 0 missing/mismatched**, but its `sourceSha` is historically
+  `fa706af9aa698d702dc782f3f95a95c7f7572a22` and image config is
+  `sha256:5f76597529b8ef14ead01b686879b577c9ba35a455c03ae5aa021c1a8ae7d1d7`.
+  Matching historical/current installed-APK-database SHA
+  `263c775b75102a70b050dcf8bfde0da4e728ab316c8ebea31cd51735fdc16f64`
+  connects package-input lineage but **does not independently rebuild
+  every binary** or prove corresponding-source completeness/delivery.
+  Mirrored source ZIP is held privately by GitHub and expires per artifact
+  retention, not a durable accessible recipient-offer. No source was sent
+  to a third-party recipient or publicly redistributed by this audit.
+- `runtime-license-coverage.json`: **50 Alpine, 21 Node, 63 Python**
+  package records; frontend 38 emitted package records; exact image
+  notice-byte correlations `frontend=true`, `node=true`, `ofl=true`.
+  Direct ZIP member SHA-256: frontend notices
+  `a9b4f1ffc20fe94b112da8dcc6aa2f8a28be80c8693ce8c3492b4fba52300464`,
+  Node licence `8e603aa87c70d36e497004f0dec63111511cb61b7d65ace12e10ea791599286c`,
+  font OFL `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99`.
+  Native linkage summary says **10 package and 2 Node native binaries**
+  byte-hashed; `unrarStaticInclusion=NOT_PROVEN`,
+  `runtimeNoticeCompleteness=NOT_PROVEN`.
+
+### Six existing redistribution/usage gates, without legal promotion
+
+| Existing ledger item | Actually checked at this PR source / image | Decision still required |
+| --- | --- | --- |
+| 1. OS corresponding source and delivery | CI packages 50; 34 historical source recipes / 229 declared SHA-512 source inputs verified; current APK DB hash correlated | **BLOCKED:** complete current binary/source/patch/relink scope, delivery mode and proof of recipient access; sourceDeliveryProven=false |
+| 2. Current base binary/source/NOTICE | Pinned `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`; current CI Node/OS/frontend notice hashes match inventories; native ELF checked | **BLOCKED:** exact base binary-to-source/exception and full recipient NOTICE coverage; no live OCI copy |
+| 3. JPEG origin/terms | `public/branding/capital-ai-logo.jpg`: **224129 bytes**, SHA-256 `6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3`; `src/assets/images/glowing_earth_nodes_1789997454893.jpg`: **870199 bytes**, SHA-256 `aae548443cb6ec1be4c7d9f9389c52cc1e01b28df28fbc4e985750dd424bb671`; both match ledger by independent GitHub blob hashing | **BLOCKED:** actual earth-image generation/account/terms and allowed derivative/commercial usage; owner-authored logo permission is project-use evidence, not third-party clearance |
+| 4. Inline logos and trademarks | `src/components/AssetLogo.tsx`: **29660 bytes**, SHA-256 `b2c1401e6c39116aa81c0d426d5403134fcb2b36b8729ab5e5fd976c01d7213f`; direct current GitHub blob hash matches ledger | **BLOCKED:** symbol drawing/origin, source SVG/vector copyright, mark usage and applicable product-display permission; exact bytes are not rights |
+| 5. Provider market-data contracts | Read actual **nonbinding** messages from Kraken Support (2026-10-24, Gmail `1a16ee3a0ba04fdf`) and Massive/Polygon market-data specialist (2026-10, Gmail `1a1090f7f5c630e0`); Twelve Data conditional written reply already evidenced in `docs/market-data/evidence/twelve-data-rights-20261005.json` | **BLOCKED:** no executed order form / licensed entity / selected feeds, venues, subscriptions, market-data and API/redistribution terms. In particular, Massive raw data redistribution requires a separate agreement, indices require exchange licensing; Kraken says raw redistribution is not covered without licence. Keep provider `deployEligible=false` |
+| 6. Final-image pinned fonts/OFL | Independent GitHub raw bytes: Regular TTF 176288 bytes SHA-256 `89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8`, Italic TTF 183188 bytes SHA-256 `9529eb888668b6a3c6dd75b6341a2fc5263fb6c9e788822e6117c29dd9e8b115`, OFL 4402 bytes SHA-256 `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99`; all 3 match `public/fonts/provenance.json` and exact scanned **CI** image's `runtime-font-provenance.json` (`sourceByteMatch=true`, `imageByteMatch=true`) | **CI subgate VERIFIED; published GHCR/Render image NOT_PROVEN**. Never close existing final-published-image gate on a CI-only check |
+
+**Contract-data boundary:** The nonbinding Kraken/Massive reply references in
+`docs/security/evidence/license-rights-review.json` describe observed
+support/sales correspondence, not a binding license schedule.
+Both original provider `status=CONTRACT_SCOPE_UNVERIFIED`,
+`deployEligible=false`, and `contractEvidence.contractOrPermissionReference=null`
+remain unchanged. The root rights ledger continues
+`REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null` and **all six**
+`remainingGates` retained. The already-written guard
+`scripts/assert-ghcr-publication-rights.mjs` continues to block a
+GHCR candidate before login/push for unapproved, unmatched current-source
+and current-base evidence. Existing tests now cover forged provider
+correspondence as insufficient for legal approval.
+
+**Do not overstate:** An exact-image GitHub CI smoke `buildIdentity.bound=true`
+refers to the isolated test merge image only. Public live Render `/healthz`
+previously reported `buildIdentity.bound=false` for main
+`3b92f054ca18b1521fde570ba082acca2b5ec601`.
+No immutable registry platform manifest, trusted signature/attestation,
+image-backed Render deploy, customer license or legal source-delivery receipt
+was produced. `GHCR_PUBLISH=BLOCKED`, `RENDER_CUTOVER=HOLD`.
+
+**Rollback:** Revert the two scoped evidence/negative-test updates and
+this addendum on the existing Draft PR branch; no live state, secrets,
+Registry, customers or billing touched. Each new PR head needs its own
+existing CI checks; prior CI run IDs remain historical evidence.
