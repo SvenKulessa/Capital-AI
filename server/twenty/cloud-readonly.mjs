@@ -2,6 +2,18 @@
 export const TWENTY_READBACK_VERSION = 'TWENTY_CLOUD_METADATA_READBACK@1';
 export const TWENTY_WORKSPACE_ORIGIN = 'https://capital-ai.twenty.com';
 const MAX_BYTES = 262144;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SHA256 = /^[0-9a-f]{64}$/i;
+/** Pure admission gate: no record data and no permissions are inferred from object discovery. */
+export function validateProductEvidence({ expectedWorkspaceOrigin, observedWorkspaceOrigin, expectedObjectId, observedObjectId, expectedTenantId, observedTenantId, expectedDigest, observedDigest, fieldSchemaVerified = false }) {
+  if (validateTwentyOrigin(expectedWorkspaceOrigin) !== validateTwentyOrigin(observedWorkspaceOrigin)) throw Error('TWENTY_WORKSPACE_MISMATCH');
+  if (!UUID.test(expectedObjectId ?? '') || expectedObjectId !== observedObjectId) throw Error('TWENTY_OBJECT_ID_MISMATCH');
+  if (typeof expectedTenantId !== 'string' || expectedTenantId.length < 1 || expectedTenantId !== observedTenantId) throw Error('TWENTY_TENANT_MISMATCH');
+  if (typeof expectedDigest !== 'string' || !SHA256.test(expectedDigest) || expectedDigest.toLowerCase() !== observedDigest?.toLowerCase()) throw Error('TWENTY_DIGEST_MISMATCH');
+  if (fieldSchemaVerified !== true) throw Error('TWENTY_FIELDS_NOT_PROVEN');
+  return Object.freeze({ status: 'EVIDENCE_MATCHED_ONLY', writeAllowed: false, publicationAllowed: false, commercialRelease: 'HOLD' });
+}
+
 const OBJECTS_QUERY = 'query CapitalAiProductsMetadata { objects(filter: {}, paging: { first: 100 }) { edges { node { id nameSingular namePlural labelSingular isCustom } } } }';
 export function validateTwentyOrigin(input) {
   if (typeof input !== 'string') throw Error('TWENTY_ORIGIN_REQUIRED');
