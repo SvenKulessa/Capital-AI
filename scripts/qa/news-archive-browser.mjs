@@ -8,7 +8,12 @@ const origin=process.argv[2]||'http://127.0.0.1:17871';
 const url=new URL(origin);
 assert.equal(url.hostname,'127.0.0.1');
 assert.equal(url.protocol,'http:');
-const output='artifacts/news-archive-browser';
+const fixtureMode=process.env.CAPITAL_AI_NEWS_FIXTURE_QA_MODE==='populated';
+if(fixtureMode){
+  assert.equal(process.env.GITHUB_ACTIONS,'true','Synthetic data must not be exposed outside CI');
+  assert.equal(process.env.GITHUB_EVENT_NAME,'pull_request','Synthetic build must not run in production');
+}
+const output=fixtureMode?'artifacts/news-archive-fixture-browser':'artifacts/news-archive-browser';
 await mkdir(output,{recursive:true});
 const profile=await mkdtemp(join(tmpdir(),'news-archive-chrome-'));
 const chrome=spawn(process.env.CAPITAL_AI_CHROME_BIN||'chromium',[
@@ -19,7 +24,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let socket,sequence=0;
 const pending=new Map(),errors=[];
 const report={version:'CAPITAL_AI_NEWS_ARCHIVE_BROWSER@1',testedCheckoutSha:process.env.GITHUB_SHA??null,prHeadSha:process.env.CAPITAL_AI_PR_HEAD??null,
-  scope:'Isolated loopback Chromium, not live deployment',checks:[],status:'NOT_PROVEN'};
+  scope:fixtureMode?'SYNTHETIC_FIXTURE_ONLY_NOT_LICENSE_EVIDENCE':'Isolated loopback Chromium, not live deployment',checks:[],status:'NOT_PROVEN'};
 function send(method,params={}){
   return new Promise((resolve,reject)=>{
     const id=++sequence,timer=setTimeout(()=>{pending.delete(id);reject(Error('CDP_TIMEOUT_'+method));},15000);
@@ -97,13 +102,67 @@ try{
     const overview=await inspect('analytics-news-overview',width,'overview');
     assert.equal(overview.heading,'Frühere Marktnews');
     assert.ok(overview.cards<=3,'Overview news capacity exceeded');
+    if(fixtureMode){
+      assert.equal(overview.cards,3,'Expected three synthetic Overview cards');
+      assert.ok(overview.text.includes('Synthetic Ledger Overview'));
+      assert.ok(!overview.text.includes('Synthetic Unapproved Hidden'));
+    }else assert.equal(overview.cards,0,'Default public index should stay empty');
     assert.equal(await evaluate("document.querySelector('#analytics-news-overview').closest('section').querySelector('a[href*=news-archiv]')?.getAttribute('href')"),'/marketscreener/news-archiv');
     assert.equal(await evaluate("(() => {const a=document.querySelector('.hub-navigation a[data-page=newsArchive]');a?.focus();return !!a&&document.activeElement===a&&a.textContent.includes('News-Archiv');})()"),true,'Hub navigation not keyboard focusable');
     await navigate('/marketscreener/news-archiv','analytics-news-archive');
     await closeCookiePanel();
     const archive=await inspect('analytics-news-archive',width,'archive');
     assert.equal(archive.heading,'News-Archiv');
-    assert.ok(archive.text.includes('Keine freigegebenen Nachrichten'),'Unreviewed news publicly visible');
+    if(fixtureMode){
+      assert.equal(archive.cards,3,'Only three independently admitted synthetic archive stories may show');
+      for(const name of ['Synthetic Ledger Archive','Synthetic Stablecoin Archive','Synthetic Regulation Archive'])
+        assert.ok(archive.text.includes(name),name+' missing');
+      assert.ok(!archive.text.includes('Synthetic Unapproved Hidden'),'Unreviewed fixture displayed');
+      assert.ok(!archive.text.includes('95/100'),'Forged market-impact evidence displayed');
+      const grouped=await evaluate("(() => {const root=document.querySelector('#analytics-news-archive').closest('section');"+
+        "return {categories:[...root.querySelectorAll(':scope > div.mt-5 > details > summary')].map(x=>x.textContent.trim()),"+
+        "years:[...root.querySelectorAll('details details > summary')].map(x=>x.textContent.trim()),"+
+        "days:[...root.querySelectorAll('details > summary')].map(x=>x.textContent.trim()).filter(s=>s.length===10&&s.split('.').length===3)};})()");
+      assert.deepEqual(grouped.categories.sort(),['blockchain','regulierung','stablecoins']);
+      assert.ok(grouped.years.includes('2026'),'Year folder missing');
+      assert.equal(grouped.days.length,3,'Date folders missing');
+      const csv=await evaluate("(() => {const a=document.querySelector('#analytics-news-archive').closest('section').querySelector('a[download]');"+
+        "const href=a?.getAttribute('href')||'';return href.startsWith('data:text/csv;charset=utf-8,')?decodeURIComponent(href.split(',').slice(1).join(',')):null;})()");
+      assert.ok(csv?.includes('news_id')&&csv.includes('measured_impact_score'),'CSV header missing');
+      assert.equal(csv.trimEnd().split('\r\n').length,4,'CSV must contain three rows');
+      assert.equal((csv.match(/"NOT_PROVEN"/g)||[]).length,3,'Forged impact status reached BI');
+      assert.ok(!csv.includes('synthetic-archive-unreviewed')&&!csv.includes('"95"'),'Unapproved or forged CSV values');
+      const setFilter=async(type,value)=>{
+        const expression="(() => {const e=[...document.getElementById('analytics-news-archive').closest('section').querySelectorAll('input')].find(x=>x.type==="+JSON.stringify(type)+");"+
+          "if(!e)return false;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,"+
+          JSON.stringify(value)+");e.dispatchEvent(new Event('input',{bubbles:true}));"+
+          "e.dispatchEvent(new Event('change',{bubbles:true}));return true;})()";
+        assert.equal(await evaluate(expression),true,'Filter input missing: '+type);
+      };
+      const count="document.querySelector('#analytics-news-archive').closest('section').querySelectorAll('article').length";
+      await setFilter('text','Synthetic Stablecoin Archive');
+      await until(count+'===1','SEARCH_FILTER');
+      await setFilter('text','');
+      await until(count+'===3','SEARCH_RESET');
+      await setFilter('date','2026-11-11');
+      await until(count+'===1','DATE_FILTER');
+      await setFilter('date','');
+      await until(count+'===3','DATE_RESET');
+      const before=await evaluate("(() => {const s=document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary');s.focus();return {open:s.parentElement.open,focused:document.activeElement===s};})()");
+      assert.ok(before.focused,'Synthetic category folder summary cannot receive keyboard focus');
+      const summaryOpen="document.getElementById('analytics-news-archive').closest('section').querySelector('details > summary').parentElement.open";
+      for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{
+        type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13,
+        ...(type==='keyDown'?{text:String.fromCharCode(13),unmodifiedText:String.fromCharCode(13)}:{})
+      });
+      if(await evaluate(summaryOpen)===before.open){
+        for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{
+          type,key:' ',code:'Space',windowsVirtualKeyCode:32,nativeVirtualKeyCode:32,
+          ...(type==='keyDown'?{text:' ',unmodifiedText:' '}:{}),
+        });
+      }
+      await until(summaryOpen+'==='+(!before.open),'SUMMARY_KEYBOARD');
+    }else assert.ok(archive.text.includes('Keine freigegebenen Nachrichten'),'Unreviewed news publicly visible');
     const fields=await evaluate("(() => {const r=document.getElementById('analytics-news-archive').closest('section');"+
       "const all=[...r.querySelectorAll('input')];const search=all.find(e=>e.type==='text');search?.focus();"+
       "return {count:all.length,focus:document.activeElement===search,date:all.some(e=>e.type==='date'),"+
@@ -116,7 +175,7 @@ try{
       archiveOverflow:archive.overflow,keyboard:'PASS',date:'PASS',csv:'PASS',rights:'PASS'});
   }
   assert.deepEqual(errors,[],'Uncaught browser exceptions');
-  report.status='TARGETED_PASS';
+  report.status=fixtureMode?'TARGETED_PASS_SYNTHETIC_ONLY':'TARGETED_PASS';
 }catch(error){report.status='FAILED';report.error=String(error?.stack||error);process.exitCode=1;}
 finally{
   await writeFile(join(output,'result.json'),JSON.stringify(report,null,2));

@@ -46,6 +46,8 @@ COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./deploy/runti
 COPY .agents/skills ./.agents/skills
 # Scoped build-only machine-readable prompts for the existing offline test suite.
 COPY .agents/app.prompt.json ./.agents/app.prompt.json
+# Build-only offline Drive routing contract (the runtime image does not receive these files).
+COPY .agents/contracts/acode-shared-delivery.json .agents/contracts/drive-artifact-routing.json ./.agents/contracts/
 COPY CAPITAL-AI-PRODUCT/domain.prompt.json CAPITAL-AI-PRODUCT/PROJECT.md ./CAPITAL-AI-PRODUCT/
 COPY CAPITAL-AI-MARKET/domain.prompt.json CAPITAL-AI-MARKET/PROJECT.md ./CAPITAL-AI-MARKET/
 COPY CAPITAL-AI-PLATFORM/domain.prompt.json CAPITAL-AI-PLATFORM/PROJECT.md ./CAPITAL-AI-PLATFORM/
@@ -73,6 +75,8 @@ COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
 COPY public/branding/universe ./public/branding/universe
+# MediaKit v5 first-party Learning Universe vectors (hash-bound in registry).
+COPY public/branding/learning-universe ./public/branding/learning-universe
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
@@ -91,6 +95,7 @@ COPY public/documentation/pipeline-architectures.html public/documentation/prici
 COPY public/downloads/market-screener-hub-open-source.html ./public/downloads/market-screener-hub-open-source.html
 COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/learning-simulator.test.mjs server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/founder-access.mjs server/founder-access.test.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.mjs server/blueprint-commerce.test.mjs server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/purchase-receipt.mjs server/purchase-receipt.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
+COPY server/skill-routing-catalog.mjs ./server/
 COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.mjs server/tool-catalog-assessment.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs server/buddy-gemini-byok.mjs server/buddy-gemini-byok.test.mjs server/chat-buddy-learn.test.mjs ./server/
 COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/account-avatar.test.mjs server/profile-provider-avatar.test.mjs server/profile-avatar-upload.test.mjs server/profile-avatar-clamav.test.mjs server/historical-analytics-demo.test.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
@@ -115,6 +120,7 @@ COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs 
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 # Shared SOLO2 profile: CLI and negative tests execute in the existing offline build stage.
 COPY scripts/solo2-config.mjs scripts/solo2-config.test.mjs ./scripts/
+COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.mjs scripts/platform/drive-artifact-delivery.test.mjs ./scripts/platform/
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 COPY scripts/skill-bundles.mjs ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
@@ -231,6 +237,7 @@ RUN node /tmp/write-runtime-identity.mjs render-git "${RENDER_GIT_COMMIT:-}" \
 COPY server/purchase-receipt.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
+COPY server/skill-routing-catalog.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp

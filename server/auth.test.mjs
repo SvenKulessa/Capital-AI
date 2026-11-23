@@ -167,7 +167,7 @@ async function harness(envOverrides = {}, simulatorStore = new Map()) {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       assert.equal(options.headers.apikey, 'sb_publishable_test');
       assert.equal(target.searchParams.get('id'), `eq.${state.subject}`);
-      return Response.json([{ id: state.foreignProfile ? 'foreign-user' : state.subject, iam_role: state.subject === 'owner-subject' ? 'owner' : 'user' }]);
+      return Response.json([{ id: state.foreignProfile ? 'foreign-user' : state.subject, iam_role: state.iamRole ?? (state.subject === 'owner-subject' ? 'owner' : 'user') }]);
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/subscriptions') {
@@ -178,9 +178,9 @@ async function harness(envOverrides = {}, simulatorStore = new Map()) {
       return Response.json([{
         user_id: state.subject,
         tier: state.tier || (state.subject === 'owner-subject' ? 'Enterprise' : 'Free'),
-        status: (state.tier && state.tier !== 'Free') || state.subject === 'owner-subject' ? 'active' : 'free',
-        current_period_end: state.tier === 'Pro' || state.subject === 'owner-subject'
-          ? new Date(Date.now() + 60 * 60 * 1000).toISOString() : null,
+        status: state.subscriptionStatus ?? ((state.tier && state.tier !== 'Free') || state.subject === 'owner-subject' ? 'active' : 'free'),
+        current_period_end: state.subscriptionEnd ?? (['Pro', 'Enterprise'].includes(state.tier) || state.subject === 'owner-subject'
+          ? new Date(Date.now() + 60 * 60 * 1000).toISOString() : null),
       }]);
     }
 
@@ -1077,4 +1077,61 @@ test('owner observability denies enrolled TOTP AAL1 while preserving unverified 
     const stepped = await h.request(endpoint, { headers: { cookie: steppedCookie } });
     assert.equal(stepped.status, 200, 'verified owner AAL2 restores access');
   } finally { await h.stop(); }
+});
+
+test('private skill routing is read-only and uses the current IAM or Enterprise entitlement', async () => {
+  const h = await harness();
+  const path = '/api/profile/skill-routing';
+  try {
+    assert.equal((await h.request(path)).status, 404);
+    h.state.subject = 'routing-user';
+    const cookie = await h.completeEmail();
+    const request = (query = '') => h.request(path + query, { headers: { cookie } });
+    const canSeeTab = async () => (await (await h.request('/api/auth/session', { headers: { cookie } })).json()).skillRoutingAvailable;
+
+    assert.equal(await canSeeTab(), false);
+    assert.equal((await request('?iamRole=owner&tier=Enterprise')).status, 404);
+    h.state.iamRole = 'b2b';
+    assert.equal((await request()).status, 404);
+    for (const role of ['owner', 'admin', 'supervisor']) {
+      h.state.iamRole = role;
+      assert.equal(await canSeeTab(), true);
+      const response = await request();
+      assert.equal(response.status, 200);
+      assert.match(response.headers.get('cache-control'), /no-store/);
+      const body = await response.json();
+      assert.equal(body.userId, 'routing-user');
+      assert.equal(body.schema, 'CAPITAL_AI_ADVISORY_ROUTING@1');
+      assert.equal(body.domains.length, 5);
+      for (const domain of body.domains) {
+        assert.ok(domain.advisers.some(item => item.skill === domain.id.toLowerCase() + '-advisory'));
+        assert.ok(!Object.hasOwn(domain, 'signals'));
+      }
+    }
+
+    h.state.iamRole = 'user';
+    h.state.tier = 'Enterprise';
+    assert.equal(await canSeeTab(), true);
+    assert.equal((await request()).status, 200);
+    assert.equal((await h.request(path, { method: 'POST', headers: { cookie } })).status, 405);
+
+    h.state.subscriptionEnd = new Date(Date.now() - 1000).toISOString();
+    assert.equal(await canSeeTab(), false);
+    assert.equal((await request()).status, 404);
+    h.state.subscriptionEnd = new Date(Date.now() + 1000 * 60).toISOString();
+    h.state.subscriptionStatus = 'past_due';
+    assert.equal((await request()).status, 404);
+    h.state.subscriptionStatus = 'active';
+    h.state.rejectSubscription = true;
+    assert.equal((await request()).status, 404);
+    h.state.rejectSubscription = false;
+    h.state.foreignProfile = true;
+    assert.equal((await request()).status, 404);
+    h.state.foreignProfile = false;
+    h.state.mfaFactorStatus = 'verified';
+    assert.equal(await canSeeTab(), false);
+    assert.equal((await request()).status, 404);
+  } finally {
+    await h.stop();
+  }
 });

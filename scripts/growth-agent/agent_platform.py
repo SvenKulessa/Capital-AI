@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
+from domain_profile_binding import load_domain_profiles
 
 DOMAINS = ("PLATFORM", "TRUST", "MARKET", "GROWTH", "PRODUCT")
 # Public, curated, repository-owned references only; no arbitrary path in a task.
@@ -38,6 +39,9 @@ class ResearchState(TypedDict, total=False):
     specialist: str
     source_count: int
     recommendation: str
+    profile_sha256: str
+    bundle_sha256: str
+    profile_skills: list[str]
 
 
 def words(s: str) -> set[str]:
@@ -94,9 +98,18 @@ def retrieve(root: Path, *, domain: str, query: str, limit: int = 3) -> list[dic
     return [item[3] for item in ranked[:limit]]
 
 
-def build_research_graph(repo_root: Path, *, checkpointer=None):
-    """Real LangGraph supervisor -> retriever -> domain specialist -> TRUST gate."""
+def build_research_graph(repo_root: Path, *, checkpointer=None,
+                         expected_bundle_sha256: str | None = None):
+    """Existing offline LangGraph supervisor -> retriever -> specialist -> TRUST.
+
+    Repo-owned profile metadata only; NEVER converts a prompt into authority.
+    Checkpoint callers must bind expected_bundle_sha256 to trusted task scope.
+    """
     root = Path(repo_root)
+    bundle = load_domain_profiles(root)
+    if (expected_bundle_sha256 is not None
+            and bundle["bundle_sha256"] != expected_bundle_sha256):
+        raise ValueError("domain profile changed between checkpoint binding and graph creation")
 
     def route(state: ResearchState) -> dict:
         if (state.get("domain") not in DOMAINS
@@ -105,7 +118,11 @@ def build_research_graph(repo_root: Path, *, checkpointer=None):
                 or not isinstance(state.get("query"), str)
                 or not 1 <= len(state["query"]) <= 300):
             return {"status": "BLOCKED", "agent_route": ["supervisor"]}
-        return {"status": "ROUTED", "agent_route": ["supervisor"]}
+        route = bundle["domains"][state["domain"]]
+        return {"status": "ROUTED", "agent_route": ["supervisor"],
+                "profile_sha256": route["profile_sha256"],
+                "bundle_sha256": bundle["bundle_sha256"],
+                "profile_skills": list(route["skills"])}
 
     def search(state: ResearchState) -> dict:
         try:
@@ -126,9 +143,14 @@ def build_research_graph(repo_root: Path, *, checkpointer=None):
 
     def trust(state: ResearchState) -> dict:
         citations = state.get("citations", [])
-        ok = bool(citations) and all(c["source"] in SOURCES[state["domain"]]
+        route = bundle["domains"][state["domain"]]
+        ok = (bool(citations)
+              and state.get("bundle_sha256") == bundle["bundle_sha256"]
+              and state.get("profile_sha256") == route["profile_sha256"]
+              and state.get("profile_skills") == route["skills"]
+              and all(c["source"] in SOURCES[state["domain"]]
                                      and re.fullmatch(r"[a-f0-9]{64}", c["source_sha256"])
-                                     for c in citations)
+                                     for c in citations))
         return {"status": "RESEARCH_DRAFT" if ok else "NOT_PROVEN",
                 "recommendation": "Source-bound analysis only; no autonomous actions",
                 "agent_route": state["agent_route"] + ["trust_reviewer"]}

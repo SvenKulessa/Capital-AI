@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { NEWS_DESIGN_OFFER } from '../../data/pricingCatalog';
+import { catalogueLearningUniverseAssets } from '../../platform/SocialMediaEngine/Branding/learningUniverseAssetRegistry.mjs';
 
 const layouts = [
   { id: 'hero', name: 'Titelbild', use: 'Für Produktstarts und einzelne Leitmeldungen',
@@ -50,6 +51,28 @@ export function NewsDesignCatalog() {
         {!imageFirst && figure}
         <p className="border-t border-slate-600 pt-2 text-sm text-slate-300">Quellen- und Bildnachweis</p>
       </article>
+
+      <section aria-labelledby="learning-universe-catalogue-title" className="mt-6 border-t border-slate-700 pt-5"
+        data-learning-universe-catalogue="first-party-preview">
+        <h4 id="learning-universe-catalogue-title" className="text-lg font-bold text-cyan-100">Learning Universe · Originalgrafiken</h4>
+        <p className="mt-2 text-sm leading-relaxed text-slate-300">
+          Eigene SVG-Motive aus dem Learning Hub – zur Ansicht in CAPITAL-AI freigegeben.
+          Keine separate Verkaufs-, Weitergabe- oder Publishing-Lizenz. Die MediaKit-v5-Übernahme
+          bleibt bis zur unabhängigen Prüfung ein Entwurf.
+        </p>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {catalogueLearningUniverseAssets().map(asset => (
+            <figure key={asset.id} data-learning-catalogue-asset={asset.id}
+              className="min-w-0 overflow-hidden rounded-xl border border-slate-600 bg-slate-950 p-2">
+              <img src={asset.publicUrl} width={asset.width} height={asset.height}
+                loading="lazy" decoding="async" alt={'Originalgrafik: ' + asset.alt}
+                className="aspect-[420/260] w-full rounded-lg object-contain" />
+              <figcaption className="mt-2 text-sm font-semibold text-slate-100">{asset.title}</figcaption>
+              <p className="mt-1 break-all text-xs text-slate-400">SHA-256: {asset.sha256.slice(0, 16)}…</p>
+            </figure>
+          ))}
+        </div>
+      </section>
       <a className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-amber-300 px-3 text-base font-semibold text-amber-100 focus-visible:outline-2 focus-visible:outline-cyan-300"
         href={`mailto:support@capital-ai.online?subject=${encodeURIComponent('FinTech News Design Studio · ' + item.name)}`}>
         Angebot für {item.name} anfragen

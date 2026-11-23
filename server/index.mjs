@@ -91,6 +91,7 @@ import {
 import { beginRequest, finishRequest, metricsAuthorized, operationalSnapshot, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 import { cadsSnapshot } from './cads-observability.mjs';
 import { createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
+import { createSkillRoutingCatalog } from './skill-routing-catalog.mjs';
 import { inspectChatBuddyKeys } from './chat-buddy-keys.mjs';
 import { createBuddyGeminiByok } from './buddy-gemini-byok.mjs';
 import { learnStatus } from './chat-buddy-learn.mjs';
@@ -367,6 +368,7 @@ export function createApp(root = defaultRoot, options = {}) {
     : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
+  const skillRoutingCatalog = createSkillRoutingCatalog(auth);
   const profileAvatarUpload = createProfileAvatarUpload({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth, scan: options.profileAvatarScan, transcode: options.profileAvatarTranscode });
   const oauthConsent = createOAuthConsent({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const learningInquiry = createLearningInquiry({ ...options, auth });
@@ -613,6 +615,9 @@ export function createApp(root = defaultRoot, options = {}) {
       infrastructure: infrastructure.status(),
       operations: cadsSnapshot(),
     });
+  }
+  if (url.pathname === '/api/profile/skill-routing') {
+    return skillRoutingCatalog(req, res, json);
   }
   if (url.pathname === '/api/internal/repository-tools' || url.pathname === '/api/internal/repository-tool-updates') {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');

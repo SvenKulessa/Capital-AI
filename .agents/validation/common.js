@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateSkillCatalog } from '../../scripts/skill-bundles.mjs';
+import { advisoryTopology } from '../../shared/domain-advisory-routing.mjs';
 export const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 export const DOMAINS = ['PRODUCT','MARKET','PLATFORM','TRUST','GROWTH'];
 export const SECTIONS = ['Mission','Scope','Inputs','Outputs','Dependencies','Domain Ownership','KPIs','Evidence Requirements','Security Constraints','Failure Conditions','Validation Rules','Acceptance Criteria','Escalation Matrix'];
@@ -55,7 +56,7 @@ export function inspect(root=ROOT) {
    registry.skillGovernanceVersion!=='CAPITAL_AI_SKILL_GOVERNANCE@1') errors.registry.push('schema/authority mismatch');
  if(!registry.domains || Object.keys(registry.domains).length!==5 ||
    DOMAINS.some(d=>!registry.domains[d])) errors.registry.push('exactly five domains required');
- try { validateSkillCatalog(registry); }
+ try { validateSkillCatalog(registry); advisoryTopology(registry); }
  catch (error) { errors.registry.push(error.message); }
  const governs=registry.skillGovernance;
  if(!governs || typeof governs!=='object' || Array.isArray(governs)) errors.registry.push('invalid skillGovernance');
