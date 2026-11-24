@@ -139,3 +139,7 @@ grep -q 'X_BUDGET_EXHAUSTED' "$two"
 pg -f /work/scripts/social-provider-db-x-budget-after.sql
 echo 'PASS: X budget persisted after real PostgreSQL service restart'
 echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
+
+# Isolated campaign consent fixture; no real provider or user records.
+pg -f /work/scripts/social-provider-db-x-consent.sql
+pg -f /work/scripts/social-provider-db-x-consent-test.sql
