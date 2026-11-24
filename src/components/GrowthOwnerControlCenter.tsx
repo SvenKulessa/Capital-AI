@@ -92,6 +92,40 @@ export function GrowthOwnerControlCenter() {
       setPending(false);if(restoreInput.current)restoreInput.current.value='';
     }
   }
+  async function readEngines() {
+    if (pending) return;
+    setPending(true);setMessage('');
+    try {
+      const response=await fetch('/api/profile/growth-intelligence/engine-readback',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(12000)});
+      if(!response.ok)throw new Error('Engine readback unavailable');
+      const data=await response.json();
+      const digest=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
+      const count=(n:unknown,max:number)=>typeof n==='number'&&Number.isSafeInteger(n)&&n>=0&&n<=max;
+      const m=data.market,c=data.content,g=data.langgraph;
+      if(data.schema!=='CAPITAL_AI_OWNER_ENGINE_SNAPSHOT@1'||data.scope!=='BUILD_ARTIFACT_ONLY'||data.private!==true||data.readOnly!==true||data.publicPublishAllowed!==false||
+        m?.state!=='SOURCE_SNAPSHOT_ONLY'||typeof m.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(m.date)||!count(m.homepage,3)||!count(m.overview,3)||!count(m.archive,10000)||!digest(m.editionSha256)||!digest(m.indexSha256)||
+        c?.state!=='DRAFT_ONLY'||!count(c.drafts,100)||!digest(c.sourceSha256)||!digest(c.bundleSha256)||
+        g?.state!=='SOURCE_ONLY_RUNTIME_NOT_PROVEN'||!digest(g.sourceSha256))throw new Error('Invalid engine snapshot');
+      const updates:GrowthRow[]=[
+        {...makeRow('marketnews','Marktnews-Pipeline','MARKET','Live-Scheduler und Rechte-Evidence separat prüfen'),operation:'Build-Snapshot '+m.date,
+          evidence:'Homepage '+m.homepage+' / Überblick '+m.overview+' / Archiv '+m.archive+'; Edition SHA-256 '+m.editionSha256+'; Index '+m.indexSha256},
+        {...makeRow('content','Content Engine','PRODUCT','Entwurfsqualität und Freigaben separat prüfen'),operation:'DRAFT_ONLY · '+c.drafts+' Entwürfe',
+          evidence:'Plan SHA-256 '+c.sourceSha256+'; Bundle '+c.bundleSha256},
+        {...makeRow('langgraph','LangGraph SOLO2','PLATFORM','Laufzeit-Checkpoint und Graph-Evidence separat prüfen'),operation:'Graph-Quelle vorhanden · Runtime NOT_PROVEN',
+          evidence:'SOLO2 Graph-Quellcode SHA-256 '+g.sourceSha256}
+      ];
+      const byId=new Map(updates.map(x=>[x.id,x]));
+      const next=rows.map(row=>{
+        const update=byId.get(row.id);if(!update)return row;byId.delete(row.id);
+        return {...row,name:update.name,domain:update.domain,status:'NOT_PROVEN' as const,origin:'OWNER_NOTE' as const,operation:update.operation,evidence:update.evidence,error:''};
+      });
+      for(const row of byId.values())next.push(row);
+      const nextHistory=appendSnapshot(history,next,new Date().toISOString());
+      setHistory(nextHistory);setView('handoff');
+      setMessage('Build-Artefakte gelesen. Keine laufende Engine, Live-Publikation oder Graph-Ausführung nachgewiesen.');
+    }catch{setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
+    finally{setPending(false);}
+  }
   function download() {
     const url = URL.createObjectURL(new Blob([exportWorkspace(history)], { type: 'application/json' }));
     const link = document.createElement('a');
@@ -129,6 +163,7 @@ export function GrowthOwnerControlCenter() {
     </nav>
     <div className="flex flex-wrap gap-2">
       <button type="button" className={button} disabled={pending || !rows.some(r => r.id === 'ga4')} onClick={() => void readGa4()}> GA4 Read-only prüfen</button>
+      <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={download}>JSON exportieren</button>
       <button type="button" className={button} disabled={pending} onClick={() => fileInput.current?.click()}>JSON importieren (ersetzt Arbeitsstand)</button>
       <input type="file" accept=".json,application/json" ref={fileInput} hidden onChange={e => void upload(e.target.files?.[0])}/>
