@@ -143,6 +143,7 @@ COPY scripts/media ./scripts/media
 COPY scripts/growth/growth-intelligence-image-drafts.mjs scripts/growth/growth-intelligence-image-drafts.test.mjs scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs scripts/growth/next-round-planner.mjs scripts/growth/next-round-planner.test.mjs ./scripts/growth/
 # Offline branded-context drafts and tests (alongside canonical Growth image drafts).
 COPY scripts/growth/brand-kit-graph-drafts.mjs scripts/growth/brand-kit-graph-drafts.test.mjs ./scripts/growth/
+COPY scripts/growth/social-trend-projection.mjs scripts/growth/social-trend-projection.test.mjs ./scripts/growth/
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs scripts/growth/home-editorial-edition.mjs scripts/growth/home-editorial-edition.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
