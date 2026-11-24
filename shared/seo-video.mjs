@@ -1,6 +1,30 @@
-// Video SEO uses only approved public/free videos. Empty until a real licensed
-// video is present; it must never make private or draft lessons indexable.
-export const PUBLIC_LEARNING_VIDEO_INVENTORY = Object.freeze([]);
+// Video SEO uses only approved public/free videos; private or draft lessons stay excluded.
+// EP01: public channel readback + explicit owner Studio/status and rights confirmation.
+export const PUBLIC_LEARNING_VIDEO_INVENTORY = Object.freeze([
+  Object.freeze({
+    "id": "masterclass-01-chartanalyse",
+    "category": "Fintech Deepdive",
+    "title": "Masterclass Chartanalyse und Grundlagen",
+    "youtubeId": "msfyAwCkzOM",
+    "externalYouTubeId": "msfyAwCkzOM",
+    "publicationState": "PUBLISHED",
+    "visibility": "PUBLIC",
+    "licenseState": "VERIFIED",
+    "editorialApproval": "APPROVED",
+    "searchEligible": true,
+    "isFreePreview": true,
+    "providerReadbackVerified": true,
+    "providerChannelId": "UCqaBNJwcfu2cZL3GgG9TLgA",
+    "processingStatus": "SUCCEEDED",
+    "embeddable": true,
+    "assetSha256": "9824afd29439deb661c0bc502e5d10eaf7d8b6d075a7b768f115ab9dcdb3cff4",
+    "providerEvidenceRef": "docs/growth/MASTERCLASS-EP01-PUBLIC-PREVIEW-EVIDENCE-20261124.md#provider-readback",
+    "rightsEvidenceRef": "docs/growth/MASTERCLASS-EP01-PUBLIC-PREVIEW-EVIDENCE-20261124.md#owner-confirmation",
+    "description": "Folge 01 der CAPITAL-AI Masterclass: Grundlagen der Chartanalyse, Candlesticks, OHLC-Kursdaten und Chartstrukturen. Kostenloses Lernvideo (06:45). Ausschließlich zur Finanzbildung; keine Anlageberatung.",
+    "thumbnailUrl": "https://i.ytimg.com/vi_webp/msfyAwCkzOM/maxresdefault.webp",
+    "uploadDate": "2026-11-24T00:00:00.000Z"
+  }),
+]);
 export const PUBLIC_LEARNING_VIDEO_CATEGORIES = Object.freeze(['Architektur', 'Fintech Deepdive', 'Social']);
 export const EXPECTED_YOUTUBE_CHANNEL_ID = 'UCqaBNJwcfu2cZL3GgG9TLgA';
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
