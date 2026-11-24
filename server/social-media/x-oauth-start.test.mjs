@@ -270,3 +270,12 @@ test('X OAuth media.write is an independent fail-closed consent opt-in for verif
   assert.equal(r.status, 503);
   assert.equal(states, 0, 'consent flag must not enable OAuth or create state');
 });
+
+test('growth pilot blocks new OAuth state issuance',async()=>{
+  let issued=0;
+  const handler=createSocialXOAuthStart({env:{...ENV,SOCIAL_X_GROWTH_PILOT_ENABLED:'true'},
+    auth:{verify:async()=>({userId:USER,emailVerified:true}),authorizeIamRole:async()=>true},
+    store:{beginOAuth:async()=>{issued++;throw Error('unexpected')}}});
+  const r=res();await handler.handle(req(),r,url(),json);
+  assert.equal(r.status,403);assert.equal(issued,0);
+});

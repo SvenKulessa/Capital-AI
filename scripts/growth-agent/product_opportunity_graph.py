@@ -322,20 +322,102 @@ def growth_quality(state: GrowthReadState) -> dict:
     }}
 
 
-def build_growth_read_graph():
-    """Real pinned StateGraph, reusing the existing offline worker boundary."""
+def build_offline_review_graph(state_type, source_review, domain_review, quality):
+    """Shared graph topology; no runtime authority or network side effects."""
     from langgraph.graph import END, START, StateGraph
     domains = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
-    graph = StateGraph(GrowthReadState)
-    graph.add_node("source_review", growth_source_review)
+    graph = StateGraph(state_type)
+    graph.add_node("source_review", source_review)
     graph.add_edge(START, "source_review")
     for domain in domains:
-        graph.add_node(domain.lower(), growth_domain_review(domain))
+        graph.add_node(domain.lower(), domain_review(domain))
         graph.add_edge("source_review", domain.lower())
-    graph.add_node("quality", growth_quality)
+    graph.add_node("quality", quality)
     graph.add_edge([domain.lower() for domain in domains], "quality")
     graph.add_edge("quality", END)
     return graph.compile()
+
+
+def build_growth_read_graph():
+    return build_offline_review_graph(GrowthReadState, growth_source_review, growth_domain_review, growth_quality)
+
+
+VIRAL_INPUT_CONTRACT = "CAPITAL_AI_VIRAL_GRAPH_INPUT@1"
+
+
+class ViralReadState(TypedDict, total=False):
+    payload: dict
+    viral_valid: bool
+    opportunity_refs: list[dict]
+    findings: Annotated[list[dict], operator.add]
+    report: dict
+
+
+def viral_source_review(state: ViralReadState) -> dict:
+    """Imported hashes and scores are documentation, never provider authentication."""
+    payload = state.get("payload")
+    denied = {"viral_valid": False, "opportunity_refs": []}
+    keys = {"contractVersion", "status", "analyzedTrendsCount", "opportunities",
+            "publicationState", "publicPublishAllowed", "providerCalls",
+            "additionalCostUsd", "providerAuthentication"}
+    if (not isinstance(payload, dict) or set(payload) != keys
+            or payload["contractVersion"] != VIRAL_INPUT_CONTRACT
+            or payload["status"] not in ("NOT_PROVEN", "SOURCE_RECORDED_NOT_AUTHENTICATED")
+            or payload["publicationState"] != "DRAFT_ONLY" or payload["publicPublishAllowed"] is not False
+            or payload["providerAuthentication"] != "NOT_PROVEN"
+            or type(payload["providerCalls"]) is not int or payload["providerCalls"] != 0
+            or type(payload["additionalCostUsd"]) is not int or payload["additionalCostUsd"] != 0
+            or type(payload["analyzedTrendsCount"]) is not int
+            or not 0 <= payload["analyzedTrendsCount"] <= 1000
+            or not isinstance(payload["opportunities"], list)
+            or len(payload["opportunities"]) > min(64, payload["analyzedTrendsCount"])
+            or (payload["status"] == "NOT_PROVEN" and payload["analyzedTrendsCount"] != 0)):
+        return denied
+    refs = []
+    seen = set()
+    row_keys = {"recordSha256", "productContextSha256", "productSourceSha", "draftSha256",
+                "sourcePlatform", "correlationScore", "review"}
+    for row in payload["opportunities"]:
+        if (not isinstance(row, dict) or set(row) != row_keys
+                or any(not isinstance(row[k], str) or re.fullmatch(r"[0-9a-f]{64}", row[k]) is None
+                       for k in ("recordSha256", "productContextSha256", "draftSha256"))
+                or not valid_sha(row["productSourceSha"])
+                or row["sourcePlatform"] not in ("TikTok", "Instagram", "X", "YouTube")
+                or type(row["correlationScore"]) is not int or not 70 <= row["correlationScore"] <= 100
+                or row["review"] != "REVIEW_REQUIRED" or row["recordSha256"] in seen):
+            return denied
+        seen.add(row["recordSha256"])
+        refs.append(dict(row))
+    return {"viral_valid": True, "opportunity_refs": refs}
+
+
+def viral_domain_review(domain: str):
+    def run(state: ViralReadState) -> dict:
+        details = {"PRODUCT": "Product source references only; runtime claims not authenticated.",
+                   "MARKET": "No market, demand or conversion proof.",
+                   "PLATFORM": "Bounded offline draft references; no provider calls.",
+                   "TRUST": "No imported rights, publish, spend or mutation authority.",
+                   "GROWTH": "Qualified draft references for editorial review only."}
+        return {"findings": [finding(domain, "PASS_WITH_GAPS" if state.get("viral_valid") is True else "BLOCKED", details[domain])]}
+    return run
+
+
+def viral_quality(state: ViralReadState) -> dict:
+    domains = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
+    findings = state.get("findings", [])
+    ok = state.get("viral_valid") is True and all(
+        any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in findings)
+        for domain in domains)
+    refs = state.get("opportunity_refs", []) if ok else []
+    return {"report": {"contractVersion": "CAPITAL_AI_VIRAL_GRAPH_HANDOFF@1",
+                       "engine": "langgraph", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+                       "opportunities": refs, "eligibleForDraftReview": bool(refs),
+                       "providerAuthentication": "NOT_PROVEN_BY_GRAPH", "publicationAllowed": False,
+                       "costActivationAllowed": False, "automaticChanges": False, "attributionEvents": []}}
+
+
+def build_viral_read_graph():
+    return build_offline_review_graph(ViralReadState, viral_source_review, viral_domain_review, viral_quality)
 
 
 def read_growth_input(stream):
@@ -356,7 +438,17 @@ def main():
     inputs = parser.add_mutually_exclusive_group(required=True)
     inputs.add_argument("--input", type=Path)
     inputs.add_argument("--growth-data", type=Path, help="Bounded JSON file, or - for stdin")
+    inputs.add_argument("--viral-data", type=Path, help="Bounded draft-only reference JSON, or - for stdin")
     args = parser.parse_args()
+    if args.viral_data is not None:
+        if args.viral_data == Path("-"):
+            raw = read_growth_input(sys.stdin.buffer)
+        else:
+            with args.viral_data.open("rb") as stream:
+                raw = read_growth_input(stream)
+        result = build_viral_read_graph().invoke({"payload": raw, "findings": []}, {"recursion_limit": 8})
+        print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
+        return
     if args.growth_data is not None:
         if args.growth_data == Path("-"):
             raw = read_growth_input(sys.stdin.buffer)

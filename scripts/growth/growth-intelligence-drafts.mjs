@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { buildGrowthIntelligenceContentDrafts } from '../../src/contracts/growthIntelligenceContent.ts';
+import { buildGrowthIntelligenceContentDrafts, xAcquisitionDraftOverview, forecastXAcquisitionBudget, buildXAcquisitionCandidate } from '../../src/contracts/growthIntelligenceContent.ts';
 
 export const GROWTH_INTELLIGENCE_PLAN_PATH =
   'CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json';
@@ -45,13 +45,47 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
       providerEnabled: false,
     }],
     drafts,
+    xAcquisition: xAcquisitionDraftOverview(drafts),
     ...(dataInput === undefined ? {} : { growthDataLayer: projectGrowthDataLayer(dataInput) }),
   };
+}
+
+// Bounded local JSON input; no raw input, credentials or provider error output.
+function readXPlanningInput() {
+  const limit=16384, bytes=Buffer.alloc(limit+1);
+  let length=0;
+  while(length<=limit) {
+    const count=readSync(0,bytes,length,bytes.length-length,null);
+    if(count===0)break;
+    length+=count;
+    if(length>limit)throw Error('X_ACQUISITION_INPUT_TOO_LARGE');
+  }
+  try { return JSON.parse(bytes.subarray(0,length).toString('utf8')); }
+  catch { throw Error('X_ACQUISITION_INPUT_INVALID'); }
+}
+
+export function planXAcquisitionCandidate(input) {
+  if(!input || Object.keys(input).length!==2 || !Object.hasOwn(input,'contentId')
+    || !Object.hasOwn(input,'editorialBody'))throw Error('X_ACQUISITION_INPUT_INVALID');
+  const draft=buildGrowthIntelligenceDraftBundle().drafts.find(d=>d.contentId===input.contentId && d.channel==='X');
+  if(!draft)throw Error('X_ACQUISITION_CONTENT_UNKNOWN');
+  return buildXAcquisitionCandidate(draft,input.editorialBody);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args=process.argv.slice(2);
   if(args.length===0) process.stdout.write(JSON.stringify(buildGrowthIntelligenceDraftBundle(), null, 2) + '\n');
+  else if(args.length===1 && ['--x-acquisition-forecast','--x-acquisition-candidate'].includes(args[0])) {
+    try {
+      const input=readXPlanningInput();
+      const result=args[0]==='--x-acquisition-forecast'
+        ? forecastXAcquisitionBudget(input) : planXAcquisitionCandidate(input);
+      process.stdout.write(JSON.stringify(result,null,2)+'\n');
+    } catch {
+      process.stderr.write('X_ACQUISITION_PLANNING_REJECTED\n');
+      process.exitCode=1;
+    }
+  }
   else if(args.length===1 && args[0]==='--read-providers') process.stdout.write(JSON.stringify(await collectGrowthProviderData(),null,2)+'\n');
   else if(args.length===2 && args[0]==='--read-providers' && args[1]==='--graph-handoff')
     process.stdout.write(JSON.stringify(await collectGrowthProviderData({includeDraftBundle:false}))+'\n');

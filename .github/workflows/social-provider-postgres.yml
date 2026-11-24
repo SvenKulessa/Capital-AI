@@ -52,4 +52,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Run isolated SQL migration and concurrency tests
         shell: bash
+        env:
+          SOCIAL_DB_TEST_CONTAINER: ${{ job.services.postgres.id }}
         run: bash scripts/social-provider-db-smoke.sh

@@ -71,6 +71,17 @@ export function initialRows(): GrowthRow[] {
       flow: 'Read-only Entwurfskoordination; keine Veröffentlichung' },
     makeRow('langgraph', 'LangGraph SOLO2', 'PLATFORM', 'Checkpoint und Workflow-Evidence abgleichen'),
     { ...makeRow('trust', 'Rechte, Consent, Freigaben', 'TRUST', 'Scope- und Rechte-Evidence prüfen'), priority: 'P0' },
+    { ...makeRow('x-growth-budget', 'X Growth · Budget', 'GROWTH', 'Kontoweite Freigabe, belastbare Recovery und Runtime-Reservierung verifizieren'),
+      priority: 'P0', flow: '30-Tage-Pilot · 20 EUR Obergrenze · keine automatische Aufladung',
+      approvals: 'Owner-Kostenfreigabe, aktuelles Guthaben und Kostenobergrenzen separat belegen',
+      operation: 'Planung; keine produktive Budgetkontrolle behauptet' },
+    { ...makeRow('x-growth-attribution', 'X Growth · Conversion-Funnel', 'GROWTH', 'Kampagnenspezifische GA4-, Supabase- und Stripe-Readbacks abgleichen'),
+      priority: 'P1', flow: 'UTM → consentierte Sessions → Registrierungen → bestätigte bezahlte Abos',
+      auth: 'Quellen getrennt; keine Kundendaten im Workspace; fehlend ist nicht Null',
+      operation: 'Kohorten- und Zuordnungsevidence offen' },
+    { ...makeRow('x-growth-graph', 'X Growth · LangGraph', 'PLATFORM', 'Budget- und Conversion-Evidence in bestehende Graph-Review integrieren'),
+      priority: 'P1', flow: 'Nur Status-Referenzen, keine Publishing- oder Kostenautorität',
+      operation: 'Runtime-Evidence offen' },
     ...publicSurfaceRows(),
   ];
 }
