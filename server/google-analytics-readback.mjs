@@ -3,6 +3,7 @@
 import { createGoogleAnalyticsMcpClient, GA4_MCP_ALLOWED_TOOLS } from './google-analytics-mcp.mjs';
 
 const PATH = '/api/profile/google-analytics-readback';
+const GROWTH_PATH = '/api/profile/growth-intelligence/ga4-readback';
 const CACHE_MS = 5 * 60 * 1000;
 const READBACK_TIMEOUT_MS = 8_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -28,6 +29,8 @@ const OWNER_SAFE_GA4_FAILURES = new Set([
   'GA4_REQUIRED_TOOL_MISSING',
   'GA4_READBACK_TIMEOUT',
   'GA4_INVALID_EVENT_COUNT',
+  'GA4_GROWTH_INVALID_REPORT',
+  'GA4_READBACK_BUSY',
   'GA4_MCP_WRITE_FAILED',
 ]);
 
@@ -223,6 +226,74 @@ export async function buildGoogleAnalyticsReadback({
   });
 }
 
+
+/** Fixed, aggregate-only GA4 acquisition evidence. Never maps GA4 to UMAMI or grants publication. */
+export async function buildGrowthGa4Readback({ client, propertyNumber, now = Date.now } = {}) {
+  if (!client) throw new Error('GA4_CLIENT_REQUIRED');
+  if (!PROPERTY_NUMBER.test(String(propertyNumber || ''))) throw new Error('GA4_PROPERTY_NUMBER_INVALID');
+  const tools = await client.listTools();
+  for (const tool of ['get_account_summaries', 'get_property_details', 'run_report']) {
+    if (!tools.includes(tool)) throw new Error(`GA4_MCP_REQUIRED_TOOL_MISSING_${tool}`);
+  }
+  if (!containsProperty(await client.callTool('get_account_summaries', {}), propertyNumber))
+    throw new Error('GA4_PROPERTY_NOT_ACCESSIBLE');
+  const raw = await client.callTool('get_property_details', { property_id: propertyNumber });
+  if (!containsProperty(raw, propertyNumber)) throw new Error('GA4_PROPERTY_DETAILS_NOT_BOUND');
+  const property = propertyProjection(raw, propertyNumber);
+  const observedAt = new Date(now()).toISOString();
+  const period = { start: '7daysAgo', end: 'yesterday', timeZone: property.timeZone };
+  const report = await client.callTool('run_report', {
+    property_id: propertyNumber,
+    date_ranges: [{ start_date: period.start, end_date: period.end }],
+    dimensions: [],
+    metrics: ['sessions', 'engagedSessions'],
+    limit: 1,
+    return_property_quota: true,
+  });
+  // Only recognize an explicit report envelope and exact metric names/order.
+  function findReport(value, depth = 0) {
+    if (!value || typeof value !== 'object' || depth > 4) return null;
+    if (Array.isArray(value.metricHeaders) || Array.isArray(value.metric_headers)) return value;
+    for (const key of ['result', 'report', 'data', 'response']) {
+      const candidate = findReport(value[key], depth + 1);
+      if (candidate) return candidate;
+    }
+    return null;
+  }
+  const body = findReport(report);
+  const headers = body?.metricHeaders ?? body?.metric_headers;
+  if (!headers || headers.length !== 2 || headers[0]?.name !== 'sessions'
+    || headers[1]?.name !== 'engagedSessions') throw new Error('GA4_GROWTH_INVALID_REPORT');
+  const rows = body.rows ?? [];
+  const rowCount = body.rowCount ?? body.row_count ?? rows.length;
+  if (!Array.isArray(rows) || rows.length > 1 || Number(rowCount) !== rows.length)
+    throw new Error('GA4_GROWTH_INVALID_REPORT');
+  const count = value => {
+    const s = String(value ?? '');
+    const n = /^\d+$/.test(s) ? Number(s) : NaN;
+    if (!Number.isSafeInteger(n) || n < 0) throw new Error('GA4_GROWTH_INVALID_REPORT');
+    return n;
+  };
+  let metrics = null;
+  if (rows.length) {
+    const values = rows[0]?.metricValues ?? rows[0]?.metric_values;
+    if (!Array.isArray(values) || values.length !== 2) throw new Error('GA4_GROWTH_INVALID_REPORT');
+    const sessions = count(values[0]?.value);
+    const engagedSessions = count(values[1]?.value);
+    if (engagedSessions > sessions) throw new Error('GA4_GROWTH_INVALID_REPORT');
+    metrics = { sessions, engagedSessions };
+  }
+  return Object.freeze({
+    schema: 'CAPITAL_AI_GROWTH_GA4_READBACK@1',
+    source: 'GA4_DATA_API',
+    private: true, readOnly: true, observedAt, property, period,
+    status: metrics ? 'PROVIDER_READ_VERIFIED' : 'NOT_PROVEN_NO_ROWS',
+    metrics,
+    attributionAuthority: 'SEPARATE_FROM_UMAMI_GSC_SOCIAL',
+    publicPublishAllowed: false,
+  });
+}
+
 export function createGoogleAnalyticsReadback({
   env = process.env,
   auth,
@@ -230,8 +301,9 @@ export function createGoogleAnalyticsReadback({
   now = Date.now,
 } = {}) {
   const owner = configuredOwner(env);
-  let cache = null;
+  const caches = new Map();
   let inflight = null;
+  let activeKind = null;
 
   async function authorized(req, res) {
     if (!owner) return false;
@@ -245,15 +317,21 @@ export function createGoogleAnalyticsReadback({
     return await auth?.authorizeIamRole?.(req, res, 'owner') === true;
   }
 
-  async function load() {
+  async function load(kind = 'events') {
     const timestamp = now();
+    const cache = caches.get(kind);
     if (cache && timestamp - cache.at < CACHE_MS) return cache.value;
-    if (inflight) return inflight;
-
+    if (inflight) {
+      if (activeKind === kind) return inflight;
+      throw new Error('GA4_READBACK_BUSY');
+    }
+    const propertyNumber = requiredPropertyNumber(env);
+    activeKind = kind;
     let timeout;
-    const providerRead = buildGoogleAnalyticsReadback({
+    const builder = kind === 'growth' ? buildGrowthGa4Readback : buildGoogleAnalyticsReadback;
+    const providerRead = builder({
       client,
-      propertyNumber: requiredPropertyNumber(env),
+      propertyNumber,
       now: () => timestamp,
     });
     const deadline = new Promise((_, reject) => {
@@ -262,19 +340,21 @@ export function createGoogleAnalyticsReadback({
     });
 
     inflight = Promise.race([providerRead, deadline]).then(value => {
-      cache = { at: timestamp, value };
+      caches.set(kind, { at: timestamp, value });
       return value;
     }).finally(() => {
       clearTimeout(timeout);
       client.close?.();
       inflight = null;
+      activeKind = null;
     });
     return inflight;
   }
 
   async function handle(req, res, url, json) {
     const diagnostic = url.pathname === '/api/profile/google-analytics-config-diagnostic';
-    if (url.pathname !== PATH && !diagnostic) return false;
+    const growth = url.pathname === GROWTH_PATH;
+    if (url.pathname !== PATH && !diagnostic && !growth) return false;
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Vary', 'Cookie');
@@ -303,10 +383,10 @@ export function createGoogleAnalyticsReadback({
     }
 
     try {
-      json(res, 200, await load());
+      json(res, 200, await load(growth ? 'growth' : 'events'));
     } catch (error) {
       json(res, 503, {
-        schema: 'CAPITAL_AI_GOOGLE_ANALYTICS_RENDER_READBACK@1',
+        schema: growth ? 'CAPITAL_AI_GROWTH_GA4_READBACK@1' : 'CAPITAL_AI_GOOGLE_ANALYTICS_RENDER_READBACK@1',
         status: 'EVIDENCE_UNAVAILABLE',
         error: 'google_analytics_readback_unavailable',
         reason: safeGa4FailureReason(error),
