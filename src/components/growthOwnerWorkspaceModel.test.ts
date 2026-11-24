@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGraphHandoff } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
 const at = '2026-11-24T12:00:00.000Z';
 const row = initialRows()[0];
 const good = { schema: 'CAPITAL_AI_GROWTH_GA4_READBACK@1', source: 'GA4_DATA_API', private: true, readOnly: true, publicPublishAllowed: false,
@@ -70,4 +70,18 @@ test('graph report rejects forged authority, raw metrics, inconsistent sources a
   ])assert.throws(()=>projectGraphHandoff(JSON.stringify(value),reportSha,initialRows()));
   assert.throws(()=>projectGraphHandoff(JSON.stringify(graphReport),'bad',initialRows()));
   assert.throws(()=>projectGraphHandoff(' '.repeat(16385),reportSha,initialRows()));
+});
+
+test('public surface planning rows are unique, idempotent and never claim live evidence', () => {
+  const audit = publicSurfaceRows();
+  assert.equal(audit.length, 10);
+  assert.equal(new Set(audit.map(r => r.id)).size, 10);
+  assert.ok(audit.every(r => r.status === 'NOT_PROVEN' && r.origin === 'OWNER_NOTE'));
+  const legacy = initialRows().filter(r => !r.id.startsWith('audit-'));
+  assert.deepEqual(addMissingPublicSurfaceRows(addMissingPublicSurfaceRows(legacy)), initialRows());
+  const task = publicSurfaceResearchTask('audit-p0-03');
+  assert.equal(task.schema, 'CAPITAL_AI_OFFLINE_RESEARCH@1');
+  assert.equal(task.domain, 'TRUST');
+  assert.ok(task.query.length <= 300);
+  assert.throws(() => publicSurfaceResearchTask('ga4'));
 });
