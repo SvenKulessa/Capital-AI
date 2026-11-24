@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Activity, KeyRound, Loader2, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
 import { OwnerAgentOperationsPanel } from './OwnerAgentOperationsPanel';
+import { GrowthOwnerControlCenter } from './GrowthOwnerControlCenter';
 
 type Provider = {
   id: string; label: string;
@@ -71,6 +72,7 @@ export function RenderOwnerDashboardPage({ onNavigate }: { onNavigate: (path: st
       {session => session.account?.available === true && session.account.iamRole === 'owner' && session.mfaRequired !== true ? (
         <div className="space-y-5">
           <OwnerAgentOperationsPanel userId={session.user!.id} />
+          {data && <GrowthOwnerControlCenter key={session.user!.id} />}
           <section className="rounded-2xl border border-amber-400/25 bg-[#070b19] p-4 sm:p-5">
             <div className="flex items-center gap-2 font-bold text-amber-200">
               <LockKeyhole className="h-5 w-5" aria-hidden="true" /> Owner Private / Render
