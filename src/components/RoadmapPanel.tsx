@@ -64,7 +64,7 @@ export const RoadmapPanel: React.FC = () => {
       if (!payload || payload.schema !== 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1' ||
           typeof payload.sourceSha !== 'string' || !SOURCE_SHA.test(payload.sourceSha) ||
           payload.repository !== ROADMAP_SNAPSHOT.repository ||
-          typeof payload.observedAt !== 'string' ||
+          typeof payload.observedAt !== 'string' || !Number.isFinite(Date.parse(payload.observedAt)) ||
           !['LIVE', 'CACHED', 'STALE'].includes(String(payload.freshness))) {
         throw new Error('invalid_repository_snapshot');
       }
@@ -83,7 +83,7 @@ export const RoadmapPanel: React.FC = () => {
         setSyncError(payload.freshness === 'STALE');
       }
     } catch {
-      if (!signal?.aborted) setSyncError(true);
+      if (!signal?.aborted) { setRepositoryStatus(null); setSyncError(true); }
     } finally {
       if (!signal?.aborted) {
         setSyncing(false);
@@ -186,7 +186,7 @@ export const RoadmapPanel: React.FC = () => {
       {repositoryStatus?.deployedSha && <p className="text-xs text-slate-400">Webservice: {repositoryStatus.deployedSha.slice(0, 12)}
         {repositoryStatus.deployedSha !== repositoryStatus.sourceSha && <span className="text-amber-300"> · Deployment weicht von main ab</span>}
       </p>}
-      {syncError && <p role="alert" className="text-xs text-amber-300">GitHub-Abgleich fehlgeschlagen oder veraltet. Der zuletzt empfangene Stand ist kein aktueller Verifikationsnachweis.</p>}
+      {syncError && <p role="alert" className="text-xs text-amber-300">GitHub-Abgleich fehlgeschlagen oder veraltet. Kein aktueller Verifikationsnachweis verfügbar.</p>}
       <p className="text-xs text-slate-500">Automatischer Abgleich nach jeweils 10 gemergten PRs, Änderungs-PR mit geprüftem Ergebnis.
         {mergeAudit.state === 'RECONCILED_CODE_AND_DOCUMENTS' && ` ${mergeAudit.unproven} Arbeitspakete mit offenen / nicht auflösbaren Referenzen.`}
         VERIFIED wird nicht aus einem GitHub-HEAD oder einer bloßen Datei-Existenz abgeleitet.</p>

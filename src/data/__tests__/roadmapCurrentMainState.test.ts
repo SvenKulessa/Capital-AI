@@ -552,3 +552,15 @@ test('public surface audit tasks attach to existing packages without changing hi
   assert.match(panel, /NOT_PROVEN/);
   assert.match(panel, /payload\.repository !== ROADMAP_SNAPSHOT\.repository/);
 });
+
+
+test('audit projection reuses the existing delivery-plan task IDs and dependencies', async () => {
+  const { PUBLIC_SURFACE_AUDIT_TASKS } = await import('../publicSurfaceAuditRoadmap');
+  const plan = JSON.parse(readFileSync(new URL('../publicSurfaceDeliveryPlan.json', import.meta.url), 'utf8'));
+  for (const task of plan.tasks) {
+    const row = PUBLIC_SURFACE_AUDIT_TASKS.find(item => item.id === task.id);
+    assert.ok(row);
+    assert.equal(row.milestone, task.milestone);
+    assert.deepEqual(row.dependsOn, task.dependencies);
+  }
+});

@@ -128,7 +128,7 @@ export function RepositoryToolCatalogDashboard() {
         setError(false);
       }
     } catch {
-      if (!signal?.aborted) setError(true);
+      if (!signal?.aborted) { setSnapshot(null); setError(true); }
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
