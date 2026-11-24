@@ -137,6 +137,39 @@ class DurableTests(unittest.TestCase):
             self.assertEqual(http.mutations, 0)
             self.assertIn("merge_denied", result["history"])
 
+    def test_pending_repair_rechecks_current_authority_and_budget(self):
+        from langgraph.checkpoint.sqlite import SqliteSaver
+        from test_auto_loop import Adapter
+        cases = (
+            (Authority(read_only=True), "repair_denied"),
+            (Authority(allow_changes=False), "repair_denied"),
+            (Authority(allow_changes=True, max_repairs=0), "repair_budget_exhausted"),
+        )
+        for resumed_authority, expected_event in cases:
+            with self.subTest(authority=resumed_authority):
+                with tempfile.TemporaryDirectory() as folder:
+                    db = str(Path(folder) / "repair.sqlite3")
+                    config = {"configurable": {"thread_id": "repair42"}, "recursion_limit": 24}
+                    adapter = Adapter(failures=1)
+                    conn = sqlite3.connect(db, check_same_thread=False)
+                    try:
+                        graph = build_graph(adapter, Authority(allow_changes=True),
+                                            checkpointer=SqliteSaver(conn),
+                                            interrupt_after=["test"])
+                        prior = graph.invoke({"task_id": "repair42", "attempts": 0,
+                                              "history": []}, config)
+                        self.assertEqual(prior["status"], "TEST_FAILED")
+                        self.assertEqual(graph.get_state(config).next, ("repair",))
+                    finally:
+                        conn.close()
+                    os.chmod(db, 0o600)
+                    result = execute_durable(adapter, resumed_authority, "repair42", db)
+                    self.assertEqual(result["status"], "BLOCKED")
+                    self.assertIn(expected_event, result["history"])
+                    self.assertNotIn("repair", adapter.calls)
+                    self.assertNotIn("merge", adapter.calls)
+                    self.assertEqual(result["attempts"], 0)
+
     def test_read_only_checkpoint_never_writes_to_github(self):
         with tempfile.TemporaryDirectory() as folder:
             http = FakeTransport()
