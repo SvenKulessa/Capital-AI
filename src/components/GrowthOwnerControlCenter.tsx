@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { appendSnapshot, applyOwnerEdit, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -25,6 +25,7 @@ export function GrowthOwnerControlCenter() {
   const [message, setMessage] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
   const restoreInput = useRef<HTMLInputElement>(null);
+  const graphInput = useRef<HTMLInputElement>(null);
   const [archiveItems, setArchiveItems] = useState<ArchiveItem[]>([]);
   const [archiveReady, setArchiveReady] = useState(false);
   const current = history[history.length - 1];
@@ -133,6 +134,20 @@ export function GrowthOwnerControlCenter() {
     }catch{setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
     finally{setPending(false);}
   }
+  async function importGraph(file:File|undefined) {
+    if(!file||pending)return;
+    setPending(true);
+    try{
+      if(file.size>16384)throw Error('Graph report too large');
+      const bytes=await file.arrayBuffer();
+      const raw=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
+      const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+      const updated=projectGraphHandoff(raw,digest,rows);
+      setHistory(appendSnapshot(history,updated,new Date().toISOString()));setView('handoff');setDraft(null);
+      setMessage('Graph-Statusbericht als Dokumentation übernommen. Kein Provider- oder Runtime-Nachweis; bestehende Live-Readbacks unverändert.');
+    }catch{setMessage('Graph-Import abgelehnt: Schema, Größe oder Inhalt ungültig. Historie unverändert.');}
+    finally{setPending(false);if(graphInput.current)graphInput.current.value='';}
+  }
   function download() {
     const url = URL.createObjectURL(new Blob([exportWorkspace(history)], { type: 'application/json' }));
     const link = document.createElement('a');
@@ -171,6 +186,8 @@ export function GrowthOwnerControlCenter() {
     <div className="flex flex-wrap gap-2">
       <button type="button" className={button} disabled={pending || !rows.some(r => r.id === 'ga4')} onClick={() => void readGa4()}> GA4 Read-only prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
+      <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
+      <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>
       <button type="button" className={button} disabled={pending} onClick={download}>JSON exportieren</button>
       <button type="button" className={button} disabled={pending} onClick={() => fileInput.current?.click()}>JSON importieren (ersetzt Arbeitsstand)</button>
       <input type="file" accept=".json,application/json" ref={fileInput} hidden onChange={e => void upload(e.target.files?.[0])}/>

@@ -89,3 +89,50 @@ export function projectGa4(raw: unknown, row: GrowthRow): GrowthRow {
     error: '', tests: 'Server-Readback-Vertrag geprüft; keine Aussage über andere Quellen',
   };
 }
+
+const graphSources = ['GA4','GSC','INSTAGRAM','YOUTUBE'] as const;
+const graphDigest = z.string().regex(/^[a-f0-9]{64}$/);
+const graphSource = z.object({
+  source:z.enum(graphSources),
+  status:z.enum(['SOURCE_RECORDED_NOT_AUTHENTICATED','BLOCKED_DUPLICATE_SOURCE','NOT_PROVEN_NO_READBACK',
+    'BLOCKED_IDENTITY_NOT_CONFIGURED','BLOCKED_IDENTITY_OR_ENVELOPE','BLOCKED_INVALID_PERIOD',
+    'NOT_PROVEN_STALE','NOT_PROVEN_INVALID_OR_EMPTY_REPORT','NOT_PROVEN_INVALID_METRICS']),
+  transport:z.enum(['DISABLED','AUTH_REQUIRED','RATE_LIMITED','PROVIDER_UNAVAILABLE','INVALID_RESPONSE',
+    'IDENTITY_MISMATCH','INCOMPLETE_PERIOD','READ_RESPONSE_RECEIVED']),
+  evidenceSha256:graphDigest.nullable(),
+}).strict();
+const graphHandoff = z.object({
+  contractVersion:z.literal('CAPITAL_AI_GROWTH_GRAPH_HANDOFF@1'), engine:z.literal('langgraph'),
+  quality:z.enum(['PASS_WITH_GAPS','BLOCKED']), sources:z.array(graphSource).max(4),
+  eligibleForDraftReview:z.boolean(), providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
+  attributionEvents:z.array(z.never()).length(0), publicationAllowed:z.literal(false),
+  costActivationAllowed:z.literal(false), automaticChanges:z.literal(false),
+}).strict();
+
+/** Untrusted offline status-only report; separate rows never overwrite live owner readbacks. */
+export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
+  if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
+  graphDigest.parse(reportSha);
+  const data=graphHandoff.parse(JSON.parse(raw));
+  const recorded=data.sources.filter(s=>s.status==='SOURCE_RECORDED_NOT_AUTHENTICATED');
+  if(data.quality==='BLOCKED'?(data.sources.length!==0||data.eligibleForDraftReview):
+    (data.sources.length!==4||new Set(data.sources.map(s=>s.source)).size!==4||
+     data.eligibleForDraftReview!==(recorded.length>0)))throw Error('Invalid graph report');
+  for(const s of data.sources){
+    const hasRecord=s.status==='SOURCE_RECORDED_NOT_AUTHENTICATED';
+    if(hasRecord?(s.evidenceSha256===null||s.transport!=='READ_RESPONSE_RECEIVED'):s.evidenceSha256!==null)
+      throw Error('Invalid source digest');
+  }
+  const updates:GrowthRow[]=[{
+    ...makeRow('growth-graph-handoff','Growth LangGraph · Import','PLATFORM','Trusted Runtime und Provider-Readbacks separat verifizieren'),
+    operation:'Importierte Graph-Qualität: '+data.quality, flow:'Offline-Graph → Owner-Dokumentation',
+    evidence:'Importdatei SHA-256 '+reportSha, auth:'NOT_PROVEN_BY_GRAPH',
+  }];
+  for(const s of data.sources)updates.push({
+    ...makeRow('graph-source-'+s.source.toLowerCase(),s.source+' · Graph-Import','GROWTH','Provider-Identität und Readback separat verifizieren'),
+    operation:s.status, auth:s.transport, flow:'Quellengetrennte Graph-Referenz; kein Live-Readback',
+    evidence:'Importdatei SHA-256 '+reportSha+(s.evidenceSha256?'; Projektion SHA-256 '+s.evidenceSha256:''),
+  });
+  // Remove stale graph-import sources on a blocked/new report; preserve every other row.
+  return [...rows.filter(r=>r.id!=='growth-graph-handoff'&&!graphSources.some(s=>r.id==='graph-source-'+s.toLowerCase())),...updates];
+}
