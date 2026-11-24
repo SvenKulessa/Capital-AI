@@ -383,6 +383,12 @@ export function buildXAcquisitionCandidate(draft: GrowthIntelligenceDraft, edito
     || editorialBody.normalize('NFC') !== editorialBody) {
     throw Error('X_ACQUISITION_COPY_INVALID');
   }
+  const canonical = draft.contentPlan.campaign.canonicalUrl;
+  if (!['https://capital-ai.online/', 'https://capital-ai.online/learning'].includes(canonical)
+    || !/^CAP-GROW-[0-9]{3}$/.test(draft.contentId)
+    || !/^capital-ai-growth-[0-9]{8}$/.test(draft.socialPackage.campaignId)) {
+    throw Error('X_ACQUISITION_TRACKING_IDENTITY_INVALID');
+  }
   const trackedUrl = growthDraftUtmUrl(draft);
   const bodyWeight = Array.from(editorialBody).reduce((sum, char) => {
     const cp = char.codePointAt(0)!;
