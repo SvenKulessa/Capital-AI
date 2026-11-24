@@ -71,3 +71,47 @@ test('disabled and recovery flags do not touch disk; owner and CSRF gates preced
  assert.equal((await call(api(true),{method:'POST',suffix:'/restore/'+id,payload:backup.data,contentType:'application/octet-stream'})).status,201);
  assert.equal((await call(api(true),{method:'POST',payload:raw,contentType:'text/plain'})).status,415);
 }));
+
+test('fresh Node processes recover encrypted history after restart and independent restore',async()=>{
+ const {execFile}=await import('node:child_process');
+ const {promisify}=await import('node:util');
+ const run=promisify(execFile);
+ const base=await mkdtemp(join(tmpdir(),'growth-restart-'));
+ const moduleUrl=new URL('./growth-owner-evidence-archive.mjs',import.meta.url).href;
+ // Only synthetic fixtures. Child processes share no memory, environment secrets or live mount.
+ const program=`
+ import assert from 'node:assert/strict';
+ import {readFile,writeFile,stat} from 'node:fs/promises';
+ const {createGrowthEvidenceArchive}=await import(process.argv[1]);
+ const [root,owner,key,operation,fixture,backup,id]=process.argv.slice(2);
+ const vault=createGrowthEvidenceArchive({root,ownerId:owner,keyHex:key});
+ if(operation==='put'){
+   const bytes=await readFile(fixture);assert.equal((await vault.put(bytes)).id,id);
+   await writeFile(backup,await vault.backup(id),{mode:0o600,flag:'wx'});
+ }else if(operation==='restore'){
+   assert.equal((await vault.restore(id,await readFile(backup))).id,id);
+ }else if(operation==='read'){
+   assert.deepEqual(await vault.read(id),await readFile(fixture));
+   assert.deepEqual((await vault.list()).map(x=>x.id),[id]);
+   assert.deepEqual(await vault.backup(id),await readFile(backup));
+   assert.equal((await stat(root)).mode&0o777,0o700);
+   assert.equal((await stat(root+'/'+id+'.caige')).mode&0o777,0o600);
+ }else if(operation==='deny'){
+   await assert.rejects(vault.read(id));
+ }else throw Error('INVALID_OPERATION');
+ `;
+ const fixture=join(base,'synthetic.json'),backup=join(base,'backup.caige');
+ const source=join(base,'source'),restored=join(base,'restored');
+ const invoke=(root,operation,owner=ownerId,key=keyHex)=>run(process.execPath,
+  ['--input-type=module','-e',program,moduleUrl,root,owner,key,operation,fixture,backup,id],
+  {env:{PATH:process.env.PATH||''},timeout:15000,maxBuffer:8192});
+ try{
+   await writeFile(fixture,raw,{mode:0o600,flag:'wx'});
+   await invoke(source,'put');
+   await invoke(source,'read');
+   await invoke(restored,'restore');
+   await invoke(restored,'read');
+   await invoke(restored,'deny',other);
+   await invoke(restored,'deny',ownerId,'b5'.repeat(32));
+ }finally{await rm(base,{recursive:true,force:true});}
+});
