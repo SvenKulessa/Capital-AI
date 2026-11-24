@@ -47,12 +47,15 @@ async function providerJson(fetchImpl, uri, init) {
   must(response.ok, 'x_provider_rejected');
   return data;
 }
-export async function resolveOwnerXCredentials({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
+export async function resolveOwnerXCredentials({ edge, identity, jwt, env, fetchImpl, edgeFactory,
+  expectedAccountId, allowRefresh = true }) {
   let row = await edge.invoke('x_credentials', { userId: identity.userId });
   must(row?.handle === EXPECTED_HANDLE && XID.test(row?.accountId || '')
-    && typeof row?.accessCipher === 'string', 'x_wrong_connected_account');
+    && typeof row?.accessCipher === 'string'
+    && (!expectedAccountId || row.accountId === expectedAccountId), 'x_wrong_connected_account');
   let refreshed = false;
   if (Date.parse(row.expiresAt) <= Date.now() + 300000) {
+    must(allowRefresh, 'x_refresh_not_available');
     const result = await refreshOwnerXForWorkload({
       env, userId: identity.userId, userAccessToken: jwt, fetchImpl, edgeFactory,
       channel: PUBLISH_CHANNEL });
