@@ -26,7 +26,7 @@ function parseWorkspace(bytes){
     for(const r of s.rows){
       if(!exact(r,fields)||typeof r.id!=='string'||!/^[a-z0-9-]{1,60}$/.test(r.id)||ids.has(r.id)||
         typeof r.name!=='string'||r.name.length<1||r.name.length>120||!domains.has(r.domain)||!states.has(r.status)||
-        !['P0','P1','P2'].includes(r.priority)||!['OWNER_NOTE','GA4_READBACK'].includes(r.origin)||
+        !['P0','P1','P2'].includes(r.priority)||!['OWNER_NOTE','GA4_READBACK','GSC_READBACK'].includes(r.origin)||
         fields.slice(5,15).some(k=>typeof r[k]!=='string'||r[k].length>1000))throw Error('INVALID_ROW');
       // Archive is documentation, not a live provider attestation. Reject obvious credential material.
       if(fields.some(k=>/(?:Bearer\s+[A-Za-z0-9._-]{8,}|github_pat_|gh[pousr]_[A-Za-z0-9]{8,}|sk-(?:proj-)?[A-Za-z0-9_-]{12,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|[?&](?:access_token|api_key|client_secret)=)/i.test(r[k])))throw Error('SECRET_PATTERN');

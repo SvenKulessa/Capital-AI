@@ -1,4 +1,8 @@
-"""Synthetic negative tests for Issue #874 source-bound LangGraph review."""
+"""Synthetic negative tests for Issue #874 source-bound LangGraph review.
+
+Keep this suite Python-only for the unactivated offline worker image.
+Cross-language subprocess coverage belongs to host CI in test_growth_streaming_e2e.py.
+"""
 import importlib.util
 import io
 import json
