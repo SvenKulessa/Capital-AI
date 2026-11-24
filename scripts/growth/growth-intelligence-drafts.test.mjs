@@ -158,9 +158,10 @@ test('provider errors remain isolated; missing days do not become a measured zer
     GROWTH_YOUTUBE_READ_ENABLED:'true',GROWTH_YOUTUBE_CHANNEL_ID:identities.YOUTUBE,
     GROWTH_YOUTUBE_READ_TOKEN:fakeToken,
   },now:()=>Date.parse(asOf),fetchImpl:async(url)=>{
-    if(url.startsWith('https://www.googleapis.com'))return jsonResponse({error:'private-secret'},403);
-    if(url.startsWith('https://graph.facebook.com')&&url.includes('?fields=id'))return jsonResponse({id:'1234'});
-    if(url.startsWith('https://graph.facebook.com'))return jsonResponse({data:[
+    const endpoint=new URL(url);
+    if(endpoint.origin==='https://www.googleapis.com')return jsonResponse({error:'private-secret'},403);
+    if(endpoint.origin==='https://graph.facebook.com'&&endpoint.searchParams.get('fields')==='id')return jsonResponse({id:'1234'});
+    if(endpoint.origin==='https://graph.facebook.com')return jsonResponse({data:[
       {name:'reach',period:'day',total_value:{value:15}},
       {name:'accounts_engaged',period:'day',total_value:{value:2}}]});
     return jsonResponse({columnHeaders:[{name:'day'},{name:'views'},{name:'estimatedMinutesWatched'}],rows:[['2026-11-20',1,2]]});
