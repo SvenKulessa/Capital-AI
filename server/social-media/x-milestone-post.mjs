@@ -147,6 +147,7 @@ export async function publishXMilestone({
   const transport = createSocialProviderPublishTransport({
     env: { ...env, SOCIAL_PROVIDER_PUBLISH_ENABLED: 'true',
       SOCIAL_X_PUBLISH_ENABLED: 'true' }, fetchImpl,
+    xReservedContentKey: budgeted ? MILESTONE_CONTENT_KEY : null,
   });
   const receipt = await transport.submit({ channel: 'X',
     accessToken: credentials.accessToken, metadata: { caption: contentText },
