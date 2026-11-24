@@ -66,19 +66,24 @@ export function publicVideoSchema(video) {
   });
 }
 // Use one fail-closed admission set for browser embeds and SEO VideoObject.
-// Only one free PUBLIC preview per category; public YouTube cannot paywall lessons.
+// Default: one free PUBLIC preview per category. Owner-requested EP01 + EP02
+// are the sole two-video exception; every entry still passes publicVideoSchema.
+// Public YouTube cannot paywall lessons.
+const MASTERCLASS_PUBLIC_PAIR = new Set(['msfyAwCkzOM', 'AMeuY4P11Gw']);
 /** @param {readonly any[]} [videos] */
 export function admittedPublicLearningVideos(videos = PUBLIC_LEARNING_VIDEO_INVENTORY) {
   if (!Array.isArray(videos)) return [];
   const seenIds = new Set();
-  const seenCategories = new Set();
+  const firstByCategory = new Map();
   return videos.filter(video => {
     if (!video || typeof video.id !== 'string' || !video.id.trim() ||
       !PUBLIC_LEARNING_VIDEO_CATEGORIES.includes(video.category) ||
-      !publicVideoSchema(video) || seenIds.has(video.youtubeId) ||
-      seenCategories.has(video.category)) return false;
+      !publicVideoSchema(video) || seenIds.has(video.youtubeId)) return false;
+    const first = firstByCategory.get(video.category);
+    if (first && !(video.category === 'Fintech Deepdive' &&
+      MASTERCLASS_PUBLIC_PAIR.has(first) && MASTERCLASS_PUBLIC_PAIR.has(video.youtubeId))) return false;
     seenIds.add(video.youtubeId);
-    seenCategories.add(video.category);
+    if (!first) firstByCategory.set(video.category, video.youtubeId);
     return true;
   });
 }
