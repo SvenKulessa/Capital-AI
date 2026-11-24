@@ -34,7 +34,7 @@ export function GrowthOwnerControlCenter() {
   const before = history.find(s => s.version === baseline) ?? history[0];
   function save(row: GrowthRow) {
     const next = rows.some(r => r.id === row.id) ? rows.map(r => r.id === row.id ? row : r) : [...rows, row];
-    setHistory(h => appendSnapshot(h, next, new Date().toISOString()));
+    setHistory(appendSnapshot(history, next, new Date().toISOString()));
   }
   function saveDraft() {
     if (!draft) return;
@@ -63,20 +63,27 @@ export function GrowthOwnerControlCenter() {
     if (pending) return;
     setPending(true);
     setMessage('');
+    let writeConfirmed=false;
+    const digestText=async(raw:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw))),b=>b.toString(16).padStart(2,'0')).join('');
     try {
       if (id && !/^[a-f0-9]{64}$/.test(id)) throw new Error('Invalid archive id');
       if (mode === 'restore' && (!id || !file || file.size > 7_000_000)) throw new Error('Invalid backup');
       const target = mode === 'load' ? archivePath + '/file/' + id : mode === 'restore' ? archivePath + '/restore/' + id : archivePath;
       const write = mode === 'save' || mode === 'restore';
+      const raw = mode === 'save' ? exportWorkspace(history) : undefined;
+      const expected = raw === undefined ? id : await digestText(raw);
       const response = await fetch(target, {method: write ? 'POST' : 'GET', credentials:'same-origin',cache:'no-store',
         headers: {Accept:'application/json', ...(write ? {'Content-Type':mode==='restore'?'application/octet-stream':'application/json'} : {})},
-        body: mode==='save'?exportWorkspace(history):mode==='restore'?file:undefined, signal:AbortSignal.timeout(20000)});
+        body: mode==='save'?raw:mode==='restore'?file:undefined, signal:AbortSignal.timeout(20000)});
       if (!response.ok) throw new Error('Archive unavailable');
       if (mode === 'load') {
-        const imported=importWorkspace(await response.text());
+        const raw=await response.text();
+        if(await digestText(raw)!==id)throw new Error('Archive digest mismatch');
+        const imported=importWorkspace(raw);
         setHistory(imported); setBaseline(imported[0].version); setDraft(null); setView('matrix');
         setMessage('Historie geladen; frühere VERIFIED-Angaben müssen erneut zurückgelesen werden.');
       } else {
+        if(write){const receipt=await response.json();if(receipt.archived!==true||receipt.authority!=='DOCUMENTATION_ONLY'||receipt.id!==expected||!Number.isSafeInteger(receipt.version)||receipt.version<1)throw new Error('Invalid write receipt');writeConfirmed=true;}
         const inventory = mode==='list' ? response : await fetch(archivePath,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(20000)});
         if (!inventory.ok) throw new Error('Archive unavailable');
         const data=await inventory.json();
@@ -87,7 +94,7 @@ export function GrowthOwnerControlCenter() {
       }
     } catch {
       setArchiveReady(false);setArchiveItems([]);
-      setMessage('Archiv nicht verfügbar oder Eingabe ungültig. Lokaler Arbeitsstand bleibt erhalten. Aktivierung und Recovery-Evidence separat prüfen.');
+      setMessage(writeConfirmed?'Archiv-Schreibreceipt bestätigt; Inventar-Readback nicht nachgewiesen.':'Archiv nicht verfügbar oder Eingabe ungültig. Lokaler Arbeitsstand bleibt erhalten. Aktivierung und Recovery-Evidence separat prüfen.');
     } finally {
       setPending(false);if(restoreInput.current)restoreInput.current.value='';
     }
