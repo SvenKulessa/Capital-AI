@@ -2,6 +2,8 @@ import { VOCABULARY_PUBLIC_COUNT } from './shared/vocabulary-metadata.mjs';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { assertKnownPublicSourceInventory, enforcePublicBuildInventory } from './server/public-artifact-policy.mjs';
 import {defineConfig, Plugin} from 'vite';
 import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
 import { licenseEnginePlugin } from './scripts/license-engine.mjs';
@@ -14,6 +16,24 @@ import homeEditorialEdition from './src/features/home/homeEditorialEdition.json'
 import { HOME_PUBLIC_DISPLAY_REVIEWS } from './src/features/home/homeEditorialRightsLedger.mjs';
 import { HOME_GRAPHIC_OWNER_GRANTS } from './src/features/home/homeGraphicOwnerGrants.ts';
 import { validateHomeEditorialAssets } from './src/features/home/validateHomeEditorialAssets.ts';
+
+function publicArtifactInventoryPlugin(): Plugin {
+  let publicDir: string;
+  let outputDir: string;
+  return {
+    name: 'public-artifact-inventory',
+    apply: 'build',
+    enforce: 'post',
+    configResolved(config) {
+      publicDir = config.publicDir;
+      outputDir = path.resolve(config.root, config.build.outDir);
+    },
+    async buildStart() { await assertKnownPublicSourceInventory(publicDir); },
+    async writeBundle(_options, bundle) {
+      await enforcePublicBuildInventory(outputDir, Object.keys(bundle));
+    },
+  };
+}
 
 function homeEditorialAssetsPlugin(): Plugin {
   let publicDir: string;
@@ -53,10 +73,11 @@ function chunkCycleGuard(): Plugin {
       }));
       // Same uncompressed 500 kB threshold as Vite's default warning; do not hide regressions.
       for (const chunk of chunks) if (chunk.bytes > 500_000) this.error(`JavaScript chunk exceeds 500 kB: ${chunk.fileName} (${chunk.bytes} bytes)`);
-      this.emitFile({ type: 'asset', fileName: 'bundle-evidence.json', source: JSON.stringify({
+      mkdirSync('security-reports', { recursive: true });
+      writeFileSync('security-reports/bundle-evidence.json', JSON.stringify({
         schemaVersion: 1, scope: 'BUILD_CHUNK_GRAPH_NOT_RUNTIME_LATENCY', budgetBytes: 500_000,
         staticCycles: false, chunks,
-      }, null, 2) + '\n' });
+      }, null, 2) + '\n');
     },
   };
 }
@@ -142,10 +163,11 @@ function chatBuddyKeyPlugin(): Plugin {
 export default defineConfig(() => {
   return {
     define: { __VOCABULARY_PUBLIC_COUNT__: JSON.stringify(VOCABULARY_PUBLIC_COUNT) },
-    plugins: [react(), tailwindcss(), advisorApiPlugin(), chatBuddyKeyPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard(), homeEditorialAssetsPlugin()],
+    plugins: [react(), tailwindcss(), advisorApiPlugin(), chatBuddyKeyPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard(), homeEditorialAssetsPlugin(), publicArtifactInventoryPlugin()],
     // Separate only the leaf I18N data catalog, not React, Motion or shared runtime code.
     // Retain strict 500 kB chunk budget and acyclic module-graph validation.
     build: {
+      sourcemap: false,
       rolldownOptions: {
         output: {
           codeSplitting: {
