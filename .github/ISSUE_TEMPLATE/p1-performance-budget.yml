@@ -1,0 +1,61 @@
+{
+  "name": "P1 | Performance Budget",
+  "description": "Track P1-04 delivery and evidence without adding approval gates.",
+  "title": "[P1-04] ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "## P1-04 · PLATFORM\nPlan: CAI-PUBLIC-SURFACE@1 · M2\nDependencies: P1-01, P1-02. Use existing issues and PRs before creating duplicates. Do not post confidential security details, secrets or customer data. Acceptance criteria are checked at completion, not issue creation."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "scope",
+      "attributes": {
+        "label": "Scope and user impact",
+        "description": "Public-safe summary; use approved private reporting for sensitive evidence."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "links",
+      "attributes": {
+        "label": "Existing issue / PR references",
+        "description": "Link existing work and dependencies; assign the actual milestone in GitHub when available."
+      }
+    },
+    {
+      "type": "checkboxes",
+      "id": "acceptance",
+      "attributes": {
+        "label": "Acceptance criteria (check at completion)",
+        "options": [
+          {
+            "label": "Mobile lab profile is reproducible"
+          },
+          {
+            "label": "LCP, CLS and interaction timing are measured"
+          },
+          {
+            "label": "Field p75 evidence is distinguished from synthetic metrics"
+          },
+          {
+            "label": "Existing chunk budget remains intact"
+          }
+        ]
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "evidence",
+      "attributes": {
+        "label": "Evidence and rollback",
+        "description": "Public-safe test references, commit SHA, CI run and separate production readback; leave unproven results open."
+      }
+    }
+  ]
+}

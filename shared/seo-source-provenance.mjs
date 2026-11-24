@@ -19,8 +19,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: 'c385d667c66cc02ca92dbaf3becb2ee6f535fed884984a76d725b5c4b5b54d59',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: '97da636848fcedc9566b8e1ef18809d43dbbacfd',
-    contentSha256: '4b57c01decdb2bf5408407eeebdb26abf6c548f5f3982388537900c2f9009cd8',
+    sourceBlobSha: '2b997c9f26f4160d4011d225d6053e220754bfe5',
+    contentSha256: 'a24b15061236a87c35c5f1ea08c36c38a65f440d7dd2b7a06bb05bb8c3d07a6b',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
     sourceBlobSha: '6aa8da4597ba971d4fccf1d24c83ec369740b93e', contentSha256: '22d78321820411193eb42b053515f803b034046e451c31c2e148da159c417f65',
@@ -69,7 +69,7 @@ const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '0e809eaf86887dbc990b70fc18582bd73b6db821b58594d40aa8b9f7a565027b',
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '99d4c8d690867e44917152117eecf455da8964b71c414b96f19efb9e15e256dd',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
-  'index.html|src/features/home/HomePage.tsx': '2ce3527312ad2a4e9b9b746040722f78b4a90c54fa7e77c850392782b24724a1',
+  'index.html|src/features/home/HomePage.tsx': 'b3c2d5ea2cb63542fcfb463a5fec24b8b7726c55cff61107d9f879588bcb6eab',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '20af20e9dfb2739d828fb8bf41146fe6abbedfc0dc46cc4a09d6adcd73a095bd',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',
