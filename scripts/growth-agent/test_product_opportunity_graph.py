@@ -146,5 +146,72 @@ class LocalRagTests(unittest.TestCase):
         self.assertFalse(result["report"]["publicationAllowed"])
 
 
+def growth_payload():
+    sources = [{"source": source, "status": "NOT_PROVEN_NO_READBACK",
+                "metrics": None, "evidenceSha256": None} for source in graph.GROWTH_SOURCE_METRICS]
+    sources[0] = {"source": "GA4", "identity": "properties/123", "startDate": "2026-11-17",
+                  "endDate": "2026-11-23", "observedAt": "2026-11-24T04:00:00.000Z",
+                  "metrics": {"sessions": 9, "engagedSessions": 3}, "status": graph.GROWTH_RECORDED,
+                  "evidenceSha256": "a" * 64}
+    transport = [{"source": s["source"], "status": "READ_RESPONSE_RECEIVED" if i == 0 else "AUTH_REQUIRED"}
+                 for i, s in enumerate(sources)]
+    return {"contractVersion": graph.GROWTH_READ_CONTRACT, "transport": transport,
+            "collectionMode": "EXPLICIT_READ_ONLY", "publicPublishAllowed": False,
+            "growthDataLayer": {"contractVersion": graph.GROWTH_DATA_CONTRACT,
+                                "asOf": "2026-11-24T04:00:00.000Z", "sources": sources,
+                                "publicPublishAllowed": False, "automaticRecommendationPromotion": False,
+                                "attributionEvents": []}}
+
+
+class GrowthReadGraphTests(unittest.TestCase):
+    def test_partial_provider_batch_preserves_other_sources(self):
+        result = graph.growth_source_review({"payload": growth_payload()})["source_status"]
+        self.assertEqual(len(result), 4)
+        self.assertEqual(result[0]["status"], graph.GROWTH_RECORDED)
+        self.assertEqual(result[1]["transport"], "AUTH_REQUIRED")
+        self.assertNotIn("metrics", result[0])
+
+    def test_invalid_source_identity_period_metrics_and_status_fail_closed(self):
+        cases = [("identity", "properties/0"), ("endDate", "2026-11-31"),
+                 ("observedAt", "not-a-date"), ("status", []),
+                 ("metrics", {"sessions": 3, "engagedSessions": 9}),
+                 ("metrics", {"sessions": 9.5, "engagedSessions": 3})]
+        for key, value in cases:
+            with self.subTest(key=key, value=value):
+                payload = growth_payload()
+                payload["growthDataLayer"]["sources"][0][key] = value
+                self.assertEqual(graph.growth_source_review({"payload": payload})["source_status"], [])
+        payload = growth_payload()
+        payload["transport"][0]["status"] = []
+        self.assertEqual(graph.growth_source_review({"payload": payload})["source_status"], [])
+        payload = growth_payload()
+        payload["growthDataLayer"]["asOf"] = "2026-11-27T04:00:00.000Z"
+        self.assertEqual(graph.growth_source_review({"payload": payload})["source_status"], [])
+
+    def test_actual_growth_graph_never_grants_publish_spend_or_attribution(self):
+        try:
+            from langgraph.graph import StateGraph
+        except ImportError:
+            self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
+        _ = StateGraph
+        graph_instance = graph.build_growth_read_graph()
+        payload = growth_payload()
+        report = graph_instance.invoke({"payload": payload, "findings": []},
+                                       {"recursion_limit": 8})["report"]
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertTrue(report["eligibleForDraftReview"])
+        self.assertEqual(report["providerAuthentication"], "NOT_PROVEN_BY_GRAPH")
+        self.assertFalse(report["publicationAllowed"])
+        self.assertFalse(report["costActivationAllowed"])
+        self.assertFalse(report["automaticChanges"])
+        self.assertEqual(report["attributionEvents"], [])
+        payload["transport"][0]["status"] = []
+        denied = graph_instance.invoke({"payload": payload, "findings": []},
+                                       {"recursion_limit": 8})["report"]
+        self.assertEqual(denied["quality"], "BLOCKED")
+        self.assertFalse(denied["eligibleForDraftReview"])
+
+
+
 if __name__ == "__main__":
     unittest.main()
