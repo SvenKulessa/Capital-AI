@@ -84,4 +84,30 @@ pg -f /work/scripts/social-token-refresh-db.sql
 pg -f /work/scripts/youtube-private-receipt-recovery-db.sql
 pg -f /work/supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql
 pg -f /work/scripts/youtube-privacy-revocation-db.sql
+
+# CAI-X-GROWTH@1 — isolated account-wide budget contract, no real provider calls.
+pg -f /work/scripts/social-provider-db-x-budget.sql
+pg -f /work/scripts/social-provider-db-x-budget-data.sql
+budget_claim() {
+  pg -At -c "SET ROLE service_role; SELECT public.capital_x_growth_reserve('d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101','991',repeat('$1',64));"
+}
+# Distinct content digests compete for the final EUR of an account-wide budget.
+budget_claim c > "$one" 2>&1 &
+budget_pid_one=$!
+budget_claim d > "$two" 2>&1 &
+budget_pid_two=$!
+budget_ok_one=0; budget_ok_two=0
+if wait "$budget_pid_one"; then budget_ok_one=1; fi
+if wait "$budget_pid_two"; then budget_ok_two=1; fi
+if [[ "$((budget_ok_one + budget_ok_two))" -ne 1 ]]; then
+  echo 'X_BUDGET_PARALLEL_CAP_BROKEN' >&2
+  cat "$one" "$two" >&2; exit 1
+fi
+grep -q 'X_BUDGET_EXHAUSTED' "$one" "$two"
+# New independent connection, no receipt and no process state: a simulated
+# lost response retains the durable reservation; a duplicate cannot re-claim.
+if [[ "$budget_ok_one" -eq 1 ]]; then winner=c; else winner=d; fi
+budget_claim "$winner" > "$one"
+grep -q '"claimed": false' "$one"
+pg -f /work/scripts/social-provider-db-x-budget-after.sql
 echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
