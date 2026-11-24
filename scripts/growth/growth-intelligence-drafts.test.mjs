@@ -204,3 +204,6 @@ test('graph-only handoff excludes draft bundle and retains independent disabled 
   assert.equal(result.publicPublishAllowed,false);
   assert.deepEqual(result.growthDataLayer.attributionEvents,[]);
 });
+
+// Offline per-post trend projection; no provider or publication access.
+import './social-trend-projection.test.mjs';
