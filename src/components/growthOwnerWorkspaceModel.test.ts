@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGsc, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
 const at = '2026-11-24T12:00:00.000Z';
 const row = initialRows()[0];
 const good = { schema: 'CAPITAL_AI_GROWTH_GA4_READBACK@1', source: 'GA4_DATA_API', private: true, readOnly: true, publicPublishAllowed: false,
@@ -84,4 +84,19 @@ test('public surface planning rows are unique, idempotent and never claim live e
   assert.equal(task.domain, 'TRUST');
   assert.ok(task.query.length <= 300);
   assert.throws(() => publicSurfaceResearchTask('ga4'));
+});
+
+test('GSC direct owner report preserves source, import downgrade and missing versus zero',()=>{
+  const gsc=initialRows().find(r=>r.id==='gsc')!;
+  const report={schema:'CAPITAL_AI_GROWTH_GSC_READBACK@1',source:'GSC_SEARCH_ANALYTICS_API',private:true,readOnly:true,
+    publicPublishAllowed:false,attributionAuthority:'SEPARATE_FROM_GA4_UMAMI_SOCIAL',property:'sc-domain:capital-ai.online',
+    observedAt:at,status:'PROVIDER_READ_VERIFIED',transport:'READ_RESPONSE_RECEIVED',period:{startDate:'2026-11-14',endDate:'2026-11-20'},
+    metrics:{clicks:0,impressions:10,ctr:0,position:5},evidenceSha256:'a'.repeat(64)};
+  const projected=projectGsc(report,gsc);
+  assert.equal(projected.status,'VERIFIED');assert.equal(projected.origin,'GSC_READBACK');
+  assert.equal(importWorkspace(exportWorkspace(appendSnapshot([],[projected],at)))[0].rows[0].status,'NOT_PROVEN');
+  assert.equal(projectGsc({...report,status:'NOT_PROVEN',transport:'AUTH_REQUIRED',period:null,metrics:null,evidenceSha256:null},gsc).status,'NOT_PROVEN');
+  for(const v of [{...report,property:'sc-domain:other.example'},{...report,publicPublishAllowed:true},
+    {...report,metrics:{...report.metrics,ctr:0.8}},{...report,evidenceSha256:null}])assert.throws(()=>projectGsc(v,gsc));
+  assert.throws(()=>projectGsc(report,row));
 });
