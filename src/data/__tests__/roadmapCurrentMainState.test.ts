@@ -550,7 +550,7 @@ test('public surface audit tasks attach to existing packages without changing hi
   const panel = readFileSync(new URL('../../components/RoadmapPanel.tsx', import.meta.url), 'utf8');
   assert.match(panel, /auditTasksForPackage/);
   assert.match(panel, /NOT_PROVEN/);
-  assert.match(panel, /payload\.repository !== ROADMAP_SNAPSHOT\.repository/);
+  assert.match(panel, /isRepositoryReadback\(data, ROADMAP_SNAPSHOT\.repository\)/);
 });
 
 
@@ -563,4 +563,14 @@ test('audit projection reuses the existing delivery-plan task IDs and dependenci
     assert.equal(row.milestone, task.milestone);
     assert.deepEqual(row.dependsOn, task.dependencies);
   }
+});
+
+
+test('shared repository readback rejects wrong identity, SHA, timestamps and unknown freshness', async () => {
+  const { isRepositoryReadback } = await import('../controlCenterRepositoryReadback');
+  const repository = 'SvenKulessa/Capital-AI';
+  const valid = { schema: 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1', repository, sourceSha: 'a'.repeat(40), observedAt: '2026-11-24T18:00:00Z', freshness: 'LIVE' };
+  assert.equal(isRepositoryReadback(valid, repository), true);
+  for (const freshness of ['CACHED', 'STALE']) assert.equal(isRepositoryReadback({ ...valid, freshness }, repository), true);
+  for (const invalid of [null, [], {}, { ...valid, repository: 'other/repo' }, { ...valid, sourceSha: 'invalid' }, { ...valid, observedAt: 'invalid' }, { ...valid, freshness: 'UNKNOWN' }, { ...valid, schema: 'wrong' }]) assert.equal(isRepositoryReadback(invalid, repository), false);
 });

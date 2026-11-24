@@ -12,7 +12,7 @@ export const rowSchema = z.object({
   status: z.enum(statuses),
   endpoint: note, auth: note, flow: note, tests: note, error: note,
   dependencies: note, approvals: note, operation: note, next: note, evidence: note,
-  origin: z.enum(['OWNER_NOTE', 'GA4_READBACK']),
+  origin: z.enum(['OWNER_NOTE', 'GA4_READBACK', 'GSC_READBACK']),
 }).strict();
 export type GrowthRow = z.infer<typeof rowSchema>;
 const snapshotSchema = z.object({
@@ -162,4 +162,32 @@ export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow
   });
   // Remove stale graph-import sources on a blocked/new report; preserve every other row.
   return [...rows.filter(r=>r.id!=='growth-graph-handoff'&&!graphSources.some(s=>r.id==='graph-source-'+s.toLowerCase())),...updates];
+}
+
+const gscSchema=z.object({
+  schema:z.literal('CAPITAL_AI_GROWTH_GSC_READBACK@1'),source:z.literal('GSC_SEARCH_ANALYTICS_API'),
+  private:z.literal(true),readOnly:z.literal(true),publicPublishAllowed:z.literal(false),
+  attributionAuthority:z.literal('SEPARATE_FROM_GA4_UMAMI_SOCIAL'),property:z.literal('sc-domain:capital-ai.online'),
+  observedAt:z.iso.datetime(),status:z.enum(['PROVIDER_READ_VERIFIED','NOT_PROVEN']),
+  transport:z.enum(['DISABLED','AUTH_REQUIRED','RATE_LIMITED','PROVIDER_UNAVAILABLE','INVALID_RESPONSE','IDENTITY_MISMATCH','INCOMPLETE_PERIOD','READ_RESPONSE_RECEIVED']),
+  period:z.object({startDate:z.iso.date(),endDate:z.iso.date()}).strict().nullable(),
+  metrics:z.object({clicks:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+    impressions:z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    ctr:z.number().min(0).max(1),position:z.number().nonnegative().max(Number.MAX_SAFE_INTEGER)}).strict().nullable(),
+  evidenceSha256:graphDigest.nullable(),
+}).strict();
+export function projectGsc(raw:unknown,row:GrowthRow):GrowthRow {
+  const data=gscSchema.parse(raw);
+  if(row.id!=='gsc')throw Error('Falsche Quelle');
+  const verified=data.status==='PROVIDER_READ_VERIFIED';
+  const m=data.metrics,p=data.period;
+  if(verified?(!m||!p||!data.evidenceSha256||data.transport!=='READ_RESPONSE_RECEIVED'||
+      m.clicks>m.impressions||Math.abs(m.ctr-m.clicks/m.impressions)>1e-12||
+      Date.parse(p.endDate)-Date.parse(p.startDate)!==6*86400000||p.endDate>=data.observedAt.slice(0,10)):
+      (m!==null||p!==null||data.evidenceSha256!==null))throw Error('Ungültiger GSC-Readback');
+  return {...row,origin:'GSC_READBACK',status:verified?'VERIFIED':'NOT_PROVEN',name:'Google Search Console',domain:'GROWTH',
+    endpoint:'/api/profile/growth-intelligence/gsc-readback',flow:'GSC → aggregierter Growth Data Layer; keine Attribution',
+    auth:data.transport,operation:'GSC Readback: '+data.observedAt,error:verified?'':'Kein bestätigter Report',
+    evidence:m&&p?p.startDate+' – '+p.endDate+': Klicks '+m.clicks+', Impressionen '+m.impressions+', CTR '+(m.ctr*100).toFixed(2)+' %, Position '+m.position+'; SHA-256 '+data.evidenceSha256:'',
+    tests:'Quellengetrennter serverseitiger Readback; keine Aussage über andere Quellen'};
 }

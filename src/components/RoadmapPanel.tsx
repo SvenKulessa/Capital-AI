@@ -1,4 +1,5 @@
 import React from 'react';
+import { isRepositoryReadback, isSourceSha } from '../data/controlCenterRepositoryReadback';
 import { RoadmapDeltaPanel } from './RoadmapDeltaPanel';
 import { EcosystemRoadmapPanel } from './EcosystemRoadmapPanel';
 import { auditTasksForPackage, PUBLIC_SURFACE_AUDIT_TASKS } from '../data/publicSurfaceAuditRoadmap';
@@ -38,7 +39,6 @@ type RepositoryStatus = {
   roadmapLineage: RoadmapDeltaLineageProof | null;
 };
 const REPOSITORY_SYNC_INTERVAL_MS = 90 * 60 * 1000;
-const SOURCE_SHA = /^[a-f0-9]{40}$/;
 
 export const RoadmapPanel: React.FC = () => {
   const [selectedOwners, setSelectedOwners] = React.useState<ProjectOwner[]>(
@@ -60,19 +60,15 @@ export const RoadmapPanel: React.FC = () => {
       });
       if (!response.ok) throw new Error('repository_unavailable');
       const data: unknown = await response.json();
-      const payload = data as Record<string, unknown>;
-      if (!payload || payload.schema !== 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1' ||
-          typeof payload.sourceSha !== 'string' || !SOURCE_SHA.test(payload.sourceSha) ||
-          payload.repository !== ROADMAP_SNAPSHOT.repository ||
-          typeof payload.observedAt !== 'string' || !Number.isFinite(Date.parse(payload.observedAt)) ||
-          !['LIVE', 'CACHED', 'STALE'].includes(String(payload.freshness))) {
+      if (!isRepositoryReadback(data, ROADMAP_SNAPSHOT.repository)) {
         throw new Error('invalid_repository_snapshot');
       }
+      const payload = data;
       if (!signal?.aborted) {
         setRepositoryStatus({
           repository: ROADMAP_SNAPSHOT.repository,
           sourceSha: payload.sourceSha,
-          deployedSha: typeof payload.deployedSha === 'string' && SOURCE_SHA.test(payload.deployedSha)
+          deployedSha: isSourceSha(payload.deployedSha)
             ? payload.deployedSha : null,
           observedAt: payload.observedAt,
           freshness: payload.freshness as RepositoryStatus['freshness'],

@@ -1,8 +1,10 @@
 import React from 'react';
+import { isRepositoryReadback, isSourceSha, type RepositoryFreshness } from '../data/controlCenterRepositoryReadback';
+import { ROADMAP_SNAPSHOT } from '../data/roadmapData';
 import { RoadmapSkillOrchestrationPanel } from './RoadmapSkillOrchestrationPanel';
 
 type Domain = 'PRODUCT' | 'MARKET' | 'PLATFORM' | 'TRUST' | 'GROWTH';
-type Freshness = 'LIVE' | 'CACHED' | 'STALE';
+type Freshness = RepositoryFreshness;
 type CatalogEntry = {
   id: string;
   name: string;
@@ -120,11 +122,10 @@ export function RepositoryToolCatalogDashboard() {
       });
       if (!response.ok) throw new Error('catalog_unavailable');
       const data: unknown = await response.json();
-      if (!data || typeof data !== 'object' ||
-        (data as CatalogSnapshot).schema !== 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1' ||
-        !Array.isArray((data as CatalogSnapshot).entries)) throw new Error('invalid_catalog');
+      if (!isRepositoryReadback(data, ROADMAP_SNAPSHOT.repository) ||
+        !Array.isArray(data.entries) || (data.deployedSha !== null && !isSourceSha(data.deployedSha))) throw new Error('invalid_catalog');
       if (!signal?.aborted) {
-        setSnapshot(data as CatalogSnapshot);
+        setSnapshot(data as unknown as CatalogSnapshot);
         setError(false);
       }
     } catch {
@@ -141,7 +142,7 @@ export function RepositoryToolCatalogDashboard() {
       });
       if (!response.ok) throw new Error('updates_unavailable');
       const data: Updates = await response.json();
-      if (data?.schema !== 'CAPITAL_AI_TOOL_UPDATES@1' || !Array.isArray(data.findings)) throw new Error('invalid_updates');
+      if (data?.schema !== 'CAPITAL_AI_TOOL_UPDATES@1' || !isSourceSha(data.sourceSha) || !Array.isArray(data.findings)) throw new Error('invalid_updates');
       if (!signal?.aborted) { setUpdates(data); setUpdatesError(false); }
     } catch {
       if (!signal?.aborted) { setUpdates(null); setUpdatesError(true); }
