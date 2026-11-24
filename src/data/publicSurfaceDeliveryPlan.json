@@ -9,6 +9,10 @@
     {
       "id": "M2",
       "title": "Public Experience Quality Gates"
+    },
+    {
+      "id": "M3",
+      "title": "Follow-up improvements (planning only)"
     }
   ],
   "tasks": [
@@ -89,6 +93,34 @@
         "P1-02"
       ],
       "template": ".github/ISSUE_TEMPLATE/p1-performance-budget.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P2-01",
+      "name": "Strict CSP",
+      "milestone": "M3",
+      "domain": "TRUST",
+      "dependencies": [
+        "P1-03"
+      ],
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P2-02",
+      "name": "SEO Intent Architecture",
+      "milestone": "M3",
+      "domain": "GROWTH",
+      "dependencies": [
+        "P1-01"
+      ],
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P2-03",
+      "name": "Meta Keywords",
+      "milestone": "M3",
+      "domain": "GROWTH",
+      "dependencies": [],
       "evidence": "NOT_PROVEN"
     }
   ],

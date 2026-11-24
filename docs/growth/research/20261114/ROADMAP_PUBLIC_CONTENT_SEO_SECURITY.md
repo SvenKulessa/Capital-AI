@@ -75,3 +75,6 @@ Zusätzlich zum allgemeinen Content-Schutz werden öffentliche SEO-relevante Inh
 - Status bleibt PROPOSED bis zur Maintainer-Freigabe.
 
 **Abschluss:** Konzept erweitert und als Arbeitspaket definiert. Umsetzung gestartet mit der Dokumentation.
+
+## Delivery integration (2026-11-24)
+CAI-PUBLIC-SURFACE@1 extends this work package. The canonical public-safe task inventory is `src/data/publicSurfaceDeliveryPlan.json`. The owner workspace projects planning rows without asserting runtime evidence. GitHub milestone assignment is not yet proven; M3 is a planning grouping only. Root AGENTS.md remains authoritative.
