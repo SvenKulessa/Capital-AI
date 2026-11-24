@@ -97,7 +97,7 @@ test('release manifest approval, Quant-Pro entitlement and a syntactic ID never 
     {licenseState:'REVIEW_REQUIRED'}, {visibility:'UNLISTED'}, {isFreePreview:false},
     {processingStatus:'PROCESSING'}, {embeddable:false}, {assetSha256:'invalid'}
   ]) assert.deepEqual(visibleLearningVideos([{...publicVideoFixture,...invalid}]), [], JSON.stringify(invalid));
-  assert.deepEqual(visibleLearningVideos(LEARNING_VIDEOS).map(video => video.youtubeId), ['msfyAwCkzOM']);
+  assert.deepEqual(visibleLearningVideos(LEARNING_VIDEOS).map(video => video.youtubeId), ['msfyAwCkzOM', 'AMeuY4P11Gw']);
 });
 test('no unlicensed videos are marketed as available and public learning CTA stays reachable', () => {
   const html = renderToStaticMarkup(<LearningVideos />);
@@ -120,6 +120,8 @@ test('Fintech cover opens series cover then admitted episode list; no provider f
   const blocked = stageMarkup('episodes', [{...publicVideoFixture, licenseState:'REVIEW_REQUIRED'}]);
   const livePreview = stageMarkup('episodes', LEARNING_VIDEOS);
   assert.match(livePreview, /Masterclass Chartanalyse und Grundlagen/);
+  assert.match(livePreview, /Masterclass Realitätscheck/);
+  assert.equal((livePreview.match(/YouTube-Video laden/g) ?? []).length, 2);
   assert.match(livePreview, /YouTube-Video laden/);
   assert.doesNotMatch(livePreview, /Noch keine freigegebenen Masterclass-Videos|<iframe|youtube-nocookie\.com\/embed/);
   assert.match(start, /fintech-deepdive-universe\.webp/);
@@ -289,4 +291,15 @@ test('owner-only frontend prompt selection and screen capture remain local and f
   assert.match(hero,/JaJa CAM: Screenshot aufnehmen/);
   assert.match(hero,/JaJa Stift: Bereiche markieren/);
   assert.match(buddy,/Kein automatischer Export/);
+});
+
+test('Masterclass pair renders two separately consent-gated previews and rejects a third', () => {
+  const first = LEARNING_VIDEOS[0];
+  // Synthetic approval fixture; not a real provider or rights attestation.
+  const second = {...first, id: 'synthetic-ep02', title: 'Synthetic episode two fixture', youtubeId: 'AMeuY4P11Gw', externalYouTubeId: 'AMeuY4P11Gw'};
+  const third = {...first, id: 'synthetic-third', youtubeId: 'abcdefghijk', externalYouTubeId: 'abcdefghijk'};
+  const html = renderToStaticMarkup(<FintechMasterclass stage="episodes" onNavigate={()=>{}} videos={[first, second, third]}/>);
+  assert.equal((html.match(/YouTube-Video laden/g) ?? []).length, 2);
+  assert.match(html, /Synthetic episode two fixture/);
+  assert.doesNotMatch(html, /<iframe|youtube-nocookie\.com\/embed|abcdefghijk/);
 });

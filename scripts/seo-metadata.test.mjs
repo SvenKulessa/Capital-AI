@@ -114,10 +114,10 @@ test('public editorial source requires structural provenance, references and acc
 
 test('unapproved learning videos never gain public VideoObject or imply paid video entitlement', () => {
   const published = publicLearningVideoSchemas();
-  assert.equal(published.length, 1);
-  assert.equal(published[0].embedUrl, 'https://www.youtube-nocookie.com/embed/msfyAwCkzOM');
-  assert.equal(published[0].isAccessibleForFree, true);
-  assert.equal(seoJsonLdForPath('/learning')['@graph'].length, 4);
+  assert.equal(published.length, 2);
+  assert.deepEqual(published.map(video => video.embedUrl), ['https://www.youtube-nocookie.com/embed/msfyAwCkzOM', 'https://www.youtube-nocookie.com/embed/AMeuY4P11Gw']);
+  assert.ok(published.every(video => video.isAccessibleForFree === true));
+  assert.equal(seoJsonLdForPath('/learning')['@graph'].length, 5);
   const approved = {
     id: 'fixture-preview', category: 'Architektur',
     publicationState: 'PUBLISHED', visibility: 'PUBLIC', licenseState: 'VERIFIED',
@@ -163,4 +163,17 @@ test('unapproved learning videos never gain public VideoObject or imply paid vid
       youtubeId:'abcdefghijz', externalYouTubeId:'abcdefghijz' },
   ]).length, 2);
 
+});
+
+test('only the explicitly requested Masterclass pair may share a category', () => {
+  const first = admittedPublicLearningVideos()[0];
+  // Synthetic approval fixture, not a real provider or rights attestation.
+  const second = {...first, id: 'synthetic-ep02', youtubeId: 'AMeuY4P11Gw', externalYouTubeId: 'AMeuY4P11Gw'};
+  const third = {...first, id: 'synthetic-third', youtubeId: 'abcdefghijk', externalYouTubeId: 'abcdefghijk'};
+  assert.equal(publicLearningVideoSchemas([first, second, third, second]).length, 2);
+  assert.equal(publicLearningVideoSchemas([second, first]).length, 2);
+  assert.equal(publicLearningVideoSchemas([first, {...second, licenseState: 'REVIEW_REQUIRED'}]).length, 1);
+  assert.equal(publicLearningVideoSchemas([first, {...second, embeddable: false}]).length, 1);
+  assert.equal(publicLearningVideoSchemas([first, {...second, isFreePreview: false}]).length, 1);
+  assert.equal(publicLearningVideoSchemas([{...first, category: 'Social'}, {...second, category: 'Social'}]).length, 1);
 });
