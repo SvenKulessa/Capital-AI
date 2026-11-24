@@ -9,7 +9,10 @@ begin
      or has_function_privilege('authenticated','public.capital_x_growth_reserve(uuid,text,text)','EXECUTE')
      or has_table_privilege('authenticated','public.capital_x_growth_reservations','SELECT')
      or has_table_privilege('service_role','public.capital_x_growth_reservations','DELETE')
-     or has_column_privilege('service_role','public.capital_x_growth_budget','approved','UPDATE') then
+     or has_column_privilege('service_role','public.capital_x_growth_budget','approved','UPDATE')
+     or has_column_privilege('service_role','public.capital_x_growth_budget','reserved_micro_eur','UPDATE')
+     or has_table_privilege('service_role','public.capital_x_growth_reservations','INSERT')
+     or has_table_privilege('service_role','public.capital_x_growth_reservations','SELECT') then
     raise exception 'X_BUDGET_ACL_UNSAFE';
   end if;
 end $$;
@@ -46,11 +49,19 @@ begin
   exception when raise_exception then
     if sqlerrm <> 'X_BUDGET_INPUT_INVALID' then raise; end if;
   end;
+  begin
+    update public.capital_x_growth_budget set reserved_micro_eur=0 where external_account_id='991';
+    raise exception 'EXPECTED_DENIAL_MISSING';
+  exception when insufficient_privilege then null;
+  end;
+end $;
+reset role;
+do $
+begin
   if (select count(*) from public.capital_x_growth_reservations) <> 1 then
     raise exception 'X_BUDGET_DENIED_REQUEST_LEFT_RESERVATION';
   end if;
-end $$;
-reset role;
+end $;
 set role authenticated;
 do $$
 begin
