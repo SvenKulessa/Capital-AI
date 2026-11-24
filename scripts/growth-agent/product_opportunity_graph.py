@@ -177,11 +177,149 @@ def build_graph():
     return graph.compile()
 
 
+
+GROWTH_DATA_CONTRACT = "CAPITAL_AI_GROWTH_DATA_LAYER@1"
+GROWTH_READ_CONTRACT = "CAPITAL_AI_GROWTH_PROVIDER_READ@1"
+GROWTH_SOURCE_METRICS = {
+    "GA4": {"sessions", "engagedSessions"},
+    "GSC": {"clicks", "impressions", "ctr", "position"},
+    "INSTAGRAM": {"reach", "accounts_engaged"},
+    "YOUTUBE": {"views", "estimatedMinutesWatched"},
+}
+GROWTH_RECORDED = "SOURCE_RECORDED_NOT_AUTHENTICATED"
+GROWTH_FAILURES = {
+    "BLOCKED_DUPLICATE_SOURCE", "NOT_PROVEN_NO_READBACK", "BLOCKED_IDENTITY_NOT_CONFIGURED",
+    "BLOCKED_IDENTITY_OR_ENVELOPE", "BLOCKED_INVALID_PERIOD", "NOT_PROVEN_STALE",
+    "NOT_PROVEN_INVALID_OR_EMPTY_REPORT", "NOT_PROVEN_INVALID_METRICS",
+}
+GROWTH_TRANSPORT_STATES = {
+    "DISABLED", "AUTH_REQUIRED", "RATE_LIMITED", "PROVIDER_UNAVAILABLE",
+    "INVALID_RESPONSE", "IDENTITY_MISMATCH", "INCOMPLETE_PERIOD", "READ_RESPONSE_RECEIVED",
+}
+
+
+class GrowthReadState(TypedDict, total=False):
+    payload: dict
+    source_status: list[dict]
+    findings: Annotated[list[dict], operator.add]
+    report: dict
+
+
+def growth_source_review(state: GrowthReadState) -> dict:
+    """Only consume the bounded JSON handoff, never call network or read credentials.
+    Digest shape is checked, but imported hashes do not attest upstream provenance.
+    """
+    payload = state.get("payload")
+    if not isinstance(payload, dict) or payload.get("contractVersion") != GROWTH_READ_CONTRACT:
+        return {"source_status": []}
+    layer = payload.get("growthDataLayer")
+    transport = payload.get("transport")
+    if (not isinstance(layer, dict) or layer.get("contractVersion") != GROWTH_DATA_CONTRACT
+            or layer.get("publicPublishAllowed") is not False
+            or layer.get("automaticRecommendationPromotion") is not False
+            or layer.get("attributionEvents") != [] or payload.get("publicPublishAllowed") is not False
+            or payload.get("collectionMode") != "EXPLICIT_READ_ONLY"
+            or not isinstance(transport, list) or len(transport) != 4):
+        return {"source_status": []}
+    rows = layer.get("sources")
+    if not isinstance(rows, list) or len(rows) != 4:
+        return {"source_status": []}
+    result = []
+    for source, names in GROWTH_SOURCE_METRICS.items():
+        matches = [r for r in rows if isinstance(r, dict) and r.get("source") == source]
+        reads = [r for r in transport if isinstance(r, dict) and r.get("source") == source]
+        if len(matches) != 1 or len(reads) != 1:
+            return {"source_status": []}
+        row, read = matches[0], reads[0]
+        if set(read) != {"source", "status"} or read.get("status") not in GROWTH_TRANSPORT_STATES:
+            return {"source_status": []}
+        status = row.get("status")
+        digest = row.get("evidenceSha256")
+        if status == GROWTH_RECORDED:
+            metrics = row.get("metrics")
+            if (set(row) != {"source", "identity", "startDate", "endDate", "observedAt",
+                            "metrics", "status", "evidenceSha256"}
+                    or read["status"] != "READ_RESPONSE_RECEIVED" or not isinstance(digest, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                    or not isinstance(metrics, dict) or set(metrics) != names
+                    or any(type(value) not in (int, float) or not 0 <= value <= 9007199254740991
+                           for value in metrics.values())):
+                return {"source_status": []}
+        elif (status not in GROWTH_FAILURES
+              or set(row) != {"source", "status", "metrics", "evidenceSha256"}
+              or row.get("metrics") is not None or digest is not None):
+            return {"source_status": []}
+        result.append({"source": source, "status": status, "transport": read["status"],
+                       "evidenceSha256": digest})
+    return {"source_status": result}
+
+
+def growth_domain_review(domain: str):
+    def run(state: GrowthReadState) -> dict:
+        statuses = state.get("source_status", [])
+        ok = len(statuses) == 4
+        # This is a private draft-only quality handoff, not market, identity,
+        # publication or cost authority. No cross-source metric is calculated.
+        detail = {
+            "PRODUCT": "Existing content draft contract only.",
+            "MARKET": "Market-news pipeline remains independent.",
+            "PLATFORM": "Bounded source projections; no provider calls from graph.",
+            "TRUST": "No imported verification, attribution, or mutation authority.",
+            "GROWTH": "Independent source evidence available for draft review.",
+        }[domain]
+        return {"findings": [finding(domain, "PASS_WITH_GAPS" if ok else "BLOCKED", detail)]}
+    return run
+
+
+def growth_quality(state: GrowthReadState) -> dict:
+    statuses = state.get("source_status", [])
+    findings = state.get("findings", [])
+    domains = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
+    ok = len(statuses) == 4 and all(
+        any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in findings)
+        for domain in domains)
+    return {"report": {
+        "contractVersion": "CAPITAL_AI_GROWTH_GRAPH_HANDOFF@1",
+        "engine": "langgraph", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+        "sources": statuses if ok else [],
+        "eligibleForDraftReview": ok and any(s["status"] == GROWTH_RECORDED for s in statuses),
+        "providerAuthentication": "NOT_PROVEN_BY_GRAPH",
+        "attributionEvents": [], "publicationAllowed": False,
+        "costActivationAllowed": False, "automaticChanges": False,
+    }}
+
+
+def build_growth_read_graph():
+    """Real pinned StateGraph, reusing the existing offline worker boundary."""
+    from langgraph.graph import END, START, StateGraph
+    domains = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
+    graph = StateGraph(GrowthReadState)
+    graph.add_node("source_review", growth_source_review)
+    graph.add_edge(START, "source_review")
+    for domain in domains:
+        graph.add_node(domain.lower(), growth_domain_review(domain))
+        graph.add_edge("source_review", domain.lower())
+    graph.add_node("quality", growth_quality)
+    graph.add_edge([domain.lower() for domain in domains], "quality")
+    graph.add_edge("quality", END)
+    return graph.compile()
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Local, offline product-opportunity draft review")
-    parser.add_argument("--input", type=Path, required=True)
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--input", type=Path)
+    inputs.add_argument("--growth-data", type=Path)
     args = parser.parse_args()
+    if args.growth_data is not None:
+        if args.growth_data.stat().st_size > 262144:
+            raise SystemExit("INPUT_TOO_LARGE")
+        raw = json.loads(args.growth_data.read_text(encoding="utf-8"))
+        result = build_growth_read_graph().invoke({"payload": raw, "findings": []},
+                                                  {"recursion_limit": 8})
+        print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
+        return
     if args.input.stat().st_size > 131072:
         raise SystemExit("INPUT_TOO_LARGE")
     payload = json.loads(args.input.read_text(encoding="utf-8"))
