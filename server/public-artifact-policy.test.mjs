@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { isBlockedPublicArtifactPath, publicArtifactPolicySnapshot } from './public-artifact-policy.mjs';
 
@@ -12,4 +13,13 @@ test('commercial Blueprint static downloads are fail-closed', () => {
     blockedPrefixes: ['/downloads/blueprints/'],
     blueprintFullArtifactsPublic: false,
   });
+});
+
+test('public homepage excludes the internal content-engine status panel while preserving the product entry points', () => {
+  const source = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /ContentEngineConcept|SocialContentEngineStatus/);
+  assert.match(source, /<Hero onExploreProduct=/);
+  assert.match(source, /<HomeHubDirectory/);
+  assert.match(source, /<HomeEditorialNews/);
+  assert.match(source, /keine verifizierten Live-Kurse/);
 });
