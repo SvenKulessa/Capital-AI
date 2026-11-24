@@ -159,3 +159,11 @@ test('expired X access token renews through lease/CAS automatically before draft
   assert.ok(f.calls.includes('refresh_finish'));
   assert.equal(f.stats().draftCount,1);
 });
+
+test('growth pilot denies unbudgeted article before credential or provider access',async()=>{
+  const f=fixture({flags:{SOCIAL_X_GROWTH_PILOT_ENABLED:'true'}}),r=response();
+  await f.handler.handle(request(),r,new URL(url('/publish')),json);
+  assert.equal(r.code,403);
+  assert.equal(r.body.error,'x_growth_unbudgeted_lane_disabled');
+  assert.deepEqual(f.calls,[]);
+});
