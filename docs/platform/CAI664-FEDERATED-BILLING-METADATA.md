@@ -1,0 +1,9 @@
+# CAI-664 · Federated billing metadata (zero additional budget)
+
+Existing main-only google-cloud-admin.yml operation billing-readback reuses the Cloud Operator WIF identity. No local impersonation, key, new scheduler or provider write. Only BigQuery datasets.list and tables.list; no queries, row reads, billing exports, or production DB export. Logs contain counts and fixed status codes, not dataset/table names or account IDs. Empty/denied/partial visibility is never evidence of absence across the billing account or zero cost. Export destination can be a different project. OCC exposes a NOT_PROVEN planning row and the existing offline LangGraph handoff; no live runtime or financial attestation from imported notes.
+
+Owner Acode REST: current identity returned zero visible datasets; local service-account impersonation unavailable. Existing API enabled. Do not grant broad Billing Viewer, Data Viewer or Job User for metadata discovery. If the existing Cloud Operator cannot list metadata, consider the project-scoped roles/bigquery.metadataViewer only on the exact authorized export project after confirming location; no new export under EUR 0 budget. IAM mutations require authorized Cloud execution; this PR performs none. Existing scope remains cloud-platform.read-only.
+
+After normal CI/merge and confirmation of included Actions minutes, dispatch: gh workflow run google-cloud-admin.yml -R SvenKulessa/Capital-AI --ref main -f operation=billing-readback. Read exact run's CAI664_BILLING_METADATA line. Use existing OCC/LangGraph offline task for review, not automatic execution. If no export is configured, use the existing Cloud Billing Reports UI without creating resources. No actual spend claim from metadata.
+
+Rollback: revert scoped source commit. Existing readback and YouTube operation preserved. Tests: node --test scripts/platform/google-billing-metadata.test.mjs and existing workspace tests/CI.
