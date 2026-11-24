@@ -236,7 +236,7 @@ COPY server/purchase-receipt.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
 COPY server/skill-routing-catalog.mjs ./server/
-COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt
