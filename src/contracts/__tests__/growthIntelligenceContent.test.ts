@@ -276,3 +276,26 @@ test('X acquisition overview preserves source scoring and missing conversion evi
   assert.equal(overview.providerCalls,0);
   assert.deepEqual(JSON.parse(JSON.stringify(overview)),overview);
 });
+
+
+import { spawnSync } from 'node:child_process';
+
+test('X acquisition local CLI accepts bounded input and sanitizes rejection', () => {
+  const cli = fileURLToPath(new URL('../../../scripts/growth/growth-intelligence-drafts.mjs', import.meta.url));
+  const run = (arg: string, input: string) => spawnSync(process.execPath,
+    ['--import','tsx',cli,arg], {input,encoding:'utf8',timeout:15000,maxBuffer:1024*1024});
+  const result = run('--x-acquisition-forecast',JSON.stringify(xBudgetFixture()));
+  assert.equal(result.status,0,result.stderr);
+  assert.equal(JSON.parse(result.stdout).forecastMicroEur,5_460_000);
+  const draft=buildGrowthIntelligenceContentDrafts(fixture).find(d=>d.channel==='X');
+  assert.ok(draft);
+  const candidate=run('--x-acquisition-candidate',JSON.stringify({contentId:draft.contentId,editorialBody:'Finanzwissen verstehen.'}));
+  assert.equal(candidate.status,0,candidate.stderr);
+  assert.equal(JSON.parse(candidate.stdout).publicPublishAllowed,false);
+  for(const input of ['x'.repeat(16385),'{"secret":"fixture-only"}','{']) {
+    const denied=run('--x-acquisition-forecast',input);
+    assert.equal(denied.status,1);
+    assert.equal(denied.stdout,'');
+    assert.equal(denied.stderr,'X_ACQUISITION_PLANNING_REJECTED\n');
+  }
+});
