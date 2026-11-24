@@ -54,14 +54,14 @@ begin
     raise exception 'EXPECTED_DENIAL_MISSING';
   exception when insufficient_privilege then null;
   end;
-end $;
+end $$;
 reset role;
-do $
+do $$
 begin
   if (select count(*) from public.capital_x_growth_reservations) <> 1 then
     raise exception 'X_BUDGET_DENIED_REQUEST_LEFT_RESERVATION';
   end if;
-end $;
+end $$;
 set role authenticated;
 do $$
 begin
