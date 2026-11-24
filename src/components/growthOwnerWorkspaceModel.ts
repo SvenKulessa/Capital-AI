@@ -49,10 +49,12 @@ export function initialRows(): GrowthRow[] {
 }
 export function appendSnapshot(history: GrowthSnapshot[], rows: GrowthRow[], at: string): GrowthSnapshot[] {
   const next = snapshotSchema.parse({ version: (history.at(-1)?.version ?? 0) + 1, at, rows });
-  return [...history, next].slice(-30);
+  const snapshots = [...history, next].slice(-30);
+  while (snapshots.length > 1 && new TextEncoder().encode(JSON.stringify(snapshots)).length > 4_000_000) snapshots.shift();
+  return snapshots;
 }
 export function importWorkspace(raw: string): GrowthSnapshot[] {
-  if (raw.length > 1_000_000) throw new Error('Import zu groß');
+  if (new TextEncoder().encode(raw).length > 5_000_000) throw new Error('Import zu groß');
   const bundle = bundleSchema.parse(JSON.parse(raw));
   // Imported evidence is documentation, never live authority.
   return bundle.snapshots.map(s => ({ ...s, rows: s.rows.map(r => ({
@@ -60,7 +62,7 @@ export function importWorkspace(raw: string): GrowthSnapshot[] {
   })) }));
 }
 export function exportWorkspace(history: GrowthSnapshot[]): string {
-  return JSON.stringify(bundleSchema.parse({ schema: 'CAPITAL_AI_GROWTH_OWNER_WORKSPACE@1', snapshots: history }), null, 2);
+  return JSON.stringify(bundleSchema.parse({ schema: 'CAPITAL_AI_GROWTH_OWNER_WORKSPACE@1', snapshots: history }));
 }
 export function applyOwnerEdit(row: GrowthRow): GrowthRow {
   return rowSchema.parse({ ...row, origin: 'OWNER_NOTE', status: row.status === 'VERIFIED' ? 'NOT_PROVEN' : row.status });
