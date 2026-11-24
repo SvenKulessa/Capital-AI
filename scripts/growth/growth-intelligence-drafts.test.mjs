@@ -193,3 +193,13 @@ test('GA4 uses existing MCP reader with configured property and exact property-l
   const mismatch=await collectGrowthProviderData({...input,readGa4:async()=>({...await input.readGa4(),property:{resourceName:'properties/999'}})});
   assert.equal(mismatch.transport[0].status,'INVALID_RESPONSE');
 });
+
+test('graph-only handoff excludes draft bundle and retains independent disabled sources',async()=>{
+  const result=await collectGrowthProviderData({env:{},now:()=>Date.parse(asOf),includeDraftBundle:false,
+    fetchImpl:()=>{throw Error('unexpected provider call')},readGa4:()=>{throw Error('unexpected GA4')}});
+  assert.deepEqual(Object.keys(result).sort(),['collectionMode','contractVersion','growthDataLayer','publicPublishAllowed','transport']);
+  assert.ok(result.transport.every(x=>x.status==='DISABLED'));
+  assert.ok(result.growthDataLayer.sources.every(x=>x.metrics===null));
+  assert.equal(result.publicPublishAllowed,false);
+  assert.deepEqual(result.growthDataLayer.attributionEvents,[]);
+});

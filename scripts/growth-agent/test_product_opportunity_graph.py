@@ -1,5 +1,7 @@
 """Synthetic negative tests for Issue #874 source-bound LangGraph review."""
 import importlib.util
+import io
+import json
 from pathlib import Path
 import sys
 import unittest
@@ -164,6 +166,15 @@ def growth_payload():
 
 
 class GrowthReadGraphTests(unittest.TestCase):
+    def test_growth_input_is_bounded_before_parsing(self):
+        payload = growth_payload()
+        self.assertEqual(graph.read_growth_input(io.BytesIO(json.dumps(payload).encode())), payload)
+        for raw, message in [(b" " * 262145, "INPUT_TOO_LARGE"),
+                             (b"not-json", "INVALID_INPUT"), (b"\xff", "INVALID_INPUT")]:
+            with self.subTest(message=message):
+                with self.assertRaisesRegex(SystemExit, message):
+                    graph.read_growth_input(io.BytesIO(raw))
+
     def test_partial_provider_batch_preserves_other_sources(self):
         result = graph.growth_source_review({"payload": growth_payload()})["source_status"]
         self.assertEqual(len(result), 4)

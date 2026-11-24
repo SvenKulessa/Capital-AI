@@ -251,7 +251,7 @@ function propertyLocalDate(isoTime,timeZone){
   if(!date(result))throw readError('INVALID_RESPONSE');
   return result;
 }
-export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch,now=Date.now,readGa4=existingGa4Reader}={}) {
+export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch,now=Date.now,readGa4=existingGa4Reader,includeDraftBundle=true}={}) {
   const asOf=new Date(now()).toISOString();
   const endDate=addDays(asOf.slice(0,10),-4),startDate=addDays(endDate,-6);
   const expectedIdentities={GSC:'sc-domain:capital-ai.online'};
@@ -295,7 +295,7 @@ export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch
   }
   return {contractVersion:'CAPITAL_AI_GROWTH_PROVIDER_READ@1',transport,
     growthDataLayer:projectGrowthDataLayer({records,expectedIdentities,asOf}),
-    draftBundle:buildGrowthIntelligenceDraftBundle({records,expectedIdentities,asOf}),
+    ...(includeDraftBundle ? {draftBundle:buildGrowthIntelligenceDraftBundle({records,expectedIdentities,asOf})} : {}),
     collectionMode:'EXPLICIT_READ_ONLY',publicPublishAllowed:false};
 }
 
@@ -331,5 +331,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const args=process.argv.slice(2);
   if(args.length===0) process.stdout.write(JSON.stringify(buildGrowthIntelligenceDraftBundle(), null, 2) + '\n');
   else if(args.length===1 && args[0]==='--read-providers') process.stdout.write(JSON.stringify(await collectGrowthProviderData(),null,2)+'\n');
+  else if(args.length===2 && args[0]==='--read-providers' && args[1]==='--graph-handoff')
+    process.stdout.write(JSON.stringify(await collectGrowthProviderData({includeDraftBundle:false}))+'\n');
   else throw Error('GROWTH_CLI_ARGUMENT_INVALID');
 }

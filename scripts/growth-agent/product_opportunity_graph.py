@@ -338,17 +338,31 @@ def build_growth_read_graph():
     return graph.compile()
 
 
+def read_growth_input(stream):
+    """Bound input before parsing, including stdin or changing local files."""
+    raw = stream.read(262145)
+    if len(raw) > 262144:
+        raise SystemExit("INPUT_TOO_LARGE")
+    try:
+        return json.loads(raw.decode("utf-8"))
+    except (UnicodeError, ValueError, RecursionError):
+        raise SystemExit("INVALID_INPUT") from None
+
+
 def main():
     import argparse
+    import sys
     parser = argparse.ArgumentParser(description="Local, offline product-opportunity draft review")
     inputs = parser.add_mutually_exclusive_group(required=True)
     inputs.add_argument("--input", type=Path)
-    inputs.add_argument("--growth-data", type=Path)
+    inputs.add_argument("--growth-data", type=Path, help="Bounded JSON file, or - for stdin")
     args = parser.parse_args()
     if args.growth_data is not None:
-        if args.growth_data.stat().st_size > 262144:
-            raise SystemExit("INPUT_TOO_LARGE")
-        raw = json.loads(args.growth_data.read_text(encoding="utf-8"))
+        if args.growth_data == Path("-"):
+            raw = read_growth_input(sys.stdin.buffer)
+        else:
+            with args.growth_data.open("rb") as stream:
+                raw = read_growth_input(stream)
         result = build_growth_read_graph().invoke({"payload": raw, "findings": []},
                                                   {"recursion_limit": 8})
         print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
