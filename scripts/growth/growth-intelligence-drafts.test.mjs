@@ -7,6 +7,8 @@ import {
   GROWTH_INTELLIGENCE_PLAN_PATH,
   buildGrowthIntelligenceDraftBundle,
   projectGrowthDataLayer,
+  collectGrowthProviderData,
+  createGrowthProviderReaders,
 } from './growth-intelligence-drafts.mjs';
 
 test('offline Social Content Engine CLI projects the imported source snapshot', () => {
@@ -121,4 +123,73 @@ test('explicit data layer handoff preserves original content plans and publishin
   assert.equal(result.growthDataLayer.graphExecution,'NOT_PROVEN');
   assert.equal(result.growthDataLayer.automaticRecommendationPromotion,false);
   assert.ok(result.drafts.every(d=>d.socialPackage.approvals.length===0));
+});
+
+test('live collectors default deny and do not alter the offline draft bundle',async()=>{
+  const result=await collectGrowthProviderData({env:{},now:()=>Date.parse(asOf),
+    fetchImpl:()=>{throw Error('unexpected provider call')},readGa4:()=>{throw Error('unexpected GA4')}});
+  assert.equal(result.contractVersion,'CAPITAL_AI_GROWTH_PROVIDER_READ@1');
+  assert.ok(result.transport.every(x=>x.status==='DISABLED'));
+  assert.equal(result.draftBundle.publicPublishAllowed,false);
+  assert.deepEqual(result.draftBundle.drafts,buildGrowthIntelligenceDraftBundle().drafts);
+});
+const fakeToken='synthetic-test-token';
+const jsonResponse=(obj,status=200)=>new Response(JSON.stringify(obj),{status});
+test('GSC uses fixed property, final read-only POST and weighted position; no credentials in projection',async()=>{
+  const calls=[];
+  const readers=createGrowthProviderReaders({fetchImpl:async(url,options)=>{
+    calls.push({url,options});
+    if(calls.length===1)return jsonResponse({siteUrl:'sc-domain:capital-ai.online',permissionLevel:'siteOwner'});
+    return jsonResponse({rows:[{keys:['2026-11-17'],clicks:1,impressions:10,position:3},{keys:['2026-11-18'],clicks:2,impressions:20,position:6}]});
+  }});
+  const result=await readers.GSC({identity:'sc-domain:capital-ai.online',token:fakeToken,startDate:'2026-11-17',endDate:'2026-11-18'});
+  assert.deepEqual(result,{rows:[{clicks:3,impressions:30,ctr:0.1,position:5}]});
+  assert.equal(calls[1].options.method,'POST');
+  assert.equal(calls[1].options.redirect,'error');
+  assert.equal(JSON.parse(calls[1].options.body).dataState,'final');
+  assert.ok(calls.every(c=>!c.url.includes(fakeToken)));
+  assert.doesNotMatch(JSON.stringify(result),/synthetic-test-token/);
+});
+test('provider errors remain isolated; missing days do not become a measured zero',async()=>{
+  const result=await collectGrowthProviderData({env:{
+    GROWTH_GSC_READ_ENABLED:'true',GROWTH_GSC_READ_TOKEN:fakeToken,
+    GROWTH_INSTAGRAM_READ_ENABLED:'true',GROWTH_INSTAGRAM_ACCOUNT_ID:'1234',
+    GROWTH_INSTAGRAM_READ_TOKEN:fakeToken,SOCIAL_META_GRAPH_API_VERSION:'v27.0',
+    GROWTH_YOUTUBE_READ_ENABLED:'true',GROWTH_YOUTUBE_CHANNEL_ID:identities.YOUTUBE,
+    GROWTH_YOUTUBE_READ_TOKEN:fakeToken,
+  },now:()=>Date.parse(asOf),fetchImpl:async(url)=>{
+    if(url.startsWith('https://www.googleapis.com'))return jsonResponse({error:'private-secret'},403);
+    if(url.startsWith('https://graph.facebook.com')&&url.includes('?fields=id'))return jsonResponse({id:'1234'});
+    if(url.startsWith('https://graph.facebook.com'))return jsonResponse({data:[
+      {name:'reach',period:'day',total_value:{value:15}},
+      {name:'accounts_engaged',period:'day',total_value:{value:2}}]});
+    return jsonResponse({columnHeaders:[{name:'day'},{name:'views'},{name:'estimatedMinutesWatched'}],rows:[['2026-11-20',1,2]]});
+  }});
+  assert.deepEqual(result.transport.map(x=>x.status),['DISABLED','AUTH_REQUIRED','READ_RESPONSE_RECEIVED','INCOMPLETE_PERIOD']);
+  assert.deepEqual(result.growthDataLayer.sources[2].metrics,{reach:15,accounts_engaged:2});
+  assert.equal(result.growthDataLayer.sources[3].metrics,null);
+  assert.doesNotMatch(JSON.stringify(result),/private-secret|synthetic-test-token/);
+});
+test('YouTube requires complete exact day rows and binds the channel in the request',async()=>{
+  const readers=createGrowthProviderReaders({fetchImpl:async(url,options)=>{
+    assert.equal(new URL(url).searchParams.get('ids'),'channel=='+identities.YOUTUBE);
+    assert.equal(options.method,'GET');
+    return jsonResponse({columnHeaders:[{name:'day'},{name:'views'},{name:'estimatedMinutesWatched'}],rows:[['2026-11-17',4,6],['2026-11-18',5,7]]});
+  }});
+  assert.deepEqual(await readers.YOUTUBE({identity:identities.YOUTUBE,token:fakeToken,startDate:'2026-11-17',endDate:'2026-11-18'}),{
+    columnHeaders:[{name:'views'},{name:'estimatedMinutesWatched'}],rows:[[9,13]]});
+  await assert.rejects(()=>readers.YOUTUBE({identity:identities.YOUTUBE,token:fakeToken,startDate:'2020-01-01',endDate:'2026-11-18'}),/INVALID_RESPONSE/);
+});
+test('GA4 uses existing MCP reader with configured property and exact property-local dates',async()=>{
+  const env={GROWTH_GA4_READ_ENABLED:'true',GOOGLE_ANALYTICS_PROPERTY_NUMBER:'123',
+    GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON:'synthetic',GOOGLE_ANALYTICS_CLOUD_PROJECT:'synthetic'};
+  const input={env,now:()=>Date.parse(asOf),readGa4:async()=>({status:'PROVIDER_READ_VERIFIED',
+    source:'GA4_DATA_API',observedAt:asOf,property:{resourceName:'properties/123'},
+    period:{start:'7daysAgo',end:'yesterday',timeZone:'Europe/Berlin'},metrics:{sessions:9,engagedSessions:3}})};
+  const result=await collectGrowthProviderData(input);
+  assert.equal(result.transport[0].status,'READ_RESPONSE_RECEIVED');
+  assert.equal(result.growthDataLayer.sources[0].startDate,'2026-11-17');
+  assert.equal(result.growthDataLayer.sources[0].endDate,'2026-11-23');
+  const mismatch=await collectGrowthProviderData({...input,readGa4:async()=>({...await input.readGa4(),property:{resourceName:'properties/999'}})});
+  assert.equal(mismatch.transport[0].status,'INVALID_RESPONSE');
 });
