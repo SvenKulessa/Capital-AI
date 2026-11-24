@@ -85,6 +85,36 @@ export async function publishXMilestone({
   edge, identity, jwt, env, fetchImpl, edgeFactory,
   launch = false, launchMediaLoader = loadPinnedLaunchMedia,
 }) {
+  // Pilot is opt-in; existing historical one-shot flows are not activated by it.
+  // Only the pinned text milestone is admitted in this slice. Other paid lanes
+  // still need a shared billing-scope cutover before enabling the pilot live.
+  const budgeted = env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true';
+  let budgetAccountId;
+  if (budgeted) {
+    must(!launch && env.SOCIAL_X_GROWTH_BUDGET_APPROVED === 'true',
+      'x_growth_budget_approval_required');
+    const account = await edge.invoke('x_credentials', { userId: identity.userId });
+    must(account?.handle === EXPECTED_HANDLE && XID.test(account?.accountId || '')
+      && Date.parse(account.expiresAt) > Date.now() + 300000
+      && account.leaseActive !== true, 'x_growth_budget_current_account_required');
+    budgetAccountId = account.accountId;
+    const budgetContext = { userId: identity.userId, accountId: budgetAccountId,
+      contentKey: MILESTONE_CONTENT_KEY };
+    const existing = await edge.invoke('milestone_status', budgetContext);
+    if (existing.found) return { ...existing, retryPublish: false,
+      note: 'existing_receipt_no_automatic_replay',
+      ...(XID.test(existing.postId || '') ? {
+        url: 'https://x.com/' + EXPECTED_HANDLE + '/status/' + existing.postId,
+      } : {}) };
+    // Any unknown or duplicate reservation outcome denies the request. There is
+    // no release, retry, refresh or other X call before durable confirmation.
+    const reservation = await edge.invoke('growth_budget_claim', budgetContext);
+    must(reservation?.claimed === true && reservation.accountId === budgetAccountId
+      && reservation.contentKey === MILESTONE_CONTENT_KEY
+      && Number.isSafeInteger(reservation.reservedMicroEur)
+      && reservation.reservedMicroEur > 0 && reservation.reservedMicroEur <= 20000000,
+      'x_growth_budget_not_reserved');
+  }
   let mediaBytes = null;
   if (launch) {
     must(env.SOCIAL_X_MILESTONE_MEDIA_ENABLED === 'true', 'x_launch_media_disabled');
@@ -99,6 +129,7 @@ export async function publishXMilestone({
   // Existing rotating owner OAuth and account identity are resolved before claim.
   const credentials = await resolveOwnerXCredentials({
     edge, identity, jwt, env, fetchImpl, edgeFactory,
+    expectedAccountId: budgetAccountId, allowRefresh: !budgeted,
   });
   const contentText = launch ? LAUNCH_TEXT : MILESTONE_TEXT;
   const context = { userId: identity.userId, accountId: credentials.accountId,
