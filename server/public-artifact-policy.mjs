@@ -1,10 +1,35 @@
+import { readdir, unlink } from 'node:fs/promises';
+import { join } from 'node:path';
+
+export const INFORMATION_CLASSES = Object.freeze([
+  'PUBLIC', 'AUTHENTICATED', 'CUSTOMER_PRIVATE', 'OWNER_ONLY', 'INTERNAL', 'SECRET',
+]);
+
+// This is a path-admission decision, not a substitute for server authorization,
+// content review, entitlement checks or proof of redistribution rights.
+export function mayPublishInformation(classification) {
+  return classification === 'PUBLIC';
+}
+
 const BLOCKED_PUBLIC_PREFIXES = Object.freeze([
   '/downloads/blueprints/',
 ]);
 
+function normalizeArtifactPath(pathname) {
+  if (typeof pathname !== 'string' || !pathname.startsWith('/')) return null;
+  let decoded;
+  try { decoded = decodeURIComponent(pathname); } catch { return null; }
+  if (/[\\%?#\u0000-\u001f\u007f]/.test(decoded) || decoded.includes('//') ||
+      decoded.split('/').some(part => part === '.' || part === '..')) return null;
+  return decoded.toLowerCase();
+}
+
 export function isBlockedPublicArtifactPath(pathname) {
-  const normalized = String(pathname || '').toLowerCase();
-  return BLOCKED_PUBLIC_PREFIXES.some(prefix => normalized.startsWith(prefix));
+  const normalized = normalizeArtifactPath(pathname);
+  if (!normalized) return true;
+  return normalized === '/downloads/blueprints' ||
+    BLOCKED_PUBLIC_PREFIXES.some(prefix => normalized.startsWith(prefix)) ||
+    normalized.endsWith('.map') || normalized === '/bundle-evidence.json';
 }
 
 export function publicArtifactPolicySnapshot() {
@@ -13,4 +38,384 @@ export function publicArtifactPolicySnapshot() {
     blockedPrefixes: [...BLOCKED_PUBLIC_PREFIXES],
     blueprintFullArtifactsPublic: false,
   };
+}
+
+// Exact migration inventory of existing public source paths, plus the existing
+// generated JaJa model. Continuity only: this is NOT a fresh content/licence
+// approval. New paths must be explicitly reviewed and added, not globbed.
+const STATIC_SOURCE_BASELINE = new Set([
+  "AGENTS.md",
+  "agb/index.html",
+  "assets/jaja-avatar-transparent.webp",
+  "assets/jaja-figure.glb",
+  "bootstrap-failure.js",
+  "branding/asset-pack/README.md",
+  "branding/asset-pack/avatars/capital-ai-avatar-1024x1024.png",
+  "branding/asset-pack/avatars/capital-ai-avatar-120x120.png",
+  "branding/asset-pack/avatars/capital-ai-avatar-120x120.webp",
+  "branding/asset-pack/avatars/capital-ai-avatar-128x128.png",
+  "branding/asset-pack/avatars/capital-ai-avatar-256x256.png",
+  "branding/asset-pack/avatars/capital-ai-avatar-256x256.webp",
+  "branding/asset-pack/avatars/capital-ai-avatar-320x320.png",
+  "branding/asset-pack/avatars/capital-ai-avatar-400x400.png",
+  "branding/asset-pack/avatars/capital-ai-avatar-512x512.png",
+  "branding/asset-pack/avatars/capital-ai-avatar-512x512.webp",
+  "branding/asset-pack/avatars/capital-ai-avatar-64x64.png",
+  "branding/asset-pack/avatars/capital-ai-maskable-192x192.png",
+  "branding/asset-pack/avatars/capital-ai-maskable-512x512.png",
+  "branding/asset-pack/banners/facebook-cover-1640x624.jpg",
+  "branding/asset-pack/banners/facebook-cover-1640x624.png",
+  "branding/asset-pack/banners/linkedin-profile-banner-1584x396.jpg",
+  "branding/asset-pack/banners/linkedin-profile-banner-1584x396.png",
+  "branding/asset-pack/banners/profile-banner-1920x480.jpg",
+  "branding/asset-pack/banners/profile-banner-1920x480.png",
+  "branding/asset-pack/banners/x-profile-header-1500x500.jpg",
+  "branding/asset-pack/banners/x-profile-header-1500x500.png",
+  "branding/asset-pack/banners/youtube-channel-banner-2560x1440.jpg",
+  "branding/asset-pack/banners/youtube-channel-banner-2560x1440.png",
+  "branding/asset-pack/favicon/apple-touch-icon-180x180.png",
+  "branding/asset-pack/favicon/favicon-16x16.png",
+  "branding/asset-pack/favicon/favicon-192x192.png",
+  "branding/asset-pack/favicon/favicon-256x256.png",
+  "branding/asset-pack/favicon/favicon-32x32.png",
+  "branding/asset-pack/favicon/favicon-48x48.png",
+  "branding/asset-pack/favicon/favicon-512x512.png",
+  "branding/asset-pack/favicon/favicon-64x64.png",
+  "branding/asset-pack/favicon/favicon-96x96.png",
+  "branding/asset-pack/favicon/favicon.ico",
+  "branding/asset-pack/favicon/favicon.svg",
+  "branding/asset-pack/favicon/site.webmanifest",
+  "branding/asset-pack/master/capital-ai-online-master-1536x864.jpg",
+  "branding/asset-pack/master/capital-ai-online-master-1536x864.png",
+  "branding/asset-pack/master/capital-ai-online-master-1536x864.webp",
+  "branding/asset-pack/meta/ASSET-LICENSE-AND-PROVENANCE.txt",
+  "branding/asset-pack/meta/SHA256SUMS.txt",
+  "branding/asset-pack/meta/asset-manifest.json",
+  "branding/asset-pack/meta/generation-environment.json",
+  "branding/asset-pack/meta/social-render-tokens.json",
+  "branding/asset-pack/meta/validation-report.json",
+  "branding/asset-pack/social/engine-landscape-1920x1080.jpg",
+  "branding/asset-pack/social/engine-landscape-1920x1080.png",
+  "branding/asset-pack/social/instagram-portrait-1080x1350.jpg",
+  "branding/asset-pack/social/instagram-portrait-1080x1350.png",
+  "branding/asset-pack/social/instagram-square-1080x1080.jpg",
+  "branding/asset-pack/social/instagram-square-1080x1080.png",
+  "branding/asset-pack/social/open-graph-1200x630.jpg",
+  "branding/asset-pack/social/open-graph-1200x630.png",
+  "branding/asset-pack/social/story-reel-1080x1920.jpg",
+  "branding/asset-pack/social/story-reel-1080x1920.png",
+  "branding/asset-pack/social/x-link-card-1200x675.jpg",
+  "branding/asset-pack/social/x-link-card-1200x675.png",
+  "branding/asset-pack/social/youtube-thumbnail-1280x720.jpg",
+  "branding/asset-pack/social/youtube-thumbnail-1280x720.png",
+  "branding/asset-pack/svg/capital-ai-avatar-raster-preserving.svg",
+  "branding/asset-pack/svg/capital-ai-online-logo-raster-preserving.svg",
+  "branding/asset-pack/vendor/google-oauth-app-logo-120x120.jpg",
+  "branding/asset-pack/vendor/google-oauth-app-logo-120x120.png",
+  "branding/asset-pack/vendor/vendor-app-icon-1024x1024.png",
+  "branding/asset-pack/vendor/vendor-app-icon-128x128.png",
+  "branding/asset-pack/vendor/vendor-app-icon-256x256.png",
+  "branding/asset-pack/vendor/vendor-app-icon-256x256.webp",
+  "branding/asset-pack/vendor/vendor-app-icon-512x512.png",
+  "branding/asset-pack/vendor/vendor-app-icon-512x512.webp",
+  "branding/asset-pack/vendor/vendor-brand-banner-1200x300.jpg",
+  "branding/asset-pack/vendor/vendor-brand-banner-1200x300.png",
+  "branding/badges/data-pipeline-blueprint.svg",
+  "branding/badges/enterprise.svg",
+  "branding/badges/free-user.svg",
+  "branding/badges/learning-mastermind.svg",
+  "branding/badges/owner.svg",
+  "branding/badges/pro.svg",
+  "branding/badges/screener-blueprint.svg",
+  "branding/badges/screener-bundle-blueprint.svg",
+  "branding/badges/screener-data-blueprint.svg",
+  "branding/badges/screener-scoring-blueprint.svg",
+  "branding/badges/starter.svg",
+  "branding/badges/vault.svg",
+  "branding/badges/vocabulary.svg",
+  "branding/capital-ai-logo.jpg",
+  "branding/content/content-autopilot-security-1200x630.svg",
+  "branding/content/score-architecture-1200x630.svg",
+  "branding/learning-universe/flashcards.svg",
+  "branding/learning-universe/glossar.svg",
+  "branding/learning-universe/guides.svg",
+  "branding/learning-universe/kontakt.svg",
+  "branding/learning-universe/news.svg",
+  "branding/learning-universe/patterns.svg",
+  "branding/learning-universe/quiz.svg",
+  "branding/learning-universe/quizzes.svg",
+  "branding/learning-universe/simulator.svg",
+  "branding/learning-universe/videos.svg",
+  "branding/social/CAPITAL-AI-Universe-X-Launch-Final-20261115.png",
+  "branding/social/CAPITAL-AI-Universe-X-Launch-Owner-20261119.jpg",
+  "branding/social/github.svg",
+  "branding/social/threads.svg",
+  "branding/social/tiktok.svg",
+  "branding/social/x.svg",
+  "branding/social/youtube.svg",
+  "branding/universe/hero-universe-desktop.webp",
+  "branding/universe/hero-universe-globe.webp",
+  "branding/universe/hero-universe-mobile.webp",
+  "branding/universe/hero-universe-orbit.svg",
+  "branding/universe/hero-universe-tablet.webp",
+  "datenschutz/index.html",
+  "documentation/badges/growth.svg",
+  "documentation/badges/market.svg",
+  "documentation/badges/platform.svg",
+  "documentation/badges/product.svg",
+  "documentation/badges/trust.svg",
+  "documentation/byok.html",
+  "documentation/domains.html",
+  "documentation/pipeline-architectures.html",
+  "documentation/presentation-manifest.json",
+  "documentation/presentation.css",
+  "documentation/pricing-models.html",
+  "downloads/CAPITAL-AI_BYOK_2026-10-05.md",
+  "downloads/CAPITAL-AI_DOCUMENTATION_PROVENANCE_2026-10-05.md",
+  "downloads/CAPITAL-AI_Market-Screener-Hub_Open-Source-PRESENTATION-LICENSE_2026-10-04.txt",
+  "downloads/CAPITAL-AI_Market-Screener-Hub_Open-Source-SOURCES_2026-10-04.md",
+  "downloads/blueprints/AUTHORITY_PLANE.md",
+  "downloads/blueprints/HYBRID.md",
+  "downloads/blueprints/INDIVIDUAL_PACKAGE.md",
+  "downloads/blueprints/MIXED_DOMAIN.md",
+  "downloads/blueprints/PARALLEL_HOMOGENEOUS.md",
+  "downloads/blueprints/PARALLEL_MIXED.md",
+  "downloads/blueprints/TIER_1_4_LIVE.md",
+  "downloads/capital-ai-byok-presentation.html",
+  "downloads/market-screener-hub-open-source.html",
+  "fonts/OFL.txt",
+  "fonts/PlusJakartaSans-Italic.ttf",
+  "fonts/PlusJakartaSans-Regular.ttf",
+  "fonts/plus-jakarta-sans.css",
+  "fonts/provenance.json",
+  "impressum/index.html",
+  "index.md",
+  "learning/charts/adx.media-project.json",
+  "learning/charts/adx.png",
+  "learning/charts/adx.svg",
+  "learning/charts/ascending-channel.media-project.json",
+  "learning/charts/ascending-channel.png",
+  "learning/charts/ascending-channel.svg",
+  "learning/charts/ascending-triangle.media-project.json",
+  "learning/charts/ascending-triangle.png",
+  "learning/charts/ascending-triangle.svg",
+  "learning/charts/atr.media-project.json",
+  "learning/charts/atr.png",
+  "learning/charts/atr.svg",
+  "learning/charts/bear-flag.media-project.json",
+  "learning/charts/bear-flag.png",
+  "learning/charts/bear-flag.svg",
+  "learning/charts/bear-pennant.media-project.json",
+  "learning/charts/bear-pennant.png",
+  "learning/charts/bear-pennant.svg",
+  "learning/charts/bear-rectangle.media-project.json",
+  "learning/charts/bear-rectangle.png",
+  "learning/charts/bear-rectangle.svg",
+  "learning/charts/bollinger.media-project.json",
+  "learning/charts/bollinger.png",
+  "learning/charts/bollinger.svg",
+  "learning/charts/breakout-retest.media-project.json",
+  "learning/charts/breakout-retest.png",
+  "learning/charts/breakout-retest.svg",
+  "learning/charts/broadening-top.media-project.json",
+  "learning/charts/broadening-top.png",
+  "learning/charts/broadening-top.svg",
+  "learning/charts/bull-flag-retest.media-project.json",
+  "learning/charts/bull-flag-retest.png",
+  "learning/charts/bull-flag-retest.svg",
+  "learning/charts/bull-flag.media-project.json",
+  "learning/charts/bull-flag.png",
+  "learning/charts/bull-flag.svg",
+  "learning/charts/bull-pennant.media-project.json",
+  "learning/charts/bull-pennant.png",
+  "learning/charts/bull-pennant.svg",
+  "learning/charts/bull-rectangle.media-project.json",
+  "learning/charts/bull-rectangle.png",
+  "learning/charts/bull-rectangle.svg",
+  "learning/charts/campaign.json",
+  "learning/charts/cci.media-project.json",
+  "learning/charts/cci.png",
+  "learning/charts/cci.svg",
+  "learning/charts/cup-handle.media-project.json",
+  "learning/charts/cup-handle.png",
+  "learning/charts/cup-handle.svg",
+  "learning/charts/descending-channel.media-project.json",
+  "learning/charts/descending-channel.png",
+  "learning/charts/descending-channel.svg",
+  "learning/charts/descending-triangle.media-project.json",
+  "learning/charts/descending-triangle.png",
+  "learning/charts/descending-triangle.svg",
+  "learning/charts/diamond-bottom.media-project.json",
+  "learning/charts/diamond-bottom.png",
+  "learning/charts/diamond-bottom.svg",
+  "learning/charts/diamond-top.media-project.json",
+  "learning/charts/diamond-top.png",
+  "learning/charts/diamond-top.svg",
+  "learning/charts/donchian.media-project.json",
+  "learning/charts/donchian.png",
+  "learning/charts/donchian.svg",
+  "learning/charts/double-bottom.media-project.json",
+  "learning/charts/double-bottom.png",
+  "learning/charts/double-bottom.svg",
+  "learning/charts/double-top.media-project.json",
+  "learning/charts/double-top.png",
+  "learning/charts/double-top.svg",
+  "learning/charts/failed-breakdown.media-project.json",
+  "learning/charts/failed-breakdown.png",
+  "learning/charts/failed-breakdown.svg",
+  "learning/charts/failed-breakout.media-project.json",
+  "learning/charts/failed-breakout.png",
+  "learning/charts/failed-breakout.svg",
+  "learning/charts/falling-wedge.media-project.json",
+  "learning/charts/falling-wedge.png",
+  "learning/charts/falling-wedge.svg",
+  "learning/charts/flat-bear-flag.media-project.json",
+  "learning/charts/flat-bear-flag.png",
+  "learning/charts/flat-bear-flag.svg",
+  "learning/charts/flat-bull-flag.media-project.json",
+  "learning/charts/flat-bull-flag.png",
+  "learning/charts/flat-bull-flag.svg",
+  "learning/charts/head-shoulders.media-project.json",
+  "learning/charts/head-shoulders.png",
+  "learning/charts/head-shoulders.svg",
+  "learning/charts/high-tight-flag.media-project.json",
+  "learning/charts/high-tight-flag.png",
+  "learning/charts/high-tight-flag.svg",
+  "learning/charts/horizontal-channel.media-project.json",
+  "learning/charts/horizontal-channel.png",
+  "learning/charts/horizontal-channel.svg",
+  "learning/charts/inverse-cup-handle.media-project.json",
+  "learning/charts/inverse-cup-handle.png",
+  "learning/charts/inverse-cup-handle.svg",
+  "learning/charts/inverse-head-shoulders.media-project.json",
+  "learning/charts/inverse-head-shoulders.png",
+  "learning/charts/inverse-head-shoulders.svg",
+  "learning/charts/keltner.media-project.json",
+  "learning/charts/keltner.png",
+  "learning/charts/keltner.svg",
+  "learning/charts/macd.media-project.json",
+  "learning/charts/macd.png",
+  "learning/charts/macd.svg",
+  "learning/charts/manifest.json",
+  "learning/charts/moving-averages.media-project.json",
+  "learning/charts/moving-averages.png",
+  "learning/charts/moving-averages.svg",
+  "learning/charts/obv.media-project.json",
+  "learning/charts/obv.png",
+  "learning/charts/obv.svg",
+  "learning/charts/pennant.media-project.json",
+  "learning/charts/pennant.png",
+  "learning/charts/pennant.svg",
+  "learning/charts/png-manifest.json",
+  "learning/charts/rising-wedge.media-project.json",
+  "learning/charts/rising-wedge.png",
+  "learning/charts/rising-wedge.svg",
+  "learning/charts/roc.media-project.json",
+  "learning/charts/roc.png",
+  "learning/charts/roc.svg",
+  "learning/charts/rounding-bottom.media-project.json",
+  "learning/charts/rounding-bottom.png",
+  "learning/charts/rounding-bottom.svg",
+  "learning/charts/rounding-top.media-project.json",
+  "learning/charts/rounding-top.png",
+  "learning/charts/rounding-top.svg",
+  "learning/charts/rsi.media-project.json",
+  "learning/charts/rsi.png",
+  "learning/charts/rsi.svg",
+  "learning/charts/stochastic.media-project.json",
+  "learning/charts/stochastic.png",
+  "learning/charts/stochastic.svg",
+  "learning/charts/support-resistance.media-project.json",
+  "learning/charts/support-resistance.png",
+  "learning/charts/support-resistance.svg",
+  "learning/charts/symmetric-triangle.media-project.json",
+  "learning/charts/symmetric-triangle.png",
+  "learning/charts/symmetric-triangle.svg",
+  "learning/charts/triple-bottom.media-project.json",
+  "learning/charts/triple-bottom.png",
+  "learning/charts/triple-bottom.svg",
+  "learning/charts/triple-top.media-project.json",
+  "learning/charts/triple-top.png",
+  "learning/charts/triple-top.svg",
+  "learning/charts/v-bottom.media-project.json",
+  "learning/charts/v-bottom.png",
+  "learning/charts/v-bottom.svg",
+  "learning/charts/v-top.media-project.json",
+  "learning/charts/v-top.png",
+  "learning/charts/v-top.svg",
+  "learning/charts/volume-breakout.media-project.json",
+  "learning/charts/volume-breakout.png",
+  "learning/charts/volume-breakout.svg",
+  "learning/charts/williams-r.media-project.json",
+  "learning/charts/williams-r.png",
+  "learning/charts/williams-r.svg",
+  "learning/editorial/chart-accessibility-20261010.svg",
+  "learning/editorial/chart-patterns-comparison-20261010.svg",
+  "learning/editorial/x-api-kostenbewusst-20261106.svg",
+  "learning/social/etf-kosten-01.svg",
+  "learning/social/etf-kosten-02.svg",
+  "learning/social/etf-kosten-03.svg",
+  "learning/videos/architektur.media-project.json",
+  "learning/videos/architektur.svg",
+  "learning/videos/campaign.json",
+  "learning/videos/capital-ai-tour-asset-manifest.json",
+  "learning/videos/capital-ai-tour-project.json",
+  "learning/videos/capital-ai-tour-scene-01.png",
+  "learning/videos/capital-ai-tour-scene-02.png",
+  "learning/videos/capital-ai-tour-scene-03.png",
+  "learning/videos/capital-ai-tour-scene-04.png",
+  "learning/videos/capital-ai-tour-short-1080x1920.mp4",
+  "learning/videos/capital-ai-tour-square-1080x1080.png",
+  "learning/videos/capital-ai-tour-thumbnail-1280x720.png",
+  "learning/videos/capital-ai-tour-vertical-1080x1920.png",
+  "learning/videos/capital-ai-tour-youtube-description.txt",
+  "learning/videos/fintech-deepdive-universe.webp",
+  "learning/videos/fintech-deepdive.media-project.json",
+  "learning/videos/fintech-deepdive.svg",
+  "learning/videos/masterclass-universe.webp",
+  "learning/videos/social.media-project.json",
+  "learning/videos/social.svg",
+  "llms-full.txt",
+  "youtube-private-upload.js"
+]);
+
+async function artifactFiles(root) {
+  const files = [];
+  async function visit(parts) {
+    for (const entry of await readdir(join(root, ...parts), { withFileTypes: true })) {
+      const next = [...parts, entry.name];
+      if (entry.isDirectory()) await visit(next);
+      else if (entry.isFile()) files.push(next.join('/'));
+      else throw new Error('Non-regular entry in public artifact inventory');
+    }
+  }
+  await visit([]);
+  return files;
+}
+
+export async function assertKnownPublicSourceInventory(root) {
+  const files = await artifactFiles(root);
+  for (const file of files) {
+    if (!STATIC_SOURCE_BASELINE.has(file)) throw new Error('Unadmitted public source artifact: ' + file);
+  }
+  return files.length;
+}
+
+export async function enforcePublicBuildInventory(root, generatedPaths) {
+  const generated = new Set(generatedPaths);
+  const files = await artifactFiles(root);
+  const excluded = [];
+  for (const file of files) {
+    // Vite's local public copy may contain pre-existing private Blueprint files.
+    // Never copy these to a release; remove only the explicit legacy inputs.
+    if (STATIC_SOURCE_BASELINE.has(file) && file.startsWith('downloads/blueprints/')) {
+      excluded.push(file);
+      continue;
+    }
+    const known = STATIC_SOURCE_BASELINE.has(file) || generated.has(file);
+    const classification = known && !isBlockedPublicArtifactPath('/' + file) ? 'PUBLIC' : 'UNKNOWN';
+    if (!mayPublishInformation(classification)) throw new Error('Unadmitted build artifact: ' + file);
+  }
+  for (const file of excluded) await unlink(join(root, ...file.split('/')));
+  return { admitted: files.length - excluded.length, excluded: excluded.length };
 }
