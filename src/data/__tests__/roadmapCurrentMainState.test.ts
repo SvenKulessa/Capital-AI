@@ -528,3 +528,27 @@ test('2026-11-20 roadmap reconciliation keeps merged code and production evidenc
   assert.equal(ROADMAP_RECONCILIATION.reviewedAt, '2026-10-06');
   assert.equal(ROADMAP_RECONCILIATION.packageCount, 105);
 });
+
+
+test('public surface audit tasks attach to existing packages without changing historical inventory', async () => {
+  const { PUBLIC_SURFACE_AUDIT_TASKS, auditTasksForPackage } = await import('../publicSurfaceAuditRoadmap');
+  const tasks = PUBLIC_SURFACE_AUDIT_TASKS;
+  const ids = new Set(tasks.map(task => task.id));
+  assert.equal(tasks.length, 11);
+  assert.equal(ids.size, tasks.length);
+  assert.deepEqual(tasks.filter(task => task.priority === 'P0').map(task => task.id), ['P0-03', 'P0-01', 'P0-02']);
+  const packages = new Set(WORK_PACKAGES.map(item => item.id));
+  for (const task of tasks) {
+    assert.ok(packages.has(task.packageId), task.packageId);
+    assert.ok(auditTasksForPackage(task.packageId).includes(task));
+    for (const dependency of task.dependsOn) {
+      assert.ok(ids.has(dependency));
+      assert.ok(tasks.findIndex(item => item.id === dependency) < tasks.indexOf(task));
+    }
+  }
+  assert.deepEqual(auditTasksForPackage('UNKNOWN_PACKAGE'), []);
+  const panel = readFileSync(new URL('../../components/RoadmapPanel.tsx', import.meta.url), 'utf8');
+  assert.match(panel, /auditTasksForPackage/);
+  assert.match(panel, /NOT_PROVEN/);
+  assert.match(panel, /payload\.repository !== ROADMAP_SNAPSHOT\.repository/);
+});

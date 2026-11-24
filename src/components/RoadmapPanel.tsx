@@ -1,6 +1,7 @@
 import React from 'react';
 import { RoadmapDeltaPanel } from './RoadmapDeltaPanel';
 import { EcosystemRoadmapPanel } from './EcosystemRoadmapPanel';
+import { auditTasksForPackage, PUBLIC_SURFACE_AUDIT_TASKS } from '../data/publicSurfaceAuditRoadmap';
 import type { RoadmapDeltaLineageProof } from '../data/roadmapDeltaReconciliation';
 import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, ROADMAP_STRATEGIC_PRIORITIES, WORK_PACKAGES } from '../data/roadmapData';
 import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
@@ -62,14 +63,14 @@ export const RoadmapPanel: React.FC = () => {
       const payload = data as Record<string, unknown>;
       if (!payload || payload.schema !== 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1' ||
           typeof payload.sourceSha !== 'string' || !SOURCE_SHA.test(payload.sourceSha) ||
-          typeof payload.repository !== 'string' ||
+          payload.repository !== ROADMAP_SNAPSHOT.repository ||
           typeof payload.observedAt !== 'string' ||
           !['LIVE', 'CACHED', 'STALE'].includes(String(payload.freshness))) {
         throw new Error('invalid_repository_snapshot');
       }
       if (!signal?.aborted) {
         setRepositoryStatus({
-          repository: payload.repository,
+          repository: ROADMAP_SNAPSHOT.repository,
           sourceSha: payload.sourceSha,
           deployedSha: typeof payload.deployedSha === 'string' && SOURCE_SHA.test(payload.deployedSha)
             ? payload.deployedSha : null,
@@ -120,10 +121,13 @@ export const RoadmapPanel: React.FC = () => {
   const toggleState = (value: RoadmapEvidenceState) =>
     setSelectedStates(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value]);
   const [search, setSearch] = React.useState('');
+  const [auditPriority, setAuditPriority] = React.useState<'all' | 'P0' | 'P1' | 'P2'>('all');
+  const visibleAuditTasks = (id: string) => auditTasksForPackage(id).filter(task => auditPriority === 'all' || task.priority === auditPriority);
   const packages = WORK_PACKAGES.filter(item =>
     selectedOwners.includes(item.owner) &&
     selectedStates.includes(item.evidenceState) &&
-    `${item.id} ${item.title} ${item.description}`.toLocaleLowerCase('de').includes(search.toLocaleLowerCase('de'))
+    (auditPriority === 'all' || visibleAuditTasks(item.id).length > 0) &&
+    `${item.id} ${item.title} ${item.description} ${visibleAuditTasks(item.id).map(task => `${task.id} ${task.title} ${task.nextStep}`).join(' ')}`.toLocaleLowerCase('de').includes(search.trim().toLocaleLowerCase('de'))
   ).sort((a, b) =>
     (STRATEGIC_PACKAGE_RANK.get(a.id) ?? Infinity) - (STRATEGIC_PACKAGE_RANK.get(b.id) ?? Infinity)
   );
@@ -182,13 +186,25 @@ export const RoadmapPanel: React.FC = () => {
       {repositoryStatus?.deployedSha && <p className="text-xs text-slate-400">Webservice: {repositoryStatus.deployedSha.slice(0, 12)}
         {repositoryStatus.deployedSha !== repositoryStatus.sourceSha && <span className="text-amber-300"> · Deployment weicht von main ab</span>}
       </p>}
-      {syncError && <p role="alert" className="text-xs text-amber-300">GitHub-Abgleich fehlgeschlagen oder veraltet. Der letzte verifizierte Stand bleibt sichtbar.</p>}
+      {syncError && <p role="alert" className="text-xs text-amber-300">GitHub-Abgleich fehlgeschlagen oder veraltet. Der zuletzt empfangene Stand ist kein aktueller Verifikationsnachweis.</p>}
       <p className="text-xs text-slate-500">Automatischer Abgleich nach jeweils 10 gemergten PRs, Änderungs-PR mit geprüftem Ergebnis.
         {mergeAudit.state === 'RECONCILED_CODE_AND_DOCUMENTS' && ` ${mergeAudit.unproven} Arbeitspakete mit offenen / nicht auflösbaren Referenzen.`}
         VERIFIED wird nicht aus einem GitHub-HEAD oder einer bloßen Datei-Existenz abgeleitet.</p>
     </div>
     <RoadmapDeltaPanel readback={repositoryStatus} />
     <EcosystemRoadmapPanel />
+    <div className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+      <h3 className="font-semibold text-white">Website-Qualität und Control-Center-Pflege</h3>
+      <p className="mt-1 text-sm text-slate-300">{PUBLIC_SURFACE_AUDIT_TASKS.length} Teilaufgaben in bestehenden Arbeitspaketen. Abnahme ausstehend; keine zusätzlichen Release-Gates.</p>
+      <label className="mt-3 block text-sm">Audit-Priorität
+        <select className="mt-1 block min-h-11 w-full rounded-lg border border-slate-600 bg-slate-900 px-3" value={auditPriority} onChange={event => {
+          const value = event.target.value;
+          if (value === 'all' || value === 'P0' || value === 'P1' || value === 'P2') setAuditPriority(value);
+        }}>
+          <option value="all">Alle Arbeitspakete</option><option value="P0">P0 · Sicherheit</option><option value="P1">P1 · Qualität</option><option value="P2">P2 · Optimierung</option>
+        </select>
+      </label>
+    </div>
     <details className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3" aria-label="Roadmap Statusfilter">
       <summary className="cursor-pointer text-sm font-semibold text-white">
         Status auswählen · {selectedStates.length} von {Object.keys(STATES).length} <span className="text-slate-400">(Mehrfachauswahl)</span>
@@ -261,6 +277,15 @@ export const RoadmapPanel: React.FC = () => {
           </div>
           <h3 className="font-semibold">{item.title}</h3>
           <p className="text-sm text-slate-400 mt-2">{item.description}</p>
+          {visibleAuditTasks(item.id).length > 0 && <details className="mt-3 text-sm" open={auditPriority !== 'all' || search.trim().length > 0 ? true : undefined}>
+            <summary className="cursor-pointer text-amber-300">Audit-Teilaufgaben · {visibleAuditTasks(item.id).length}</summary>
+            <ul className="mt-2 space-y-3">{visibleAuditTasks(item.id).map(task => <li key={task.id} className="rounded-lg border border-slate-700 p-3">
+              <p className="text-xs text-slate-400">{task.milestone} · {task.priority} · {task.id} · NOT_PROVEN</p>
+              <p className="font-semibold text-white">{task.title}</p>
+              <p className="mt-1 text-slate-300">{task.nextStep}</p>
+              {task.dependsOn.length > 0 && <p className="mt-1 text-xs text-slate-400">Abnahmeabhängigkeiten: {task.dependsOn.join(', ')}</p>}
+            </li>)}</ul>
+          </details>}
           <details className="mt-3 text-sm">
             <summary className="cursor-pointer text-amber-300">Nächster Schritt und Nachweise</summary>
             <p className="mt-2">{item.nextStep}</p>

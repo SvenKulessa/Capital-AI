@@ -75,3 +75,10 @@ Zusätzlich zum allgemeinen Content-Schutz werden öffentliche SEO-relevante Inh
 - Status bleibt PROPOSED bis zur Maintainer-Freigabe.
 
 **Abschluss:** Konzept erweitert und als Arbeitspaket definiert. Umsetzung gestartet mit der Dokumentation.
+
+
+## Reconciliation 24.11.2026
+
+Der ursprüngliche Text ist ein historischer Konzeptstand. Die aktuelle Aufgabenprojektion für das Owner Control Center ist `src/data/publicSurfaceAuditRoadmap.ts` im bestehenden `RoadmapPanel`; Aufgaben sind den kanonischen Arbeitspaketen zugeordnet, statt eine zweite Roadmap oder neue Paket-IDs einzuführen. Der historische 105-Pakete-Abgleich bleibt unverändert. M1/M2 sind fachliche Abnahmegruppen; die Root-AGENTS.md und bestehende GitHub-Checks bleiben maßgeblich. Die Projektion enthält ausschließlich öffentliche, allgemeine Planungsinformationen, keine vertraulichen Findings oder Evidence. Sämtliche Teilaufgaben bleiben bis zur tatsächlichen Einzelabnahme NOT_PROVEN. Keine Aussage über bereits gemergten Code, CI oder Produktionswirkung.
+
+Die Control-Center-Pflege umfasst alle bestehenden Tabs, gemeinsame Datenquellen, Berechtigungen, barrierearme Bedienung, Code-/Dokumentduplikate und veraltete Verweise. Historische SHA-gebundene Nachweise bleiben erhalten. Keine neue Provideraktivierung, keine Archivmutation und keine zusätzliche Kostenfreigabe.

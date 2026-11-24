@@ -88,14 +88,6 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
     hasShownSection.current = true;
   }, [activeTab, ownerAccess]);
 
-  const navigateSection = (value: string) => {
-    const section = CONTROL_CENTER_SECTION_IDS.find((id) => id === value);
-    if (!section) return;
-    const target = '/control-center/' + section;
-    if (onNavigateTab) onNavigateTab(target);
-    else navigateAppLocation(target);
-  };
-
   if (ownerAccess !== 'allowed') return null;
 
   const currentSection = SECTIONS.find((section) => section.id === activeTab);
