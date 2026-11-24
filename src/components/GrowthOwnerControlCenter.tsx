@@ -191,7 +191,7 @@ export function GrowthOwnerControlCenter() {
           onClick={() => { setView(key); if (key === 'edit' && !draft) setDraft(rows[0] ?? makeRow('new', 'Neue Integration', 'GROWTH')); }}>{label}</button>)}
     </nav>
     <div className="flex flex-wrap gap-2">
-      <button type="button" className={button} disabled={pending} onClick={() => void readAnalytics()}> GA4 Read-only prüfen · GSC</button>
+      <button type="button" className={button} disabled={pending} onClick={() => void readAnalytics()}>GA4 und GSC Read-only prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
       <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>
