@@ -167,3 +167,16 @@ test('bound HTTP builder claim does not self-authorize signed image provenance',
   assert.match(summary, /OCI \/ Sigstore attestation: NOT_PROVEN/);
   assert.throws(() => healthReadbackSummary({ schema: 'FORGED' }), /READBACK_REPORT_INVALID/);
 });
+
+
+test('coerced SHA values are rejected and baked/runtime drift is explicit', () => {
+  for (const body of [
+    { ...health(), runtimeIdentity: { sourceSha: [SHA] } },
+    { ...health(), buildIdentity: { bound: true, sourceSha: [SHA], builder: BUILDER } },
+    { ...health(), renderGitBuildIdentity: { sourceSha: [SHA], evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED' } },
+  ]) assert.throws(() => projectHealth(200, body), /INVALID_SOURCE_SHA/);
+  assert.throws(() => projectHealth(200, health(), [SHA]), /INVALID_SOURCE_SHA/);
+  const drift = projectHealth(200, { ...health(), buildIdentity: { bound: true, sourceSha: 'b'.repeat(40), builder: BUILDER } }, SHA);
+  assert.match(healthReadbackSummary(drift), /NOT_PROVEN_BAKED_RUNTIME_SHA_DRIFT/);
+  assert.match(healthReadbackSummary(drift), /OCI \/ Sigstore attestation: NOT_PROVEN/);
+});
