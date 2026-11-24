@@ -95,7 +95,7 @@ export function LearningVideos() {
       </select></label>
     <p className="text-sm text-slate-300">{approvedVideos.length === 0
       ? 'Noch keine veröffentlichten Lernvideos. Das verfügbare Lernangebot besteht unabhängig davon.'
-      : 'Öffentlich freigegebene YouTube-Vorschau: höchstens ein Video je Kategorie. Kostenpflichtige Lerninhalte werden getrennt von YouTube bereitgestellt.'}</p>
+      : 'Öffentlich freigegebene YouTube-Vorschau: bis zu zwei ausdrücklich freigegebene Masterclass-Folgen, sonst höchstens ein Video je Kategorie. Kostenpflichtige Lerninhalte werden getrennt von YouTube bereitgestellt.'}</p>
     <div className="grid gap-4 md:grid-cols-3">{categories.map(value => {
       if (value === FINTECH_CATEGORY) return <FintechMasterclass key={value} stage={masterclassStage} onNavigate={setMasterclassStage} videos={approvedVideos}/>;
       const video = approvedVideos.find(item => item.category === value);
