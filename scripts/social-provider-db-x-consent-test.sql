@@ -37,7 +37,9 @@ begin
   if (capital_growth_private.x_conversion_candidates(clock_timestamp()-interval '1 day',clock_timestamp())->>'candidatePaidSubscriptions') is not null
     then raise exception 'REVERSED_COUNTED'; end if;
   if capital_growth_private.revoke_x_consent(repeat('b',64),'a0000000-0000-4000-8000-000000000003') then raise exception 'FOREIGN_REVOCATION'; end if;
-  if not capital_growth_private.revoke_x_consent(repeat('b',64),'a0000000-0000-4000-8000-000000000002') then raise exception 'REVOKE_FAILED'; end if;
+  if capital_growth_private.revoke_x_consent_for_user('a0000000-0000-4000-8000-000000000003') then raise exception 'UNBOUND_WITHDRAWAL'; end if;
+  if not capital_growth_private.revoke_x_consent_for_user('a0000000-0000-4000-8000-000000000002') then raise exception 'NONCE_FREE_WITHDRAWAL_FAILED'; end if;
+  if capital_growth_private.revoke_x_consent_for_user('a0000000-0000-4000-8000-000000000002') then raise exception 'WITHDRAWAL_REPLAY'; end if;
   if capital_growth_private.x_signup_count(clock_timestamp()-interval '1 day',clock_timestamp())<>0 then raise exception 'REVOKED_COUNTED'; end if;
   if capital_growth_private.grant_x_consent(repeat('b',64)) then raise exception 'REVOKED_REGRANTED'; end if;
   begin
@@ -52,6 +54,10 @@ begin
   begin
     perform capital_growth_private.grant_x_consent(repeat('c',64));
     raise exception 'BROWSER_RPC_ALLOWED';
+  exception when insufficient_privilege then null; end;
+  begin
+    perform capital_growth_private.revoke_x_consent_for_user('a0000000-0000-4000-8000-000000000002');
+    raise exception 'BROWSER_WITHDRAWAL_RPC_ALLOWED';
   exception when insufficient_privilege then null; end;
 end $$;
 reset role;
