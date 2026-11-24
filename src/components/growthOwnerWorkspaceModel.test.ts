@@ -100,3 +100,12 @@ test('GSC direct owner report preserves source, import downgrade and missing ver
     {...report,metrics:{...report.metrics,ctr:0.8}},{...report,evidenceSha256:null}])assert.throws(()=>projectGsc(v,gsc));
   assert.throws(()=>projectGsc(report,row));
 });
+
+test('X acquisition inventory exposes only planning and never promotes missing conversions or budgets',()=>{
+  const rows=initialRows().filter(r=>r.id.startsWith('x-growth-'));
+  assert.deepEqual(rows.map(r=>r.id),['x-growth-budget','x-growth-attribution','x-growth-graph']);
+  assert.ok(rows.every(r=>r.origin==='OWNER_NOTE'&&r.status==='NOT_PROVEN'&&r.evidence===''));
+  assert.deepEqual(importWorkspace(exportWorkspace(appendSnapshot([],rows,at)))[0].rows,rows);
+  assert.match(rows[0].flow,/20 EUR/);
+  assert.match(rows[1].next,/GA4-, Supabase- und Stripe/);
+});
