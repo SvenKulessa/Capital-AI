@@ -2,7 +2,7 @@ import { createHmac } from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import { createPurchaseReceipt } from './purchase-receipt.mjs';
+import { createPurchaseReceipt, createXInitialInvoiceObserver } from './purchase-receipt.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { BLUEPRINT_PRODUCTS } from './blueprint-commerce.mjs';
 const userId = '5cf37f93-1103-467d-9810-ea98f93fdca3';
@@ -19,9 +19,9 @@ function fixture(kind='learning') {
   const payments={has_more:false,data:[{status:'paid',payment:{payment_intent:{status:'succeeded',livemode:true,latest_charge:structuredClone(charge)}}}]};
   return {session,lines,payments};
 }
-async function invoke(f=fixture(), {user={userId},origin=true,method='POST',body={sessionId},secret=env.STRIPE_SECRET_KEY}={}) {
+async function invoke(f=fixture(), {user={userId},origin=true,method='POST',body={sessionId},secret=env.STRIPE_SECRET_KEY,initialInvoiceObserver}={}) {
   const calls=[];
-  const handler=createPurchaseReceipt({env:{...env,STRIPE_SECRET_KEY:secret},auth:{sameOrigin:()=>origin,verify:async()=>user},fetchImpl:async(url,options)=>{
+  const handler=createPurchaseReceipt({env:{...env,STRIPE_SECRET_KEY:secret},initialInvoiceObserver,auth:{sameOrigin:()=>origin,verify:async()=>user},fetchImpl:async(url,options)=>{
     assert.equal(options.method,undefined,'receipt makes GET requests exclusively');calls.push(url);
     return Response.json(url.includes('/line_items?')?f.lines:url.includes('/invoice_payments?')?f.payments:f.session);
   }});
@@ -61,4 +61,28 @@ test('a fully discounted completed Learning purchase preserves the existing zero
 test('Learning keeps the existing transaction identity across the confirmation migration',async()=>{
   const result=await invoke(fixture());
   assert.equal(result.payload.transactionId,createHmac('sha256',env.STRIPE_SECRET_KEY).update('learning-analytics:'+sessionId).digest('hex'));
+});
+
+
+test('optional trusted X invoice observer runs only after verified live initial invoice and confirmed user',async()=>{
+  const records=[], key='synthetic-dedicated-test-key-32-bytes';
+  const observer=createXInitialInvoiceObserver({key,record:async r=>{records.push(r);return true;},now:()=>1800000000000});
+  const f=fixture('saas');f.session.invoice.status_transitions={paid_at:1799999999};
+  const options={user:{userId,emailVerified:true},initialInvoiceObserver:observer};
+  const r=await invoke(f,options);
+  assert.equal(r.status,200);assert.equal(records.length,1);
+  assert.deepEqual(records[0],{p_user:userId,
+    p_invoice:createHmac('sha256',key).update('CAI-X-GROWTH@1:invoice:in_fixture').digest('hex'),
+    p_subscription:createHmac('sha256',key).update('CAI-X-GROWTH@1:subscription:sub_fixture').digest('hex'),
+    p_paid:new Date(1799999999000).toISOString(),p_observed:new Date(1800000000000).toISOString(),p_cents:700});
+  assert.doesNotMatch(JSON.stringify(r.payload),/p_invoice|p_user|in_fixture/);
+  assert.equal(r.calls.length,3);
+  await invoke(f,{...options,user:{userId,emailVerified:false}});
+  await invoke(f,{...options,initialInvoiceObserver:undefined});
+  const bad=fixture('saas');bad.session.invoice.status_transitions={paid_at:1799999999};
+  bad.payments.data[0].payment.payment_intent.latest_charge.refunded=true;
+  assert.equal((await invoke(bad,options)).status,409);
+  await invoke(fixture('saas'),options);
+  assert.equal(records.length,1);
+  assert.equal((await invoke(f,{...options,initialInvoiceObserver:async()=>{throw Error('private');}})).status,200);
 });
