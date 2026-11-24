@@ -44,7 +44,7 @@ language plpgsql security invoker set search_path = ''
 as $$
 declare
   b public.capital_x_growth_budget%rowtype;
-  current_time_utc timestamptz := clock_timestamp();
+  current_time_utc timestamptz;
 begin
   if p_user_id is null or p_account_id is null or p_account_id !~ '^[0-9]{1,25}$'
      or p_content_key is null or p_content_key !~ '^[a-f0-9]{64}$' then
@@ -54,6 +54,7 @@ begin
   select * into b from public.capital_x_growth_budget
    where external_account_id = p_account_id and user_id = p_user_id for update;
   if not found then raise exception 'X_BUDGET_NOT_CONFIGURED'; end if;
+  current_time_utc := clock_timestamp();
   if exists (select 1 from public.capital_x_growth_reservations
       where external_account_id=p_account_id and content_key=p_content_key) then
     return jsonb_build_object('claimed',false,'accountId',p_account_id,'contentKey',p_content_key);
