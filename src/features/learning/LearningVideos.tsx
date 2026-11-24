@@ -84,7 +84,7 @@ export function LearningVideos() {
   const [masterclassStage,setMasterclassStage]=useState<MasterclassStage>('cover');
   const showFintech = category === 'Alle' || category === FINTECH_CATEGORY;
   const approvedVideos = visibleLearningVideos(LEARNING_VIDEOS);
-  const videos = approvedVideos.filter(video => video.category !== FINTECH_CATEGORY && (category === 'Alle' || video.category === category));
+  const categories = showFintech && masterclassStage !== 'cover' ? VIDEO_CATEGORIES.filter(value => value === FINTECH_CATEGORY) : VIDEO_CATEGORIES.filter(value => category === 'Alle' || category === value);
   return <section className="space-y-5" aria-labelledby="learning-video-title">
     <h2 id="learning-video-title" className="text-2xl font-bold text-white">Learning Portal · Videos</h2>
     <label className="block text-sm text-amber-200">Videokategorie
@@ -94,11 +94,16 @@ export function LearningVideos() {
     <p className="text-sm text-slate-300">{approvedVideos.length === 0
       ? 'Noch keine veröffentlichten Lernvideos. Das verfügbare Lernangebot besteht unabhängig davon.'
       : 'Öffentlich freigegebene YouTube-Vorschau: höchstens ein Video je Kategorie. Kostenpflichtige Lerninhalte werden getrennt von YouTube bereitgestellt.'}</p>
-    <div className="grid gap-4 md:grid-cols-3">{showFintech && masterclassStage !== 'cover' ? <FintechMasterclass stage={masterclassStage} onNavigate={setMasterclassStage} videos={approvedVideos}/> : <>{videos.map(video => <VideoPlayer key={video.id} video={video}/>)}{showFintech && <FintechMasterclass stage={masterclassStage} onNavigate={setMasterclassStage} videos={approvedVideos}/>} {VIDEO_CATEGORIES.filter(value=>value !== FINTECH_CATEGORY && (category==='Alle'||category===value) && !approvedVideos.some(video => video.category === value)).map(value=><article key={value} className="overflow-hidden rounded-2xl border border-amber-400/25 bg-[#090e21]">
-      <LearningComingSoonGraphic category={value}/><div className="space-y-2 p-4"><h3 className="font-bold text-amber-200">{value}</h3>
-      <p className="text-sm text-slate-300">Das erste Lernvideo erscheint hier demnächst als YouTube-Einbettung.</p>
-      <p className="text-xs text-slate-400">Noch kein Video veröffentlicht. Eigene Illustration · Content- und Social-Engine-Entwurf.</p></div>
-    </article>)}</>}</div>
+    <div className="grid gap-4 md:grid-cols-3">{categories.map(value => {
+      if (value === FINTECH_CATEGORY) return <FintechMasterclass key={value} stage={masterclassStage} onNavigate={setMasterclassStage} videos={approvedVideos}/>;
+      const video = approvedVideos.find(item => item.category === value);
+      if (video) return <VideoPlayer key={video.id} video={video}/>;
+      return <article key={value} className="overflow-hidden rounded-2xl border border-amber-400/25 bg-[#090e21]">
+        <LearningComingSoonGraphic category={value}/><div className="space-y-2 p-4"><h3 className="font-bold text-amber-200">{value}</h3>
+        <p className="text-sm text-slate-300">Das erste Lernvideo erscheint hier demnächst als YouTube-Einbettung.</p>
+        <p className="text-xs text-slate-400">Noch kein Video veröffentlicht. Eigene Illustration · Content- und Social-Engine-Entwurf.</p></div>
+      </article>;
+    })}</div>
     <nav aria-label="Weitere Lernangebote" className="flex flex-wrap gap-3 text-sm">
       <a href="/learning#learning-offer" className="inline-flex min-h-11 items-center rounded-lg border border-amber-400/40 px-4 py-2 font-semibold text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">Bestehendes Lernangebot ansehen</a>
       <a href="https://youtube.com/@capital-ai.online" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg border border-slate-500/40 px-4 py-2 text-slate-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">CAPITAL AI auf YouTube (externer Dienst)</a>
