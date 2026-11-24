@@ -61,14 +61,15 @@ export function GrowthOwnerControlCenter() {
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function upload(file: File | undefined) {
-    if (!file) return;
+    if (!file || pending) return;
+    setPending(true);
     try {
-      if (file.size > 1_000_000) throw new Error('Import too large');
+      if (file.size > 5_000_000) throw new Error('Import too large');
       const imported = importWorkspace(await file.text());
       setHistory(imported); setBaseline(imported[0].version); setDraft(null); setView('matrix');
       setMessage('Import übernommen. Importierte VERIFIED-Angaben sind NOT_PROVEN bis zum neuen Readback.');
     } catch { setMessage('Import abgelehnt: Schema, Größe oder Inhalt ungültig.'); }
-    finally { if (fileInput.current) fileInput.current.value = ''; }
+    finally { setPending(false); if (fileInput.current) fileInput.current.value = ''; }
   }
 
   return <section aria-label="Growth Intelligence Control Center" className="space-y-4 rounded-2xl border border-indigo-400/30 bg-[#070b19] p-4 text-slate-100 sm:p-5">
@@ -76,7 +77,7 @@ export function GrowthOwnerControlCenter() {
       <p className="text-xs font-bold tracking-widest text-indigo-300">CAPITAL-AI / OWNER / GROWTH</p>
       <h2 className="mt-2 text-xl font-black">Growth Intelligence Control Center</h2>
       <p className="mt-2 text-sm text-slate-300">SOLO2 · Arbeitsstand v{current.version} · {new Date(current.at).toLocaleString('de-DE')}</p>
-      <p className="mt-2 text-xs text-slate-400">Nur aktuelle Sitzung; JSON-Export zur Wiederverwendung. Keine Tokens, Kundendaten oder Secrets eingeben. Dokumentierte Freigaben erteilen keine Berechtigungen.</p>
+      <p className="mt-2 text-xs text-slate-400">Nur aktuelle Sitzung; JSON-Export zur Wiederverwendung. Bis zu 30 Versionen (4 MB Historie). Keine Tokens, Kundendaten oder Secrets eingeben. Dokumentierte Freigaben erteilen keine Berechtigungen.</p>
     </header>
     <div className="grid grid-cols-3 gap-2" aria-label="Evidence-Matrix">
       {statuses.map(s => <button key={s} type="button" onClick={() => { setStatus(s); setView('matrix'); }} className="min-h-16 rounded-xl border border-white/10 bg-white/5 p-2">
