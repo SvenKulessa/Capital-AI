@@ -60,6 +60,16 @@ begin
     where nonce_sha256=p_nonce and user_id is not distinct from p_user and revoked_at is null;
   return found;
 end $$;
+-- Bound users must be able to withdraw even if the original browser nonce
+-- is lost. The trusted backend supplies only the verified session user ID.
+create function capital_growth_private.revoke_x_consent_for_user(p_user uuid)
+returns boolean language plpgsql security definer set search_path='' as $$
+begin
+  if p_user is null then return false; end if;
+  update capital_growth_private.x_consent set revoked_at=clock_timestamp()
+    where user_id=p_user and revoked_at is null;
+  return found;
+end $$;
 -- Counts only the currently valid confirmed consent cohort, never a provider click or causal attribution.
 create function capital_growth_private.x_signup_count(p_start timestamptz,p_end timestamptz)
 returns bigint language plpgsql security definer set search_path='' as $$
@@ -126,6 +136,7 @@ end $$;
 revoke all on all functions in schema capital_growth_private from public,anon,authenticated,service_role;
 grant execute on function capital_growth_private.grant_x_consent(text),
  capital_growth_private.bind_x_signup(text,uuid),capital_growth_private.revoke_x_consent(text,uuid),
+ capital_growth_private.revoke_x_consent_for_user(uuid),
  capital_growth_private.x_signup_count(timestamptz,timestamptz),
  capital_growth_private.record_x_initial_payment(uuid,text,text,timestamptz,timestamptz,bigint),
  capital_growth_private.reverse_x_initial_payment(uuid,text),
