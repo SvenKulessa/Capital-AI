@@ -24,6 +24,29 @@ export const PUBLIC_LEARNING_VIDEO_INVENTORY = Object.freeze([
     "thumbnailUrl": "https://i.ytimg.com/vi_webp/msfyAwCkzOM/maxresdefault.webp",
     "uploadDate": "2026-11-24T00:00:00.000Z"
   }),
+  Object.freeze({
+    "id": "masterclass-02-realitaetscheck",
+    "category": "Fintech Deepdive",
+    "title": "Masterclass Realitätscheck",
+    "youtubeId": "AMeuY4P11Gw",
+    "externalYouTubeId": "AMeuY4P11Gw",
+    "publicationState": "PUBLISHED",
+    "visibility": "PUBLIC",
+    "licenseState": "VERIFIED",
+    "editorialApproval": "APPROVED",
+    "searchEligible": true,
+    "isFreePreview": true,
+    "providerReadbackVerified": true,
+    "providerChannelId": "UCqaBNJwcfu2cZL3GgG9TLgA",
+    "processingStatus": "SUCCEEDED",
+    "embeddable": true,
+    "assetSha256": "6d81780485a67cc2931b037c1d2fcb9832315c119ac6dc9210d79638c4696910",
+    "providerEvidenceRef": "docs/growth/MASTERCLASS-EP02-PUBLIC-PREVIEW-EVIDENCE-20261124.md#provider-readback",
+    "rightsEvidenceRef": "docs/growth/MASTERCLASS-EP02-PUBLIC-PREVIEW-EVIDENCE-20261124.md#owner-confirmation",
+    "description": "Folge 02 der CAPITAL-AI Masterclass: Marktpsychologie, Chancen und Grenzen der Chartanalyse, KI-gestützte Analysen und Risikomanagement. Kostenloses Lernvideo (07:31). Keine Anlageberatung.",
+    "thumbnailUrl": "https://i.ytimg.com/vi/AMeuY4P11Gw/maxresdefault.jpg",
+    "uploadDate": "2026-11-24T00:00:00.000Z"
+  }),
 ]);
 export const PUBLIC_LEARNING_VIDEO_CATEGORIES = Object.freeze(['Architektur', 'Fintech Deepdive', 'Social']);
 export const EXPECTED_YOUTUBE_CHANNEL_ID = 'UCqaBNJwcfu2cZL3GgG9TLgA';
