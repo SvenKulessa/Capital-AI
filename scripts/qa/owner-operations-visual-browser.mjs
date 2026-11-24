@@ -77,13 +77,26 @@ async function awaitPage(expression,timeout=24000) {
 }
 // Scope Growth interactions to the standalone Owner provider route; fixtures only.
 const growthRoot='document.querySelector(\'section[aria-label="Growth Intelligence Control Center"]\')';
+// Transfer fixture data as CDP argument values, never as executable source text.
 async function growthClick(label){
-  const ok=await evaluate(`(() => {const root=${growthRoot};const b=[...root.querySelectorAll('button')].find(e=>e.textContent.trim()===${JSON.stringify(label)});if(!b||b.disabled)return false;b.click();return true;})()`);
-  assert.equal(ok,true,'Growth button unavailable: '+label);
+  const root=await send('Runtime.evaluate',{expression:growthRoot,returnByValue:false});
+  assert.ok(root.result?.objectId,'Growth root unavailable');
+  const result=await send('Runtime.callFunctionOn',{
+    objectId:root.result.objectId,
+    functionDeclaration:"function(label) { const b=[...this.querySelectorAll('button')].find(e=>e.textContent.trim()===label);if(!b||b.disabled)return false;b.click();return true; }",
+    arguments:[{value:label}],returnByValue:true,awaitPromise:true});
+  assert.equal(result.exceptionDetails,undefined,'Growth button script failed');
+  assert.equal(result.result?.value,true,'Growth button unavailable: '+label);
 }
 async function growthUpload(raw,kind){
-  const ok=await evaluate(`(() => {const root=${growthRoot};const label=${JSON.stringify(kind)};const b=[...root.querySelectorAll('button')].find(e=>e.textContent.trim()===label);const input=b?.nextElementSibling;if(input?.type!=='file')return false;const dt=new DataTransfer();dt.items.add(new File([${JSON.stringify(raw)}],'synthetic.json',{type:'application/json'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`);
-  assert.equal(ok,true,'Growth import input unavailable');
+  const root=await send('Runtime.evaluate',{expression:growthRoot,returnByValue:false});
+  assert.ok(root.result?.objectId,'Growth root unavailable');
+  const result=await send('Runtime.callFunctionOn',{
+    objectId:root.result.objectId,
+    functionDeclaration:"function(raw,kind) { const b=[...this.querySelectorAll('button')].find(e=>e.textContent.trim()===kind);const input=b?.nextElementSibling;if(input?.type!=='file')return false;const dt=new DataTransfer();dt.items.add(new File([raw],'synthetic.json',{type:'application/json'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true; }",
+    arguments:[{value:raw},{value:kind}],returnByValue:true,awaitPromise:true});
+  assert.equal(result.exceptionDetails,undefined,'Growth import script failed');
+  assert.equal(result.result?.value,true,'Growth import input unavailable');
 }
 async function growthInteractionFixture(){
   await growthClick('GA4 Read-only prüfen');
