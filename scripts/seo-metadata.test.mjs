@@ -164,3 +164,16 @@ test('unapproved learning videos never gain public VideoObject or imply paid vid
   ]).length, 2);
 
 });
+
+test('only the explicitly requested Masterclass pair may share a category', () => {
+  const first = admittedPublicLearningVideos()[0];
+  // Synthetic approval fixture, not a real provider or rights attestation.
+  const second = {...first, id: 'synthetic-ep02', youtubeId: 'AMeuY4P11Gw', externalYouTubeId: 'AMeuY4P11Gw'};
+  const third = {...first, id: 'synthetic-third', youtubeId: 'abcdefghijk', externalYouTubeId: 'abcdefghijk'};
+  assert.equal(publicLearningVideoSchemas([first, second, third, second]).length, 2);
+  assert.equal(publicLearningVideoSchemas([second, first]).length, 2);
+  assert.equal(publicLearningVideoSchemas([first, {...second, licenseState: 'REVIEW_REQUIRED'}]).length, 1);
+  assert.equal(publicLearningVideoSchemas([first, {...second, embeddable: false}]).length, 1);
+  assert.equal(publicLearningVideoSchemas([first, {...second, isFreePreview: false}]).length, 1);
+  assert.equal(publicLearningVideoSchemas([{...first, category: 'Social'}, {...second, category: 'Social'}]).length, 1);
+});
