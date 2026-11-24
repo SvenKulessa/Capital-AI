@@ -572,3 +572,13 @@
 !scripts/agent-operations-pilot-migration.test.mjs
 !supabase/migration-candidates/
 !supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql
+
+# Owner-only Growth evidence archive and build snapshot (explicit offline closure).
+!server/growth-owner-evidence-api.mjs
+!server/growth-owner-evidence-archive.mjs
+!server/growth-owner-evidence-archive.test.mjs
+!server/growth-owner-engine-readback.mjs
+!server/growth-owner-engine-readback.test.mjs
+!scripts/growth/owner-engine-snapshot.mjs
+!scripts/growth-agent/
+!scripts/growth-agent/auto_loop.py
