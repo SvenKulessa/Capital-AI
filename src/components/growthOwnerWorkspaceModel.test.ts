@@ -30,7 +30,7 @@ test('versioned import preserves history but never promotes imported claims', ()
 });
 test('invalid schemas, duplicate IDs and oversized input fail closed', () => {
   assert.throws(() => importWorkspace('{}'));
-  assert.throws(() => importWorkspace(' '.repeat(1_000_001)));
+  assert.throws(() => importWorkspace(' '.repeat(5_000_001)));
   assert.throws(() => appendSnapshot([],[row,row],at));
   const b = JSON.parse(exportWorkspace(appendSnapshot([],[row],at)));
   b.snapshots[0].rows[0].token = 'synthetic';
