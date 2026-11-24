@@ -420,6 +420,70 @@ def build_viral_read_graph():
     return build_offline_review_graph(ViralReadState, viral_source_review, viral_domain_review, viral_quality)
 
 
+class ConversionReadState(TypedDict, total=False):
+    payload: dict
+    conversion_valid: bool
+    findings: Annotated[list[dict], operator.add]
+    report: dict
+
+
+def conversion_source_review(state: ConversionReadState) -> dict:
+    from datetime import datetime, timedelta
+    p = state.get("payload")
+    keys = {"contractVersion", "campaignId", "contentId", "start", "end", "asOf",
+            "status", "candidateRegistrations", "candidatePaidSubscribers",
+            "candidateInitialInvoiceCents", "registrations", "paidSubscriptions",
+            "revenueCents", "providerAuthentication", "publicPublishAllowed",
+            "costActivationAllowed", "providerCalls", "automaticChanges"}
+    denied = {"conversion_valid": False}
+    if (not isinstance(p, dict) or set(p) != keys
+            or p["contractVersion"] != "CAPITAL_AI_X_CONVERSION_CANDIDATES@1"
+            or p["campaignId"] != "capital-ai-growth-20261120"
+            or p["contentId"] != "CAP-GROW-005"
+            or p["status"] != "SOURCE_RECORDED_NOT_AUTHENTICATED"
+            or p["providerAuthentication"] != "NOT_PROVEN"
+            or any(p[k] is not None for k in ("registrations", "paidSubscriptions", "revenueCents"))
+            or any(p[k] is not False for k in ("publicPublishAllowed", "costActivationAllowed", "automaticChanges"))
+            or type(p["providerCalls"]) is not int or p["providerCalls"] != 0):
+        return denied
+    try:
+        start, end, as_of = (datetime.fromisoformat(p[k].replace("Z", "+00:00")) for k in ("start", "end", "asOf"))
+        if not (start < end <= as_of and end - start <= timedelta(days=30)):
+            return denied
+    except (TypeError, ValueError, AttributeError, OverflowError):
+        return denied
+    reg, paid, cents = (p[k] for k in ("candidateRegistrations", "candidatePaidSubscribers", "candidateInitialInvoiceCents"))
+    if any(v is not None and (type(v) is not int or not 1 <= v <= bound)
+           for v, bound in ((reg, 1000), (paid, 1000), (cents, 100000000000))):
+        return denied
+    if (paid is None) != (cents is None) or (paid is not None and (reg is None or paid > reg or cents < paid)):
+        return denied
+    return {"conversion_valid": True}
+
+
+def conversion_domain_review(domain: str):
+    def run(state: ConversionReadState) -> dict:
+        return {"findings": [finding(domain, "PASS_WITH_GAPS" if state.get("conversion_valid") is True else "BLOCKED",
+            "Consent-bound candidate review only; trusted source and complete cohort evidence required.")]}
+    return run
+
+
+def conversion_quality(state: ConversionReadState) -> dict:
+    ok = state.get("conversion_valid") is True and all(
+        any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in state.get("findings", []))
+        for domain in ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH"))
+    return {"report": {"contractVersion": "CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1",
+        "engine": "langgraph", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+        "nextAction": "VERIFY_SOURCE_AND_COHORT" if ok else "REPAIR_INPUT",
+        "providerAuthentication": "NOT_PROVEN_BY_GRAPH", "registrations": None,
+        "paidSubscriptions": None, "revenueCents": None, "publicationAllowed": False,
+        "costActivationAllowed": False, "automaticChanges": False}}
+
+
+def build_conversion_read_graph():
+    return build_offline_review_graph(ConversionReadState, conversion_source_review, conversion_domain_review, conversion_quality)
+
+
 def read_growth_input(stream):
     """Bound input before parsing, including stdin or changing local files."""
     raw = stream.read(262145)
@@ -439,7 +503,17 @@ def main():
     inputs.add_argument("--input", type=Path)
     inputs.add_argument("--growth-data", type=Path, help="Bounded JSON file, or - for stdin")
     inputs.add_argument("--viral-data", type=Path, help="Bounded draft-only reference JSON, or - for stdin")
+    inputs.add_argument("--conversion-data", type=Path, help="Bounded candidate JSON, or - for stdin")
     args = parser.parse_args()
+    if args.conversion_data is not None:
+        if args.conversion_data == Path("-"):
+            raw = read_growth_input(sys.stdin.buffer)
+        else:
+            with args.conversion_data.open("rb") as stream:
+                raw = read_growth_input(stream)
+        result = build_conversion_read_graph().invoke({"payload": raw, "findings": []}, {"recursion_limit": 8})
+        print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
+        return
     if args.viral_data is not None:
         if args.viral_data == Path("-"):
             raw = read_growth_input(sys.stdin.buffer)

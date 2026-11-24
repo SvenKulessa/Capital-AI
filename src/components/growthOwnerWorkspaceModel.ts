@@ -71,6 +71,17 @@ export function initialRows(): GrowthRow[] {
       flow: 'Read-only Entwurfskoordination; keine Veröffentlichung' },
     makeRow('langgraph', 'LangGraph SOLO2', 'PLATFORM', 'Checkpoint und Workflow-Evidence abgleichen'),
     { ...makeRow('trust', 'Rechte, Consent, Freigaben', 'TRUST', 'Scope- und Rechte-Evidence prüfen'), priority: 'P0' },
+    { ...makeRow('x-growth-budget', 'X Growth · Budget', 'GROWTH', 'Kontoweite Freigabe, belastbare Recovery und Runtime-Reservierung verifizieren'),
+      priority: 'P0', flow: '30-Tage-Pilot · 20 EUR Obergrenze · keine automatische Aufladung',
+      approvals: 'Owner-Kostenfreigabe, aktuelles Guthaben und Kostenobergrenzen separat belegen',
+      operation: 'Planung; keine produktive Budgetkontrolle behauptet' },
+    { ...makeRow('x-growth-attribution', 'X Growth · Conversion-Funnel', 'GROWTH', 'Kampagnenspezifische GA4-, Supabase- und Stripe-Readbacks abgleichen'),
+      priority: 'P1', flow: 'UTM → consentierte Sessions → Registrierungen → bestätigte bezahlte Abos',
+      auth: 'Quellen getrennt; keine Kundendaten im Workspace; fehlend ist nicht Null',
+      operation: 'Kohorten- und Zuordnungsevidence offen' },
+    { ...makeRow('x-growth-graph', 'X Growth · LangGraph', 'PLATFORM', 'Budget- und Conversion-Evidence in bestehende Graph-Review integrieren'),
+      priority: 'P1', flow: 'Nur Status-Referenzen, keine Publishing- oder Kostenautorität',
+      operation: 'Runtime-Evidence offen' },
     ...publicSurfaceRows(),
   ];
 }
@@ -115,6 +126,28 @@ export function projectGa4(raw: unknown, row: GrowthRow): GrowthRow {
     evidence: data.metrics ? '7 abgeschlossene Tage: Sessions ' + data.metrics.sessions + ', Engaged Sessions ' + data.metrics.engagedSessions : 'Keine Report-Zeilen; keine gemessene Null',
     error: '', tests: 'Server-Readback-Vertrag geprüft; keine Aussage über andere Quellen',
   };
+}
+
+const xCampaignSchema = z.object({
+  schema:z.literal('CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1'),source:z.literal('GA4_DATA_API'),
+  private:z.literal(true),readOnly:z.literal(true),publicPublishAllowed:z.literal(false),
+  observedAt:z.iso.datetime(),period:z.object({start:z.literal('7daysAgo'),end:z.literal('yesterday'),timeZone:z.string().max(80).nullable()}).strict(),
+  campaignId:z.literal('capital-ai-growth-20261120'),contentId:z.literal('CAP-GROW-005'),
+  utmSource:z.literal('x'),utmMedium:z.literal('social'),attributionAuthority:z.literal('SESSION_UTM_ONLY'),
+  status:z.enum(['PROVIDER_READ_VERIFIED','NOT_PROVEN_NO_ROWS']),
+  metrics:z.object({sessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),engagedSessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)}).strict().nullable(),
+  registrations:z.null(),paidSubscriptions:z.null(),
+}).strict();
+export function projectXCampaignGa4(raw:unknown,row:GrowthRow):GrowthRow {
+  const d=xCampaignSchema.parse(raw);
+  if(row.id!=='x-campaign')throw Error('Falsche Quelle');
+  const verified=d.status==='PROVIDER_READ_VERIFIED',m=d.metrics;
+  if(verified?(!m||m.engagedSessions>m.sessions):m!==null)throw Error('Ungültige Kampagnenmetriken');
+  return {...row,name:'X Growth · GA4 Kampagne',domain:'GROWTH',origin:'GA4_READBACK',status:verified?'VERIFIED':'NOT_PROVEN',
+    endpoint:'/api/profile/growth-intelligence/x-campaign-readback',flow:'GA4 Session-UTM · keine Klick-, Registrierungs- oder Zahlungsbestätigung',
+    auth:'Owner-Readback',operation:'GA4 Kampagne: '+d.observedAt,error:'',
+    evidence:m?'7 abgeschlossene Tage: '+m.sessions+' Sessions, '+m.engagedSessions+' Engaged Sessions; '+d.campaignId+'/'+d.contentId:'Keine bestätigte Kampagnenzeile; keine gemessene Null',
+    tests:'Quellengetrennte Projektion; Registrierungen und zahlende Abos NOT_PROVEN'};
 }
 
 const graphSources = ['GA4','GSC','INSTAGRAM','YOUTUBE'] as const;

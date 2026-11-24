@@ -567,3 +567,37 @@ test('YouTube privacy RPCs require workload signature, fresh owner JWT and match
     assert.equal(writes.length,n);
   }
 });
+
+test('growth budget Edge operation is owner/workload/account-bound and does not accept a price',async()=>{
+  const userId='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const accountId='123456789012345678',contentKey='a'.repeat(64);
+  const input={operation:'growth_budget_claim',channel:'X_PUBLISH',userId,accountId,contentKey};
+  let approved=true,owner=true,rpcCalls=0;
+  const config={get:name=>name==='SOCIAL_X_GROWTH_BUDGET_APPROVED'?String(approved):
+    name==='SUPABASE_SERVICE_ROLE_KEY'?'sb_secret_synthetic_only_for_tests':env.get(name)};
+  const handler=createHandler({env:config,fetchImpl:async(url,options)=>{
+    const target=String(url);let result;
+    if(target.includes('/auth/v1/user'))result={id:userId,email_confirmed_at:'2026-10-01'};
+    else if(target.includes('/profiles'))result=[{id:userId,iam_role:owner?'owner':'user'}];
+    else if(target.includes('/social_media_accounts'))result=[{user_id:userId,status:'connected',
+      external_account_id:accountId,handle:'CapitalAIOnline',scopes:['tweet.read','tweet.write','users.read','offline.access','media.write'],
+      access_token_encrypted:'v1.'+'a'.repeat(16)+'.'+'b'.repeat(22)+'.'+'c'.repeat(24),
+      token_expires_at:new Date(Date.now()+3600000).toISOString(),refresh_reconnect_required:false,refresh_lease_id:null}];
+    else if(target.endsWith('/rpc/capital_x_growth_reserve')){
+      rpcCalls++;assert.deepEqual(JSON.parse(options.body),{p_user_id:userId,p_account_id:accountId,p_content_key:contentKey});
+      result={claimed:true,accountId,contentKey,reservedMicroEur:1000000};
+    }else throw Error('unexpected URI');
+    return {ok:true,text:async()=>JSON.stringify(result)};
+  }});
+  const good=await handler(signedRequest(input));
+  assert.equal(good.status,200);
+  assert.deepEqual(await good.json(),{claimed:true,accountId,contentKey,reservedMicroEur:1000000});
+  for(const bad of [{...input,accountId:'999'},{...input,channel:'X'},{...input,price:1},
+      {...input,userId:'a1bf7f2f-c4d2-4cda-b0a8-0f7bb2723101'}]){
+    assert.equal((await handler(signedRequest(bad))).status,503);
+  }
+  assert.equal((await handler(signedRequest(input,{omitSignature:true}))).status,503);
+  approved=false;assert.equal((await handler(signedRequest(input))).status,503);
+  approved=true;owner=false;assert.equal((await handler(signedRequest(input))).status,503);
+  assert.equal(rpcCalls,1);
+});

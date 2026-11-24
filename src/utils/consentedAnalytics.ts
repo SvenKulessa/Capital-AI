@@ -2,6 +2,7 @@ import { captureCheckoutConfirmation } from './checkoutConfirmation';
 import { readCookieConsent, COOKIE_CONSENT_STORAGE_KEY, browserConsentPersistenceFailed } from '../privacy/cookieConsentV3.ts';
 import { isAnalyticsMeasurable } from '../../shared/analytics-measurement-policy.mjs';
 import { readInstagramLearningTracking } from '../contracts/instagramCampaignTracking.ts';
+import { readXGrowthTracking } from '../contracts/xGrowthCampaignTracking.ts';
 
 export const CONSENT_CHANGED_EVENT = 'capital-ai:consent-changed';
 const EXPECTED_ID = 'G-0542DT2HCE';
@@ -11,6 +12,7 @@ let loading: Promise<void> | null = null;
 let lastPath = '', pendingPath = '';
 const leads = new Set<string>();
 let instagramCampaignLandingSent = false;
+let xCampaignLandingSent = false;
 
 function sendConsentedInstagramCampaignLanding(path: string) {
   if (!active || !permitted() || instagramCampaignLandingSent || path !== '/learning') return;
@@ -20,6 +22,20 @@ function sendConsentedInstagramCampaignLanding(path: string) {
   if (!campaign) return;
   instagramCampaignLandingSent = true;
   // One bounded, consented event per document lifetime. No raw query, referrer, user ID or transaction ID.
+  (window as TagWindow).gtag?.('event', 'campaign_landing', {
+    send_to: EXPECTED_ID,
+    campaign_id: campaign.campaignId, content_id: campaign.contentId,
+    campaign_source: campaign.source, campaign_medium: campaign.medium,
+    page_location: campaign.canonicalUrl, page_referrer: '',
+  });
+}
+function sendConsentedXCampaignLanding(path: string) {
+  if (!active || !permitted() || xCampaignLandingSent || path !== '/') return;
+  if (window.location.origin !== 'https://capital-ai.online' || window.location.pathname !== '/') return;
+  const campaign = readXGrowthTracking(window.location.search);
+  if (!campaign) return;
+  xCampaignLandingSent = true;
+  // Same consented event contract as Instagram; only fixed allowlisted fields.
   (window as TagWindow).gtag?.('event', 'campaign_landing', {
     send_to: EXPECTED_ID,
     campaign_id: campaign.campaignId, content_id: campaign.contentId,
@@ -115,6 +131,7 @@ export function sendPageView(path: string) {
   if (!safe) { if (active) disable(); return; }
   if (!active) { if (initialized) void synchronize(); return; }
   sendConsentedInstagramCampaignLanding(safe);
+  sendConsentedXCampaignLanding(safe);
   if (safe === lastPath) return;
   const referrer = lastPath ? 'https://capital-ai.online' + lastPath : safeReferrer();
   lastPath = safe;

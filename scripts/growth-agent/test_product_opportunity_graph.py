@@ -280,5 +280,43 @@ class ViralReadGraphTests(unittest.TestCase):
         self.assertEqual(compiled.invoke({"payload": invalid, "findings": []}, {"recursion_limit": 8})["report"]["quality"], "BLOCKED")
 
 
+
+
+class XConversionReviewTests(unittest.TestCase):
+    def fixture(self):
+        return {"contractVersion": "CAPITAL_AI_X_CONVERSION_CANDIDATES@1",
+                "campaignId": "capital-ai-growth-20261120", "contentId": "CAP-GROW-005",
+                "start": "2026-11-20T00:00:00.000Z", "end": "2026-11-24T00:00:00.000Z",
+                "asOf": "2026-11-24T12:00:00.000Z",
+                "status": "SOURCE_RECORDED_NOT_AUTHENTICATED",
+                "candidateRegistrations": 1, "candidatePaidSubscribers": 1,
+                "candidateInitialInvoiceCents": 2500, "registrations": None,
+                "paidSubscriptions": None, "revenueCents": None,
+                "providerAuthentication": "NOT_PROVEN", "publicPublishAllowed": False,
+                "costActivationAllowed": False, "providerCalls": 0, "automaticChanges": False}
+
+    def run_graph(self, payload):
+        return graph.build_conversion_read_graph().invoke(
+            {"payload": payload, "findings": []}, {"recursion_limit": 8})["report"]
+
+    def test_review_never_promotes_candidate_counts(self):
+        r = self.run_graph(self.fixture())
+        self.assertEqual(r["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(r["nextAction"], "VERIFY_SOURCE_AND_COHORT")
+        self.assertIsNone(r["paidSubscriptions"])
+        self.assertIsNone(r["revenueCents"])
+        self.assertFalse(r["costActivationAllowed"])
+        self.assertFalse(r["publicationAllowed"])
+
+    def test_rejects_forged_metrics_wrong_cohort_and_authority(self):
+        for change in ({"registrations": 1}, {"providerAuthentication": "VERIFIED"},
+                       {"costActivationAllowed": True}, {"campaignId": "other"},
+                       {"candidatePaidSubscribers": 2}, {"candidatePaidSubscribers": True},
+                       {"candidateInitialInvoiceCents": None}, {"providerCalls": 1},
+                       {"end": "2026-12-24T00:00:00Z"}, {"email": "synthetic@example.invalid"}):
+            with self.subTest(change=change):
+                self.assertEqual(self.run_graph({**self.fixture(), **change})["quality"], "BLOCKED")
+
+
 if __name__ == "__main__":
     unittest.main()

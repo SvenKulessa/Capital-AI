@@ -259,3 +259,9 @@ test('X media OAuth grant needs independent opt-in, not paid publishing flags', 
     assert.equal(calls.length, 1, 'missing grant must not fetch profile or write credentials');
   }
 });
+
+test('growth pilot blocks X OAuth exchange before token or profile request',async()=>{
+  const {fetchImpl,calls}=mockFlow();
+  await assert.rejects(createSocialXOAuthExchange({env:{...ENV,SOCIAL_X_GROWTH_PILOT_ENABLED:'true'},fetchImpl})(trusted),/X_GROWTH_UNBUDGETED_LANE_DISABLED/);
+  assert.deepEqual(calls,[]);
+});

@@ -94,6 +94,9 @@ export function createSocialXOAuthStart({ env = process.env, auth,
       json(res, 403, { error: 'owner_authorization_required' });
       return true;
     }
+    if (env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true') {
+      json(res, 403, { error: 'x_growth_unbudgeted_lane_disabled' }); return true;
+    }
     const redirectUri = new URL(callbackPath, origin).toString();
     // The verifier and state are generated server-side and must be stored for
     // exactly this authenticated user and redirect before sending the 303.
