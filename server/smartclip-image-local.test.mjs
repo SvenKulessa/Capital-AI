@@ -59,7 +59,7 @@ test('refuses malformed signature, CRC, trailing data, unsupported dimensions an
   const cases = [
     Buffer.from('not an image'), tampered,
     Buffer.concat([sample, Buffer.from('extra')]),
-    png({ width: 4097 }), png({ width: 4096, height: 4096, note: false }),
+    png({ width: 4097 }), png({ width: 4096, height: 4097, note: false }),
     png({ filter: 5 }),
   ];
   for (const bytes of cases) assert.throws(() => ingestSmartclipPng(bytes, origin));
