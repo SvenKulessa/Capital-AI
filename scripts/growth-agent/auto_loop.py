@@ -140,6 +140,12 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
         return event(state, "test", checks_passed=passed, status="TESTED" if passed else "TEST_FAILED")
 
     def repair(state):
+        # Recheck authority and the current retry budget at the side-effect boundary:
+        # a resumed checkpoint may have been routed under older permissions.
+        if authority.read_only or not authority.allow_changes:
+            return event(state, "repair_denied", status="BLOCKED")
+        if state.get("attempts", 0) >= authority.max_repairs:
+            return event(state, "repair_budget_exhausted", status="BLOCKED")
         attempts = state.get("attempts", 0) + 1
         ok = call("repair", {**state, "attempts": attempts}).get("ok") is True
         return event(state, "repair", attempts=attempts, status="REPAIRED" if ok else "BLOCKED")
