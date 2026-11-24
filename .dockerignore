@@ -193,6 +193,8 @@
 !scripts/growth/growth-intelligence-image-drafts.test.mjs
 !scripts/growth/brand-kit-graph-drafts.mjs
 !scripts/growth/brand-kit-graph-drafts.test.mjs
+!scripts/growth/social-trend-projection.mjs
+!scripts/growth/social-trend-projection.test.mjs
 !scripts/growth/next-round-planner.mjs
 !scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
