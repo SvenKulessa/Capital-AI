@@ -22,7 +22,7 @@ const PACKAGE_DETAILS: Record<string, { packageId: string; nextStep: string }> =
 export const PUBLIC_SURFACE_AUDIT_TASKS: readonly AuditRoadmapTask[] = [
   ...deliveryPlan.tasks.map((task): AuditRoadmapTask => {
     const details = PACKAGE_DETAILS[task.id];
-    if (!details || !/^(P0|P1|P2)-\\d{2}$/.test(task.id)) throw new Error('UNKNOWN_AUDIT_TASK');
+    if (!details || !/^(P0|P1|P2)-\d{2}$/.test(task.id)) throw new Error('UNKNOWN_AUDIT_TASK');
     return { ...details, id: task.id, title: task.name, milestone: task.milestone,
       priority: task.id.slice(0, 2) as AuditRoadmapTask['priority'], dependsOn: task.dependencies };
   }),
