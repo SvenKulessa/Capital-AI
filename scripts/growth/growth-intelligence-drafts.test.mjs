@@ -207,3 +207,6 @@ test('graph-only handoff excludes draft bundle and retains independent disabled 
 
 // Offline per-post trend projection; no provider or publication access.
 import './social-trend-projection.test.mjs';
+import './viral-product-drafts.test.mjs';
+import './viral-content-engine.test.mjs';
+import './viral-template-cache.test.mjs';
