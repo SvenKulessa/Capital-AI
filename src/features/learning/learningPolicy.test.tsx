@@ -290,3 +290,14 @@ test('owner-only frontend prompt selection and screen capture remain local and f
   assert.match(hero,/JaJa Stift: Bereiche markieren/);
   assert.match(buddy,/Kein automatischer Export/);
 });
+
+test('Masterclass pair renders two separately consent-gated previews and rejects a third', () => {
+  const first = LEARNING_VIDEOS[0];
+  // Synthetic approval fixture; not a real provider or rights attestation.
+  const second = {...first, id: 'synthetic-ep02', title: 'Synthetic episode two fixture', youtubeId: 'AMeuY4P11Gw', externalYouTubeId: 'AMeuY4P11Gw'};
+  const third = {...first, id: 'synthetic-third', youtubeId: 'abcdefghijk', externalYouTubeId: 'abcdefghijk'};
+  const html = renderToStaticMarkup(<FintechMasterclass stage="episodes" onNavigate={()=>{}} videos={[first, second, third]}/>);
+  assert.equal((html.match(/YouTube-Video laden/g) ?? []).length, 2);
+  assert.match(html, /Synthetic episode two fixture/);
+  assert.doesNotMatch(html, /<iframe|youtube-nocookie\.com\/embed|abcdefghijk/);
+});
