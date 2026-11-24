@@ -110,6 +110,158 @@ export function projectGrowthDataLayer({ records, expectedIdentities, asOf } = {
     publicPublishAllowed:false, automaticRecommendationPromotion:false };
 }
 
+
+/** Explicitly enabled operator read plane. No token is accepted from imported records,
+ * no arbitrary endpoint/redirect, no retry, no raw response or error escapes.
+ * Dates are fixed completed UTC calendar dates; Google reports use their own
+ * provider calendar. Require every requested Google report day before aggregation.
+ */
+const dayMs = 86400000;
+const addDays = (d,n) => new Date(Date.parse(d)+n*dayMs).toISOString().slice(0,10);
+const readError = code => new Error(code);
+const safeReadCodes = new Set(['AUTH_REQUIRED','RATE_LIMITED','PROVIDER_UNAVAILABLE',
+  'INVALID_RESPONSE','IDENTITY_MISMATCH','INCOMPLETE_PERIOD','DISABLED']);
+const tokenOk = v => typeof v==='string' && v.length>=8 && v.length<=8192 && !/[\s\x00-\x1f\x7f]/.test(v);
+async function providerJson(url, token, fetchImpl, body) {
+  if(!tokenOk(token)) throw readError('AUTH_REQUIRED');
+  let response;
+  try {
+    response=await fetchImpl(url,{
+      method:body===undefined?'GET':'POST',redirect:'error',
+      headers:{Authorization:'Bearer '+token,Accept:'application/json',
+        ...(body===undefined?{}:{'Content-Type':'application/json'})},
+      ...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(10000)
+    });
+    if(response.status===401||response.status===403)throw readError('AUTH_REQUIRED');
+    if(response.status===429)throw readError('RATE_LIMITED');
+    if(!response.ok)throw readError('PROVIDER_UNAVAILABLE');
+    // Bound before concatenation; never forward provider error text.
+    const reader=response.body?.getReader();
+    if(!reader)throw readError('INVALID_RESPONSE');
+    let length=0;const chunks=[];
+    try{
+      for(;;){const {done,value}=await reader.read();if(done)break;
+        length+=value.byteLength;if(length>65536){await reader.cancel();throw readError('INVALID_RESPONSE');}
+        chunks.push(Buffer.from(value));}
+    }finally{reader.releaseLock();}
+    const value=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    if(!value||typeof value!=='object'||Array.isArray(value)||value.error||value.errors)
+      throw readError('INVALID_RESPONSE');
+    return value;
+  }catch(e){throw readError(safeReadCodes.has(e?.message)?e.message:'PROVIDER_UNAVAILABLE');}
+}
+function daysComplete(rows,start,end,getDay) {
+  const expected=new Set();
+  for(let d=start;d<=end;d=addDays(d,1))expected.add(d);
+  if(!Array.isArray(rows)||rows.length!==expected.size)throw readError('INCOMPLETE_PERIOD');
+  for(const row of rows)if(!expected.delete(getDay(row)))throw readError('INCOMPLETE_PERIOD');
+}
+function safeAggregate(values) {
+  if(!values.every(count))throw readError('INVALID_RESPONSE');
+  const total=values.reduce((a,b)=>a+b,0);
+  if(!count(total))throw readError('INVALID_RESPONSE');
+  return total;
+}
+export function createGrowthProviderReaders({fetchImpl=fetch}={}) {
+  const get=(url,token,body)=>providerJson(url,token,fetchImpl,body);
+  return Object.freeze({
+    async GSC({identity,token,startDate,endDate}) {
+      if(identity!=='sc-domain:capital-ai.online')throw readError('IDENTITY_MISMATCH');
+      const base='https://www.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(identity);
+      const site=await get(base,token);
+      if(site.siteUrl!==identity||!['siteOwner','siteFullUser','siteRestrictedUser'].includes(site.permissionLevel))
+        throw readError('IDENTITY_MISMATCH');
+      const report=await get(base+'/searchAnalytics/query',token,{
+        startDate,endDate,dimensions:['date'],rowLimit:31,dataState:'final',aggregationType:'byProperty'
+      });
+      const rows=report.rows;
+      daysComplete(rows,startDate,endDate,r=>Array.isArray(r?.keys)&&r.keys.length===1?r.keys[0]:null);
+      if(rows.some(r=>!count(r.clicks)||!count(r.impressions)||r.clicks>r.impressions
+        ||typeof r.position!=='number'||!Number.isFinite(r.position)||r.position<0))
+        throw readError('INVALID_RESPONSE');
+      const clicks=safeAggregate(rows.map(r=>r.clicks)),impressions=safeAggregate(rows.map(r=>r.impressions));
+      // Zero impressions cannot establish average position; do not invent it.
+      if(!impressions)throw readError('INCOMPLETE_PERIOD');
+      const position=rows.reduce((a,r)=>a+r.position*r.impressions,0)/impressions;
+      if(!Number.isFinite(position))throw readError('INVALID_RESPONSE');
+      return {rows:[{clicks,impressions,ctr:clicks/impressions,position}]};
+    },
+    async INSTAGRAM({identity,token,startDate,endDate,version}) {
+      if(!identityPatterns.INSTAGRAM.test(identity)||!/^v[1-9][0-9]\.0$/.test(version??''))
+        throw readError('IDENTITY_MISMATCH');
+      const base='https://graph.facebook.com/'+version+'/'+identity;
+      const account=await get(base+'?fields=id',token);
+      if(account.id!==identity)throw readError('IDENTITY_MISMATCH');
+      const url=new URL(base+'/insights');
+      url.search=new URLSearchParams({metric:'reach,accounts_engaged',period:'day',metric_type:'total_value',
+        since:String(Date.parse(startDate)/1000),until:String(Date.parse(addDays(endDate,1))/1000)}).toString();
+      const report=await get(url.toString(),token);
+      if(!Array.isArray(report.data)||report.data.length!==2||report.paging?.next)
+        throw readError('INCOMPLETE_PERIOD');
+      const entries=SOURCE_METRICS.INSTAGRAM.map(name=>{
+        const matches=report.data.filter(r=>r?.name===name);
+        if(matches.length!==1||matches[0].period!=='day'||!count(matches[0].total_value?.value))
+          throw readError('INVALID_RESPONSE');
+        return [name,matches[0].total_value.value];
+      });
+      return Object.fromEntries(entries);
+    },
+    async YOUTUBE({identity,token,startDate,endDate}) {
+      if(!identityPatterns.YOUTUBE.test(identity))throw readError('IDENTITY_MISMATCH');
+      // Exact channel ID is authorized by Analytics itself (no broader Data API scope).
+      const url=new URL('https://youtubeanalytics.googleapis.com/v2/reports');
+      url.search=new URLSearchParams({ids:'channel=='+identity,startDate,endDate,
+        dimensions:'day',metrics:'views,estimatedMinutesWatched',sort:'day',maxResults:'31'}).toString();
+      const report=await get(url.toString(),token);
+      if(!Array.isArray(report.columnHeaders)||report.columnHeaders.length!==3
+        ||!['day','views','estimatedMinutesWatched'].every((name,i)=>report.columnHeaders[i]?.name===name))
+        throw readError('INVALID_RESPONSE');
+      daysComplete(report.rows,startDate,endDate,r=>Array.isArray(r)&&r.length===3?r[0]:null);
+      return {columnHeaders:[{name:'views'},{name:'estimatedMinutesWatched'}],
+        rows:[[safeAggregate(report.rows.map(r=>r[1])),safeAggregate(report.rows.map(r=>r[2]))]]};
+    },
+  });
+}
+
+/** Trusted operator invocation, never called by default draft builds. All
+ * failures isolated; provider tokens and raw errors never enter output.
+ * Default lag of four completed days avoids claiming fresh incomplete Google data.
+ */
+export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch,now=Date.now}={}) {
+  const asOf=new Date(now()).toISOString();
+  const endDate=addDays(asOf.slice(0,10),-4),startDate=addDays(endDate,-6);
+  const expectedIdentities={GSC:'sc-domain:capital-ai.online'};
+  const config={
+    GSC:{identity:expectedIdentities.GSC,token:env.GROWTH_GSC_READ_TOKEN},
+    INSTAGRAM:{identity:env.GROWTH_INSTAGRAM_ACCOUNT_ID,token:env.GROWTH_INSTAGRAM_READ_TOKEN,
+      version:env.SOCIAL_META_GRAPH_API_VERSION},
+    YOUTUBE:{identity:env.GROWTH_YOUTUBE_CHANNEL_ID,token:env.GROWTH_YOUTUBE_READ_TOKEN}
+  };
+  const readers=createGrowthProviderReaders({fetchImpl});
+  const records=[],transport=[];
+  for(const source of ['GSC','INSTAGRAM','YOUTUBE']){
+    const cfg=config[source];
+    if(typeof cfg.identity==='string'&&identityPatterns[source].test(cfg.identity))
+      expectedIdentities[source]=cfg.identity;
+    if(env['GROWTH_'+source+'_READ_ENABLED']!=='true'){
+      transport.push({source,status:'DISABLED'});continue;
+    }
+    if(!tokenOk(cfg.token)){
+      transport.push({source,status:'AUTH_REQUIRED'});continue;
+    }
+    try{
+      const payload=await readers[source]({...cfg,startDate,endDate});
+      records.push({source,identity:cfg.identity,startDate,endDate,observedAt:asOf,payload});
+      transport.push({source,status:'READ_RESPONSE_RECEIVED'});
+    }catch(e){transport.push({source,status:safeReadCodes.has(e?.message)?e.message:'PROVIDER_UNAVAILABLE'});}
+  }
+  return {contractVersion:'CAPITAL_AI_GROWTH_PROVIDER_READ@1',transport,
+    ...buildGrowthIntelligenceDraftBundle({records,expectedIdentities,asOf}),
+    // Historical bundle's zero calls describes drafting, not this collector.
+    collectionMode:'EXPLICIT_READ_ONLY',providerCalls:undefined,
+    publicPublishAllowed:false};
+}
+
 export function buildGrowthIntelligenceDraftBundle(dataInput) {
   const sourceBytes = readFileSync(fileURLToPath(sourceUrl));
   const rawPlan = JSON.parse(sourceBytes.toString('utf8'));
@@ -139,5 +291,8 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  process.stdout.write(JSON.stringify(buildGrowthIntelligenceDraftBundle(), null, 2) + '\n');
+  const args=process.argv.slice(2);
+  if(args.length===0) process.stdout.write(JSON.stringify(buildGrowthIntelligenceDraftBundle(), null, 2) + '\n');
+  else if(args.length===1 && args[0]==='--read-providers') process.stdout.write(JSON.stringify(await collectGrowthProviderData(),null,2)+'\n');
+  else throw Error('GROWTH_CLI_ARGUMENT_INVALID');
 }
