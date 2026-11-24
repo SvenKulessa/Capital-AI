@@ -299,3 +299,15 @@ test('X acquisition local CLI accepts bounded input and sanitizes rejection', ()
     assert.equal(denied.stderr,'X_ACQUISITION_PLANNING_REJECTED\n');
   }
 });
+
+import { readXGrowthTracking, X_GROWTH_TRACKING } from '../xGrowthCampaignTracking.ts';
+test('X campaign browser allowlist is bound to the existing canonical growth draft', () => {
+  const draft=buildGrowthIntelligenceContentDrafts(fixture).find(d=>d.channel==='X');
+  assert.ok(draft);
+  const link=new URL(growthDraftUtmUrl(draft));
+  assert.equal(link.origin+link.pathname,X_GROWTH_TRACKING.canonicalUrl);
+  assert.deepEqual(readXGrowthTracking(link.search),X_GROWTH_TRACKING);
+  assert.equal(readXGrowthTracking(link.search+'&utm_source=x'),null);
+  assert.equal(readXGrowthTracking(link.search.replace('CAP-GROW-005','CAP-GROW-006')),null);
+  assert.equal(readXGrowthTracking(link.search+'&x='+ 'a'.repeat(2048)),null);
+});
