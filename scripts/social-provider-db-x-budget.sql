@@ -33,14 +33,13 @@ create table public.capital_x_growth_reservations (
 alter table public.capital_x_growth_budget enable row level security;
 alter table public.capital_x_growth_reservations enable row level security;
 revoke all on public.capital_x_growth_budget,public.capital_x_growth_reservations from public,anon,authenticated,service_role;
-grant select,update(reserved_micro_eur) on public.capital_x_growth_budget to service_role;
-grant select,insert on public.capital_x_growth_reservations to service_role;
--- No DELETE or UPDATE grant on claims; no owner browser policies.
+-- No direct table grants, including to service_role. Only the narrow RPC
+-- can change exposure; no owner browser policies or ledger-reset API.
 -- Quote is provisioned separately by trusted operator; caller cannot select amount,
 -- time, currency, reset window, approval, account ceiling or cost evidence.
 create function public.capital_x_growth_reserve(p_user_id uuid,p_account_id text,p_content_key text)
 returns jsonb
-language plpgsql security invoker set search_path = ''
+language plpgsql security definer set search_path = ''
 as $$
 declare
   b public.capital_x_growth_budget%rowtype;
