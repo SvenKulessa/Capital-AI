@@ -57,7 +57,7 @@ test('public lesson content is rendered with exact server-source text and real c
   }
   for (const step of LEARNING_NEXT_STEPS) assert.ok(html.includes(`href="${step.href}"`));
   assert.match(html, /synthetisch/);
-  assert.match(html, /Videos sind noch nicht verfügbar/);
+  assert.match(html, /Freigegebene kostenlose Videovorschauen findest du unter Lernvideos/);
   assert.match(html, /kein einzelnes Blueprint-Kaufangebot/);
   assert.equal((101 - 99) / ((101 + 99) / 2) * 100, 2);
   assert.equal((30 - 10) / (50 - 10), 0.5);
@@ -97,11 +97,12 @@ test('release manifest approval, Quant-Pro entitlement and a syntactic ID never 
     {licenseState:'REVIEW_REQUIRED'}, {visibility:'UNLISTED'}, {isFreePreview:false},
     {processingStatus:'PROCESSING'}, {embeddable:false}, {assetSha256:'invalid'}
   ]) assert.deepEqual(visibleLearningVideos([{...publicVideoFixture,...invalid}]), [], JSON.stringify(invalid));
-  assert.deepEqual(LEARNING_VIDEOS, []);
+  assert.deepEqual(visibleLearningVideos(LEARNING_VIDEOS).map(video => video.youtubeId), ['msfyAwCkzOM']);
 });
 test('no unlicensed videos are marketed as available and public learning CTA stays reachable', () => {
   const html = renderToStaticMarkup(<LearningVideos />);
-  assert.match(html, /Noch keine veröffentlichten Lernvideos/);
+  assert.match(html, /Öffentlich freigegebene YouTube-Vorschau/);
+  assert.doesNotMatch(html, /Noch keine veröffentlichten Lernvideos/);
   assert.match(html, /href="\/learning#learning-offer"/);
   assert.match(html, /href="https:\/\/youtube.com\/@capital-ai.online"/);
   assert.match(html, /rel="noopener noreferrer"/);
@@ -117,6 +118,10 @@ test('Fintech cover opens series cover then admitted episode list; no provider f
   const empty = stageMarkup('episodes');
   const approved = stageMarkup('episodes', [publicVideoFixture]);
   const blocked = stageMarkup('episodes', [{...publicVideoFixture, licenseState:'REVIEW_REQUIRED'}]);
+  const livePreview = stageMarkup('episodes', LEARNING_VIDEOS);
+  assert.match(livePreview, /Masterclass Chartanalyse und Grundlagen/);
+  assert.match(livePreview, /YouTube-Video laden/);
+  assert.doesNotMatch(livePreview, /Noch keine freigegebenen Masterclass-Videos|<iframe|youtube-nocookie\.com\/embed/);
   assert.match(start, /fintech-deepdive-universe\.webp/);
   assert.match(cover, /Fintech Deepdive entdecken/);
   assert.match(series, /masterclass-universe\.webp/);
