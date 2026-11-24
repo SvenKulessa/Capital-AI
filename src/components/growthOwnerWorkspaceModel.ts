@@ -79,7 +79,9 @@ export function projectGa4(raw: unknown, row: GrowthRow): GrowthRow {
   if (data.status === 'PROVIDER_READ_VERIFIED' && (!data.metrics || data.metrics.engagedSessions > data.metrics.sessions))
     throw new Error('Ungültige Metriken');
   if (data.status === 'NOT_PROVEN_NO_ROWS' && data.metrics !== null) throw new Error('Widersprüchliche Metriken');
-  return { ...row, origin: 'GA4_READBACK', status: data.metrics ? 'VERIFIED' : 'NOT_PROVEN',
+  return { ...row, name: 'GA4 Acquisition', domain: 'GROWTH', endpoint: '/api/profile/growth-intelligence/ga4-readback',
+    flow: 'GA4 → aggregierter Growth Data Layer; getrennt von UMAMI/GSC/Social',
+    auth: 'Owner-Readback serverseitig bestätigt', origin: 'GA4_READBACK', status: data.metrics ? 'VERIFIED' : 'NOT_PROVEN',
     operation: 'GA4 Readback: ' + data.observedAt,
     evidence: data.metrics ? '7 abgeschlossene Tage: Sessions ' + data.metrics.sessions + ', Engaged Sessions ' + data.metrics.engagedSessions : 'Keine Report-Zeilen; keine gemessene Null',
     error: '', tests: 'Server-Readback-Vertrag geprüft; keine Aussage über andere Quellen',
