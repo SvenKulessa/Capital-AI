@@ -186,3 +186,93 @@ test('no actual provider call, publishing or invented observed outcome is perfor
   assert.ok(result.every((row) => row.actualMediaAssets === 0));
   assert.ok(result.every((row) => row.socialPackage.deliveries.length === 0));
 });
+
+
+import {
+  forecastXAcquisitionBudget, buildXAcquisitionCandidate, xAcquisitionDraftOverview,
+} from '../growthIntelligenceContent.ts';
+
+const xBudgetFixture = () => ({
+  asOf: '2026-11-24T12:00:00.000Z', pilotStartedAt: '2026-11-24T00:00:00.000Z',
+  quoteObservedAt: '2026-11-24T10:00:00.000Z', quoteEvidenceSha256: 'a'.repeat(64),
+  balanceObservedAt: '2026-11-24T11:45:00.000Z', balanceEvidenceSha256: 'b'.repeat(64),
+  spentMicroEur: 1_000_000, reservedMicroEur: 500_000,
+  remainingCreditMicroEur: 18_000_000, otherCostUpperBoundMicroEur: 100_000,
+  autoRechargeDisabled: true,
+  // Synthetic upper bounds only, not actual X prices.
+  upperBoundPerUnitMicroEur: {
+    linkWrites: 200000, textWrites: 15000, postReads: 5000,
+    ownedReads: 1000, userReads: 10000, tokenRefreshes: 10000,
+  },
+  quantities: {linkWrites:12,textWrites:16,postReads:400,ownedReads:600,userReads:10,tokenRefreshes:2},
+});
+test('X pilot forecasts all cost categories and never authorizes live work', () => {
+  const result = forecastXAcquisitionBudget(xBudgetFixture());
+  assert.equal(result.status, 'FORECAST_WITHIN_LIMIT_NOT_AUTHENTICATED');
+  assert.equal(result.forecastMicroEur, 5_460_000);
+  assert.equal(result.totalMicroEur, 6_960_000);
+  assert.equal(result.remainingBudgetMicroEur, 13_040_000);
+  assert.equal(result.publicPublishAllowed, false);
+  assert.equal(result.paidActivationAllowed, false);
+  assert.equal(result.runtimeBudgetEnforced, false);
+  assert.equal(result.providerCalls, 0);
+});
+test('X budget fails closed for overrun, insufficient credit and exact boundary', () => {
+  const fixture = xBudgetFixture();
+  assert.equal(forecastXAcquisitionBudget({...fixture, spentMicroEur: 14_040_000}).status,
+    'FORECAST_WITHIN_LIMIT_NOT_AUTHENTICATED');
+  assert.equal(forecastXAcquisitionBudget({...fixture, spentMicroEur: 14_040_001}).status, 'BLOCKED_BUDGET');
+  assert.equal(forecastXAcquisitionBudget({...fixture, remainingCreditMicroEur: 5_959_999}).status, 'BLOCKED_BUDGET');
+  assert.equal(forecastXAcquisitionBudget({...fixture, reservedMicroEur: 20_000_000}).status, 'BLOCKED_BUDGET');
+});
+test('X pilot rejects stale or future evidence, out-of-window estimates and unbudgeted verification', () => {
+  const fixture = xBudgetFixture();
+  for (const invalid of [
+    {...fixture, quoteObservedAt: '2026-11-23T11:59:59.000Z'},
+    {...fixture, balanceObservedAt: '2026-11-24T10:59:59.000Z'},
+    {...fixture, balanceObservedAt: '2026-11-24T12:00:01.000Z'},
+  ]) assert.equal(forecastXAcquisitionBudget(invalid).status, 'BLOCKED_STALE_EVIDENCE');
+  assert.equal(forecastXAcquisitionBudget({...fixture,pilotStartedAt:'2026-10-24T00:00:00.000Z'}).status, 'BLOCKED_PILOT_WINDOW');
+  assert.equal(forecastXAcquisitionBudget({...fixture,quantities:{...fixture.quantities,ownedReads:27}}).status, 'BLOCKED_READBACK_NOT_BUDGETED');
+  assert.equal(forecastXAcquisitionBudget({...fixture,upperBoundPerUnitMicroEur:{...fixture.upperBoundPerUnitMicroEur,postReads:0}}).status, 'BLOCKED_UNKNOWN_COST');
+  for(const invalid of [
+    {...fixture, autoRechargeDisabled:false}, {...fixture, paidActivationAllowed:true},
+    {...fixture, spentMicroEur:-1}, {...fixture, reservedMicroEur:0.5},
+    {...fixture, quoteEvidenceSha256:'unknown'},
+    {...fixture, upperBoundPerUnitMicroEur:{...fixture.upperBoundPerUnitMicroEur,mediaUploads:10}},
+  ]) assert.throws(()=>forecastXAcquisitionBudget(invalid));
+});
+test('X candidate has canonical UTM, existing priority, exact digest and conservative length reserve', () => {
+  const draft = buildGrowthIntelligenceContentDrafts(fixture).find(item => item.channel==='X');
+  assert.ok(draft);
+  const candidate = buildXAcquisitionCandidate(draft, '🚀 Finanzwissen verstehen. #CapitalAI');
+  const url = new URL(candidate.trackedUrl);
+  assert.equal(url.searchParams.get('utm_source'),'x');
+  assert.equal(url.searchParams.get('utm_content'),draft.contentId);
+  assert.equal(candidate.priority,draft.priority);
+  assert.equal(candidate.contentSha256,createHash('sha256').update(candidate.text,'utf8').digest('hex'));
+  assert.equal(candidate.publicPublishAllowed,false);
+  assert.equal(buildXAcquisitionCandidate(draft,'a'.repeat(246)).weightedUpperBound,270);
+  assert.equal(buildXAcquisitionCandidate(draft,'🚀'.repeat(123)).weightedUpperBound,270);
+  assert.throws(()=>buildXAcquisitionCandidate(draft,'a'.repeat(247)),/X_ACQUISITION_COPY_TOO_LONG/);
+  assert.throws(()=>buildXAcquisitionCandidate(draft,'🚀'.repeat(124)),/X_ACQUISITION_COPY_TOO_LONG/);
+  for(const body of ['https://x.com', 'x.de', '@account', 'abc\u202e', 'abc\u0000', 'e\u0301', ' abc'])
+    assert.throws(()=>buildXAcquisitionCandidate(draft,body),/X_ACQUISITION_COPY_INVALID/);
+  const wrong = structuredClone(draft);
+  wrong.contentPlan.campaign.canonicalUrl = 'https://capital-ai.online/?email=test';
+  wrong.socialPackage.canonicalUrl = wrong.contentPlan.campaign.canonicalUrl;
+  assert.throws(()=>buildXAcquisitionCandidate(wrong,'Test'),/X_ACQUISITION_TRACKING_IDENTITY_INVALID/);
+});
+test('X acquisition overview preserves source scoring and missing conversion evidence as null', () => {
+  const drafts = buildGrowthIntelligenceContentDrafts(fixture);
+  const overview = xAcquisitionDraftOverview(drafts);
+  assert.equal(overview.budgetMicroEur,20_000_000);
+  assert.equal(overview.maxWeightedCharacters,270);
+  assert.equal(overview.candidates.length,drafts.filter(d=>d.channel==='X').length);
+  assert.ok(overview.candidates.every(d=>new URL(d.trackedUrl).searchParams.get('utm_source')==='x'));
+  assert.ok(Object.values(overview.conversionEvidence).every(d=>d.value===null && d.status==='NOT_PROVEN'));
+  assert.equal(overview.attributionAllowed,false);
+  assert.equal(overview.graphExecution,'NOT_PROVEN');
+  assert.equal(overview.providerCalls,0);
+  assert.deepEqual(JSON.parse(JSON.stringify(overview)),overview);
+});
