@@ -109,3 +109,23 @@ test('X acquisition inventory exposes only planning and never promotes missing c
   assert.match(rows[0].flow,/20 EUR/);
   assert.match(rows[1].next,/GA4-, Supabase- und Stripe/);
 });
+
+test('X campaign source remains separate from total GA4 and missing commerce evidence',async()=>{
+  const {projectXCampaignGa4,makeRow}=await import('./growthOwnerWorkspaceModel');
+  const x=makeRow('x-campaign','X Growth','GROWTH');
+  const raw={schema:'CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1',source:'GA4_DATA_API',
+    private:true,readOnly:true,publicPublishAllowed:false,observedAt:at,
+    period:{start:'7daysAgo',end:'yesterday',timeZone:'Europe/Berlin'},
+    campaignId:'capital-ai-growth-20261120',contentId:'CAP-GROW-005',utmSource:'x',utmMedium:'social',
+    attributionAuthority:'SESSION_UTM_ONLY',status:'PROVIDER_READ_VERIFIED',
+    metrics:{sessions:10,engagedSessions:3},registrations:null,paidSubscriptions:null};
+  const projected=projectXCampaignGa4(raw,x);
+  assert.equal(projected.status,'VERIFIED');
+  assert.match(projected.evidence,/10 Sessions/);
+  assert.equal(projectXCampaignGa4({...raw,status:'NOT_PROVEN_NO_ROWS',metrics:null},x).status,'NOT_PROVEN');
+  for(const wrong of [{...raw,campaignId:'other'},{...raw,paidSubscriptions:1},{...raw,registrations:0},
+    {...raw,metrics:{sessions:1,engagedSessions:2}},{...raw,publicPublishAllowed:true}])
+    assert.throws(()=>projectXCampaignGa4(wrong,x));
+  assert.throws(()=>projectXCampaignGa4(raw,row));
+  assert.equal(importWorkspace(exportWorkspace(appendSnapshot([],[projected],at)))[0].rows[0].status,'NOT_PROVEN');
+});
