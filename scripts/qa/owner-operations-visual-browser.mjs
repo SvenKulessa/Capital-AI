@@ -75,6 +75,50 @@ async function awaitPage(expression,timeout=24000) {
   }
   throw Error('PAGE_STATE_TIMEOUT');
 }
+// Scope Growth interactions to the standalone Owner provider route; fixtures only.
+const growthRoot='document.querySelector(\'section[aria-label="Growth Intelligence Control Center"]\')';
+async function growthClick(label){
+  const ok=await evaluate(`(() => {const root=${growthRoot};const b=[...root.querySelectorAll('button')].find(e=>e.textContent.trim()===${JSON.stringify(label)});if(!b||b.disabled)return false;b.click();return true;})()`);
+  assert.equal(ok,true,'Growth button unavailable: '+label);
+}
+async function growthUpload(raw,kind){
+  const ok=await evaluate(`(() => {const root=${growthRoot};const label=${JSON.stringify(kind)};const b=[...root.querySelectorAll('button')].find(e=>e.textContent.trim()===label);const input=b?.nextElementSibling;if(input?.type!=='file')return false;const dt=new DataTransfer();dt.items.add(new File([${JSON.stringify(raw)}],'synthetic.json',{type:'application/json'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`);
+  assert.equal(ok,true,'Growth import input unavailable');
+}
+async function growthInteractionFixture(){
+  await growthClick('GA4 Read-only prüfen');
+  await awaitPage(`${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4')`);
+  await growthClick('Vorher / Nachher');
+  await awaitPage(`${growthRoot}.textContent.includes('Vorher') && ${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4')`);
+  await growthClick('Integrationen');
+  const filter=await evaluate(`(() => {const root=${growthRoot};const s=[...root.querySelectorAll('select')].find(e=>[...e.options].some(o=>o.value==='MARKET'));if(!s)return false;s.value='MARKET';s.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`);
+  assert.equal(filter,true);await awaitPage(`${growthRoot}.querySelectorAll('article').length===1 && ${growthRoot}.textContent.includes('Marktnews-Pipeline')`);
+  await evaluate(`(() => {const s=[...${growthRoot}.querySelectorAll('select')].find(e=>[...e.options].some(o=>o.value==='MARKET'));s.value='ALL';s.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+  await growthClick('Engine-Readback prüfen');
+  await awaitPage(`${growthRoot}.textContent.includes('Build-Artefakte gelesen')`);
+  const report=JSON.stringify({contractVersion:'CAPITAL_AI_GROWTH_GRAPH_HANDOFF@1',engine:'langgraph',quality:'PASS_WITH_GAPS',
+    sources:['GA4','GSC','INSTAGRAM','YOUTUBE'].map(source=>({source,status:'NOT_PROVEN_NO_READBACK',transport:'DISABLED',evidenceSha256:null})),
+    eligibleForDraftReview:false,providerAuthentication:'NOT_PROVEN_BY_GRAPH',attributionEvents:[],publicationAllowed:false,costActivationAllowed:false,automaticChanges:false});
+  await growthUpload(report,'LangGraph-Statusbericht importieren');
+  await awaitPage(`${growthRoot}.textContent.includes('Graph-Statusbericht als Dokumentation übernommen')`);
+  await growthClick('Integrationen');
+  await awaitPage(`${growthRoot}.textContent.includes('GA4 · Graph-Import') && ${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4')`);
+  // Capture the actual exported Blob in this isolated fixture; suppress filesystem download only.
+  await evaluate(`(() => {const original=URL.createObjectURL,click=HTMLAnchorElement.prototype.click;window.__growthExport=null;URL.createObjectURL=function(blob){blob.text().then(s=>window.__growthExport=s);return original.call(URL,blob);};HTMLAnchorElement.prototype.click=function(){if(this.download?.startsWith('capital-ai-growth-owner-'))return;return click.call(this);};})()`);
+  await growthClick('JSON exportieren');await awaitPage("typeof window.__growthExport==='string'");
+  const exported=await evaluate('window.__growthExport');
+  const bundle=JSON.parse(exported);assert.equal(bundle.schema,'CAPITAL_AI_GROWTH_OWNER_WORKSPACE@1');
+  assert.ok(bundle.snapshots.length>=4);assert.equal(bundle.snapshots.at(-1).rows.find(r=>r.id==='ga4').status,'VERIFIED');
+  await growthUpload(exported,'JSON importieren (ersetzt Arbeitsstand)');
+  await awaitPage(`${growthRoot}.textContent.includes('Import übernommen')`);
+  assert.equal(await evaluate(`[...${growthRoot}.querySelectorAll('article')].some(a=>a.textContent.includes('VERIFIED ·'))`),false,'Imported VERIFIED must downgrade');
+  await evaluate(`${growthRoot}.querySelector('details').open=true`);
+  await growthClick('Archiv prüfen');
+  await awaitPage(`${growthRoot}.textContent.includes('Archiv nicht verfügbar')`);
+  assert.equal(await evaluate(`[...${growthRoot}.querySelectorAll('button')].find(b=>b.textContent.trim()==='Aktuellen Stand archivieren')?.disabled`),true);
+  checks.push({scenario:'growth-control-center-interactions',viewport:390,mode:'ISOLATED_FIXTURE_NOT_PRODUCTION',ga4Fixture:true,domainFilter:true,comparison:true,engineReadbackFixture:true,graphImport:true,jsonRoundtrip:true,archiveFailClosed:true,inputMethod:'DOM fixture events; not native touch'});
+}
+
 async function visit(role,width,tag,expected=true,route='/profile/render-dashboard') {
   mode=role;
   await send('Emulation.setDeviceMetricsOverride',{
@@ -139,6 +183,15 @@ async function visit(role,width,tag,expected=true,route='/profile/render-dashboa
       failures.push(tag+': fallback leaks fixture KPI');
   }else if(state.ownerTitle||!state.unauthorizedMessage)
     failures.push(tag+': owner-only content displayed for non-owner');
+  if(route==='/profile/render-dashboard'){
+    if(expected){
+      await awaitPage(`!!${growthRoot}`);
+      const bounds=await evaluate(`(() => {const e=${growthRoot};const r=e.getBoundingClientRect();return {right:r.right,width:r.width,scrollWidth:document.documentElement.scrollWidth};})()`);
+      checks.push({scenario:'growth-layout-'+role,viewport:width,...bounds,mode:'ISOLATED_FIXTURE_NOT_PRODUCTION'});
+      if(bounds.right>width+2||bounds.scrollWidth>width+2)failures.push(tag+': Growth panel horizontal overflow');
+      if(role==='owner'&&width===390)await growthInteractionFixture();
+    }else if(await evaluate(`!!${growthRoot}`))failures.push(tag+': non-owner Growth panel exposed');
+  }
   if(expected){
     if(role==='owner'&&width===390&&route==='/profile/dashboard'){
       // Native touch admission exercises the actual owner navigation route.
@@ -339,6 +392,16 @@ async function run() {
         status=200;data=fixture();
       }else if(path==='/api/profile/render-owner-dashboard'&&mode!=='nonowner'){
         status=200;data={private:true,providers:[],sampleSymbols:[]};
+      }else if(path==='/api/profile/growth-intelligence/ga4-readback'&&mode==='owner'){
+        status=200;data={schema:'CAPITAL_AI_GROWTH_GA4_READBACK@1',source:'GA4_DATA_API',private:true,readOnly:true,publicPublishAllowed:false,
+          attributionAuthority:'SEPARATE_FROM_UMAMI_GSC_SOCIAL',observedAt:new Date().toISOString(),status:'PROVIDER_READ_VERIFIED',metrics:{sessions:12,engagedSessions:4}};
+      }else if(path==='/api/profile/growth-intelligence/engine-readback'&&mode==='owner'){
+        status=200;data={schema:'CAPITAL_AI_OWNER_ENGINE_SNAPSHOT@1',scope:'BUILD_ARTIFACT_ONLY',private:true,readOnly:true,publicPublishAllowed:false,
+          market:{state:'SOURCE_SNAPSHOT_ONLY',date:'2026-11-24',homepage:3,overview:0,archive:0,editionSha256:'a'.repeat(64),indexSha256:'b'.repeat(64)},
+          content:{state:'DRAFT_ONLY',drafts:7,sourceSha256:'c'.repeat(64),bundleSha256:'d'.repeat(64)},
+          langgraph:{state:'SOURCE_ONLY_RUNTIME_NOT_PROVEN',sourceSha256:'e'.repeat(64)}};
+      }else if(path==='/api/profile/growth-intelligence/evidence-history'&&mode==='owner'){
+        status=503;data={status:'BLOCKED',reason:'ARCHIVE_ACTIVATION_OR_RECOVERY_NOT_VERIFIED'};
       }
       void respond(requestId,status,data).catch(e=>failures.push('mock-response: '+String(e.message)));
       return;
