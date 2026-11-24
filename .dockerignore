@@ -580,6 +580,8 @@
 !server/growth-owner-evidence-archive.mjs
 !server/growth-owner-evidence-archive.test.mjs
 !server/growth-owner-engine-readback.mjs
+!server/growth-provider-read.mjs
+!server/growth-gsc-readback.mjs
 !server/growth-owner-engine-readback.test.mjs
 !scripts/growth/owner-engine-snapshot.mjs
 !scripts/growth-agent/

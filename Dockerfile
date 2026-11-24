@@ -101,7 +101,7 @@ COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs 
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
-COPY server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-evidence-archive.test.mjs server/growth-owner-engine-readback.mjs server/growth-owner-engine-readback.test.mjs ./server/
+COPY server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-evidence-archive.test.mjs server/growth-owner-engine-readback.mjs server/growth-owner-engine-readback.test.mjs server/growth-provider-read.mjs server/growth-gsc-readback.mjs ./server/
 COPY scripts/growth/owner-engine-snapshot.mjs ./scripts/growth/
 COPY scripts/growth-agent/auto_loop.py ./scripts/growth-agent/auto_loop.py
 COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
@@ -243,7 +243,7 @@ COPY server/purchase-receipt.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
 COPY server/skill-routing-catalog.mjs ./server/
-COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-engine-readback.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-engine-readback.mjs server/growth-provider-read.mjs server/growth-gsc-readback.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt
