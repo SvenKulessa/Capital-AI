@@ -110,4 +110,32 @@ if [[ "$budget_ok_one" -eq 1 ]]; then winner=c; else winner=d; fi
 budget_claim "$winner" > "$one"
 grep -q '"claimed": false' "$one"
 pg -f /work/scripts/social-provider-db-x-budget-after.sql
+# Restart only the exact ephemeral CI service, never a user-supplied remote DB.
+container="${SOCIAL_DB_TEST_CONTAINER:-}"
+if [[ "${GITHUB_ACTIONS:-}" != "true" || ! "$container" =~ ^[a-f0-9]{64}$ ]]; then
+  echo 'X_BUDGET_RESTART_REQUIRES_CI_SERVICE' >&2; exit 1
+fi
+if [[ "$(docker inspect --format '{{.Config.Image}}' "$container")" != "$image" ]]; then
+  echo 'X_BUDGET_RESTART_WRONG_IMAGE' >&2; exit 1
+fi
+before="$(pg -At -c 'SELECT pg_postmaster_start_time()')"
+docker restart --time 10 "$container" >/dev/null
+ready=0
+for attempt in {1..30}; do
+  if pg -At -c 'SELECT 1' >/dev/null 2>&1; then ready=1; break; fi
+  sleep 1
+done
+[[ "$ready" -eq 1 ]]
+after="$(pg -At -c 'SELECT pg_postmaster_start_time()')"
+[[ "$before" != "$after" ]]
+# Same receipt-free content remains claimed after the real server restart;
+# a different digest cannot spend the exhausted budget.
+budget_claim "$winner" > "$one"
+grep -q '"claimed": false' "$one"
+if budget_claim e > "$two" 2>&1; then
+  echo 'X_BUDGET_RESTART_CAP_BROKEN' >&2; exit 1
+fi
+grep -q 'X_BUDGET_EXHAUSTED' "$two"
+pg -f /work/scripts/social-provider-db-x-budget-after.sql
+echo 'PASS: X budget persisted after real PostgreSQL service restart'
 echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
