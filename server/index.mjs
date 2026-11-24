@@ -37,6 +37,7 @@ import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGrowthEvidenceApi } from './growth-owner-evidence-api.mjs';
 import { createGrowthEngineReadback } from './growth-owner-engine-readback.mjs';
+import { createGrowthGscReadback } from './growth-gsc-readback.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
 import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
@@ -461,6 +462,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const growthEngineReadback = createGrowthEngineReadback({ authorized: renderOwnerDashboard.authorized });
+  const growthGscReadback = createGrowthGscReadback({ authorized: renderOwnerDashboard.authorized, env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const growthEvidenceApi = createGrowthEvidenceApi({ env: options.env || process.env, auth, authorized: renderOwnerDashboard.authorized });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
@@ -573,6 +575,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await growthEngineReadback.handle(req, res, url, json)) return;
+  if (await growthGscReadback.handle(req, res, url, json)) return;
   if (await growthEvidenceApi.handle(req, res, url, json)) return;
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
