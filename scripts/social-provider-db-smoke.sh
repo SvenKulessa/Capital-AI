@@ -110,6 +110,11 @@ if [[ "$budget_ok_one" -eq 1 ]]; then winner=c; else winner=d; fi
 budget_claim "$winner" > "$one"
 grep -q '"claimed": false' "$one"
 pg -f /work/scripts/social-provider-db-x-budget-after.sql
+
+# Isolated campaign consent fixture; no real provider or user records.
+pg -f /work/scripts/social-provider-db-x-consent.sql
+pg -f /work/scripts/social-provider-db-x-consent-test.sql
+
 # Restart only the exact ephemeral CI service, never a user-supplied remote DB.
 container="${SOCIAL_DB_TEST_CONTAINER:-}"
 if [[ "${GITHUB_ACTIONS:-}" != "true" || ! "$container" =~ ^[a-f0-9]{64}$ ]]; then
@@ -140,6 +145,7 @@ pg -f /work/scripts/social-provider-db-x-budget-after.sql
 echo 'PASS: X budget persisted after real PostgreSQL service restart'
 echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
 
-# Isolated campaign consent fixture; no real provider or user records.
-pg -f /work/scripts/social-provider-db-x-consent.sql
-pg -f /work/scripts/social-provider-db-x-consent-test.sql
+# Verify durable consent withdrawal and terminal invoice reversal after the same real restart.
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.x_consent WHERE revoked_at IS NOT NULL")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.x_initial_payment WHERE reversed")" == 1 ]]
+echo 'PASS: isolated consent and invoice reversal persisted after PostgreSQL restart'
