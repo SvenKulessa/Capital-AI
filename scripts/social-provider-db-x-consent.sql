@@ -71,8 +71,63 @@ begin
     where revoked_at is null and expires_at>t and user_id is not null
       and registered_at>=p_start and confirmed_at<p_end);
 end $$;
+-- Only normalized initial paid invoice evidence from the existing verified
+-- Stripe receipt adapter may be admitted by the trusted server.
+create table capital_growth_private.x_initial_payment (
+  user_id uuid primary key references capital_growth_private.x_consent(user_id) on delete cascade,
+  invoice_key text not null unique check (invoice_key ~ '^[a-f0-9]{64}$'),
+  subscription_key text not null unique check (subscription_key ~ '^[a-f0-9]{64}$'),
+  paid_at timestamptz not null,
+  observed_at timestamptz not null,
+  amount_cents bigint not null check (amount_cents between 1 and 100000000),
+  reversed boolean not null default false
+);
+alter table capital_growth_private.x_initial_payment enable row level security;
+revoke all on capital_growth_private.x_initial_payment from public,anon,authenticated,service_role;
+-- Serialize on consent; neither revoke nor payment ingestion can race past the consent boundary.
+create function capital_growth_private.record_x_initial_payment(p_user uuid,p_invoice text,p_subscription text,
+ p_paid timestamptz,p_observed timestamptz,p_cents bigint)
+returns boolean language plpgsql security definer set search_path='' as $$
+declare c capital_growth_private.x_consent%rowtype; t timestamptz:=clock_timestamp();
+begin
+  select * into c from capital_growth_private.x_consent where user_id=p_user for update;
+  if not found or c.revoked_at is not null or c.expires_at<=t or p_paid is null or p_observed is null
+    or p_paid<c.confirmed_at or p_paid>=c.expires_at or p_observed<p_paid
+    or p_observed>t or t-p_observed>interval '1 hour' then return false; end if;
+  insert into capital_growth_private.x_initial_payment(user_id,invoice_key,subscription_key,paid_at,observed_at,amount_cents)
+    values(p_user,p_invoice,p_subscription,p_paid,p_observed,p_cents) on conflict do nothing;
+  return found;
+end $$;
+-- Reversal is terminal. No re-count or automatic resurrection.
+create function capital_growth_private.reverse_x_initial_payment(p_user uuid,p_invoice text)
+returns boolean language plpgsql security definer set search_path='' as $$
+begin
+  update capital_growth_private.x_initial_payment set reversed=true
+   where user_id=p_user and invoice_key=p_invoice and not reversed;
+  return found;
+end $$;
+-- This is recorded evidence, NOT complete cohort coverage or a current Stripe
+-- verification. Aged receipts remain unknown until reconciliation.
+create function capital_growth_private.x_conversion_candidates(p_start timestamptz,p_end timestamptz)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare t timestamptz:=clock_timestamp(); n bigint; a bigint;
+begin
+  if p_start is null or p_end is null or p_start>=p_end or p_end>t or p_end-p_start>interval '30 days'
+    then raise exception 'X_CONSENT_WINDOW_INVALID'; end if;
+  select count(*),sum(p.amount_cents) into n,a
+  from capital_growth_private.x_consent c join capital_growth_private.x_initial_payment p using(user_id)
+  where c.revoked_at is null and c.expires_at>t and c.registered_at>=p_start
+    and c.confirmed_at<p_end and p.paid_at<p_end and not p.reversed and p.observed_at>=t-interval '24 hours';
+  return jsonb_build_object('status','RECORDED_CANDIDATES_ONLY',
+   'candidateRegistrations',nullif(capital_growth_private.x_signup_count(p_start,p_end),0),
+   'candidatePaidSubscriptions',nullif(n,0),'candidateInitialInvoiceCents',a,
+   'registrations',null,'paidSubscriptions',null,'revenueCents',null);
+end $$;
 revoke all on all functions in schema capital_growth_private from public,anon,authenticated,service_role;
 grant execute on function capital_growth_private.grant_x_consent(text),
  capital_growth_private.bind_x_signup(text,uuid),capital_growth_private.revoke_x_consent(text,uuid),
- capital_growth_private.x_signup_count(timestamptz,timestamptz) to service_role;
+ capital_growth_private.x_signup_count(timestamptz,timestamptz),
+ capital_growth_private.record_x_initial_payment(uuid,text,text,timestamptz,timestamptz,bigint),
+ capital_growth_private.reverse_x_initial_payment(uuid,text),
+ capital_growth_private.x_conversion_candidates(timestamptz,timestamptz) to service_role;
 commit;
