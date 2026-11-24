@@ -294,6 +294,60 @@ export async function buildGrowthGa4Readback({ client, propertyNumber, now = Dat
   });
 }
 
+// Fixed acquisition cohort; no client-supplied dimensions, filters or identity.
+const X_CAMPAIGN = Object.freeze(['x','social','capital-ai-growth-20261120','CAP-GROW-005']);
+const X_DIMENSIONS = Object.freeze(['sessionManualSource','sessionManualMedium','sessionManualCampaignName','sessionManualAdContent']);
+export async function buildXCampaignGa4Readback({client, propertyNumber, now=Date.now}={}) {
+  if (!client || !PROPERTY_NUMBER.test(String(propertyNumber || ''))) throw Error('GA4_PROPERTY_NUMBER_INVALID');
+  const tools = await client.listTools();
+  for (const tool of ['get_account_summaries','get_property_details','run_report'])
+    if (!tools.includes(tool)) throw Error('GA4_MCP_REQUIRED_TOOL_MISSING_'+tool);
+  if (!containsProperty(await client.callTool('get_account_summaries',{}),propertyNumber)) throw Error('GA4_PROPERTY_NOT_ACCESSIBLE');
+  const raw=await client.callTool('get_property_details',{property_id:propertyNumber});
+  if (!containsProperty(raw,propertyNumber)) throw Error('GA4_PROPERTY_DETAILS_NOT_BOUND');
+  const property=propertyProjection(raw,propertyNumber);
+  const period={start:'7daysAgo',end:'yesterday',timeZone:property.timeZone};
+  const report=await client.callTool('run_report',{property_id:propertyNumber,
+    date_ranges:[{start_date:period.start,end_date:period.end}],dimensions:[...X_DIMENSIONS],
+    metrics:['sessions','engagedSessions'],limit:100,return_property_quota:true});
+  function find(value,depth=0) {
+    if(!value||typeof value!=='object'||depth>4)return null;
+    if(Array.isArray(value.metricHeaders??value.metric_headers))return value;
+    for(const key of ['result','report','data','response']){const r=find(value[key],depth+1);if(r)return r;}
+    return null;
+  }
+  const body=find(report);
+  const dims=body?.dimensionHeaders??body?.dimension_headers;
+  const metrics=body?.metricHeaders??body?.metric_headers;
+  const rows=body?.rows??[];
+  const total=body?.rowCount??body?.row_count;
+  if(!Array.isArray(dims)||dims.length!==4||dims.some((d,i)=>d.name!==X_DIMENSIONS[i])||
+    !Array.isArray(metrics)||metrics.length!==2||metrics[0]?.name!=='sessions'||metrics[1]?.name!=='engagedSessions'||
+    !Array.isArray(rows)||rows.length>100||total===undefined||!Number.isSafeInteger(Number(total))||Number(total)!==rows.length)
+    throw Error('GA4_GROWTH_INVALID_REPORT');
+  const meta=body.metadata??{};
+  if(meta.subjectToThresholding===true||meta.subject_to_thresholding===true||meta.dataLossFromOtherRow===true||meta.data_loss_from_other_row===true)
+    throw Error('GA4_GROWTH_INVALID_REPORT');
+  let matched=null;
+  for(const row of rows){
+    const values=row.dimensionValues??row.dimension_values;
+    if(!Array.isArray(values)||values.length!==4||values.some(v=>typeof v?.value!=='string'||v.value==='(other)'))throw Error('GA4_GROWTH_INVALID_REPORT');
+    if(!values.every((v,i)=>v.value===X_CAMPAIGN[i]))continue;
+    if(matched!==null)throw Error('GA4_GROWTH_INVALID_REPORT');
+    const cells=row.metricValues??row.metric_values;
+    const count=v=>{const s=String(v??'');const n=/^\d+$/.test(s)?Number(s):NaN;if(!Number.isSafeInteger(n)||n<0)throw Error('GA4_GROWTH_INVALID_REPORT');return n;};
+    if(!Array.isArray(cells)||cells.length!==2)throw Error('GA4_GROWTH_INVALID_REPORT');
+    const sessions=count(cells[0]?.value),engagedSessions=count(cells[1]?.value);
+    if(engagedSessions>sessions)throw Error('GA4_GROWTH_INVALID_REPORT');
+    matched={sessions,engagedSessions};
+  }
+  return Object.freeze({schema:'CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1',source:'GA4_DATA_API',
+    private:true,readOnly:true,publicPublishAllowed:false,observedAt:new Date(now()).toISOString(),period,
+    campaignId:X_CAMPAIGN[2],contentId:X_CAMPAIGN[3],utmSource:X_CAMPAIGN[0],utmMedium:X_CAMPAIGN[1],
+    status:matched?'PROVIDER_READ_VERIFIED':'NOT_PROVEN_NO_ROWS',metrics:matched,
+    attributionAuthority:'SESSION_UTM_ONLY',registrations:null,paidSubscriptions:null});
+}
+
 export function createGoogleAnalyticsReadback({
   env = process.env,
   auth,
@@ -328,7 +382,7 @@ export function createGoogleAnalyticsReadback({
     const propertyNumber = requiredPropertyNumber(env);
     activeKind = kind;
     let timeout;
-    const builder = kind === 'growth' ? buildGrowthGa4Readback : buildGoogleAnalyticsReadback;
+    const builder = kind === 'x-campaign' ? buildXCampaignGa4Readback : kind === 'growth' ? buildGrowthGa4Readback : buildGoogleAnalyticsReadback;
     const providerRead = builder({
       client,
       propertyNumber,
@@ -354,7 +408,8 @@ export function createGoogleAnalyticsReadback({
   async function handle(req, res, url, json) {
     const diagnostic = url.pathname === '/api/profile/google-analytics-config-diagnostic';
     const growth = url.pathname === GROWTH_PATH;
-    if (url.pathname !== PATH && !diagnostic && !growth) return false;
+    const campaign = url.pathname === '/api/profile/growth-intelligence/x-campaign-readback';
+    if (url.pathname !== PATH && !diagnostic && !growth && !campaign) return false;
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Vary', 'Cookie');
@@ -383,10 +438,10 @@ export function createGoogleAnalyticsReadback({
     }
 
     try {
-      json(res, 200, await load(growth ? 'growth' : 'events'));
+      json(res, 200, await load(campaign ? 'x-campaign' : growth ? 'growth' : 'events'));
     } catch (error) {
       json(res, 503, {
-        schema: growth ? 'CAPITAL_AI_GROWTH_GA4_READBACK@1' : 'CAPITAL_AI_GOOGLE_ANALYTICS_RENDER_READBACK@1',
+        schema: campaign ? 'CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1' : growth ? 'CAPITAL_AI_GROWTH_GA4_READBACK@1' : 'CAPITAL_AI_GOOGLE_ANALYTICS_RENDER_READBACK@1',
         status: 'EVIDENCE_UNAVAILABLE',
         error: 'google_analytics_readback_unavailable',
         reason: safeGa4FailureReason(error),

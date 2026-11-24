@@ -99,8 +99,8 @@ async function growthUpload(raw,kind){
   assert.equal(result.result?.value,true,'Growth import input unavailable');
 }
 async function growthInteractionFixture(){
-  await growthClick('GA4 und GSC Read-only prüfen');
-  await awaitPage(`${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4') && ${growthRoot}.textContent.includes('Klicks 3, Impressionen 12')`);
+  await growthClick('GA4, X-Kampagne und GSC Read-only prüfen');
+  await awaitPage(`${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4') && ${growthRoot}.textContent.includes('Klicks 3, Impressionen 12') && ${growthRoot}.textContent.includes('5 Sessions, 2 Engaged Sessions')`);
   await growthClick('Vorher / Nachher');
   await awaitPage(`${growthRoot}.textContent.includes('Vorher') && ${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4')`);
   await growthClick('Integrationen');
@@ -123,6 +123,7 @@ async function growthInteractionFixture(){
   const bundle=JSON.parse(exported);assert.equal(bundle.schema,'CAPITAL_AI_GROWTH_OWNER_WORKSPACE@1');
   assert.ok(bundle.snapshots.length>=4);assert.equal(bundle.snapshots.at(-1).rows.find(r=>r.id==='ga4').status,'VERIFIED');
   assert.equal(bundle.snapshots.at(-1).rows.find(r=>r.id==='gsc').status,'VERIFIED');
+  assert.equal(bundle.snapshots.at(-1).rows.find(r=>r.id==='x-campaign').status,'VERIFIED');
   await growthUpload(exported,'JSON importieren (ersetzt Arbeitsstand)');
   await awaitPage(`${growthRoot}.textContent.includes('Import übernommen')`);
   assert.equal(await evaluate(`[...${growthRoot}.querySelectorAll('article')].some(a=>a.textContent.includes('VERIFIED ·'))`),false,'Imported VERIFIED must downgrade');
@@ -409,6 +410,11 @@ async function run() {
       }else if(path==='/api/profile/growth-intelligence/ga4-readback'&&mode==='owner'){
         status=200;data={schema:'CAPITAL_AI_GROWTH_GA4_READBACK@1',source:'GA4_DATA_API',private:true,readOnly:true,publicPublishAllowed:false,
           attributionAuthority:'SEPARATE_FROM_UMAMI_GSC_SOCIAL',observedAt:new Date().toISOString(),status:'PROVIDER_READ_VERIFIED',metrics:{sessions:12,engagedSessions:4}};
+      }else if(path==='/api/profile/growth-intelligence/x-campaign-readback'&&mode==='owner'){
+        status=200;data={schema:'CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1',source:'GA4_DATA_API',private:true,readOnly:true,publicPublishAllowed:false,
+          observedAt:new Date().toISOString(),period:{start:'7daysAgo',end:'yesterday',timeZone:'Europe/Berlin'},
+          campaignId:'capital-ai-growth-20261120',contentId:'CAP-GROW-005',utmSource:'x',utmMedium:'social',
+          attributionAuthority:'SESSION_UTM_ONLY',status:'PROVIDER_READ_VERIFIED',metrics:{sessions:5,engagedSessions:2},registrations:null,paidSubscriptions:null};
       }else if(path==='/api/profile/growth-intelligence/gsc-readback'&&mode==='owner'){
          status=200;data={schema:'CAPITAL_AI_GROWTH_GSC_READBACK@1',source:'GSC_SEARCH_ANALYTICS_API',
            private:true,readOnly:true,publicPublishAllowed:false,attributionAuthority:'SEPARATE_FROM_GA4_UMAMI_SOCIAL',
