@@ -150,7 +150,12 @@ async function providerJson(url, token, fetchImpl, body) {
     return value;
   }catch(e){throw readError(safeReadCodes.has(e?.message)?e.message:'PROVIDER_UNAVAILABLE');}
 }
+function requireReadPeriod(start,end) {
+  if(!date(start)||!date(end)||start>end||Date.parse(end)-Date.parse(start)>30*dayMs)
+    throw readError('INVALID_RESPONSE');
+}
 function daysComplete(rows,start,end,getDay) {
+  requireReadPeriod(start,end);
   const expected=new Set();
   for(let d=start;d<=end;d=addDays(d,1))expected.add(d);
   if(!Array.isArray(rows)||rows.length!==expected.size)throw readError('INCOMPLETE_PERIOD');
@@ -166,6 +171,7 @@ export function createGrowthProviderReaders({fetchImpl=fetch}={}) {
   const get=(url,token,body)=>providerJson(url,token,fetchImpl,body);
   return Object.freeze({
     async GSC({identity,token,startDate,endDate}) {
+      requireReadPeriod(startDate,endDate);
       if(identity!=='sc-domain:capital-ai.online')throw readError('IDENTITY_MISMATCH');
       const base='https://www.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(identity);
       const site=await get(base,token);
@@ -187,7 +193,8 @@ export function createGrowthProviderReaders({fetchImpl=fetch}={}) {
       return {rows:[{clicks,impressions,ctr:clicks/impressions,position}]};
     },
     async INSTAGRAM({identity,token,startDate,endDate,version}) {
-      if(!identityPatterns.INSTAGRAM.test(identity)||!/^v[1-9][0-9]\.0$/.test(version??''))
+      requireReadPeriod(startDate,endDate);
+      if((typeof identity!=='string'||!identityPatterns.INSTAGRAM.test(identity))||!/^v[1-9][0-9]\.0$/.test(version??''))
         throw readError('IDENTITY_MISMATCH');
       const base='https://graph.facebook.com/'+version+'/'+identity;
       const account=await get(base+'?fields=id',token);
@@ -207,7 +214,8 @@ export function createGrowthProviderReaders({fetchImpl=fetch}={}) {
       return Object.fromEntries(entries);
     },
     async YOUTUBE({identity,token,startDate,endDate}) {
-      if(!identityPatterns.YOUTUBE.test(identity))throw readError('IDENTITY_MISMATCH');
+      requireReadPeriod(startDate,endDate);
+      if((typeof identity!=='string'||!identityPatterns.YOUTUBE.test(identity)))throw readError('IDENTITY_MISMATCH');
       // Exact channel ID is authorized by Analytics itself (no broader Data API scope).
       const url=new URL('https://youtubeanalytics.googleapis.com/v2/reports');
       url.search=new URLSearchParams({ids:'channel=='+identity,startDate,endDate,
@@ -227,7 +235,23 @@ export function createGrowthProviderReaders({fetchImpl=fetch}={}) {
  * failures isolated; provider tokens and raw errors never enter output.
  * Default lag of four completed days avoids claiming fresh incomplete Google data.
  */
-export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch,now=Date.now}={}) {
+async function existingGa4Reader({env,now}) {
+  const {createGoogleAnalyticsMcpClient}=await import('../../server/google-analytics-mcp.mjs');
+  const {buildGrowthGa4Readback}=await import('../../server/google-analytics-readback.mjs');
+  const client=createGoogleAnalyticsMcpClient({env});
+  try{
+    return await buildGrowthGa4Readback({client,propertyNumber:env.GOOGLE_ANALYTICS_PROPERTY_NUMBER,now});
+  }finally{client.close();}
+}
+function propertyLocalDate(isoTime,timeZone){
+  if(typeof timeZone!=='string'||!timeZone)throw readError('INVALID_RESPONSE');
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(isoTime));
+  const values=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  const result=values.year+'-'+values.month+'-'+values.day;
+  if(!date(result))throw readError('INVALID_RESPONSE');
+  return result;
+}
+export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch,now=Date.now,readGa4=existingGa4Reader}={}) {
   const asOf=new Date(now()).toISOString();
   const endDate=addDays(asOf.slice(0,10),-4),startDate=addDays(endDate,-6);
   const expectedIdentities={GSC:'sc-domain:capital-ai.online'};
@@ -239,6 +263,20 @@ export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch
   };
   const readers=createGrowthProviderReaders({fetchImpl});
   const records=[],transport=[];
+  const gaId='properties/'+String(env.GOOGLE_ANALYTICS_PROPERTY_NUMBER??'');
+  if(identityPatterns.GA4.test(gaId))expectedIdentities.GA4=gaId;
+  if(env.GROWTH_GA4_READ_ENABLED!=='true')transport.push({source:'GA4',status:'DISABLED'});
+  else if(!expectedIdentities.GA4||!env.GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON||!env.GOOGLE_ANALYTICS_CLOUD_PROJECT)
+    transport.push({source:'GA4',status:'AUTH_REQUIRED'});
+  else try{
+    const report=await readGa4({env,now:()=>Date.parse(asOf)});
+    if(report?.status!=='PROVIDER_READ_VERIFIED'||report?.property?.resourceName!==gaId||report?.source!=='GA4_DATA_API'
+      ||report.observedAt!==asOf||report?.period?.start!=='7daysAgo'||report?.period?.end!=='yesterday')
+      throw readError('INVALID_RESPONSE');
+    const local=propertyLocalDate(asOf,report.period.timeZone);
+    records.push({source:'GA4',identity:gaId,startDate:addDays(local,-7),endDate:addDays(local,-1),observedAt:asOf,payload:report.metrics});
+    transport.push({source:'GA4',status:'READ_RESPONSE_RECEIVED'});
+  }catch(e){transport.push({source:'GA4',status:safeReadCodes.has(e?.message)?e.message:'PROVIDER_UNAVAILABLE'});}
   for(const source of ['GSC','INSTAGRAM','YOUTUBE']){
     const cfg=config[source];
     if(typeof cfg.identity==='string'&&identityPatterns[source].test(cfg.identity))
@@ -256,10 +294,9 @@ export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch
     }catch(e){transport.push({source,status:safeReadCodes.has(e?.message)?e.message:'PROVIDER_UNAVAILABLE'});}
   }
   return {contractVersion:'CAPITAL_AI_GROWTH_PROVIDER_READ@1',transport,
-    ...buildGrowthIntelligenceDraftBundle({records,expectedIdentities,asOf}),
-    // Historical bundle's zero calls describes drafting, not this collector.
-    collectionMode:'EXPLICIT_READ_ONLY',providerCalls:undefined,
-    publicPublishAllowed:false};
+    growthDataLayer:projectGrowthDataLayer({records,expectedIdentities,asOf}),
+    draftBundle:buildGrowthIntelligenceDraftBundle({records,expectedIdentities,asOf}),
+    collectionMode:'EXPLICIT_READ_ONLY',publicPublishAllowed:false};
 }
 
 export function buildGrowthIntelligenceDraftBundle(dataInput) {
