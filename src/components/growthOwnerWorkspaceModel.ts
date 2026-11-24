@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import publicSurfacePlan from '../data/publicSurfaceDeliveryPlan.json';
 
 export const domains = ['PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH'] as const;
 export const statuses = ['VERIFIED', 'BLOCKED', 'NOT_PROVEN'] as const;
@@ -29,6 +30,31 @@ export function makeRow(id: string, name: string, domain: GrowthRow['domain'], n
     flow: '', tests: '', error: '', dependencies: '', approvals: '', operation: '',
     next, evidence: '', origin: 'OWNER_NOTE' };
 }
+export function publicSurfaceRows(): GrowthRow[] {
+  return publicSurfacePlan.tasks.map(task => rowSchema.parse({
+    ...makeRow('audit-' + task.id.toLowerCase(), task.id + ' · ' + task.name, task.domain as GrowthRow['domain'],
+      'Acceptance Criteria und aktuellen CI-/Runtime-Nachweis prüfen'),
+    priority: task.id.slice(0,2),
+    dependencies: task.dependencies.join(', '),
+    operation: 'CAI-PUBLIC-SURFACE@1 · ' + task.milestone + ' · Planung',
+    flow: 'Public-safe Roadmap; keine operative Berechtigung',
+  }));
+}
+
+export function addMissingPublicSurfaceRows(rows: GrowthRow[]): GrowthRow[] {
+  const ids = new Set(rows.map(row => row.id));
+  return [...rows, ...publicSurfaceRows().filter(row => !ids.has(row.id))];
+}
+
+// Export only a fixed, public-safe research task for the existing offline worker.
+// Never submit to its inbox or derive authority from edited notes.
+export function publicSurfaceResearchTask(id: string) {
+  const task = publicSurfacePlan.tasks.find(t => 'audit-' + t.id.toLowerCase() === id);
+  if (!task) throw new Error('Unknown audit task');
+  return { schema: 'CAPITAL_AI_OFFLINE_RESEARCH@1', task_id: 'CAI-PUBLIC-SURFACE:' + task.id,
+    domain: task.domain, query: 'Review repository evidence for CAI-PUBLIC-SURFACE@1 ' + task.id + ' ' + task.name + '. Report gaps; no mutation authority.' };
+}
+
 export function initialRows(): GrowthRow[] {
   return [
     { ...makeRow('ga4', 'GA4 Acquisition', 'GROWTH', 'Owner-Readback ausführen'),
@@ -45,6 +71,7 @@ export function initialRows(): GrowthRow[] {
       flow: 'Read-only Entwurfskoordination; keine Veröffentlichung' },
     makeRow('langgraph', 'LangGraph SOLO2', 'PLATFORM', 'Checkpoint und Workflow-Evidence abgleichen'),
     { ...makeRow('trust', 'Rechte, Consent, Freigaben', 'TRUST', 'Scope- und Rechte-Evidence prüfen'), priority: 'P0' },
+    ...publicSurfaceRows(),
   ];
 }
 export function appendSnapshot(history: GrowthSnapshot[], rows: GrowthRow[], at: string): GrowthSnapshot[] {

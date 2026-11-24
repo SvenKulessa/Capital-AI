@@ -785,6 +785,8 @@ export function createApp(root = defaultRoot, options = {}) {
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
     return res.end(xml);
   }
+  // Preserve the existing malformed-URL HTTP contract before artifact admission.
+  try { decodeURIComponent(url.pathname); } catch { return json(res, 400, { error: 'bad_request' }); }
   if (isBlockedPublicArtifactPath(publicPath)) {
     res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
     res.end();

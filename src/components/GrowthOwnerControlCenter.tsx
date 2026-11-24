@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { appendSnapshot, applyOwnerEdit, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -250,6 +250,22 @@ export function GrowthOwnerControlCenter() {
     {view === 'handoff' && <div className="space-y-3">
       <p className="text-sm">Marktnews → Quellen und Rechte (read-only) · Growth → getrennte Datenquellen · Content → Entwurfsstatus (read-only) · TRUST → Freigaben · PLATFORM → Betrieb und CI.</p>
       <p className="text-xs text-slate-400">ANALYZED → IMPLEMENTED → TESTED → MERGE_READY → MERGED → DEPLOYED → VERIFIED. Diese Ansicht startet keine Agenten, Publikationen oder Deployments.</p>
+      <button type="button" className={button} disabled={pending} onClick={() => {
+        const next = addMissingPublicSurfaceRows(rows);
+        if (next.length !== rows.length) {
+          try { setHistory(h => appendSnapshot(h, next, new Date().toISOString())); }
+          catch { setMessage('Audit-Inventar konnte nicht ergänzt werden.'); }
+        }
+      }}>Public-Surface-Audit ergänzen</button>
+      <p className="text-xs text-slate-400">Audit-Aufgaben können als lokale Offline-Recherchedatei exportiert werden. Kein Worker-Start und keine Freigabe.</p>
+      {rows.filter(r => r.id.startsWith('audit-')).map(r => <button key={r.id} type="button" className={button} disabled={pending} onClick={() => {
+        try {
+          const task = publicSurfaceResearchTask(r.id);
+          const url = URL.createObjectURL(new Blob([JSON.stringify(task,null,2)], {type:'application/json'}));
+          const link = document.createElement('a'); link.href = url; link.download = r.id + '.json'; link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch { setMessage('Unbekannte Audit-Aufgabe.'); }
+      }}>{r.name} · Offline-Aufgabe exportieren</button>)}
       {ordered.filter(r => r.status !== 'VERIFIED').map(r => <article key={r.id} className="rounded-lg border border-white/10 p-3"><p className="text-xs text-indigo-300">{r.priority} · {r.domain} · {r.status}</p><p className="font-bold">{r.name}</p><p className="text-sm break-words">{r.next || 'Nächsten Schritt bestimmen'}</p><p className="text-xs text-slate-400 break-words">{r.dependencies || 'Abhängigkeiten nicht dokumentiert'}</p></article>)}
     </div>}
   </section>;
