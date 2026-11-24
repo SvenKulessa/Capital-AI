@@ -113,8 +113,11 @@ test('public editorial source requires structural provenance, references and acc
 });
 
 test('unapproved learning videos never gain public VideoObject or imply paid video entitlement', () => {
-  assert.deepEqual(publicLearningVideoSchemas(), []);
-  assert.equal(seoJsonLdForPath('/learning')['@graph'].length, 3);
+  const published = publicLearningVideoSchemas();
+  assert.equal(published.length, 1);
+  assert.equal(published[0].embedUrl, 'https://www.youtube-nocookie.com/embed/msfyAwCkzOM');
+  assert.equal(published[0].isAccessibleForFree, true);
+  assert.equal(seoJsonLdForPath('/learning')['@graph'].length, 4);
   const approved = {
     id: 'fixture-preview', category: 'Architektur',
     publicationState: 'PUBLISHED', visibility: 'PUBLIC', licenseState: 'VERIFIED',
