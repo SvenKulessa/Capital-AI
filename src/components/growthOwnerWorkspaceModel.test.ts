@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4 } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGraphHandoff } from './growthOwnerWorkspaceModel';
 const at = '2026-11-24T12:00:00.000Z';
 const row = initialRows()[0];
 const good = { schema: 'CAPITAL_AI_GROWTH_GA4_READBACK@1', source: 'GA4_DATA_API', private: true, readOnly: true, publicPublishAllowed: false,
@@ -35,4 +35,39 @@ test('invalid schemas, duplicate IDs and oversized input fail closed', () => {
   const b = JSON.parse(exportWorkspace(appendSnapshot([],[row],at)));
   b.snapshots[0].rows[0].token = 'synthetic';
   assert.throws(() => importWorkspace(JSON.stringify(b)));
+});
+
+const reportSha='a'.repeat(64);
+const graphReport={
+  contractVersion:'CAPITAL_AI_GROWTH_GRAPH_HANDOFF@1',engine:'langgraph',quality:'PASS_WITH_GAPS',
+  sources:['GA4','GSC','INSTAGRAM','YOUTUBE'].map((source,i)=>({source,
+    status:i===0?'SOURCE_RECORDED_NOT_AUTHENTICATED':'NOT_PROVEN_NO_READBACK',
+    transport:i===0?'READ_RESPONSE_RECEIVED':'AUTH_REQUIRED',evidenceSha256:i===0?'b'.repeat(64):null})),
+  eligibleForDraftReview:true,providerAuthentication:'NOT_PROVEN_BY_GRAPH',
+  attributionEvents:[],publicationAllowed:false,costActivationAllowed:false,automaticChanges:false,
+};
+test('graph import keeps live GA4 separate and archives only status references',()=>{
+  const live=[projectGa4(good,row),...initialRows().slice(1)];
+  const projected=projectGraphHandoff(JSON.stringify(graphReport),reportSha,live);
+  assert.deepEqual(projected.slice(0,live.length),live);
+  assert.equal(projected.length,live.length+5);
+  assert.ok(projected.slice(live.length).every(r=>r.status==='NOT_PROVEN'&&r.origin==='OWNER_NOTE'));
+  assert.match(projected.find(r=>r.id==='graph-source-ga4')!.evidence,/bbbbbbbb/);
+  const restored=importWorkspace(exportWorkspace(appendSnapshot([],projected,at)));
+  assert.ok(restored[0].rows.every(r=>r.status==='NOT_PROVEN'));
+  const blocked=projectGraphHandoff(JSON.stringify({...graphReport,quality:'BLOCKED',sources:[],eligibleForDraftReview:false}),reportSha,projected);
+  assert.equal(blocked.filter(r=>r.id.startsWith('graph-source-')).length,0);
+  assert.equal(blocked[0].status,'VERIFIED');
+});
+test('graph report rejects forged authority, raw metrics, inconsistent sources and invalid digest',()=>{
+  for(const value of [
+    {...graphReport,publicationAllowed:true},
+    {...graphReport,providerAuthentication:'VERIFIED'},
+    {...graphReport,eligibleForDraftReview:false},
+    {...graphReport,sources:[graphReport.sources[0],...graphReport.sources.slice(0,3)]},
+    {...graphReport,sources:[{...graphReport.sources[0],metrics:{sessions:1}},...graphReport.sources.slice(1)]},
+    {...graphReport,sources:[{...graphReport.sources[0],evidenceSha256:null},...graphReport.sources.slice(1)]},
+  ])assert.throws(()=>projectGraphHandoff(JSON.stringify(value),reportSha,initialRows()));
+  assert.throws(()=>projectGraphHandoff(JSON.stringify(graphReport),'bad',initialRows()));
+  assert.throws(()=>projectGraphHandoff(' '.repeat(16385),reportSha,initialRows()));
 });
