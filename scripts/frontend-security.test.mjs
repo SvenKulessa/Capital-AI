@@ -356,3 +356,16 @@ test('AICapital workspace is selected by policy, while private Render infrastruc
   assert.doesNotMatch(ui, /<dt className="text-slate-500">Web-App<\/dt>/);
   assert.match(ui, /Technische Anbindung/);
 });
+
+
+test('Control Center and standalone console share fail-closed owner presentation checks', async () => {
+  const { hasControlCenterAccess } = await import('../shared/control-center-access.mjs');
+  const owner = { authenticated: true, account: { available: true, iamRole: 'owner' }, mfaRequired: false };
+  assert.equal(hasControlCenterAccess(owner), true);
+  for (const session of [null, {}, { ...owner, authenticated: false }, { ...owner, mfaRequired: true }, { ...owner, account: { available: false, iamRole: 'owner' } }, { ...owner, account: { available: true, iamRole: 'user' } }]) {
+    assert.equal(hasControlCenterAccess(session), false);
+  }
+  for (const path of ['../src/components/ControlCenterPage.tsx', '../src/features/analysis/PipelineConfiguratorConsole.tsx']) {
+    assert.match(await readFile(new URL(path, import.meta.url), 'utf8'), /hasControlCenterAccess\(/);
+  }
+});

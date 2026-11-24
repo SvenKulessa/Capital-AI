@@ -195,12 +195,6 @@
 !scripts/growth/brand-kit-graph-drafts.test.mjs
 !scripts/growth/social-trend-projection.mjs
 !scripts/growth/social-trend-projection.test.mjs
-!scripts/growth/viral-product-drafts.mjs
-!scripts/growth/viral-product-drafts.test.mjs
-!scripts/growth/viral-content-engine.mjs
-!scripts/growth/viral-content-engine.test.mjs
-!scripts/growth/viral-template-cache.mjs
-!scripts/growth/viral-template-cache.test.mjs
 !scripts/growth/next-round-planner.mjs
 !scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
@@ -511,6 +505,7 @@
 
 # Exact new hub/owner dependencies and isolated build validation inputs.
 !shared/account-display.mjs
+!shared/control-center-access.mjs
 !shared/account-avatar-policy.mjs
 !shared/analytics-demo.mjs
 !shared/hub-branding.mjs
@@ -592,3 +587,9 @@
 !scripts/growth/owner-engine-snapshot.mjs
 !scripts/growth-agent/
 !scripts/growth-agent/auto_loop.py
+!scripts/growth/viral-product-drafts.mjs
+!scripts/growth/viral-product-drafts.test.mjs
+!scripts/growth/viral-content-engine.mjs
+!scripts/growth/viral-content-engine.test.mjs
+!scripts/growth/viral-template-cache.mjs
+!scripts/growth/viral-template-cache.test.mjs
