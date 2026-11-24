@@ -33,14 +33,16 @@ export function visibleLearningVideos(videos: readonly LearningVideo[]): Learnin
 }
 function VideoPlayer({ video }: { video: LearningVideo }) {
   const [consent, setConsent] = useState(false);
-  return <article className="overflow-hidden rounded-2xl border border-amber-400/25 bg-[#090e21]">
+  return <article id={`video-${video.youtubeId}`} className="overflow-hidden rounded-2xl border border-amber-400/25 bg-[#090e21]">
     <h3 className="p-4 font-bold text-amber-200">{video.title}</h3>
     <p className="px-4 pb-4 text-sm text-slate-300">{video.description}</p>
+    <p className="px-4 pb-4 text-sm font-semibold text-amber-200">Kostenlose Vorschau</p>
     {consent ? <iframe className="aspect-video w-full" title={video.title}
       src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}`} loading="lazy"
       referrerPolicy="strict-origin-when-cross-origin" allow="fullscreen; picture-in-picture" allowFullScreen />
       : <div className="space-y-3 p-4 text-sm text-slate-300"><p>Beim Laden verbindet sich dein Browser mit YouTube. Dabei wird deine IP-Adresse übermittelt.</p>
         <button type="button" onClick={() => setConsent(true)} className="min-h-11 rounded-lg bg-amber-400 px-4 py-2 font-semibold text-slate-950">YouTube-Video laden</button></div>}
+    <a href={`https://www.youtube.com/watch?v=${video.youtubeId}`} target="_blank" rel="noopener noreferrer" className="m-4 inline-flex min-h-11 items-center text-sm text-amber-200 underline focus-visible:outline-2 focus-visible:outline-amber-200">Alternativ auf YouTube ansehen (externer Dienst)</a>
   </article>;
 }
 type MasterclassStage = 'cover' | 'series' | 'episodes';
