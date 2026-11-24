@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { buildGrowthIntelligenceContentDrafts } from '../../src/contracts/growthIntelligenceContent.ts';
+import { buildGrowthIntelligenceContentDrafts, xAcquisitionDraftOverview } from '../../src/contracts/growthIntelligenceContent.ts';
 
 export const GROWTH_INTELLIGENCE_PLAN_PATH =
   'CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json';
@@ -45,6 +45,7 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
       providerEnabled: false,
     }],
     drafts,
+    xAcquisition: xAcquisitionDraftOverview(drafts),
     ...(dataInput === undefined ? {} : { growthDataLayer: projectGrowthDataLayer(dataInput) }),
   };
 }
