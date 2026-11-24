@@ -231,7 +231,8 @@ def growth_source_review(state: GrowthReadState) -> dict:
         if len(matches) != 1 or len(reads) != 1:
             return {"source_status": []}
         row, read = matches[0], reads[0]
-        if set(read) != {"source", "status"} or read.get("status") not in GROWTH_TRANSPORT_STATES:
+        if (set(read) != {"source", "status"} or not isinstance(read.get("status"), str)
+                or read["status"] not in GROWTH_TRANSPORT_STATES):
             return {"source_status": []}
         status = row.get("status")
         digest = row.get("evidenceSha256")
@@ -245,10 +246,42 @@ def growth_source_review(state: GrowthReadState) -> dict:
                     or any(type(value) not in (int, float) or not 0 <= value <= 9007199254740991
                            for value in metrics.values())):
                 return {"source_status": []}
-        elif (status not in GROWTH_FAILURES
+        elif (not isinstance(status, str) or status not in GROWTH_FAILURES
               or set(row) != {"source", "status", "metrics", "evidenceSha256"}
               or row.get("metrics") is not None or digest is not None):
             return {"source_status": []}
+        if status == GROWTH_RECORDED:
+            # Fail closed on malformed imported account/period fields. A digest
+            # shape is only a reference, never an authentication claim.
+            identity_patterns = {
+                "GA4": r"properties/[1-9][0-9]{0,19}",
+                "GSC": r"sc-domain:capital-ai\.online",
+                "INSTAGRAM": r"[0-9]{1,32}",
+                "YOUTUBE": r"UC[A-Za-z0-9_-]{22}",
+            }
+            identity = row.get("identity")
+            if not isinstance(identity, str) or re.fullmatch(identity_patterns[source], identity) is None:
+                return {"source_status": []}
+            from datetime import date, datetime, timezone
+            try:
+                start, end = (date.fromisoformat(row[k]) for k in ("startDate", "endDate"))
+                observed = datetime.fromisoformat(row["observedAt"].replace("Z", "+00:00"))
+                as_of = datetime.fromisoformat(layer["asOf"].replace("Z", "+00:00"))
+                if (start.isoformat() != row["startDate"] or end.isoformat() != row["endDate"]
+                        or observed.tzinfo != timezone.utc or as_of.tzinfo != timezone.utc
+                        or not 0 <= (end - start).days <= 30 or end >= observed.date()
+                        or not 0 <= (as_of - observed).total_seconds() <= 86400
+                        or not 0 <= (as_of.date() - end).days <= 7):
+                    return {"source_status": []}
+            except (KeyError, TypeError, ValueError, AttributeError, OverflowError):
+                return {"source_status": []}
+            if any(type(value) is not int for name, value in metrics.items()
+                   if name not in {"ctr", "position"}):
+                return {"source_status": []}
+            if ((source == "GA4" and metrics["engagedSessions"] > metrics["sessions"])
+                    or (source == "GSC" and (metrics["clicks"] > metrics["impressions"]
+                                             or metrics["ctr"] > 1))):
+                return {"source_status": []}
         result.append({"source": source, "status": status, "transport": read["status"],
                        "evidenceSha256": digest})
     return {"source_status": result}
