@@ -150,6 +150,9 @@ export default defineConfig(() => {
         output: {
           codeSplitting: {
             groups: [
+              // Isolate the Learning Hub video feature from the near-budget portal chunk.
+              // Keep the 500 kB limit and emitted import-cycle guard unchanged.
+              { name: 'learning-videos', test: /[/\\]src[/\\]features[/\\]learning[/\\]Learning(?:Videos|ComingSoonGraphic)\.tsx$/ },
               { name: 'vocabulary-metadata', test: /[/\\]shared[/\\]vocabulary-metadata\.mjs$/ },
               { name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ },
               { name: 'i18n-messages', test: /[/\\]src[/\\]i18n[/\\]messages\.ts$/ },

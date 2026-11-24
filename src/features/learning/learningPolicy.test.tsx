@@ -17,7 +17,7 @@ import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary,
 import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
 import {chartQuestion} from './ChartRecognitionQuiz';
 import {ChartLessonGraphic} from './ChartLessonGraphic';
-import {LearningVideos, LEARNING_VIDEOS, visibleLearningVideos, type LearningVideo} from './LearningVideos';
+import {LearningVideos, FintechMasterclass, LEARNING_VIDEOS, visibleLearningVideos, type LearningVideo} from './LearningVideos';
 import { EXPECTED_YOUTUBE_CHANNEL_ID } from '../../../shared/seo-video.mjs';
 
 test('course CTA opens a dedicated inquiry without relabelling generic support', () => {
@@ -107,6 +107,45 @@ test('no unlicensed videos are marketed as available and public learning CTA sta
   assert.match(html, /rel="noopener noreferrer"/);
   assert.doesNotMatch(html, /iframe|VideoObject|Kostenlos: ein freigegebenes Video/);
 });
+
+test('Fintech cover opens series cover then admitted episode list; no provider frame before consent', () => {
+  const stageMarkup = (stage: 'cover' | 'series' | 'episodes', videos: readonly LearningVideo[] = []) =>
+    renderToStaticMarkup(<FintechMasterclass stage={stage} onNavigate={()=>{}} videos={videos}/>);
+  const start = renderToStaticMarkup(<LearningVideos />);
+  const cover = stageMarkup('cover');
+  const series = stageMarkup('series');
+  const empty = stageMarkup('episodes');
+  const approved = stageMarkup('episodes', [publicVideoFixture]);
+  const blocked = stageMarkup('episodes', [{...publicVideoFixture, licenseState:'REVIEW_REQUIRED'}]);
+  assert.match(start, /fintech-deepdive-universe\.webp/);
+  assert.match(cover, /Fintech Deepdive entdecken/);
+  assert.match(series, /masterclass-universe\.webp/);
+  assert.match(series, /Zur Masterclass-Videoliste/);
+  assert.match(series, /Zurück zu den Videokategorien/);
+  assert.match(empty, /Noch keine freigegebenen Masterclass-Videos/);
+  assert.match(blocked, /Noch keine freigegebenen Masterclass-Videos/);
+  assert.match(approved, /Synthetic public preview fixture/);
+  assert.match(approved, /YouTube-Video laden/);
+  assert.match(approved, /Keine Anlageberatung/);
+  for (const html of [start, cover, series, empty, approved, blocked]) {
+    assert.doesNotMatch(html, /<iframe|youtube-nocookie\.com\/embed/);
+  }
+});
+
+test('approved Universe covers are local, digest-bound WebP derivatives', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { createHash } = await import('node:crypto');
+  for (const [name, expected] of [
+    ['fintech-deepdive-universe.webp', '322ac3920482dc2304e4e0d19e4beb45c4807bc271e72dba55b1ec589a9c7940'],
+    ['masterclass-universe.webp', '1c9a4c682bd37c2c193ccb95ae13413aa025229c0cff8ca6c789102de863cd9c'],
+  ]) {
+    const bytes = readFileSync(new URL('../../../public/learning/videos/' + name, import.meta.url));
+    assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(bytes.toString('ascii', 8, 12), 'WEBP');
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), expected);
+  }
+});
+
 test('anonymous glossary surfaces render every canonical definition, including Quant level',()=>{
  const page=renderToStaticMarkup(<LearningPortalPage initialTab="glossar" />);
  const modal=renderToStaticMarkup(<MarketVocabularyModal isOpen onClose={()=>{}}/>);
