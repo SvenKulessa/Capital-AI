@@ -49,6 +49,7 @@ export function normalizeFacebookPageReadback({
 export function createXReadbackTransport({ env = process.env, fetchImpl = fetch } = {}) {
   async function lookup({ deliveryKey, postId, accountUserId, accountHandle,
     token, evidenceRef }) {
+    if (env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true') throw Error('X_GROWTH_UNBUDGETED_LANE_DISABLED');
     if (env.SOCIAL_PROVIDER_READBACK_ENABLED !== 'true'
       || env.SOCIAL_X_PAID_READBACK_APPROVED !== 'true') {
       throw new Error('SOCIAL_X_COST_APPROVAL_REQUIRED');

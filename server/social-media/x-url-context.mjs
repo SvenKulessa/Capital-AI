@@ -171,6 +171,9 @@ export function createXUrlContext({
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(PAGE_HTML); return true;
     }
+    if (env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true') {
+      json(res, 403, { error: 'x_growth_unbudgeted_lane_disabled' }); return true;
+    }
     if (env.SOCIAL_X_EDGE_STORE_ENABLED !== 'true'
         || env.SOCIAL_X_PAID_READ_APPROVED !== 'true') {
       json(res, 403, { error: 'x_context_paid_read_not_approved' }); return true;

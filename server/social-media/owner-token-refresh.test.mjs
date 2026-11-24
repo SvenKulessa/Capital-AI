@@ -245,3 +245,12 @@ test('X media grant downgrade on refresh blocks persistence and requires reconne
     assert.equal(calls.network.length, 1, 'reject before paid profile readback');
   }
 });
+
+test('growth pilot denies X refresh before acquiring a lease or contacting provider',async()=>{
+  const {refreshOwnerXForWorkload}=await import('./owner-token-refresh.mjs');
+  let calls=0;
+  await assert.rejects(refreshOwnerXForWorkload({env:{...ENV,SOCIAL_X_GROWTH_PILOT_ENABLED:'true'},
+    userId:USER,userAccessToken:JWT,edgeFactory:()=>{calls++;throw Error('unexpected')},
+    fetchImpl:async()=>{calls++;throw Error('unexpected')}}),/X_GROWTH_UNBUDGETED_LANE_DISABLED/);
+  assert.equal(calls,0);
+});
