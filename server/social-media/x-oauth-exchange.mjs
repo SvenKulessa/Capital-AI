@@ -102,6 +102,7 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
   channel = 'X' } = {}) {
   if (!['X', 'X_PUBLISH'].includes(channel)) throw Error('SOCIAL_X_OAUTH_CHANNEL_UNSUPPORTED');
   return async function exchangeCode(trusted) {
+    assert(env.SOCIAL_X_GROWTH_PILOT_ENABLED !== 'true', 'X_GROWTH_UNBUDGETED_LANE_DISABLED');
     // No HTTP-supplied user/account identifiers are accepted by this boundary.
     assert(trusted?.channel === channel && UUID.test(trusted.userId || '')
       && typeof trusted.code === 'string' && trusted.code.length > 0 && trusted.code.length <= 2048
