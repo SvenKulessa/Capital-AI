@@ -177,6 +177,9 @@ export function createXArticleTest({ env = process.env, auth, fetchImpl = fetch,
       || env.SOCIAL_X_ARTICLE_TEST_ENABLED !== 'true') {
       json(res, 503, { error: 'x_article_test_not_enabled' }); return true;
     }
+    if (url.pathname === POST && env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true') {
+      json(res, 403, { error: 'x_growth_unbudgeted_lane_disabled' }); return true;
+    }
     if (url.pathname === POST
       && (env.SOCIAL_X_PAID_WRITE_APPROVED !== 'true'
         || env.SOCIAL_X_PAID_READ_APPROVED !== 'true')) {
