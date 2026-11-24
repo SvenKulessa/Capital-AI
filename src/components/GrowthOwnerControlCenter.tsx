@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -46,24 +46,27 @@ export function GrowthOwnerControlCenter() {
     if(pending)return;
     setPending(true);setMessage('');
     try{
-      const updates=await Promise.all((['ga4','gsc'] as const).map(async id=>{
-        const row=rows.find(r=>r.id===id)??makeRow(id,id==='ga4'?'GA4 Acquisition':'Google Search Console','GROWTH');
+      const readRow=async (id:'ga4'|'gsc'|'x-campaign')=>{
+        const row=rows.find(r=>r.id===id)??makeRow(id,id==='ga4'?'GA4 Acquisition':id==='x-campaign'?'X Growth · GA4 Kampagne':'Google Search Console','GROWTH');
         try{
           const response=await fetch('/api/profile/growth-intelligence/'+id+'-readback',{method:'GET',credentials:'same-origin',
             cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(25000)});
           if(!response.ok)throw Error('Readback unavailable');
           const raw:unknown=await response.json();
-          return id==='ga4'?projectGa4(raw,row):projectGsc(raw,row);
+          return id==='ga4'?projectGa4(raw,row):id==='x-campaign'?projectXCampaignGa4(raw,row):projectGsc(raw,row);
         }catch{
           return {...row,status:'NOT_PROVEN' as const,origin:'OWNER_NOTE' as const,evidence:'',
             operation:'Aktueller Readback nicht nachgewiesen',error:'Readback nicht verfügbar, nicht berechtigt oder ungültig.'};
         }
-      }));
+      };
+      // Existing GA4 client has a shared in-flight lock; never query both GA4 kinds concurrently.
+      const updates=await Promise.all([readRow('ga4'),readRow('gsc')]);
+      updates.push(await readRow('x-campaign'));
       const byId=new Map(updates.map(r=>[r.id,r]));
       const next=rows.map(r=>byId.get(r.id)??r);
       for(const r of updates)if(!rows.some(existing=>existing.id===r.id))next.push(r);
       setHistory(appendSnapshot(history,next,new Date().toISOString()));
-      setMessage('GA4 und GSC getrennt erfasst. Fehlende Readbacks bleiben NOT_PROVEN; vorherige Version erhalten.');
+      setMessage('GA4, X-Kampagne und GSC getrennt erfasst. Fehlende Readbacks bleiben NOT_PROVEN; vorherige Version erhalten.');
     }catch{setMessage('Analytics-Arbeitsstand nicht übernommen; Historie unverändert.');}
     finally{setPending(false);}
   }
@@ -191,7 +194,7 @@ export function GrowthOwnerControlCenter() {
           onClick={() => { setView(key); if (key === 'edit' && !draft) setDraft(rows[0] ?? makeRow('new', 'Neue Integration', 'GROWTH')); }}>{label}</button>)}
     </nav>
     <div className="flex flex-wrap gap-2">
-      <button type="button" className={button} disabled={pending} onClick={() => void readAnalytics()}>GA4 und GSC Read-only prüfen</button>
+      <button type="button" className={button} disabled={pending} onClick={() => void readAnalytics()}>GA4, X-Kampagne und GSC Read-only prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
       <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>

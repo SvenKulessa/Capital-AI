@@ -128,6 +128,28 @@ export function projectGa4(raw: unknown, row: GrowthRow): GrowthRow {
   };
 }
 
+const xCampaignSchema = z.object({
+  schema:z.literal('CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1'),source:z.literal('GA4_DATA_API'),
+  private:z.literal(true),readOnly:z.literal(true),publicPublishAllowed:z.literal(false),
+  observedAt:z.iso.datetime(),period:z.object({start:z.literal('7daysAgo'),end:z.literal('yesterday'),timeZone:z.string().max(80).nullable()}).strict(),
+  campaignId:z.literal('capital-ai-growth-20261120'),contentId:z.literal('CAP-GROW-005'),
+  utmSource:z.literal('x'),utmMedium:z.literal('social'),attributionAuthority:z.literal('SESSION_UTM_ONLY'),
+  status:z.enum(['PROVIDER_READ_VERIFIED','NOT_PROVEN_NO_ROWS']),
+  metrics:z.object({sessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),engagedSessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)}).strict().nullable(),
+  registrations:z.null(),paidSubscriptions:z.null(),
+}).strict();
+export function projectXCampaignGa4(raw:unknown,row:GrowthRow):GrowthRow {
+  const d=xCampaignSchema.parse(raw);
+  if(row.id!=='x-campaign')throw Error('Falsche Quelle');
+  const verified=d.status==='PROVIDER_READ_VERIFIED',m=d.metrics;
+  if(verified?(!m||m.engagedSessions>m.sessions):m!==null)throw Error('Ungültige Kampagnenmetriken');
+  return {...row,name:'X Growth · GA4 Kampagne',domain:'GROWTH',origin:'GA4_READBACK',status:verified?'VERIFIED':'NOT_PROVEN',
+    endpoint:'/api/profile/growth-intelligence/x-campaign-readback',flow:'GA4 Session-UTM · keine Klick-, Registrierungs- oder Zahlungsbestätigung',
+    auth:'Owner-Readback',operation:'GA4 Kampagne: '+d.observedAt,error:'',
+    evidence:m?'7 abgeschlossene Tage: '+m.sessions+' Sessions, '+m.engagedSessions+' Engaged Sessions; '+d.campaignId+'/'+d.contentId:'Keine bestätigte Kampagnenzeile; keine gemessene Null',
+    tests:'Quellengetrennte Projektion; Registrierungen und zahlende Abos NOT_PROVEN'};
+}
+
 const graphSources = ['GA4','GSC','INSTAGRAM','YOUTUBE'] as const;
 const graphDigest = z.string().regex(/^[a-f0-9]{64}$/);
 const graphSource = z.object({
