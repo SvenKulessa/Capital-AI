@@ -118,3 +118,5 @@ test('different project IDs cannot pass', (t) => {
   f.manifest.target_project = 'production-target';
   assert.throws(() => validateManifest(f.manifest), /target identity mismatch/);
 });
+
+import './verify-recovery-provenance-regression.test.mjs';
