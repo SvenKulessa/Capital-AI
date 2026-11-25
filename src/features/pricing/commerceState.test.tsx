@@ -4,8 +4,9 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readCommerceState } from './commerceState';
 import { MonetizationModal } from './MonetizationModal';
-import { NewsDesignCatalog, LearningUniverseB2BInquirySection } from './NewsDesignCatalog';
+import { NewsDesignCatalog, LearningUniverseB2BInquirySection, isLearningUniverseInquiryOnlyDraft } from './NewsDesignCatalog';
 import { CommerceEntryContent } from '../home/CommerceEntrySection';
+import { buildLearningUniverseCommercialDraft } from '../../platform/SocialMediaEngine/Branding/learningUniverseCommercialLicenseDrafts.mjs';
 import { LANGUAGES } from '../../i18n/messages';
 
 const signal = new AbortController().signal;
@@ -137,4 +138,25 @@ test('home learning price uses the current 25 EUR offer, preserving legacy recei
   assert.match(html, /Learning Portal/);
   assert.match(html, /25,00/);
   assert.doesNotMatch(html, /19,00/);
+});
+
+
+test('Phase A denies missing or contradictory payment, agreement and rights authority', () => {
+  for (const offer of ['PUBLISHER', 'STUDIO', 'RESELLER']) {
+    const draft = buildLearningUniverseCommercialDraft(offer);
+    assert.equal(isLearningUniverseInquiryOnlyDraft(draft), true);
+    const contradictions = {
+      schema: 'UNKNOWN', status: 'ACTIVE', salesMode: 'CHECKOUT',
+      priceStatus: 'PUBLIC', publicPriceReference: 'VERIFIED', rightsStatus: 'APPROVED',
+      amountCents: 9900, stripeProductId: 'prod_fixture', stripePriceId: 'price_fixture',
+      signedAgreement: true, publicPromotionAllowed: true, licensedUseAllowed: true,
+      publishingAllowed: true, buyerEntitled: true, automaticFulfilmentAllowed: true,
+      rawAssetResaleAllowed: true, sublicensingAllowed: true,
+    };
+    for (const [key, value] of Object.entries(contradictions)) {
+      assert.equal(isLearningUniverseInquiryOnlyDraft({ ...draft, [key]: value }), false, key);
+      assert.equal(isLearningUniverseInquiryOnlyDraft({ ...draft, [key]: undefined }), false, key + ' missing');
+    }
+  }
+  for (const value of [null, undefined, [], {}, 'DRAFT_ONLY']) assert.equal(isLearningUniverseInquiryOnlyDraft(value), false);
 });
