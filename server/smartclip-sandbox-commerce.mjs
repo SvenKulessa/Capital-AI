@@ -81,7 +81,7 @@ function letters(requestKey) {
   return [...Buffer.from(requestKey.slice(0, 16), 'hex')].map(n => String.fromCharCode(97 + (n % 26))).join('');
 }
 
-export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = fetch, auth } = {}) {
+export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = fetch, auth, readAdmittedPrivateRelease } = {}) {
   const key = String(env.STRIPE_SMARTCLIP_TEST_KEY || '');
   const hook = String(env.STRIPE_SMARTCLIP_TEST_WEBHOOK_SECRET || '');
   const priceId = String(env.STRIPE_SMARTCLIP_TEST_PRICE_ID || '');
@@ -308,7 +308,12 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
         json(res, 503, { error: 'fulfillment_unavailable' }); return true;
       }
     }
-    if (!['checkout', 'access'].includes(action)) {
+    // Server composition must explicitly supply the admitted, private artifact reader.
+    // No client-controlled path, URL, digest, license flag or storage credential.
+    if (action === 'download' && typeof readAdmittedPrivateRelease !== 'function') {
+      json(res, 404, { error: 'not_found' }); return true;
+    }
+    if (!['checkout', 'access', 'download'].includes(action)) {
       json(res, 404, { error: 'not_found' }); return true;
     }
     if (req.method !== (action === 'checkout' ? 'POST' : 'GET')) {
@@ -318,6 +323,29 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     if (!auth?.sameOrigin?.(req)) { json(res, 403, { error: 'forbidden_origin' }); return true; }
     const user = await authenticated(req, res, json);
     if (!user) return true;
+    if (action === 'download') {
+      try {
+        const prepared = await prepareSmartclipPrivateDownload({
+          userId: user.userId,
+          readEntitlement: async (userId) => {
+            const state = await rpc('access', { _user_id: userId });
+            return { entitled: state?.entitled === true, releaseSha256: digest };
+          },
+          readAdmittedPrivateRelease,
+        });
+        if (!prepared) { json(res, 403, { error: 'delivery_unavailable' }); return true; }
+        res.writeHead(200, {
+          'Content-Type': 'application/zip',
+          'Content-Disposition': 'attachment; filename="SmartClip-acode-bridge-v2.zip"',
+          'Content-Length': prepared.bytes.length,
+          'Cache-Control': 'private, no-store',
+          'X-Content-Type-Options': 'nosniff',
+          'Content-Security-Policy': 'sandbox',
+        });
+        res.end(prepared.bytes);
+      } catch { json(res, 503, { error: 'delivery_unavailable' }); }
+      return true;
+    }
     if (action === 'access') {
       try {
         const state = await rpc('access', { _user_id: user.userId });
@@ -407,4 +435,37 @@ export async function preflightSmartclipSandboxDelivery({
     if (!(await entitled())) return {status:'BLOCKED',deliveryAllowed:false};
     return {status:'INTEGRITY_PREFLIGHT_ONLY',manifest,deliveryAllowed:false};
   } catch { return {status:'BLOCKED',deliveryAllowed:false}; }
+}
+
+/** Internal private delivery contract, not a public release admission mechanism.
+ * The trusted reader must return the exact admitted release, never a client path.
+ * No reader is injected by production server composition; the HTTP path stays 404.
+ * Copy the bytes before validation so a reader cannot mutate the verified buffer
+ * during the second entitlement read. A refund after HTTP transmission starts
+ * cannot recall already delivered bytes; device checks must separately revalidate.
+ */
+export async function prepareSmartclipPrivateDownload({
+  userId, readEntitlement, readAdmittedPrivateRelease,
+} = {}) {
+  if (typeof userId !== 'string' || !UUID.test(userId) ||
+      typeof readEntitlement !== 'function' || typeof readAdmittedPrivateRelease !== 'function') return null;
+  const entitled = async () => {
+    const state = await readEntitlement(userId, SMARTCLIP_PINNED_SHA256);
+    return state?.entitled === true && state.releaseSha256 === SMARTCLIP_PINNED_SHA256;
+  };
+  if (!(await entitled())) return null;
+  const artifact = await readAdmittedPrivateRelease({
+    sku: SMARTCLIP_SKU, releaseId: SMARTCLIP_RELEASE,
+    releaseSha256: SMARTCLIP_PINNED_SHA256, licenseVersion: SMARTCLIP_LICENSE,
+  });
+  // Admission is a trusted server-side record, not a substitute for owner approval.
+  if (artifact?.admission !== 'TEST_ONLY_APPROVED' ||
+      artifact.sku !== SMARTCLIP_SKU || artifact.releaseId !== SMARTCLIP_RELEASE ||
+      artifact.releaseSha256 !== SMARTCLIP_PINNED_SHA256 ||
+      artifact.licenseVersion !== SMARTCLIP_LICENSE ||
+      !Buffer.isBuffer(artifact.bytes) || artifact.bytes.length > 8 * 1024 * 1024) return null;
+  const bytes = Buffer.from(artifact.bytes);
+  const manifest = inspectSmartclipReleaseBytes(bytes);
+  if (!(await entitled())) return null;
+  return { bytes, manifest };
 }

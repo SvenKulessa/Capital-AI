@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import { Readable } from 'node:stream';
-import { createSmartclipSandboxCommerce, SMARTCLIP_PINNED_SHA256, SMARTCLIP_SKU, inspectSmartclipReleaseBytes, preflightSmartclipSandboxDelivery } from './smartclip-sandbox-commerce.mjs';
+import { createSmartclipSandboxCommerce, SMARTCLIP_PINNED_SHA256, SMARTCLIP_SKU, inspectSmartclipReleaseBytes, preflightSmartclipSandboxDelivery, prepareSmartclipPrivateDownload } from './smartclip-sandbox-commerce.mjs';
 
 const userId = '00000000-0000-4000-8000-000000000001';
 const otherUserId = '00000000-0000-4000-8000-000000000002';
@@ -116,9 +116,9 @@ function res() {
   return {statusCode:0, payload:null, headers:{}, setHeader(k,v){this.headers[k]=v;}};
 }
 function json(r,status,payload) {r.statusCode=status;r.payload=payload;}
-async function call(path, method='GET', data, {cfg=env,fixture=makeFixture(),user=userId,origin=true,headers={}}={}) {
+async function call(path, method='GET', data, {cfg=env,fixture=makeFixture(),user=userId,origin=true,headers={},readAdmittedPrivateRelease}={}) {
   const auth = {sameOrigin:()=>origin, verify:async()=>user ? {userId:user,email:'test@example.org',emailVerified:true} : null};
-  const service = createSmartclipSandboxCommerce({env:cfg,auth,fetchImpl:fixture.fetchImpl});
+  const service = createSmartclipSandboxCommerce({env:cfg,auth,fetchImpl:fixture.fetchImpl,readAdmittedPrivateRelease});
   const output = res();
   const handled = await service.handle(request(method,data,headers), output,
     new URL('https://capital-ai.online/api/billing/smartclip-sandbox/'+path), json);
@@ -529,4 +529,44 @@ test('private delivery preflight is default off, denies missing or foreign entit
   assert.deepEqual(await preflightSmartclipSandboxDelivery({...input,enabled:true}),blocked);
   assert.equal(access,1);assert.equal(reads,1);
   assert.deepEqual(await preflightSmartclipSandboxDelivery({...input,enabled:true,readEntitlement:async()=>{throw Error('private');}}),blocked);
+});
+
+
+test('private download requires authenticated entitlement before reading an admitted artifact',async()=>{
+  const f=makeFixture();
+  let reads=0;
+  const readAdmittedPrivateRelease=async()=>{reads++;return null;};
+  const opts={fixture:f,readAdmittedPrivateRelease};
+  assert.equal((await call('download','GET',undefined,{...opts,user:null})).statusCode,401);
+  assert.equal((await call('download','GET',undefined,{...opts,origin:false})).statusCode,403);
+  assert.equal((await call('download','GET',undefined,opts)).statusCode,403);
+  assert.equal(reads,0);
+  const raw=event('checkout.session.completed',{id:sid});
+  assert.equal((await call('webhook','POST',raw,{fixture:f,headers:{'stripe-signature':sign(raw)}})).payload.granted,true);
+  assert.equal((await call('download','GET',undefined,{...opts,user:otherUserId})).statusCode,403);
+  assert.equal(reads,0);
+  assert.equal((await call('download','GET',undefined,opts)).statusCode,403);
+  assert.equal(reads,1);
+  assert.equal((await call('download?file=other','GET',undefined,opts)).statusCode,400);
+  f.charge.refunded=true; f.charge.amount_refunded=249;
+  const refund=event('charge.refunded',{id:chargeId});
+  assert.equal((await call('webhook','POST',refund,{fixture:f,headers:{'stripe-signature':sign(refund)}})).payload.revoked,true);
+  assert.equal((await call('download','GET',undefined,opts)).statusCode,403);
+  assert.equal(reads,1);
+});
+test('private delivery contract rejects unapproved, foreign or tampered release bytes',async()=>{
+  const artifact={admission:'TEST_ONLY_APPROVED',sku:SMARTCLIP_SKU,
+    releaseId:'acode-bridge-v2',releaseSha256:SMARTCLIP_PINNED_SHA256,
+    licenseVersion:'draft-v3',bytes:Buffer.from([0x50,0x4b,3,4,1])};
+  const input={userId,readEntitlement:async()=>({entitled:true,releaseSha256:SMARTCLIP_PINNED_SHA256})};
+  for(const wrong of [{admission:'DRAFT_ONLY'},{sku:'OTHER'},{licenseVersion:'other'},{releaseSha256:'0'.repeat(64)},{bytes:Buffer.alloc(8*1024*1024+1)}]){
+    assert.equal(await prepareSmartclipPrivateDownload({...input,readAdmittedPrivateRelease:async()=>({...artifact,...wrong})}),null);
+  }
+  await assert.rejects(()=>prepareSmartclipPrivateDownload({...input,readAdmittedPrivateRelease:async()=>artifact}),/release_digest_mismatch/);
+  const fixture=makeFixture();
+  const raw=event('checkout.session.completed',{id:sid});
+  await call('webhook','POST',raw,{fixture,headers:{'stripe-signature':sign(raw)}});
+  const result=await call('download','GET',undefined,{fixture,readAdmittedPrivateRelease:async()=>artifact});
+  assert.equal(result.statusCode,503);
+  assert.deepEqual(result.payload,{error:'delivery_unavailable'});
 });
