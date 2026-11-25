@@ -15,7 +15,8 @@ test('all current sideboard tab links retain their hub and tab', () => {
 
 test('footer consolidates public license navigation into documentation', () => {
   const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
-  assert.doesNotMatch(footer, /href="\/dokumentation"|href="\/blog"|t\('docs'\)/);
+  assert.match(footer, /path:\s*'\/dokumentation'/);
+  assert.doesNotMatch(footer, /href="\/blog"/);
   assert.match(footer, /OPEN_COOKIE_PREFERENCES_EVENT/);
 });
 
@@ -119,7 +120,7 @@ test('account routes keep profile, security and key vault as separate pages', ()
 test('Control Center navigation is capability-gated to the verified owner session', () => {
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
   assert.match(header, /verifiedOwner\(authSession\)/);
-  assert.match(header, /hub.id !== 'control-center' \|\| isOwner/);
+  assert.match(header, /isOwner \? \[\{path: '\/control-center'/);
   assert.doesNotMatch(header, /<HubSidebarDrawer/);
 });
 
@@ -185,7 +186,7 @@ test('homepage hub directory shares the canonical catalog and excludes protected
   const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
   assert.match(directory, /MAIN_HUBS_CONFIG/);
   assert.match(directory, /onNavigate\(hub.mainPath\)/);
-  assert.doesNotMatch(directory, /aria-expanded|control-center/);
+  assert.doesNotMatch(directory, /aria-expanded|control-center|hub\.badge/);
 });
 
 test('documentation hub catalog links to the existing content instead of reopening the overview', () => {

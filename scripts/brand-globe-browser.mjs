@@ -89,7 +89,7 @@ try {
       const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
       return { href: action.getAttribute('href'), top: bounds.top, bottom: bounds.bottom,
         height: bounds.height, clickable: action.contains(hit), obstruction: hit?.id || hit?.tagName || null,
-        primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-explore-product-btn')).backgroundColor };
+        primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-start-analysis-btn')).backgroundColor };
     })()`);
     report.checks.push({ viewport, learningCta });
     assert.equal(learningCta.href, '/learning');

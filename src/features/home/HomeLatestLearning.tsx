@@ -17,8 +17,8 @@ const teasers: Record<string, { title: string; summary: string }> = {
 
 /** Latest curated, already public editorial learning content only; no repository news. */
 export function HomeLatestLearning({ onNavigate }: { onNavigate: (path: string) => void }) {
-  const articles = latestLearningArticles(LEARNING_ARTICLES);
-  return <section aria-labelledby="home-latest-learning-heading" className="mx-3 mb-4 rounded-3xl border border-cyan-400/20 bg-[#071526] px-4 py-5 sm:mx-6 sm:px-6">
+  const articles = latestLearningArticles(LEARNING_ARTICLES).slice(0, 3);
+  return <section aria-labelledby="home-latest-learning-heading" lang="de" className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
       <div>
         <p className="text-[11px] font-bold uppercase tracking-widest text-cyan-300">Aus dem Learning Hub</p>
@@ -29,17 +29,17 @@ export function HomeLatestLearning({ onNavigate }: { onNavigate: (path: string) 
         Alle Beiträge ansehen
       </button>
     </div>
-    <div className="grid gap-3 md:grid-cols-3">
-      {articles.map(article => <article key={article.id} className="rounded-2xl border border-slate-700/70 bg-black/20 p-4">
+    <div className="grid gap-4 md:grid-cols-3">
+      {articles.map(article => <article key={article.id} className="flex min-w-0 flex-col rounded-2xl border border-slate-700 bg-slate-950 p-5">
         <div className="flex items-center justify-between gap-2 text-[11px] text-slate-400">
-          <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-200">Learning Hub</span>
+          <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-200">{{ learning: "Finanzwissen", marketscreener: "Marktanalyse", studio: "Methoden und Werkzeuge" }[article.hub]}</span>
           <time dateTime={article.publishedAt}>{new Intl.DateTimeFormat('de-DE').format(new Date(article.publishedAt+'T12:00:00Z'))}</time>
         </div>
         <h3 className="mt-3 text-sm font-bold leading-6 text-white">{teasers[article.id]?.title ?? article.title}</h3>
-        <p className="mt-2 text-sm leading-6 text-slate-300">{teasers[article.id]?.summary ?? article.body}</p>
+        <p className="mt-2 flex-1 text-sm leading-6 text-slate-300">{teasers[article.id]?.summary ?? article.body}</p>
         <a href={`/learning?tab=news#${article.id}`}
           className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-amber-200 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-amber-300">
-          Beitrag lesen <span aria-hidden="true" className="ml-1">→</span>
+          {`Lesen: ${teasers[article.id]?.title ?? article.title}`} <span aria-hidden="true" className="ml-1">→</span>
         </a>
       </article>)}
     </div>
