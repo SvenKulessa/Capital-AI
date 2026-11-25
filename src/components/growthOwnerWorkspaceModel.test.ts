@@ -1,0 +1,131 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGsc, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
+const at = '2026-11-24T12:00:00.000Z';
+const row = initialRows()[0];
+const good = { schema: 'CAPITAL_AI_GROWTH_GA4_READBACK@1', source: 'GA4_DATA_API', private: true, readOnly: true, publicPublishAllowed: false,
+  attributionAuthority: 'SEPARATE_FROM_UMAMI_GSC_SOCIAL', observedAt: at, status: 'PROVIDER_READ_VERIFIED', metrics: { sessions: 10, engagedSessions: 3 } };
+test('initial inventory is not live evidence and covers five domains', () => {
+  assert.equal(new Set(initialRows().map(r => r.domain)).size, 5);
+  assert.ok(initialRows().every(r => r.status === 'NOT_PROVEN'));
+});
+test('actual GA4 response is scoped, strict and zero distinct from missing', () => {
+  assert.equal(projectGa4(good,row).status,'VERIFIED');
+  assert.equal(projectGa4({...good,metrics:{sessions:0,engagedSessions:0}},row).status,'VERIFIED');
+  assert.equal(projectGa4({...good,status:'NOT_PROVEN_NO_ROWS',metrics:null},row).status,'NOT_PROVEN');
+  for (const payload of [{...good,private:false},{...good,publicPublishAllowed:true},{...good,metrics:null},{...good,metrics:{sessions:1,engagedSessions:2}}]) {
+    assert.throws(() => projectGa4(payload,row));
+  }
+  assert.throws(() => projectGa4(good,initialRows()[1]));
+});
+test('versioned import preserves history but never promotes imported claims', () => {
+  const a = appendSnapshot([],initialRows(),at);
+  const b = appendSnapshot(a,[projectGa4(good,row)],at);
+  assert.equal(a[0].rows[0].status,'NOT_PROVEN');
+  assert.equal(b[1].version,2);
+  const result = importWorkspace(exportWorkspace(b));
+  assert.equal(result[1].rows[0].status,'NOT_PROVEN');
+  assert.equal(result[1].rows[0].origin,'OWNER_NOTE');
+  assert.equal(applyOwnerEdit(projectGa4(good,row)).status,'NOT_PROVEN');
+});
+test('invalid schemas, duplicate IDs and oversized input fail closed', () => {
+  assert.throws(() => importWorkspace('{}'));
+  assert.throws(() => importWorkspace(' '.repeat(5_000_001)));
+  assert.throws(() => appendSnapshot([],[row,row],at));
+  const b = JSON.parse(exportWorkspace(appendSnapshot([],[row],at)));
+  b.snapshots[0].rows[0].token = 'synthetic';
+  assert.throws(() => importWorkspace(JSON.stringify(b)));
+});
+
+const reportSha='a'.repeat(64);
+const graphReport={
+  contractVersion:'CAPITAL_AI_GROWTH_GRAPH_HANDOFF@1',engine:'langgraph',quality:'PASS_WITH_GAPS',
+  sources:['GA4','GSC','INSTAGRAM','YOUTUBE'].map((source,i)=>({source,
+    status:i===0?'SOURCE_RECORDED_NOT_AUTHENTICATED':'NOT_PROVEN_NO_READBACK',
+    transport:i===0?'READ_RESPONSE_RECEIVED':'AUTH_REQUIRED',evidenceSha256:i===0?'b'.repeat(64):null})),
+  eligibleForDraftReview:true,providerAuthentication:'NOT_PROVEN_BY_GRAPH',
+  attributionEvents:[],publicationAllowed:false,costActivationAllowed:false,automaticChanges:false,
+};
+test('graph import keeps live GA4 separate and archives only status references',()=>{
+  const live=[projectGa4(good,row),...initialRows().slice(1)];
+  const projected=projectGraphHandoff(JSON.stringify(graphReport),reportSha,live);
+  assert.deepEqual(projected.slice(0,live.length),live);
+  assert.equal(projected.length,live.length+5);
+  assert.ok(projected.slice(live.length).every(r=>r.status==='NOT_PROVEN'&&r.origin==='OWNER_NOTE'));
+  assert.match(projected.find(r=>r.id==='graph-source-ga4')!.evidence,/bbbbbbbb/);
+  const restored=importWorkspace(exportWorkspace(appendSnapshot([],projected,at)));
+  assert.ok(restored[0].rows.every(r=>r.status==='NOT_PROVEN'));
+  const blocked=projectGraphHandoff(JSON.stringify({...graphReport,quality:'BLOCKED',sources:[],eligibleForDraftReview:false}),reportSha,projected);
+  assert.equal(blocked.filter(r=>r.id.startsWith('graph-source-')).length,0);
+  assert.equal(blocked[0].status,'VERIFIED');
+});
+test('graph report rejects forged authority, raw metrics, inconsistent sources and invalid digest',()=>{
+  for(const value of [
+    {...graphReport,publicationAllowed:true},
+    {...graphReport,providerAuthentication:'VERIFIED'},
+    {...graphReport,eligibleForDraftReview:false},
+    {...graphReport,sources:[graphReport.sources[0],...graphReport.sources.slice(0,3)]},
+    {...graphReport,sources:[{...graphReport.sources[0],metrics:{sessions:1}},...graphReport.sources.slice(1)]},
+    {...graphReport,sources:[{...graphReport.sources[0],evidenceSha256:null},...graphReport.sources.slice(1)]},
+  ])assert.throws(()=>projectGraphHandoff(JSON.stringify(value),reportSha,initialRows()));
+  assert.throws(()=>projectGraphHandoff(JSON.stringify(graphReport),'bad',initialRows()));
+  assert.throws(()=>projectGraphHandoff(' '.repeat(16385),reportSha,initialRows()));
+});
+
+test('public surface planning rows are unique, idempotent and never claim live evidence', () => {
+  const audit = publicSurfaceRows();
+  assert.equal(audit.length, 10);
+  assert.equal(new Set(audit.map(r => r.id)).size, 10);
+  assert.ok(audit.every(r => r.status === 'NOT_PROVEN' && r.origin === 'OWNER_NOTE'));
+  const legacy = initialRows().filter(r => !r.id.startsWith('audit-'));
+  assert.deepEqual(addMissingPublicSurfaceRows(addMissingPublicSurfaceRows(legacy)), initialRows());
+  const task = publicSurfaceResearchTask('audit-p0-03');
+  assert.equal(task.schema, 'CAPITAL_AI_OFFLINE_RESEARCH@1');
+  assert.equal(task.domain, 'TRUST');
+  assert.ok(task.query.length <= 300);
+  assert.throws(() => publicSurfaceResearchTask('ga4'));
+});
+
+test('GSC direct owner report preserves source, import downgrade and missing versus zero',()=>{
+  const gsc=initialRows().find(r=>r.id==='gsc')!;
+  const report={schema:'CAPITAL_AI_GROWTH_GSC_READBACK@1',source:'GSC_SEARCH_ANALYTICS_API',private:true,readOnly:true,
+    publicPublishAllowed:false,attributionAuthority:'SEPARATE_FROM_GA4_UMAMI_SOCIAL',property:'sc-domain:capital-ai.online',
+    observedAt:at,status:'PROVIDER_READ_VERIFIED',transport:'READ_RESPONSE_RECEIVED',period:{startDate:'2026-11-14',endDate:'2026-11-20'},
+    metrics:{clicks:0,impressions:10,ctr:0,position:5},evidenceSha256:'a'.repeat(64)};
+  const projected=projectGsc(report,gsc);
+  assert.equal(projected.status,'VERIFIED');assert.equal(projected.origin,'GSC_READBACK');
+  assert.equal(importWorkspace(exportWorkspace(appendSnapshot([],[projected],at)))[0].rows[0].status,'NOT_PROVEN');
+  assert.equal(projectGsc({...report,status:'NOT_PROVEN',transport:'AUTH_REQUIRED',period:null,metrics:null,evidenceSha256:null},gsc).status,'NOT_PROVEN');
+  for(const v of [{...report,property:'sc-domain:other.example'},{...report,publicPublishAllowed:true},
+    {...report,metrics:{...report.metrics,ctr:0.8}},{...report,evidenceSha256:null}])assert.throws(()=>projectGsc(v,gsc));
+  assert.throws(()=>projectGsc(report,row));
+});
+
+test('X acquisition inventory exposes only planning and never promotes missing conversions or budgets',()=>{
+  const rows=initialRows().filter(r=>r.id.startsWith('x-growth-'));
+  assert.deepEqual(rows.map(r=>r.id),['x-growth-budget','x-growth-attribution','x-growth-graph']);
+  assert.ok(rows.every(r=>r.origin==='OWNER_NOTE'&&r.status==='NOT_PROVEN'&&r.evidence===''));
+  assert.deepEqual(importWorkspace(exportWorkspace(appendSnapshot([],rows,at)))[0].rows,rows);
+  assert.match(rows[0].flow,/20 EUR/);
+  assert.match(rows[1].next,/GA4-, Supabase- und Stripe/);
+});
+
+test('X campaign source remains separate from total GA4 and missing commerce evidence',async()=>{
+  const {projectXCampaignGa4,makeRow}=await import('./growthOwnerWorkspaceModel');
+  const x=makeRow('x-campaign','X Growth','GROWTH');
+  const raw={schema:'CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1',source:'GA4_DATA_API',
+    private:true,readOnly:true,publicPublishAllowed:false,observedAt:at,
+    period:{start:'7daysAgo',end:'yesterday',timeZone:'Europe/Berlin'},
+    campaignId:'capital-ai-growth-20261120',contentId:'CAP-GROW-005',utmSource:'x',utmMedium:'social',
+    attributionAuthority:'SESSION_UTM_ONLY',status:'PROVIDER_READ_VERIFIED',
+    metrics:{sessions:10,engagedSessions:3},registrations:null,paidSubscriptions:null};
+  const projected=projectXCampaignGa4(raw,x);
+  assert.equal(projected.status,'VERIFIED');
+  assert.match(projected.evidence,/10 Sessions/);
+  assert.equal(projectXCampaignGa4({...raw,status:'NOT_PROVEN_NO_ROWS',metrics:null},x).status,'NOT_PROVEN');
+  for(const wrong of [{...raw,campaignId:'other'},{...raw,paidSubscriptions:1},{...raw,registrations:0},
+    {...raw,metrics:{sessions:1,engagedSessions:2}},{...raw,publicPublishAllowed:true}])
+    assert.throws(()=>projectXCampaignGa4(wrong,x));
+  assert.throws(()=>projectXCampaignGa4(raw,row));
+  assert.equal(importWorkspace(exportWorkspace(appendSnapshot([],[projected],at)))[0].rows[0].status,'NOT_PROVEN');
+});

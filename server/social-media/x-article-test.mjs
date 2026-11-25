@@ -47,12 +47,15 @@ async function providerJson(fetchImpl, uri, init) {
   must(response.ok, 'x_provider_rejected');
   return data;
 }
-export async function resolveOwnerXCredentials({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
+export async function resolveOwnerXCredentials({ edge, identity, jwt, env, fetchImpl, edgeFactory,
+  expectedAccountId, allowRefresh = true }) {
   let row = await edge.invoke('x_credentials', { userId: identity.userId });
   must(row?.handle === EXPECTED_HANDLE && XID.test(row?.accountId || '')
-    && typeof row?.accessCipher === 'string', 'x_wrong_connected_account');
+    && typeof row?.accessCipher === 'string'
+    && (!expectedAccountId || row.accountId === expectedAccountId), 'x_wrong_connected_account');
   let refreshed = false;
   if (Date.parse(row.expiresAt) <= Date.now() + 300000) {
+    must(allowRefresh, 'x_refresh_not_available');
     const result = await refreshOwnerXForWorkload({
       env, userId: identity.userId, userAccessToken: jwt, fetchImpl, edgeFactory,
       channel: PUBLISH_CHANNEL });
@@ -173,6 +176,9 @@ export function createXArticleTest({ env = process.env, auth, fetchImpl = fetch,
       || env.SOCIAL_X_PUBLISH_OAUTH_ENABLED !== 'true'
       || env.SOCIAL_X_ARTICLE_TEST_ENABLED !== 'true') {
       json(res, 503, { error: 'x_article_test_not_enabled' }); return true;
+    }
+    if (url.pathname === POST && env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true') {
+      json(res, 403, { error: 'x_growth_unbudgeted_lane_disabled' }); return true;
     }
     if (url.pathname === POST
       && (env.SOCIAL_X_PAID_WRITE_APPROVED !== 'true'

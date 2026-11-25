@@ -4,7 +4,6 @@ import { Hero } from '../../components/Hero';
 
 
 const HomeEditorialNews = lazy(() => import('./HomeEditorialNews').then(module => ({ default: module.HomeEditorialNews })));
-const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
 const KeyPillars = lazy(() => import('../../components/KeyPillars').then(module => ({ default: module.KeyPillars })));
@@ -130,9 +129,6 @@ export function HomePage({
       </Suspense>
       <Suspense fallback={null}>
         <KeyPillars />
-      </Suspense>
-      <Suspense fallback={null}>
-        <ContentEngineConcept onNavigate={onNavigate} />
       </Suspense>
 
       <Suspense fallback={<section role="status" className="px-5 py-8 text-sm text-slate-300">Marktsektoren werden geladen …</section>}>
