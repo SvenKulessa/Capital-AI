@@ -284,8 +284,8 @@
   {
     "name": "HYPD Google Tag Manager",
     "domain": "GROWTH",
-    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
-    "application": "Private Owner-Tracking-Audit; ChatGPT connector, no repository runtime or commercial service grant"
+    "path": "server/growth-private-provider-read.mjs",
+    "application": "Owner-only read adapter; runtime authorization and commercial rights NOT_PROVEN"
   },
   {
     "name": "HYPD Paid Ads & Analytics",
@@ -296,8 +296,8 @@
   {
     "name": "ChatGPT Ads Manager",
     "domain": "GROWTH",
-    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
-    "application": "Private Owner campaign analysis/draft candidate; separate explicit approval for writes and spend"
+    "path": "server/growth-private-provider-read.mjs",
+    "application": "Owner-only Advertiser API read adapter; separate authorization and commercial rights NOT_PROVEN"
   },
   {
     "name": "Supermetrics Marketing Agent",
@@ -322,5 +322,11 @@
     "domain": "GROWTH",
     "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
     "application": "Alternative MCP candidate; exact artifact, license, costs and runtime NOT_PROVEN"
+  },
+  {
+    "name": "Official MCP Registry",
+    "domain": "GROWTH",
+    "path": "server/tool-update-discovery.mjs",
+    "application": "Public metadata discovery; declared versions, rights and installation separately assessed"
   }
 ]
