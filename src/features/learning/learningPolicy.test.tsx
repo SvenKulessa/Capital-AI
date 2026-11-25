@@ -1,5 +1,6 @@
 import React from 'react';
 import { GrowthIntelligenceQuiz, GROWTH_QUIZ_QUESTIONS, growthAnswerCorrect } from './GrowthIntelligenceQuiz';
+import { QuizzesTab } from './QuizzesTab';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -349,4 +350,13 @@ test('growth intelligence quiz exposes accessible controls without a provider or
   assert.match(html, /0 von 10 Fragen beantwortet/);
   assert.match(html, /keine Anrechnung auf das private Vocabulary-Abzeichen/);
   assert.doesNotMatch(html, /<iframe/);
+});
+
+test('initial quiz navigation keeps inactive question catalogs deferred', () => {
+  const html = renderToStaticMarkup(<QuizzesTab onOpenQuant={() => {}} />);
+  assert.match(html, /id="quizzes-tab-quant"[^>]*aria-selected="true"/);
+  assert.match(html, /id="quizzes-tab-growth"/);
+  assert.match(html, /id="quizzes-tab-portfolio"/);
+  assert.match(html, /id="quizzes-panel-growth"[^>]*hidden/);
+  assert.doesNotMatch(html, /id="growth-quiz-title"|id="portfolio-quiz-title"|Quiz wird geladen/);
 });
