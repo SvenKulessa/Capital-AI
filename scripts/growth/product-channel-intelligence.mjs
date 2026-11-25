@@ -6,7 +6,7 @@ const channels = {
   "website": {
     "kind": "OWNED",
     "url": "https://capital-ai.online/",
-    "source": "https://capital-ai.online/",
+    "source": "https://developers.google.com/search/docs/fundamentals/seo-starter-guide",
     "rule": "REVIEW_REQUIRED",
     "method": "Suchoptimierte Produktseite, Dokumentation und belegbare Demo; Checkout erst nach Commerce-Freigabe."
   },
@@ -72,6 +72,27 @@ const channels = {
     "source": "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app",
     "rule": "LISTING_REVIEW_REQUIRED",
     "method": "GitHub-App-Listing und Publisher-/Plan-Anforderungen nachweisen; Marketplace- und Website-Entitlements getrennt halten."
+  },
+  "linkedin": {
+    "kind": "DISCOVERY",
+    "url": "https://www.linkedin.com/",
+    "source": "https://business.linkedin.com/advertise/linkedin-pages/best-practices",
+    "rule": "REVIEW_REQUIRED",
+    "method": "Fachlicher Use Case und nachvollziehbarer Nutzen für technische Entscheider; keine unerbetenen Massen-DMs."
+  },
+  "x": {
+    "kind": "DISCOVERY",
+    "url": "https://x.com/",
+    "source": "https://help.x.com/en/rules-and-policies/x-automation",
+    "rule": "REVIEW_REQUIRED",
+    "method": "Kurze originale Demo und technischer Thread; vorhandene X-Publisher-Freigaben und Kostengrenzen unverändert."
+  },
+  "tiktok": {
+    "kind": "DISCOVERY",
+    "url": "https://www.tiktok.com/",
+    "source": "https://support.tiktok.com/en/business-and-creator/creator-and-business-accounts/promoting-a-brand-product-or-service?lang=en",
+    "rule": "COMMERCIAL_DISCLOSURE_REQUIRED",
+    "method": "Kurzes eigenes Demo-Video, kommerzielle Kennzeichnung aktivieren; Rechte an Ton und Bild separat prüfen."
   }
 };
 const profiles = {
@@ -88,7 +109,9 @@ const profiles = {
         "productHunt",
         "redditShowcase",
         "alternativeTo",
-        "devto"
+        "devto",
+        "x",
+        "tiktok"
       ],
       [
         "showHN"
@@ -106,7 +129,8 @@ const profiles = {
       [
         "githubMarketplace",
         "website",
-        "devto"
+        "devto",
+        "linkedin"
       ],
       [
         "youtube",
@@ -130,7 +154,8 @@ const profiles = {
         "youtube"
       ],
       [
-        "productHunt"
+        "productHunt",
+        "linkedin"
       ],
       []
     ],
@@ -146,10 +171,12 @@ const profiles = {
       [
         "website",
         "devto",
-        "youtube"
+        "youtube",
+        "linkedin"
       ],
       [
-        "productHunt"
+        "productHunt",
+        "x"
       ],
       [
         "showHN"
@@ -174,6 +201,42 @@ const extras = [
     "name": "SmartClip",
     "sourceStatus": "SEPARATE_PRIVATE_COMMERCE_CANDIDATE",
     "profile": "mobile"
+  },
+  {
+    "id": "digital-blueprints",
+    "name": "Digitale Blueprints",
+    "sourceStatus": "SOURCE_REVIEWED_DELIVERY_BLOCKED",
+    "profile": "engineering",
+    "sourceRefs": [
+      {
+        "path": "CAPITAL-AI-MARKET/BLUEPRINT-CATALOG.md",
+        "blobSha": "2c0a0870c96188037465557e76a1eadbd6b76b3e"
+      }
+    ]
+  },
+  {
+    "id": "solo2-rag",
+    "name": "SOLO2 RAG",
+    "sourceStatus": "SOURCE_REVIEWED_COMMERCIAL_CANDIDATE",
+    "profile": "engineering",
+    "sourceRefs": [
+      {
+        "path": "docs/product/ROADMAP-OSS-SKILL-ORCHESTRATION-20261015.md",
+        "blobSha": "9d8927d4a3f0591f94ec8f890e5c97014d3feedb"
+      }
+    ]
+  },
+  {
+    "id": "loop-agent",
+    "name": "Loop Agent",
+    "sourceStatus": "SOURCE_REVIEWED_COMMERCIAL_CANDIDATE",
+    "profile": "engineering",
+    "sourceRefs": [
+      {
+        "path": "server/loop-agent-product.mjs",
+        "blobSha": "8e1ff02df0f0a13dfe5f9e635f55b01c0e55ad97"
+      }
+    ]
   }
 ];
 export function parseProductRegistry(markdown) {
@@ -198,20 +261,20 @@ function profileFor(id) {
   if(id==="ai-smartcopy"||id==="smartclip")return "mobile";
   if(id==="cads-benchmark-engine")return "cads";
   if(["market-vocabulary","learning-portal"].includes(id))return "learning";
-  if(["oss-pipeline-simulation-engine","ghcr-digest-blueprint-marketplace-app","seo-growth-engine","social-media-engine"].includes(id))return "engineering";
+  if(["oss-pipeline-simulation-engine","ghcr-digest-blueprint-marketplace-app","seo-growth-engine","social-media-engine","digital-blueprints","solo2-rag","loop-agent"].includes(id))return "engineering";
   return null;
 }
 export function projectProductChannels(markdown) {
   const rows=parseProductRegistry(markdown);
   const existing=new Set(rows.map(p=>p.id));
-  for(const e of extras)if(!existing.has(e.id))rows.push({id:e.id,name:e.name,sourceStatus:e.sourceStatus});
+  for(const e of extras)if(!existing.has(e.id))rows.push({id:e.id,name:e.name,sourceStatus:e.sourceStatus,...(e.sourceRefs?{sourceRefs:e.sourceRefs}:{})});
   return {
     contractVersion:"CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1",publicationState:"DRAFT_ONLY",publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,scoreBasis:"EDITORIAL_HYPOTHESIS_NOT_MEASURED",channelSourceReviewDate:"2026-11-25",
     products:rows.map(p=>{
       const profile=profiles[profileFor(p.id)];
       return {...p,profile:profileFor(p.id),currentCommercialReadiness:"NOT_PROVEN",audience:profile?.audience??null,
         researchStatus:profile?"CANDIDATES_REVIEW_REQUIRED":"UNMAPPED_RESEARCH_REQUIRED",
-        discoveryQueries:profile?.queries??[p.id+" target users distribution channels",""+p.id+" official marketplace requirements"],
+        discoveryQueries:profile?.queries??[p.id+" target users distribution channels",p.id+" official marketplace requirements"],
         assetBrief:profile?.asset??null,
         channels:profile?profile.groups.flatMap((ids,i)=>ids.map(id=>({id,priority:"P"+i,...channels[id],reviewRequired:true,automaticPublishAllowed:false,paidActivationAllowed:false,externalPurchaseLinkInPluginAllowed:false,metrics:{reach:null,visits:null,conversions:null,revenue:null}}))):[]};
     })
