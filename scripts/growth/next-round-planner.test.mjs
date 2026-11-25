@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { buildNextRoundDrafts, parseNextSteps, CONTRACT } from './next-round-planner.mjs';
+import { buildNextRoundDrafts, buildPrivateNextRoundDrafts, parseNextSteps, CONTRACT } from './next-round-planner.mjs';
 
 const registry=JSON.parse(readFileSync(fileURLToPath(new URL('../../.agents/skills/registry.json',import.meta.url)),'utf8'));
 const NEXT = [
@@ -97,4 +97,18 @@ test('catalog and E2E integration work use canonical skills in the next SOLO2 ro
   assert.ok(result.steps[0].suggestedSkills.includes('skill-lifecycle'));
   assert.ok(result.steps[0].suggestedSkills.includes('agent-evaluation'));
   assert.deepEqual(result.executedSkills, []);
+});
+
+test('private discovery uses fixed public topics and binds evidence to drafts without exposing task text',async()=>{
+  const urls=[];
+  const fetchImpl=async url=>{urls.push(url);return new Response(JSON.stringify({items:[]}));};
+  const result=await buildPrivateNextRoundDrafts(NEXT,registry,{fetchImpl,now:()=>0});
+  assert.ok(urls.length>0);
+  assert.ok(urls.every(url=>new URL(url).origin==='https://api.github.com'&&!url.includes('Rechtekette')));
+  assert.ok(result.steps.every(x=>x.prompt.includes('GROWTH_TOOL_DISCOVERY@1')&&x.toolDiscoveryState==='REVIEW_REQUIRED'));
+  assert.equal(result.toolDiscovery.automaticInstall,false);
+  assert.equal(result.toolDiscovery.commercialRights,'NOT_PROVEN');
+  assert.equal(result.providerCalls,0);
+  const failed=await buildPrivateNextRoundDrafts(NEXT,registry,{fetchImpl:async()=>{throw Error('offline');}});
+  assert.ok(failed.steps.every(x=>x.toolDiscoveryState==='NOT_PROVEN'));
 });
