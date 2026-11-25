@@ -91,3 +91,11 @@ test('owner snapshot exposes only draft channel counts and source hash; no live 
  assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...p,mapped:p.products+1}}));
  const {productChannels,...legacy}=actual;assert.deepEqual(validateEngineSnapshot(legacy),legacy);
 });
+
+test('visual owner readback returns scene IDs only and rejects fabricated assets or activation',()=>{
+ const actual=buildOwnerEngineSnapshot();
+ assert.equal(actual.visualIntelligence.sceneIds.length,7);
+ assert.deepEqual(validateEngineSnapshot(actual).visualIntelligence,actual.visualIntelligence);
+ assert.throws(()=>validateEngineSnapshot({...actual,visualIntelligence:{...actual.visualIntelligence,actualMediaAssets:1}}));
+ assert.throws(()=>validateEngineSnapshot({...actual,visualIntelligence:{...actual.visualIntelligence,publicPublishAllowed:true}}));
+});
