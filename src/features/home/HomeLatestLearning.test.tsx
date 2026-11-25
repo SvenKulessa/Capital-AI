@@ -65,6 +65,7 @@ test('three interactive article models use clearly identified synthetic data and
   assert.match(learningArticleScene('liquiditaet-spread',2)!.nodes[0].detail,/99,00/);
   assert.match(learningArticleScene('liquiditaet-spread',2)!.nodes[2].detail,/101,00/);
   assert.match(learningArticleScene('quellenzeit',99)!.description,/14 Tage/);
+  assert.notEqual(learningArticleScene('quellenzeit',0)!.nodes[1].x,learningArticleScene('quellenzeit',14)!.nodes[1].x);
   assert.equal(learningArticleScene('unreviewed-topic'),undefined);
   const html=renderToStaticMarkup(<HomeLatestLearning onNavigate={()=>{}}/>);
   assert.equal((html.match(/data-article-scene=/g)||[]).length,3);

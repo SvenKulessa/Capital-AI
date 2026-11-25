@@ -57,7 +57,7 @@ export function createArticleSceneRenderer(canvas: HTMLCanvasElement) {
     model.nodes.forEach((node,index)=>{
       const color=palette[index%palette.length];
       const height=Math.max(.04,Math.min(3,node.height));
-      let x=(index-(count-1)/2)*Math.min(1.7,5.2/Math.max(1,count-1)), z=0;
+      let x=node.x ?? (index-(count-1)/2)*Math.min(1.7,5.2/Math.max(1,count-1)), z=0;
       if(model.kind==='network'){x=index===0?0:2*Math.cos((index-1)*Math.PI*2/(count-1));z=index===0?0:2*Math.sin((index-1)*Math.PI*2/(count-1));}
       const pos=new Vector3(x,height/2,z);positions.push(pos);
       const material=own(new MeshPhongMaterial({color,emissive:color,emissiveIntensity:.12,shininess:75}));
@@ -70,6 +70,7 @@ export function createArticleSceneRenderer(canvas: HTMLCanvasElement) {
       for(let i=1;i<positions.length;i++){
         const from=positions[model.kind==='network'?0:i-1],to=positions[i];
         const delta=to.clone().sub(from);
+        if(delta.lengthSq()<1e-8)continue;
         const link=new Mesh(own(new CylinderGeometry(.025,.025,delta.length(),8)),own(new MeshBasicMaterial({color:BRAND_COLORS.cyan})));
         link.position.copy(from.clone().add(to).multiplyScalar(.5));link.quaternion.setFromUnitVectors(new Vector3(0,1,0),delta.normalize());root.add(link);
       }

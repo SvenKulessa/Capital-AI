@@ -1,4 +1,4 @@
-export type SceneNode = { label: string; detail: string; height: number };
+export type SceneNode = { label: string; detail: string; height: number; x?: number };
 export type ArticleScene = { kind: 'portfolio' | 'spread' | 'timeline' | 'network' | 'status' | 'flow'; nodes: SceneNode[]; description: string; control?: { label: string; min: number; max: number; step: number; initial: number }; };
 const number = (n: number, digits = 2) => n.toLocaleString('de-DE', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 const bounded = (n: number, min: number, max: number, fallback: number) => Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
@@ -28,9 +28,9 @@ export function learningArticleScene(id: string, input?: number): ArticleScene |
     case 'quellenzeit': {
       const days = Math.round(bounded(input ?? 3, 0, 14, 3));
       return {kind:'timeline', nodes:[
-        {label:'Ereignis',detail:'Beispiel: Tag 0',height:.8},
-        {label:'Meldung',detail:'Tag '+days,height:.8},
-        {label:'Quellenprüfung',detail:'Original und Korrekturen prüfen',height:.8},
+        {label:'Ereignis',detail:'Beispiel: Tag 0',height:.8,x:-2.4},
+        {label:'Meldung',detail:'Tag '+days,height:.8,x:-2.4+days/14*4.8},
+        {label:'Quellenprüfung',detail:'Original und Korrekturen prüfen',height:.8,x:2.9},
       ], description:'Synthetische Zeitachse: Veröffentlichung '+days+' Tage nach dem Ereignis. Die Zeitspanne ist ein Lernbeispiel, kein Nachrichtenfeed.',
       control:{label:'Tage bis Veröffentlichung',min:0,max:14,step:1,initial:3}};
     }
