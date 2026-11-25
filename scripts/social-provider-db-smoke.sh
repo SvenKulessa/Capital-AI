@@ -115,6 +115,31 @@ pg -f /work/scripts/social-provider-db-x-budget-after.sql
 pg -f /work/scripts/social-provider-db-x-consent.sql
 pg -f /work/scripts/social-provider-db-x-consent-test.sql
 
+# Race the same independently scoped payment in two real PG sessions.
+# Share exactly the same paid timestamp, even across a UTC day boundary.
+smartcopy_paid="$(pg -At -c "SELECT (email_confirmed_at+interval '1 second')::text FROM auth.users WHERE id='a0000000-0000-4000-8000-000000000001'")"
+smartcopy_race() {
+ pg -At -c "SELECT capital_growth_private.apply_smartcopy_sandbox_payment('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_lifecyclerace','ch_lifecyclerace',499,$1,false,'$smartcopy_paid'::timestamptz,clock_timestamp(),$2);"
+}
+smartcopy_race 0 "repeat('3',64)" > "$one" 2>&1 &
+sc_grant=$!
+smartcopy_race 499 "null" > "$two" 2>&1 &
+sc_refund=$!
+sc_grant_rc=0; sc_refund_rc=0
+wait "$sc_grant" || sc_grant_rc=$?
+wait "$sc_refund" || sc_refund_rc=$?
+if [[ "$sc_grant_rc" != 0 || "$sc_refund_rc" != 0 ]] || ! grep -Eq '^(GRANTED|REVOKED)$' "$one" || ! grep -qx 'REVOKED' "$two"; then
+ echo 'SMARTCOPY_RACE_RESULT_INVALID'
+ printf 'synthetic grant output:\n'; cat "$one"
+ printf 'synthetic refund output:\n'; cat "$two"
+ exit 1
+fi
+race_count="$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecyclerace' AND state='REVOKED' AND refunded_cents=499")"
+if [[ "$race_count" != 1 ]]; then
+ echo "SMARTCOPY_RACE_TERMINAL_COUNT_INVALID=$race_count"; exit 1
+fi
+echo 'PASS: independent PG connections converge on one terminal Smartcopy refund'
+
 # Restart only the exact ephemeral CI service, never a user-supplied remote DB.
 container="${SOCIAL_DB_TEST_CONTAINER:-}"
 if [[ "${GITHUB_ACTIONS:-}" != "true" || ! "$container" =~ ^[a-f0-9]{64}$ ]]; then
@@ -153,6 +178,14 @@ echo 'PASS: isolated consent and invoice reversal persisted after PostgreSQL res
 [[ "$(pg -At -c 'SELECT count(*) FROM capital_growth_private.smartcopy_consent WHERE revoked_at IS NOT NULL')" == 2 ]]
 echo 'PASS: isolated Smartcopy consent withdrawal persisted after PostgreSQL restart'
 
-[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='GRANTED'")" == 1 ]]
-[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='REVOKED'")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='GRANTED' AND charge_id IS NULL")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='REVOKED' AND charge_id IS NULL")" == 1 ]]
 echo 'PASS: independent synthetic entitlement states persisted; consent withdrawal did not alter licenses'
+
+# Same real PostgreSQL restart proves terminal lifecycle persistence.
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE charge_id IS NOT NULL AND state='REVOKED'")" == 3 ]]
+[[ "$(pg -At -c "SELECT refunded_cents FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecycle001'")" == 499 ]]
+echo 'PASS: isolated Smartcopy refund and dispute tombstones persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_delivery_fixture")" == 5 ]]
+echo 'PASS: independent contractual proof records persisted after PostgreSQL restart'
