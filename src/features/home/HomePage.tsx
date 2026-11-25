@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { Hero } from '../../components/Hero';
 import { openHeroBuddy } from '../../components/heroBuddyEvents';
 import { HomeSearchFocus } from './HomeSearchFocus';
+import { GrowthIntelligenceArticle } from './GrowthIntelligenceArticle';
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
 import { ProductDisclaimer } from '../../components/ProductDisclaimer';
@@ -82,6 +83,7 @@ export function HomePage({ onNavigate, onOpenModule, onOpenSectorAnalysis, onOpe
           <ProductDisclaimer full />
         </div>
       </section>
+      <GrowthIntelligenceArticle />
       <HomeLatestLearning onNavigate={onNavigate} />
       <Suspense fallback={null}><HomeEditorialNews /></Suspense>
       <CommerceEntrySection onNavigate={onNavigate} />

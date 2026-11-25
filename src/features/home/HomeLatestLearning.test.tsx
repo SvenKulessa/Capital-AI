@@ -78,3 +78,14 @@ test('news scenes preserve admitted labels and never create numeric data',()=>{
   assert.deepEqual(scene.nodes.map(({label,detail})=>({label,detail})),[{label:'Testnet',detail:'Reset geplant'},{label:'Mainnet',detail:'Läuft weiter'}]);
   assert.match(scene.description,/Kein Live-Marktdatenfeed/);
 });
+
+import { GrowthIntelligenceArticle } from './GrowthIntelligenceArticle';
+test('public Growth article has seven named stages and honest product states, with no active canvas by default',()=>{
+  const html=renderToStaticMarkup(<GrowthIntelligenceArticle/>);
+  assert.match(html,/id="growth-intelligence"/);
+  assert.match(html,/GROWTH INTELLIGENCE ENGINE/);
+  assert.match(html,/Horizontale Intelligence-Pipeline/);
+  for(const title of ['Learning Hub','CADS','SmartClip','Digitale Blueprints','SOLO2 RAG'])assert.ok(html.includes(title));
+  assert.equal((html.match(/aria-pressed="(?:true|false)"/g)||[]).length,14);
+  assert.match(html,/Coming Soon/);assert.doesNotMatch(html,/<canvas|OWNER_NOTE|\/api\/profile|REVIEW_REQUIRED/);
+});
