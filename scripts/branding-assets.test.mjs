@@ -149,3 +149,21 @@ test('3D avatar is lazy, accessible, and included in Docker production build', (
   assert.ok(ignore.includes('!scripts/generate-jaja-3d.mjs'));
   assert.ok(pkg.scripts.build.startsWith('node scripts/generate-jaja-3d.mjs'));
 });
+
+
+test('corporate source identities use existing badge, learning and font manifests', async () => {
+  const { LEARNING_UNIVERSE_ASSETS } = await import('../src/platform/SocialMediaEngine/Branding/learningUniverseAssetRegistry.mjs');
+  const load = path => JSON.parse(readFileSync(resolve(root,path),'utf8'));
+  const badges=load('docs/licenses/capital-ai-badges.manifest.json');
+  const screener=load('docs/licenses/screener-blueprint-badges.manifest.json');
+  const fonts=load('public/fonts/provenance.json');
+  const assets=[...badges.assets,...screener.assets,...fonts.files,...LEARNING_UNIVERSE_ASSETS.map(a=>({...a,path:a.repositoryPath}))];
+  assert.equal(new Set(assets.map(a=>a.path)).size,assets.length);
+  for(const asset of assets){
+    assert.match(asset.sha256,/^[0-9a-f]{64}$/);
+    assert.equal(sha256(resolve(root,asset.path)),asset.sha256,asset.path);
+  }
+  assert.equal(fonts.family,'Plus Jakarta Sans');
+  assert.equal(fonts.license,'OFL-1.1');
+  assert.equal(sha256(resolve(root,'public/branding/universe/hero-universe-globe.webp')),'d510ac752e79314d69475a7645c554625b86ed676b0b04aabbc2869599de8eb4');
+});

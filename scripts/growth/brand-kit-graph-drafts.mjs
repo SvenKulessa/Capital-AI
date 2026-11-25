@@ -4,6 +4,7 @@
  * canonical Content/Social contracts. No crawler/model/provider is invoked here.
  */
 import { createHash } from 'node:crypto';
+import { BRAND_COLORS } from '../../shared/hub-branding.mjs';
 import { readFileSync, lstatSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { join, resolve } from 'node:path';
@@ -21,10 +22,10 @@ const PANELS = [
   ['ANNAHMEN','Modelllogik','Parameter','Kontext'],
   ['GRENZEN','Unsicherheit','Risikofilter','Einsatzgrenze'],
 ];
-const TEMPLATES = {
-  X: {id:'universe-evidence-3x3',width:1200,height:1200},
-  INSTAGRAM: {id:'universe-evidence-3x3-portrait',width:1080,height:1350},
-};
+const TEMPLATES = Object.freeze({
+  X: Object.freeze({id:'universe-evidence-3x3',width:1200,height:1200}),
+  INSTAGRAM: Object.freeze({id:'universe-evidence-3x3-portrait',width:1080,height:1350}),
+});
 const XML = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;')
   .replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&apos;');
 const validSummary = v => typeof v==='string' && v.length>0 && v.length<=280
@@ -36,6 +37,12 @@ const ASSET_PROFILE = Object.freeze({
   X:{path:'social/x-link-card-1200x675.jpg',sha256:'0238503dd58d879f822edb9ac7c8146336cdaf68de12ddb579e5dd96eb90c56a'},
   INSTAGRAM:{path:'social/instagram-portrait-1080x1350.jpg',sha256:'297761f524292ce90a8704e18e1441c48a1972c8fc8018436d5e0b2f701a4d47'},
 });
+
+/** Return the existing immutable render profile, not a new publishing authority. */
+export function brandDraftTemplate(channel) {
+  if(!Object.hasOwn(TEMPLATES,channel))throw Error('BRAND_CHANNEL_UNSUPPORTED');
+  return TEMPLATES[channel];
+}
 
 /** A crawler's self-declared license/status never admits its own content. */
 export function assessContext(records=[], trustedRights=[]) {
@@ -90,6 +97,7 @@ export function readBrandKit(channel='X') {
   const colors=FAMILIES.map(k=>tokens.color?.universe?.[k]?.$value);
   if(colors.some(v=>!/^#[0-9a-fA-F]{6}$/.test(v??''))
     || new Set(colors.map(v=>v.toLowerCase())).size!==7
+    || colors.some((v,i)=>v!==BRAND_COLORS[FAMILIES[i]])
     || tokens.universeDesign?.version!=='CAPITAL_AI_UNIVERSE@1'
     || tokens.universeDesign?.paletteRule!=='ALL_SEVEN_COLORS_PER_VISUAL'
     || tokens.publishReady!==false)throw Error('BRAND_PALETTE_INVALID');
@@ -129,15 +137,21 @@ function lines(value,limit=28) {
 export function drawBrandedSvg({draft,kit,context,template}) {
   if(!draft||!template||!kit||!['X','INSTAGRAM'].includes(draft.channel)
     || template!==TEMPLATES[draft.channel])throw Error('BRAND_TEMPLATE_INVALID');
+  const canonical=readBrandKit(draft.channel);
   const logo=Buffer.from(kit.logo??'','base64');
   if(logo.length<64||sha(logo)!==kit.logoSha256
+    ||kit.logoSha256!==canonical.logoSha256
+    ||kit.logoRightsRef!==canonical.logoRightsRef
     || !Array.isArray(kit.colors)||kit.colors.length!==7
     || kit.colors.some(c=>!/^#[a-fA-F0-9]{6}$/.test(c))
     || new Set(kit.colors).size!==7
+    || kit.colors.some((v,i)=>v!==canonical.colors[i])
+    || kit.background!==canonical.background||kit.foreground!==canonical.foreground
     || !/^#[a-fA-F0-9]{6}$/.test(kit.background??'')
     || !/^#[a-fA-F0-9]{6}$/.test(kit.foreground??''))throw Error('BRAND_KIT_NOT_TRUSTED');
   const profile=Buffer.from(kit.profileBase64??'','base64');
-  if(profile.length<64||!digest.test(kit.profileSha256??'')||sha(profile)!==kit.profileSha256)
+  if(profile.length<64||!digest.test(kit.profileSha256??'')||sha(profile)!==kit.profileSha256
+    ||kit.profileSha256!==canonical.profileSha256||kit.profilePath!==canonical.profilePath)
     throw Error('BRAND_PROFILE_NOT_VERIFIED');
   const w=template.width,h=template.height,margin=44,gap=14,card=(w-88-28)/3;
   const headline=draft.draftText.split('\n')[1]||'Methodik statt Versprechen';

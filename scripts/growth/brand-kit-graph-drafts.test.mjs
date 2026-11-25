@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { CONTRACT,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
+import { buildGrowthIntelligenceDraftBundle } from './growth-intelligence-drafts.mjs';
+import { CONTRACT,brandDraftTemplate,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
 import { buildSocialPublisherHandoff } from '../../src/contracts/socialPublisherAdapter.ts';
 import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
@@ -395,4 +396,18 @@ test('existing licensed context adapter cannot bypass separate research review o
  assert.equal(projectLicensedProductResearch({records:[record],rightsLedger:[right],bindings:[{...binding,summarySha256:'a'.repeat(64)}]},'2026-11-25').records.length,0);
  const r=projectLicensedProductResearch({records:[record],rightsLedger:[right],bindings:[binding]},'2026-11-25');
  assert.equal(r.records.length,1);assert.equal(r.publicPublishAllowed,false);assert.equal(r.sourceAuthentication,'NOT_PROVEN');
+});
+
+
+test('a self-hashed logo, profile swap or changed valid palette cannot impersonate the corporate kit',()=>{
+  const bundle=buildGrowthIntelligenceDraftBundle();
+  const draft=bundle.drafts.find(d=>d.channel==='X');
+  const kit=readBrandKit('X');
+  const fake=Buffer.alloc(128,65);
+  for(const altered of [{...kit,logo:fake.toString('base64'),logoSha256:sha(fake)},
+    {...kit,colors:['#FFFFFF',...kit.colors.slice(1)]},
+    {...kit,logoRightsRef:'customer-logo'},
+    {...kit,...Object.fromEntries(Object.entries(readBrandKit('INSTAGRAM')).filter(([key])=>key.startsWith('profile')))}]) {
+    assert.throws(()=>drawBrandedSvg({draft,kit:altered,context:{accepted:[]},template:brandDraftTemplate('X')}),/BRAND_KIT_NOT_TRUSTED|BRAND_PROFILE_NOT_VERIFIED/);
+  }
 });
