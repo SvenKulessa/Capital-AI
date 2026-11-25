@@ -159,9 +159,11 @@ export async function discoverRepositoryUpdates({ entries, sourceSha, blockedUpd
 /** Bounded public discovery for NEW content tools. Metadata never constitutes a commercial grant. */
 export const GROWTH_TOOL_TOPICS = Object.freeze(['webgpu','3d-rendering','video-editing','mcp-server','content-generation']);
 const PERMISSIVE = new Set(['MIT','Apache-2.0','BSD-2-Clause','BSD-3-Clause','ISC','MPL-2.0']);
-export async function discoverGrowthTools({fetchImpl=fetch,now=Date.now}={}) {
+const ALLOWED_GROWTH_DISCOVERY_TOPICS = new Set([...GROWTH_TOOL_TOPICS,'accessibility','finance','data-analysis','developer-tools','observability','security','testing','analytics','advertising','seo','tag-manager']);
+export async function discoverGrowthTools({fetchImpl=fetch,now=Date.now,topics=GROWTH_TOOL_TOPICS}={}) {
+  if(!Array.isArray(topics)||topics.length<1||topics.length>5||new Set(topics).size!==topics.length||topics.some(topic=>!ALLOWED_GROWTH_DISCOVERY_TOPICS.has(topic)))throw Error('DISCOVERY_TOPICS_INVALID');
   const observedAt=new Date(now()).toISOString();
-  const rows=await mapBounded(GROWTH_TOOL_TOPICS,2,async topic=>{
+  const rows=await mapBounded(topics,2,async topic=>{
     const url=new URL('https://api.github.com/search/repositories');
     url.searchParams.set('q','topic:'+topic+' archived:false fork:false stars:>=20');
     url.searchParams.set('sort','updated');url.searchParams.set('order','desc');url.searchParams.set('per_page','8');
