@@ -21,6 +21,7 @@ class GrowthState(TypedDict, total=False):
     repo_root: str
     google_reads: bool
     tool_radar: dict
+    private_tool_discovery: bool
     findings: Annotated[list[dict], operator.add]
     plan: dict
 
@@ -145,6 +146,43 @@ def review_tool_radar(payload: object) -> dict:
     return {"state": "METADATA_ONLY_REVIEW_REQUIRED", "candidates": result, "automaticInstall": False}
 
 
+def collect_private_tool_radar(root: str):
+    # The subprocess receives a fixed public domain only; never forward private prompts or tokens.
+    try:
+        result = subprocess.run(["node", "--input-type=module", "-e",
+            "import {discoverPrivateDomain} from './server/growth-private-tool-catalog.mjs'; console.log(JSON.stringify(await discoverPrivateDomain('GROWTH')));"],
+            cwd=root, env={"PATH": os.environ.get("PATH", "")}, capture_output=True,
+            text=True, timeout=35, check=False)
+        if result.returncode != 0 or len(result.stdout) > 262144:
+            return None
+        value = json.loads(result.stdout)
+        return value if isinstance(value, dict) else None
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return None
+
+
+def review_mcp_registry(payload: object) -> dict:
+    denied = {"state": "NOT_PROVEN", "candidates": [], "automaticInstall": False}
+    if not isinstance(payload, dict) or payload.get("source") != "OFFICIAL_MCP_REGISTRY" or payload.get("status") != "METADATA_OBSERVED":
+        return denied
+    candidates = payload.get("candidates")
+    if not isinstance(candidates, list) or len(candidates) > 8:
+        return denied
+    seen, result = set(), []
+    for row in candidates:
+        if not isinstance(row, dict):
+            return denied
+        name, version = row.get("name"), row.get("version")
+        if (not isinstance(name, str) or len(name) > 110 or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", name)
+                or name.lower() in seen or not isinstance(version, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.+_-]{0,79}", version)
+                or row.get("installAllowed") is not False or row.get("activationAllowed") is not False
+                or row.get("commercialRights") != "NOT_PROVEN" or row.get("outputRights") != "NOT_PROVEN"):
+            return denied
+        seen.add(name.lower())
+        result.append({"name": name, "declaredVersion": version, "commercialRights": "NOT_PROVEN"})
+    return {"state": "METADATA_ONLY_REVIEW_REQUIRED", "candidates": result, "automaticInstall": False}
+
+
 def marketing_agent(state: GrowthState) -> dict:
     visual = source(state["repo_root"], "src/shared/growthVisualScenes.ts")
     radar = source(state["repo_root"], "server/tool-update-discovery.mjs")
@@ -157,6 +195,7 @@ def marketing_agent(state: GrowthState) -> dict:
 
 def plan_agent(state: GrowthState) -> dict:
     findings = sorted(state.get("findings", []), key=lambda item: (item["agent"], item["detail"]))
+    radar = collect_private_tool_radar(state["repo_root"]) if state.get("private_tool_discovery") is True else state.get("tool_radar")
     return {"plan": {
         "schema": "CAPITAL_AI_LOCAL_GROWTH_GRAPH@1",
         "engine": "langgraph",
@@ -164,7 +203,9 @@ def plan_agent(state: GrowthState) -> dict:
         "budget": {"paidProviderCalls": 0, "adSpend": 0, "hostedTracing": False},
         "execution": {"mode": "audit-and-plan", "automaticWrites": False, "publication": False},
         "findings": findings,
-        "toolRadar": review_tool_radar(state.get("tool_radar")),
+        "toolRadar": review_tool_radar(radar),
+        "mcpRegistry": review_mcp_registry(radar.get("registry") if isinstance(radar, dict) else None),
+        "chatgptPluginDirectory": "NOT_PROVEN_IN_RUNTIME",
         "nextActions": [
             "Verify intended Google identity and exact property/domain associations.",
             "Measure 28-day and preceding-period organic performance; unavailable values remain NOT_PROVEN.",
@@ -192,6 +233,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=str(Path(__file__).resolve().parents[2]))
     parser.add_argument("--google-reads", action="store_true")
+    parser.add_argument("--private-tool-discovery", action="store_true", help="Explicit bounded public GitHub and MCP registry reads")
     parser.add_argument("--tool-radar", type=Path, help="Bounded local daily metadata evidence file")
     args = parser.parse_args()
     radar = None
@@ -203,7 +245,7 @@ def main():
                 radar = json.loads(raw)
         except (OSError, ValueError, RecursionError):
             radar = None
-    result = build_graph().invoke({"repo_root": args.repo_root, "google_reads": args.google_reads, "findings": [], "tool_radar": radar}, {"recursion_limit": 8})
+    result = build_graph().invoke({"repo_root": args.repo_root, "google_reads": args.google_reads, "findings": [], "tool_radar": radar, "private_tool_discovery": args.private_tool_discovery}, {"recursion_limit": 8})
     print(json.dumps(result["plan"], ensure_ascii=False, indent=2))
 
 
