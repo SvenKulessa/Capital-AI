@@ -590,6 +590,10 @@
 !server/growth-owner-evidence-archive.test.mjs
 !server/growth-owner-engine-readback.mjs
 !server/growth-provider-read.mjs
+!server/growth-private-provider-read.mjs
+!server/growth-private-provider-read.test.mjs
+!server/growth-private-tool-catalog.mjs
+!server/growth-private-tool-catalog.test.mjs
 !server/growth-gsc-readback.mjs
 !server/growth-owner-engine-readback.test.mjs
 !scripts/growth/owner-engine-snapshot.mjs
