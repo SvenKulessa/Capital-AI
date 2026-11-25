@@ -191,3 +191,29 @@ $$;
 revoke all on function capital_growth_private.grant_smartcopy_consent(uuid,text,text,text),capital_growth_private.withdraw_smartcopy_consent(uuid,text,text),public.capital_smartcopy_read_consent(uuid,text,text) from public,anon,authenticated,service_role;
 grant execute on function capital_growth_private.grant_smartcopy_consent(uuid,text,text,text),capital_growth_private.withdraw_smartcopy_consent(uuid,text,text),public.capital_smartcopy_read_consent(uuid,text,text) to service_role;
 commit;
+
+-- Read contract ONLY in disposable CI; no service-role insert/update or grant path.
+-- Separate from marketing consent: withdrawal must not revoke a purchased license.
+begin;
+create table capital_growth_private.smartcopy_entitlement_fixture (
+ user_id uuid not null references auth.users(id) on delete cascade,
+ campaign_id text not null check(campaign_id ~ '^smartcopy-[a-f0-9]{24}$'),
+ release_sha256 text not null check(release_sha256 ~ '^[a-f0-9]{64}$'),
+ intent_id text primary key check(intent_id ~ '^pi_[A-Za-z0-9_]{8,240}$'),
+ state text not null check(state in ('GRANTED','REVOKED'))
+);
+alter table capital_growth_private.smartcopy_entitlement_fixture enable row level security;
+revoke all on capital_growth_private.smartcopy_entitlement_fixture from public,anon,authenticated,service_role;
+create function public.capital_smartcopy_read_entitlement(p_user uuid,p_campaign text,p_release text,p_intent text)
+returns jsonb language sql security definer set search_path='' as $$
+ select jsonb_build_object('userId',e.user_id,'productId','ai-smartcopy','campaignId',e.campaign_id,
+ 'releaseSha256',e.release_sha256,'intentId',e.intent_id,'state',e.state,
+ 'observedAt',to_char(clock_timestamp() at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'))
+ from capital_growth_private.smartcopy_entitlement_fixture e
+ join capital_growth_private.smartcopy_consent c using(user_id,campaign_id,release_sha256)
+ where e.user_id=p_user and e.campaign_id=p_campaign and e.release_sha256=p_release and e.intent_id=p_intent
+ and c.revoked_at is null and c.expires_at>clock_timestamp()
+$$;
+revoke all on function public.capital_smartcopy_read_entitlement(uuid,text,text,text) from public,anon,authenticated,service_role;
+grant execute on function public.capital_smartcopy_read_entitlement(uuid,text,text,text) to service_role;
+commit;

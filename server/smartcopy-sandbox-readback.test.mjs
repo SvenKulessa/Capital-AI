@@ -70,3 +70,25 @@ test('provider reader rejects coercible identifiers before transport',async()=>{
  const f=providerFixture();assert.throws(()=>createSmartcopyStripeReader({...f.deps,scope:{...scope,stripePriceId:[scope.stripePriceId]}}));
  await assert.rejects(()=>createSmartcopyStripeReader(f.deps)(f.ctx,[session]));assert.deepEqual(f.calls,[]);
 });
+
+import {createSmartcopyEntitlementReader} from './smartcopy-sandbox-readback.mjs';
+test('independent entitlement RPC scope and identity are exact; no live project or mutable endpoint',async()=>{
+ const f=fixture(),p=providerFixture(),ctx=p.ctx;let calls=0;
+ const config={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890',fetchImpl:async(url,opt)=>{calls++;assert.equal(url,'https://'+'a'.repeat(20)+'.supabase.co/rest/v1/rpc/capital_smartcopy_read_entitlement');assert.equal(opt.redirect,'error');assert.equal(opt.method,'POST');assert.equal(opt.headers.apikey,config.secret);assert.deepEqual(JSON.parse(opt.body),{p_user:user,p_campaign:scope.campaignId,p_release:scope.releaseSha256,p_intent:intent});return Response.json(f.l)}};
+ const read=createSmartcopyEntitlementReader(config);
+ assert.deepEqual(await read(ctx,intent),f.l);
+ await assert.rejects(()=>read({...ctx,mode:'live'},intent));await assert.rejects(()=>read(ctx,[intent]));assert.equal(calls,1);
+ for(const projectRef of ['ryzywoktpmyhwzxmstyu','wcvorlvhwvuprqsjcten','evil.com'])assert.throws(()=>createSmartcopyEntitlementReader({...config,projectRef}));
+ for(const patch of [{productId:'smartclip'},{intentId:'pi_foreign12345'},{releaseSha256:'b'.repeat(64)},{state:'UNKNOWN'}]){
+ const original={...f.l};Object.assign(f.l,patch);await assert.rejects(()=>read(ctx,intent));Object.assign(f.l,original);}
+ f.deps.readEntitlement=read;f.deps.readVerifiedOneTimeReceipt=createSmartcopyStripeReader(p.deps);
+ assert.equal((await f.run()).status,'SANDBOX_CANDIDATE');
+ p.data['/charges/ch_fixture12345'].amount_refunded=499;p.data['/charges/ch_fixture12345'].refunded=true;
+ assert.equal((await f.run()).reason,'REVERSAL_NOT_PROVEN');f.l.state='REVOKED';assert.equal((await f.run()).refundCandidate,'FULL');
+});
+test('independent entitlement errors, missing rows and oversize response fail closed',async()=>{
+ const p=providerFixture(),cfg={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890'};
+ assert.equal(await createSmartcopyEntitlementReader({...cfg,fetchImpl:async()=>Response.json(null)})(p.ctx,intent),null);
+ for(const response of [()=>Response.json({}, {status:403}),()=>new Response(' '.repeat(8193))]){
+ await assert.rejects(()=>createSmartcopyEntitlementReader({...cfg,fetchImpl:async()=>response()})(p.ctx,intent));}
+});

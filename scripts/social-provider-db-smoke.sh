@@ -150,5 +150,9 @@ echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owne
 [[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.x_initial_payment WHERE reversed")" == 1 ]]
 echo 'PASS: isolated consent and invoice reversal persisted after PostgreSQL restart'
 
-[[ "$(pg -At -c 'SELECT count(*) FROM capital_growth_private.smartcopy_consent WHERE revoked_at IS NOT NULL')" == 1 ]]
+[[ "$(pg -At -c 'SELECT count(*) FROM capital_growth_private.smartcopy_consent WHERE revoked_at IS NOT NULL')" == 2 ]]
 echo 'PASS: isolated Smartcopy consent withdrawal persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='GRANTED'")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='REVOKED'")" == 1 ]]
+echo 'PASS: independent synthetic entitlement states persisted; consent withdrawal did not alter licenses'
