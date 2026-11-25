@@ -125,6 +125,12 @@ jobs:
             ("Skills with missing or unproven source coverage: " + ([.skills[] | select(.reviewState == "NOT_PROVEN")] | length | tostring))] | .[]' \
             security-reports/skill-source-audit.json >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Discover open-source Growth content tool candidates
+        if: always()
+        run: |
+          node --input-type=module -e 'import {discoverGrowthTools} from "./server/tool-update-discovery.mjs"; console.log(JSON.stringify(await discoverGrowthTools()))' > security-reports/growth-tool-radar.json
+          jq -r '["### Growth tool radar", ("Commercial-license candidates (metadata only): " + ([.candidates[] | select(.commercialCandidate)] | length | tostring)), "No installation, output-rights grant or activation"] | .[]' security-reports/growth-tool-radar.json >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload daily evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

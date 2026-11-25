@@ -3,6 +3,7 @@ import { createHmac } from 'node:crypto';
 import { boundedJson, readJson } from './http-security.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { BLUEPRINT_PRODUCTS } from './blueprint-commerce.mjs';
+import { createSmartcopySandboxReadback, createSmartcopyStripeReader, createSmartcopyConsentReader, createSmartcopyEntitlementReader } from './smartcopy-sandbox-readback.mjs';
 
 // Trusted server composition only. No browser-supplied receipts, no provider call,
 // and no live wiring unless the separate consent/recovery integration is approved.
@@ -22,7 +23,17 @@ export function createXInitialInvoiceObserver({key,record,now=Date.now}={}) {
   };
 }
 
-export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, auth, initialInvoiceObserver } = {}) {
+export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, auth, initialInvoiceObserver, smartcopySandbox, smartcopyProviderSandbox } = {}) {
+  // Only an explicit server composition can supply this inactive test-only helper.
+  // Reuse the same auth authority; nested config cannot override it. No HTTP route.
+  if(smartcopySandbox!==undefined&&smartcopyProviderSandbox!==undefined)throw Error('SMARTCOPY_AMBIGUOUS_COMPOSITION');
+  const provider=smartcopyProviderSandbox;
+  if(provider!==undefined&&Object.hasOwn(provider,'readEntitlement'))throw Error('SMARTCOPY_PROVIDER_ENTITLEMENT_OVERRIDE');
+  const readSmartcopySandbox=provider!==undefined?createSmartcopySandboxReadback({
+    scope:provider.scope,auth,now:provider.now,readEntitlement:createSmartcopyEntitlementReader({projectRef:provider.consentProjectRef,secret:provider.consentTestSecret,fetchImpl}),
+    readVerifiedOneTimeReceipt:createSmartcopyStripeReader({scope:provider.scope,key:provider.stripeTestKey,fetchImpl,now:provider.now}),
+    readConsent:createSmartcopyConsentReader({projectRef:provider.consentProjectRef,secret:provider.consentTestSecret,fetchImpl}),
+  }):smartcopySandbox===undefined?null:createSmartcopySandboxReadback({...smartcopySandbox,auth});
   const secret = env.STRIPE_SECRET_KEY || '';
   async function stripe(path) {
     const response = await fetchImpl('https://api.stripe.com/v1' + path, {
@@ -32,7 +43,7 @@ export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, au
     if (!response.ok) throw Error('provider_unavailable');
     return value;
   }
-  return { async handle(req, res, url, json) {
+  return { ...(readSmartcopySandbox?{readSmartcopySandbox}:{}), async handle(req, res, url, json) {
     if (url.pathname !== '/api/billing/purchase-receipt') return false;
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Vary', 'Cookie');

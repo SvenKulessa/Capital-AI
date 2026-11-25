@@ -8,9 +8,9 @@ import { SEO_PUBLIC_IMAGE_PATHS } from '../shared/seo-indexing-policy.mjs';
 import { runSearchConfiguration, SEARCH_CONFIGURATION } from './google-search-config.mjs';
 
 const origin = 'https://capital-ai.online';
-test('homepage sitemap date reflects the actual publisher/logo update, not execution time', () => {
+test('homepage sitemap date reflects the actual public Growth article update, not execution time', () => {
   const home = SEO_CONTENT_MANIFEST.find(entry => entry.path === '/');
-  assert.equal(home.sitemapLastmod, '2026-11-13');
+  assert.equal(home.sitemapLastmod, '2026-11-25');
   assert.equal(home.updatedAt, home.sitemapLastmod);
   assert.notEqual(home.sitemapLastmod, SEO_CONTENT_MANIFEST.find(entry => entry.path === '/blog').sitemapLastmod);
 });
