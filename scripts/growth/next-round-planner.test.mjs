@@ -101,10 +101,10 @@ test('catalog and E2E integration work use canonical skills in the next SOLO2 ro
 
 test('private discovery uses fixed public topics and binds evidence to drafts without exposing task text',async()=>{
   const urls=[];
-  const fetchImpl=async url=>{urls.push(url);return new Response(JSON.stringify({items:[]}));};
+  const fetchImpl=async url=>{urls.push(url);return new Response(JSON.stringify(url.includes('registry.modelcontextprotocol.io')?{servers:[]}:{items:[]}));};
   const result=await buildPrivateNextRoundDrafts(NEXT,registry,{fetchImpl,now:()=>0});
   assert.ok(urls.length>0);
-  assert.ok(urls.every(url=>new URL(url).origin==='https://api.github.com'&&!url.includes('Rechtekette')));
+  assert.ok(urls.every(url=>['https://api.github.com','https://registry.modelcontextprotocol.io'].includes(new URL(url).origin)&&!url.includes('Rechtekette')));
   assert.ok(result.steps.every(x=>x.prompt.includes('GROWTH_TOOL_DISCOVERY@1')&&x.toolDiscoveryState==='REVIEW_REQUIRED'));
   assert.equal(result.toolDiscovery.automaticInstall,false);
   assert.equal(result.toolDiscovery.commercialRights,'NOT_PROVEN');
