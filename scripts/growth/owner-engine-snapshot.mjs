@@ -25,6 +25,7 @@ export function projectOwnerEngineSnapshot({editionBytes,indexBytes,graphBytes,b
     market:{state:'SOURCE_SNAPSHOT_ONLY',date:edition.date,homepage:edition.stories.length,overview:index.overview.length,archive:index.archive.length,
       editionSha256:sha(editionBytes),indexSha256:sha(indexBytes)},
     content:{state:'DRAFT_ONLY',drafts:bundle.drafts.length,sourceSha256:bundle.sourceSha256,bundleSha256:sha(JSON.stringify(bundle))},
+    visualIntelligence:{state:'DRAFT_ONLY',sceneIds:bundle.drafts.filter(d=>d.visualScene?.publicationAllowed===false && d.visualScene?.actualMediaAssets===0).map(d=>d.contentId),actualMediaAssets:0,publicPublishAllowed:false,toolRadar:'SCHEDULED_SOURCE_ONLY'},
     langgraph:{state:'SOURCE_ONLY_RUNTIME_NOT_PROVEN',sourceSha256:sha(graphBytes)},
     productChannels:{state:'DRAFT_ONLY',products:p.products.length,mapped,researchQueue:p.products.length-mapped,sourceSha256:p.sourceSha256,liveMetrics:null},
   };

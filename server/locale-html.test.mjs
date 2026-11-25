@@ -30,12 +30,12 @@ test('country and manual locale bootstrap is privacy-safe and consistent', async
     }
     const site = 'https://capital-ai.online';
     const headings = {
-      de: 'Marktnews verstehen.',
-      en: 'Understand financial terms.',
-      it: 'Comprendi i termini finanziari.',
-      fr: 'Comprenez les termes financiers.',
-      pt: 'Compreenda os termos financeiros.',
-      es: 'Comprende los términos financieros.',
+      de: 'Finanzmärkte verstehen.',
+      en: 'Understand financial markets.',
+      it: 'Comprendi i mercati finanziari.',
+      fr: 'Comprendre les marchés financiers.',
+      pt: 'Compreenda os mercados financeiros.',
+      es: 'Comprende los mercados financieros.',
     };
     const alternates = [
       ...Object.keys(headings).map(code => [code, `${site}/${code}/`]),

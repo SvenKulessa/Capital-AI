@@ -24,6 +24,24 @@ class GrowthGraphTests(unittest.TestCase):
         self.assertTrue(any(f["agent"] == "google" and f["status"] == "NOT_PROVEN" for f in plan["findings"]))
         self.assertNotIn("ACCESS_TOKEN", json.dumps(plan))
 
+    def test_tool_radar_is_metadata_only_and_rejects_authority(self):
+        row = {"repository": "example/render", "declaredLicense": "MIT", "commercialCandidate": True,
+               "state": "REVIEW_REQUIRED", "commercialRights": "NOT_PROVEN", "outputRights": "NOT_PROVEN",
+               "installAllowed": False, "activationAllowed": False}
+        payload = {"schema": "CAPITAL_AI_GROWTH_TOOL_RADAR@1", "metadataOnly": True,
+                   "automaticInstall": False, "publicPublishAllowed": False, "paidProviderCalls": 0,
+                   "topics": [{"status": "METADATA_OBSERVED"}], "candidates": [row]}
+        report = graph.review_tool_radar(payload)
+        self.assertEqual(report["state"], "METADATA_ONLY_REVIEW_REQUIRED")
+        self.assertEqual(len(report["candidates"]), 1)
+        self.assertFalse(report["automaticInstall"])
+        self.assertEqual(graph.review_tool_radar({**payload, "automaticInstall": True})["state"], "NOT_PROVEN")
+        self.assertEqual(graph.review_tool_radar({**payload, "candidates": [{**row, "installAllowed": True}]})["state"], "NOT_PROVEN")
+        self.assertEqual(graph.review_tool_radar({**payload, "candidates": [{**row, "declaredLicense": "CC-BY-NC-4.0"}]})["candidates"], [])
+        with tempfile.TemporaryDirectory() as root:
+            result = graph.build_graph().invoke({"repo_root": root, "google_reads": False, "findings": [], "tool_radar": payload})
+        self.assertEqual(result["plan"]["toolRadar"], report)
+
     def test_disabled_tracking_is_a_source_observation_not_a_live_google_claim(self):
         with tempfile.TemporaryDirectory() as root:
             path = Path(root) / "src/utils/analytics.ts"
