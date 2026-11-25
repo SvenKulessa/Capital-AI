@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { buildGrowthIntelligenceDraftBundle } from './growth-intelligence-drafts.mjs';
-import { CONTRACT,readCorporateAssetInventory,brandDraftTemplate,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
+import { CONTRACT,readCorporateAssetInventory,resolveCorporateAsset,brandDraftTemplate,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
 import { buildSocialPublisherHandoff } from '../../src/contracts/socialPublisherAdapter.ts';
 import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
@@ -422,4 +422,14 @@ test('corporate inventory projects existing manifests without granting publishin
   assert.ok(rows.some(a=>a.id==='learning-universe-glossar'));
   assert.ok(rows.some(a=>a.id==='typography:PlusJakartaSans-Regular.ttf'));
   assert.ok(rows.every(a=>a.identityStatus==='VERIFIED_BYTES'&&a.namespace==='CAPITAL_AI_CORPORATE'&&!a.publicPublishAllowed&&!a.customerRedistributionAllowed));
+});
+
+
+test('corporate resolver has no caller-controlled pathname, bytes or license authority',()=>{
+ const logo=resolveCorporateAsset('CAI-LOGO');
+ assert.equal(logo.sha256,readBrandKit('X').logoSha256);
+ assert.equal(resolveCorporateAsset('asset-pack:social/x-link-card-1200x675.jpg').sha256,readBrandKit('X').profileSha256);
+ for(const value of ['customer:logo','../../secret','public/branding/capital-ai-logo.jpg',{id:'CAI-LOGO',sha256:sha('fake')},null])assert.throws(()=>resolveCorporateAsset(value),/CORPORATE_ASSET_UNKNOWN/);
+ assert.equal(logo.customerRedistributionAllowed,false);
+ assert.equal(logo.publicPublishAllowed,false);
 });

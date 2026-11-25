@@ -20,6 +20,7 @@ credentials/capabilities.
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import math
 import mimetypes
@@ -35,6 +36,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TOKEN_PATH = REPOSITORY_ROOT / "public" / "branding" / "asset-pack" / "meta" / "social-render-tokens.json"
+CORPORATE_LOGO_PATH = REPOSITORY_ROOT / "public" / "branding" / "capital-ai-logo.jpg"
+CORPORATE_LOGO_SHA256 = "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3"
 MAX_SCENES = 8
 MAX_TOTAL_DURATION_SECONDS = 60.0
 MIN_TOTAL_DURATION_SECONDS = 5.0
@@ -134,6 +137,10 @@ def load_brand_palette(token_path: Path = DEFAULT_TOKEN_PATH) -> BrandPalette:
         raise MediaRenderError("UNIVERSE_PALETTE_INVALID_HEX")
     if len({hue.lower() for hue in hues}) != 7:
         raise MediaRenderError("UNIVERSE_PALETTE_NOT_DISTINCT")
+    canonical = json.loads(DEFAULT_TOKEN_PATH.read_text(encoding="utf-8"))
+    canonical_hues = tuple(_token_value(canonical["color"]["universe"][key]) for key in keys)
+    if hues != canonical_hues:
+        raise MediaRenderError("UNIVERSE_PALETTE_CANONICAL_MISMATCH")
     return BrandPalette(
         background=str(_token_value(color["background"])),
         foreground=str(_token_value(color["foreground"])),
@@ -445,6 +452,27 @@ def _fit_source_image(source: Path, box: tuple[int, int, int, int], palette: Bra
     return canvas
 
 
+def _corporate_logo_bytes(logo_path: Path | None = None) -> bytes:
+    """Only the existing immutable corporate master; customer assets are not branding."""
+    path = CORPORATE_LOGO_PATH if logo_path is None else Path(logo_path)
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > 3 * 1024 * 1024:
+        raise MediaRenderError("CORPORATE_LOGO_PATH_INVALID")
+    data = path.read_bytes()
+    if not data.startswith(b"\xff\xd8\xff") or hashlib.sha256(data).hexdigest() != CORPORATE_LOGO_SHA256:
+        raise MediaRenderError("CORPORATE_LOGO_DIGEST_MISMATCH")
+    return data
+
+
+def _render_corporate_logo(logo_path: Path | None, size: int, palette: BrandPalette) -> Image.Image:
+    with Image.open(io.BytesIO(_corporate_logo_bytes(logo_path))) as image:
+        image.load()
+        logo = image.convert("RGB")
+    logo.thumbnail((size, size), Image.Resampling.LANCZOS)
+    canvas = Image.new("RGB", (size, size), palette.background)
+    canvas.paste(logo, ((size - logo.width) // 2, (size - logo.height) // 2))
+    return canvas
+
+
 def render_brand_card(
     *,
     output_path: Path,
@@ -467,11 +495,7 @@ def render_brand_card(
     draw = ImageDraw.Draw(image)
     pad = max(36, width // 24)
     emblem_size = max(82, min(width, height) // 8)
-    if logo_path is not None:
-        logo = _fit_source_image(logo_path, (0, 0, emblem_size, emblem_size), palette)
-        image.paste(logo, (pad, pad))
-    else:
-        _draw_network_emblem(draw, pad, pad, emblem_size, palette)
+    image.paste(_render_corporate_logo(logo_path, emblem_size, palette), (pad, pad))
 
     brand_font = _font(max(28, width // 28), bold=True)
     draw.text((pad + emblem_size + 18, pad + emblem_size * 0.18), kicker, fill=palette.gold, font=brand_font)
@@ -538,11 +562,7 @@ def render_scene_frame(
     image = _background(width, height, palette)
     draw = ImageDraw.Draw(image)
     pad = 72
-    if logo_path is not None:
-        logo = _fit_source_image(logo_path, (0, 0, 132, 132), palette)
-        image.paste(logo, (pad, 70))
-    else:
-        _draw_network_emblem(draw, pad, 70, 132, palette)
+    image.paste(_render_corporate_logo(logo_path, 132, palette), (pad, 70))
     draw.text((238, 105), scene.kicker, fill=palette.gold, font=_font(43, bold=True))
     draw.text((width - pad, 120), f"{scene_index:02d}/{scene_count:02d}", fill=palette.text_secondary, font=_font(28), anchor="ra")
     draw.line((pad, 235, width - pad, 235), fill=palette.gold, width=5)

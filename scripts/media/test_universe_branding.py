@@ -14,7 +14,8 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from capital_ai_media import (
-    DEFAULT_TOKEN_PATH, MediaRenderError, RenderScene,
+    DEFAULT_TOKEN_PATH, CORPORATE_LOGO_PATH, CORPORATE_LOGO_SHA256, MediaRenderError, RenderScene,
+    _corporate_logo_bytes,
     load_brand_palette, render_brand_card, render_scene_frame,
 )
 
@@ -46,12 +47,31 @@ class UniverseBrandTests(unittest.TestCase):
         duplicate = copy.deepcopy(original)
         duplicate["color"]["universe"]["green"]["$value"] = original["color"]["universe"]["cyan"]["$value"]
         variants.append(duplicate)
+        wrong_valid = copy.deepcopy(original)
+        wrong_valid["color"]["universe"]["green"]["$value"] = "#FFFFFF"
+        variants.append(wrong_valid)
         with tempfile.TemporaryDirectory() as tmp:
             token_file = Path(tmp) / "bad.json"
             for token in variants:
                 token_file.write_text(json.dumps(token), encoding="utf-8")
                 with self.assertRaisesRegex(MediaRenderError, r"UNIVERSE_PALETTE_"):
                     load_brand_palette(token_file)
+
+    def test_corporate_logo_binding_rejects_customer_replacement(self):
+        import hashlib
+        data = _corporate_logo_bytes()
+        self.assertEqual(hashlib.sha256(data).hexdigest(), CORPORATE_LOGO_SHA256)
+        self.assertEqual(data, CORPORATE_LOGO_PATH.read_bytes())
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = Path(tmp) / "fake.jpg"
+            Image.new("RGB", (100, 100), "#FFFFFF").save(fake)
+            palette = load_brand_palette()
+            with self.assertRaisesRegex(MediaRenderError, "CORPORATE_LOGO_DIGEST_MISMATCH"):
+                render_scene_frame(RenderScene("Test", "Test", 5), output_path=Path(tmp) / "frame.png",
+                    palette=palette, scene_index=1, scene_count=1, logo_path=fake)
+            with self.assertRaisesRegex(MediaRenderError, "CORPORATE_LOGO_DIGEST_MISMATCH"):
+                render_brand_card(output_path=Path(tmp) / "card.png", width=1280, height=720,
+                    title="Test", subtitle="Test", disclaimer="Test", palette=palette, logo_path=fake)
 
     def test_chart_learning_illustration_has_seven_hues(self):
         palette = load_brand_palette()

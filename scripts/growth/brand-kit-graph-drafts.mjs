@@ -40,7 +40,7 @@ const ASSET_PROFILE = Object.freeze({
 });
 
 /** Read-only projection of existing authorities. No new asset registry or channel grant. */
-export function readCorporateAssetInventory() {
+function corporateAssetRefs() {
   const root = new URL('../../',import.meta.url);
   const json = path => JSON.parse(readFileSync(new URL(path,root),'utf8'));
   const pack = json('public/branding/asset-pack/meta/asset-manifest.json');
@@ -57,13 +57,26 @@ export function readCorporateAssetInventory() {
     {id:'CAI-GLOBE',path:'public/branding/universe/hero-universe-globe.webp',sha256:'d510ac752e79314d69475a7645c554625b86ed676b0b04aabbc2869599de8eb4',version:'LicenseRef-CAPITAL-AI-UNIVERSE-HERO-1.0',rightsRef:'docs/licenses/CAPITAL-AI-UNIVERSE-HERO-20261015.md'},
   ];
   const seen=new Set();
-  return refs.map(a=>{
-    if(seen.has(a.id)||!/^public\/(?:branding|fonts)\/[A-Za-z0-9._/-]+$/.test(a.path)||a.path.split('/').some(p=>p==='..'||p==='.')||!digest.test(a.sha256??'')||!a.version||!a.rightsRef)throw Error('CORPORATE_INVENTORY_INVALID');
+  for(const a of refs){
+    if(typeof a.id!=='string'||!a.id||seen.has(a.id)||!/^public\/(?:branding|fonts)\/[A-Za-z0-9._/-]+$/.test(a.path)||a.path.split('/').some(p=>p==='..'||p==='.')||!digest.test(a.sha256??'')||!a.version||!a.rightsRef)throw Error('CORPORATE_INVENTORY_INVALID');
     seen.add(a.id);
-    const path=fileURLToPath(new URL(a.path,root)), st=lstatSync(path);
-    if(!st.isFile()||st.isSymbolicLink()||sha(readFileSync(path))!==a.sha256)throw Error('CORPORATE_INVENTORY_DIGEST_MISMATCH');
-    return Object.freeze({...a,namespace:'CAPITAL_AI_CORPORATE',identityStatus:'VERIFIED_BYTES',publicPublishAllowed:false,customerRedistributionAllowed:false});
-  });
+  }
+  return refs;
+}
+function verifyCorporateAsset(a) {
+  const path=fileURLToPath(new URL('../../'+a.path,import.meta.url)), st=lstatSync(path);
+  if(!st.isFile()||st.isSymbolicLink()||sha(readFileSync(path))!==a.sha256)throw Error('CORPORATE_INVENTORY_DIGEST_MISMATCH');
+  return Object.freeze({...a,namespace:'CAPITAL_AI_CORPORATE',identityStatus:'VERIFIED_BYTES',publicPublishAllowed:false,customerRedistributionAllowed:false});
+}
+export function readCorporateAssetInventory() {
+  return corporateAssetRefs().map(verifyCorporateAsset);
+}
+/** Resolve only identities in existing source manifests; caller-provided paths or grants are never accepted. */
+export function resolveCorporateAsset(id) {
+  if(typeof id!=='string'||id.length>250)throw Error('CORPORATE_ASSET_UNKNOWN');
+  const asset=corporateAssetRefs().find(a=>a.id===id);
+  if(!asset)throw Error('CORPORATE_ASSET_UNKNOWN');
+  return verifyCorporateAsset(asset);
 }
 
 /** Return the existing immutable render profile, not a new publishing authority. */
@@ -113,12 +126,14 @@ export function assessContext(records=[], trustedRights=[]) {
 export function readBrandKit(channel='X') {
   if(!Object.hasOwn(ASSET_PROFILE,channel))throw Error('BRAND_PROFILE_CHANNEL_INVALID');
   const tokens=JSON.parse(readFileSync(tokenUrl,'utf8'));
+  const logoIdentity=resolveCorporateAsset('CAI-LOGO');
   const logoPath=fileURLToPath(logoUrl);
   const st=lstatSync(logoPath);
   if(st.isSymbolicLink()||!st.isFile())throw Error('BRAND_LOGO_PATH_UNSAFE');
   const bytes=readFileSync(logoPath);
   if(bytes.length<64||bytes.length>3*1024*1024||bytes[0]!==255||bytes[1]!==216
     || bytes[2]!==255||tokens.authority?.logo!=='public/branding/capital-ai-logo.jpg'
+    || sha(bytes)!==logoIdentity.sha256||logoIdentity.path!=='public/branding/capital-ai-logo.jpg'
     || sha(bytes)!=='6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3'
     || tokens.authority?.logoSha256!=='6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3')
     throw Error('BRAND_LOGO_DIGEST_MISMATCH');
@@ -131,6 +146,8 @@ export function readBrandKit(channel='X') {
     || tokens.publishReady!==false)throw Error('BRAND_PALETTE_INVALID');
   const manifest=JSON.parse(readFileSync(new URL('../../public/branding/asset-pack/meta/asset-manifest.json',import.meta.url),'utf8'));
   const profile=ASSET_PROFILE[channel];
+  const profileIdentity=resolveCorporateAsset('asset-pack:'+profile.path);
+  if(profileIdentity.sha256!==profile.sha256)throw Error('BRAND_PROFILE_PROVENANCE_INVALID');
   const items=manifest.assets?.filter(a=>a.path===profile.path&&a.sha256===profile.sha256);
   if(manifest.publishReady!==false||manifest.source?.sha256!=='6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3'
     ||manifest.derivation?.thirdPartyVisualAssetsAdded!==false||items?.length!==1||items[0].mime!=='image/jpeg'
