@@ -193,6 +193,8 @@
 !scripts/growth/growth-intelligence-image-drafts.test.mjs
 !scripts/growth/brand-kit-graph-drafts.mjs
 !scripts/growth/brand-kit-graph-drafts.test.mjs
+!scripts/growth/social-trend-projection.mjs
+!scripts/growth/social-trend-projection.test.mjs
 !scripts/growth/next-round-planner.mjs
 !scripts/growth/next-round-planner.test.mjs
 !scripts/growth/social-release-candidate.mjs
@@ -503,6 +505,7 @@
 
 # Exact new hub/owner dependencies and isolated build validation inputs.
 !shared/account-display.mjs
+!shared/control-center-access.mjs
 !shared/account-avatar-policy.mjs
 !shared/analytics-demo.mjs
 !shared/hub-branding.mjs
@@ -572,3 +575,21 @@
 !scripts/agent-operations-pilot-migration.test.mjs
 !supabase/migration-candidates/
 !supabase/migration-candidates/20261118180000_agent_operations_pilot_durable_ledger.sql
+
+# Owner-only Growth evidence archive and build snapshot (explicit offline closure).
+!server/growth-owner-evidence-api.mjs
+!server/growth-owner-evidence-archive.mjs
+!server/growth-owner-evidence-archive.test.mjs
+!server/growth-owner-engine-readback.mjs
+!server/growth-provider-read.mjs
+!server/growth-gsc-readback.mjs
+!server/growth-owner-engine-readback.test.mjs
+!scripts/growth/owner-engine-snapshot.mjs
+!scripts/growth-agent/
+!scripts/growth-agent/auto_loop.py
+!scripts/growth/viral-product-drafts.mjs
+!scripts/growth/viral-product-drafts.test.mjs
+!scripts/growth/viral-content-engine.mjs
+!scripts/growth/viral-content-engine.test.mjs
+!scripts/growth/viral-template-cache.mjs
+!scripts/growth/viral-template-cache.test.mjs

@@ -1,0 +1,129 @@
+{
+  "schema": "CAI-PUBLIC-SURFACE@1",
+  "extends": "CA-GROWTH-PUBLIC-CONTENT-SEO-SECURITY",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Public Trust Boundary"
+    },
+    {
+      "id": "M2",
+      "title": "Public Experience Quality Gates"
+    },
+    {
+      "id": "M3",
+      "title": "Follow-up improvements (planning only)"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "P0-03",
+      "name": "P0 | Information Classification",
+      "milestone": "M1",
+      "domain": "TRUST",
+      "dependencies": [],
+      "template": ".github/ISSUE_TEMPLATE/p0-information-classification.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P0-01",
+      "name": "P0 | Public Surface",
+      "milestone": "M1",
+      "domain": "TRUST",
+      "dependencies": [
+        "P0-03"
+      ],
+      "template": ".github/ISSUE_TEMPLATE/p0-public-surface-hardening.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P0-02",
+      "name": "P0 | Public Artifact Policy",
+      "milestone": "M1",
+      "domain": "PLATFORM",
+      "dependencies": [
+        "P0-03"
+      ],
+      "template": ".github/ISSUE_TEMPLATE/p0-public-artifact-policy.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P1-01",
+      "name": "P1 | Homepage Product Surface",
+      "milestone": "M2",
+      "domain": "PRODUCT",
+      "dependencies": [
+        "P0-01",
+        "P0-02"
+      ],
+      "template": ".github/ISSUE_TEMPLATE/p1-homepage-product-surface.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P1-02",
+      "name": "P1 | Navigation",
+      "milestone": "M2",
+      "domain": "PRODUCT",
+      "dependencies": [
+        "P0-01",
+        "P0-02"
+      ],
+      "template": ".github/ISSUE_TEMPLATE/p1-navigation.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P1-03",
+      "name": "P1 | Accessibility",
+      "milestone": "M2",
+      "domain": "PRODUCT",
+      "dependencies": [
+        "P1-01",
+        "P1-02"
+      ],
+      "template": ".github/ISSUE_TEMPLATE/p1-accessibility-release-gate.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P1-04",
+      "name": "P1 | Performance Budget",
+      "milestone": "M2",
+      "domain": "PLATFORM",
+      "dependencies": [
+        "P1-01",
+        "P1-02"
+      ],
+      "template": ".github/ISSUE_TEMPLATE/p1-performance-budget.yml",
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P2-01",
+      "name": "Strict CSP",
+      "milestone": "M3",
+      "domain": "TRUST",
+      "dependencies": [
+        "P1-03"
+      ],
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P2-02",
+      "name": "SEO Intent Architecture",
+      "milestone": "M3",
+      "domain": "GROWTH",
+      "dependencies": [
+        "P1-01"
+      ],
+      "evidence": "NOT_PROVEN"
+    },
+    {
+      "id": "P2-03",
+      "name": "Meta Keywords",
+      "milestone": "M3",
+      "domain": "GROWTH",
+      "dependencies": [],
+      "evidence": "NOT_PROVEN"
+    }
+  ],
+  "governance": "Root AGENTS.md; existing required checks only; dependencies describe completion, not global PR holds.",
+  "milestoneAssignment": "NOT_PROVEN"
+}

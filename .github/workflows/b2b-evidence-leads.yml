@@ -19,4 +19,4 @@ jobs:
         shell: bash
         run: |
           node --version
-          node --test server/b2b-evidence-leads.test.mjs
+          node --test server/b2b-evidence-leads.test.mjs server/b2b-evidence-leads-offline.test.mjs

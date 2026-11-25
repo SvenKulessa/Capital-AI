@@ -12,3 +12,25 @@ test('privileged workflow_run checks out trusted main, never an untrusted head',
   assert.match(workflow,/head_repository\.full_name/);
   assert.doesNotMatch(workflow,/enable_debug_logging=true/);
 });
+
+test('colored and split credentials are redacted before classification or publication',()=>{
+ const esc=String.fromCharCode(27);
+ const log=esc+'[31mERROR Authorization: Bearer ghp_abc'+esc+'[0mdefghijklmnopqrstuvwxyz123456\n'+
+  'WEBHOOK_SECRET=whsec_1234'+esc+'[32m567890abcdef\n'+esc+']0;untrusted title'+String.fromCharCode(7)+'fatal timeout';
+ const clean=sanitizeGateLog(log);
+ assert(!clean.includes(esc));assert(!clean.includes('ghp_'));assert(!clean.includes('whsec_'));
+ assert(!clean.includes('untrusted title'));assert.match(clean,/REDACTED/);
+ const r=diagnoseGateFailure({...base,log});
+ assert(!JSON.stringify(r).includes('ghp_'));assert(!JSON.stringify(r).includes('whsec_'));
+ assert(r.evidenceLines.every(line=>line.length<=1000));
+});
+test('workflow accepts escapes only into a private file and cleans it before publication',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const workflow=readFileSync(new URL('../../.github/workflows/auto-loop-gate-diagnosis.yml',import.meta.url),'utf8');
+ assert.match(workflow,/umask 077/);
+ assert.match(workflow,/gh api --allow-escape-sequences "[^"]+\/logs" > gate-diagnosis\/raw\.log/);
+ assert.equal((workflow.match(/--allow-escape-sequences/g)||[]).length,1);
+ assert.match(workflow,/if: always\(\)\n        run: rm -f gate-diagnosis\/raw\.log/);
+ assert.match(workflow,/path: gate-diagnosis\/report\.json/);
+ assert.doesNotMatch(workflow,/cat gate-diagnosis\/raw\.log/);
+});

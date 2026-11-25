@@ -161,12 +161,13 @@ export function LicenseEnginePanel() {
           report.deployEligible !== false ||
           report.ownerApproved !== false ||
           !Array.isArray(report.packages) ||
+          !Array.isArray(report.osPackages) ||
           !Array.isArray(report.providers) ||
           !Array.isArray(report.tools)
         ) {
           throw new Error('Ungültiger oder zu alter Lizenzbericht.');
         }
-        setSnapshot(report);
+        if (!abort.signal.aborted) setSnapshot(report);
       })
       .catch(caught => {
         if (!abort.signal.aborted) setError(caught instanceof Error ? caught.message : 'Lizenzinventar konnte nicht geladen werden.');

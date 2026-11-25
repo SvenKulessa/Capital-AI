@@ -1,5 +1,11 @@
-"""Synthetic negative tests for Issue #874 source-bound LangGraph review."""
+"""Synthetic negative tests for Issue #874 source-bound LangGraph review.
+
+Keep this suite Python-only for the unactivated offline worker image.
+Cross-language subprocess coverage belongs to host CI in test_growth_streaming_e2e.py.
+"""
 import importlib.util
+import io
+import json
 from pathlib import Path
 import sys
 import unittest
@@ -144,6 +150,172 @@ class LocalRagTests(unittest.TestCase):
         }, {"recursion_limit": 8})
         self.assertEqual(result["report"]["quality"], "PASS_WITH_GAPS")
         self.assertFalse(result["report"]["publicationAllowed"])
+
+
+def growth_payload():
+    sources = [{"source": source, "status": "NOT_PROVEN_NO_READBACK",
+                "metrics": None, "evidenceSha256": None} for source in graph.GROWTH_SOURCE_METRICS]
+    sources[0] = {"source": "GA4", "identity": "properties/123", "startDate": "2026-11-17",
+                  "endDate": "2026-11-23", "observedAt": "2026-11-24T04:00:00.000Z",
+                  "metrics": {"sessions": 9, "engagedSessions": 3}, "status": graph.GROWTH_RECORDED,
+                  "evidenceSha256": "a" * 64}
+    transport = [{"source": s["source"], "status": "READ_RESPONSE_RECEIVED" if i == 0 else "AUTH_REQUIRED"}
+                 for i, s in enumerate(sources)]
+    return {"contractVersion": graph.GROWTH_READ_CONTRACT, "transport": transport,
+            "collectionMode": "EXPLICIT_READ_ONLY", "publicPublishAllowed": False,
+            "growthDataLayer": {"contractVersion": graph.GROWTH_DATA_CONTRACT,
+                                "asOf": "2026-11-24T04:00:00.000Z", "sources": sources,
+                                "publicPublishAllowed": False, "automaticRecommendationPromotion": False,
+                                "attributionEvents": []}}
+
+
+class GrowthReadGraphTests(unittest.TestCase):
+    def test_growth_input_is_bounded_before_parsing(self):
+        payload = growth_payload()
+        self.assertEqual(graph.read_growth_input(io.BytesIO(json.dumps(payload).encode())), payload)
+        for raw, message in [(b" " * 262145, "INPUT_TOO_LARGE"),
+                             (b"not-json", "INVALID_INPUT"), (b"\xff", "INVALID_INPUT")]:
+            with self.subTest(message=message):
+                with self.assertRaisesRegex(SystemExit, message):
+                    graph.read_growth_input(io.BytesIO(raw))
+
+    def test_partial_provider_batch_preserves_other_sources(self):
+        result = graph.growth_source_review({"payload": growth_payload()})["source_status"]
+        self.assertEqual(len(result), 4)
+        self.assertEqual(result[0]["status"], graph.GROWTH_RECORDED)
+        self.assertEqual(result[1]["transport"], "AUTH_REQUIRED")
+        self.assertNotIn("metrics", result[0])
+
+    def test_invalid_source_identity_period_metrics_and_status_fail_closed(self):
+        cases = [("identity", "properties/0"), ("endDate", "2026-11-31"),
+                 ("observedAt", "not-a-date"), ("status", []),
+                 ("metrics", {"sessions": 3, "engagedSessions": 9}),
+                 ("metrics", {"sessions": 9.5, "engagedSessions": 3})]
+        for key, value in cases:
+            with self.subTest(key=key, value=value):
+                payload = growth_payload()
+                payload["growthDataLayer"]["sources"][0][key] = value
+                self.assertEqual(graph.growth_source_review({"payload": payload})["source_status"], [])
+        payload = growth_payload()
+        payload["transport"][0]["status"] = []
+        self.assertEqual(graph.growth_source_review({"payload": payload})["source_status"], [])
+        payload = growth_payload()
+        payload["growthDataLayer"]["asOf"] = "2026-11-27T04:00:00.000Z"
+        self.assertEqual(graph.growth_source_review({"payload": payload})["source_status"], [])
+
+    def test_actual_growth_graph_never_grants_publish_spend_or_attribution(self):
+        try:
+            from langgraph.graph import StateGraph
+        except ImportError:
+            self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
+        _ = StateGraph
+        graph_instance = graph.build_growth_read_graph()
+        payload = growth_payload()
+        report = graph_instance.invoke({"payload": payload, "findings": []},
+                                       {"recursion_limit": 8})["report"]
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertTrue(report["eligibleForDraftReview"])
+        self.assertEqual(report["providerAuthentication"], "NOT_PROVEN_BY_GRAPH")
+        self.assertFalse(report["publicationAllowed"])
+        self.assertFalse(report["costActivationAllowed"])
+        self.assertFalse(report["automaticChanges"])
+        self.assertEqual(report["attributionEvents"], [])
+        payload["transport"][0]["status"] = []
+        denied = graph_instance.invoke({"payload": payload, "findings": []},
+                                       {"recursion_limit": 8})["report"]
+        self.assertEqual(denied["quality"], "BLOCKED")
+        self.assertFalse(denied["eligibleForDraftReview"])
+
+
+
+
+def viral_payload():
+    return {"contractVersion": graph.VIRAL_INPUT_CONTRACT,
+            "status": "SOURCE_RECORDED_NOT_AUTHENTICATED", "analyzedTrendsCount": 31,
+            "opportunities": [{"recordSha256": "a" * 64, "productContextSha256": "b" * 64,
+                               "productSourceSha": "c" * 40, "draftSha256": "d" * 64,
+                               "sourcePlatform": "X", "correlationScore": 90, "review": "REVIEW_REQUIRED"}],
+            "publicationState": "DRAFT_ONLY", "publicPublishAllowed": False, "providerCalls": 0,
+            "additionalCostUsd": 0, "providerAuthentication": "NOT_PROVEN"}
+
+
+class ViralReadGraphTests(unittest.TestCase):
+    def test_reference_only_validation_rejects_authority_and_bad_scores(self):
+        payload = viral_payload()
+        self.assertTrue(graph.viral_source_review({"payload": payload})["viral_valid"])
+        for key, value in [("publicPublishAllowed", True), ("providerCalls", 1),
+                           ("additionalCostUsd", 0.1), ("analyzedTrendsCount", 0),
+                           ("providerAuthentication", "VERIFIED")]:
+            invalid = viral_payload()
+            invalid[key] = value
+            self.assertFalse(graph.viral_source_review({"payload": invalid})["viral_valid"])
+        for key, value in [("correlationScore", 69), ("draftSha256", "invalid"),
+                           ("review", "APPROVED"), ("sourcePlatform", [])]:
+            invalid = viral_payload()
+            invalid["opportunities"][0][key] = value
+            self.assertFalse(graph.viral_source_review({"payload": invalid})["viral_valid"])
+        invalid = viral_payload()
+        invalid["opportunities"].append(invalid["opportunities"][0])
+        self.assertFalse(graph.viral_source_review({"payload": invalid})["viral_valid"])
+
+    def test_actual_viral_graph_draft_only(self):
+        try:
+            from langgraph.graph import StateGraph
+        except ImportError:
+            self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
+        _ = StateGraph
+        compiled = graph.build_viral_read_graph()
+        report = compiled.invoke({"payload": viral_payload(), "findings": []}, {"recursion_limit": 8})["report"]
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertTrue(report["eligibleForDraftReview"])
+        self.assertFalse(report["publicationAllowed"])
+        self.assertFalse(report["costActivationAllowed"])
+        self.assertFalse(report["automaticChanges"])
+        self.assertEqual(report["attributionEvents"], [])
+        empty = viral_payload()
+        empty.update(status="NOT_PROVEN", analyzedTrendsCount=0, opportunities=[])
+        self.assertFalse(compiled.invoke({"payload": empty, "findings": []}, {"recursion_limit": 8})["report"]["eligibleForDraftReview"])
+        invalid = viral_payload()
+        invalid["publicPublishAllowed"] = True
+        self.assertEqual(compiled.invoke({"payload": invalid, "findings": []}, {"recursion_limit": 8})["report"]["quality"], "BLOCKED")
+
+
+
+
+class XConversionReviewTests(unittest.TestCase):
+    def fixture(self):
+        return {"contractVersion": "CAPITAL_AI_X_CONVERSION_CANDIDATES@1",
+                "campaignId": "capital-ai-growth-20261120", "contentId": "CAP-GROW-005",
+                "start": "2026-11-20T00:00:00.000Z", "end": "2026-11-24T00:00:00.000Z",
+                "asOf": "2026-11-24T12:00:00.000Z",
+                "status": "SOURCE_RECORDED_NOT_AUTHENTICATED",
+                "candidateRegistrations": 1, "candidatePaidSubscribers": 1,
+                "candidateInitialInvoiceCents": 2500, "registrations": None,
+                "paidSubscriptions": None, "revenueCents": None,
+                "providerAuthentication": "NOT_PROVEN", "publicPublishAllowed": False,
+                "costActivationAllowed": False, "providerCalls": 0, "automaticChanges": False}
+
+    def run_graph(self, payload):
+        return graph.build_conversion_read_graph().invoke(
+            {"payload": payload, "findings": []}, {"recursion_limit": 8})["report"]
+
+    def test_review_never_promotes_candidate_counts(self):
+        r = self.run_graph(self.fixture())
+        self.assertEqual(r["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(r["nextAction"], "VERIFY_SOURCE_AND_COHORT")
+        self.assertIsNone(r["paidSubscriptions"])
+        self.assertIsNone(r["revenueCents"])
+        self.assertFalse(r["costActivationAllowed"])
+        self.assertFalse(r["publicationAllowed"])
+
+    def test_rejects_forged_metrics_wrong_cohort_and_authority(self):
+        for change in ({"registrations": 1}, {"providerAuthentication": "VERIFIED"},
+                       {"costActivationAllowed": True}, {"campaignId": "other"},
+                       {"candidatePaidSubscribers": 2}, {"candidatePaidSubscribers": True},
+                       {"candidateInitialInvoiceCents": None}, {"providerCalls": 1},
+                       {"end": "2026-12-24T00:00:00Z"}, {"email": "synthetic@example.invalid"}):
+            with self.subTest(change=change):
+                self.assertEqual(self.run_graph({**self.fixture(), **change})["quality"], "BLOCKED")
 
 
 if __name__ == "__main__":

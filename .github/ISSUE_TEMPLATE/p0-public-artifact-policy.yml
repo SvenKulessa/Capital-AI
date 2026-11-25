@@ -1,0 +1,61 @@
+{
+  "name": "P0 | Public Artifact Policy",
+  "description": "Track P0-02 delivery and evidence without adding approval gates.",
+  "title": "[P0-02] ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "## P0-02 · PLATFORM\nPlan: CAI-PUBLIC-SURFACE@1 · M1\nDependencies: P0-03. Use existing issues and PRs before creating duplicates. Do not post confidential security details, secrets or customer data. Acceptance criteria are checked at completion, not issue creation."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "scope",
+      "attributes": {
+        "label": "Scope and user impact",
+        "description": "Public-safe summary; use approved private reporting for sensitive evidence."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "links",
+      "attributes": {
+        "label": "Existing issue / PR references",
+        "description": "Link existing work and dependencies; assign the actual milestone in GitHub when available."
+      }
+    },
+    {
+      "type": "checkboxes",
+      "id": "acceptance",
+      "attributes": {
+        "label": "Acceptance criteria (check at completion)",
+        "options": [
+          {
+            "label": "Unknown deployed artifacts are rejected"
+          },
+          {
+            "label": "Build output and container inventory are checked"
+          },
+          {
+            "label": "Required public assets remain available"
+          },
+          {
+            "label": "Positive and negative fixtures pass"
+          }
+        ]
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "evidence",
+      "attributes": {
+        "label": "Evidence and rollback",
+        "description": "Public-safe test references, commit SHA, CI run and separate production readback; leave unproven results open."
+      }
+    }
+  ]
+}

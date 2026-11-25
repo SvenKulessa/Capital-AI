@@ -310,3 +310,20 @@ test('x media upload failure, ambiguous timeout and malformed media ID never cre
     assert.equal(count,1);
   }
 });
+
+test('growth pilot blocks generic X writes and allows only one exact reserved text submission', async () => {
+  const env={...baseEnv,SOCIAL_X_PUBLISH_ENABLED:'true',SOCIAL_X_PAID_WRITE_APPROVED:'true',
+    SOCIAL_X_GROWTH_PILOT_ENABLED:'true',SOCIAL_X_GROWTH_BUDGET_APPROVED:'true'};
+  let calls=0;
+  const fetchImpl=async()=>{calls++;return response(200,{data:{id:'123'}})};
+  const input={channel:'X',accessToken:'token-123456',metadata:{caption:'Capital AI'}};
+  const key=createHash('sha256').update(input.metadata.caption).digest('hex');
+  await assert.rejects(createSocialProviderPublishTransport({env,fetchImpl}).submit({...input,xReservedContentKey:key}),/X_GROWTH_UNBUDGETED_LANE_DISABLED/);
+  const transport=createSocialProviderPublishTransport({env,fetchImpl,xReservedContentKey:key});
+  await assert.rejects(transport.submit({...input,metadata:{caption:'other'}}),/X_GROWTH_UNBUDGETED_LANE_DISABLED/);
+  await assert.rejects(transport.submit({...input,mediaBytes:Buffer.from('fake')}),/X_GROWTH_UNBUDGETED_LANE_DISABLED/);
+  assert.equal(calls,0);
+  await transport.submit(input);
+  await assert.rejects(transport.submit(input),/X_GROWTH_UNBUDGETED_LANE_DISABLED/);
+  assert.equal(calls,1);
+});

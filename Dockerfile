@@ -101,6 +101,9 @@ COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs 
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
+COPY server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-evidence-archive.test.mjs server/growth-owner-engine-readback.mjs server/growth-owner-engine-readback.test.mjs server/growth-provider-read.mjs server/growth-gsc-readback.mjs ./server/
+COPY scripts/growth/owner-engine-snapshot.mjs ./scripts/growth/
+COPY scripts/growth-agent/auto_loop.py ./scripts/growth-agent/auto_loop.py
 COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
@@ -140,6 +143,9 @@ COPY scripts/media ./scripts/media
 COPY scripts/growth/growth-intelligence-image-drafts.mjs scripts/growth/growth-intelligence-image-drafts.test.mjs scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs scripts/growth/next-round-planner.mjs scripts/growth/next-round-planner.test.mjs ./scripts/growth/
 # Offline branded-context drafts and tests (alongside canonical Growth image drafts).
 COPY scripts/growth/brand-kit-graph-drafts.mjs scripts/growth/brand-kit-graph-drafts.test.mjs ./scripts/growth/
+COPY scripts/growth/social-trend-projection.mjs scripts/growth/social-trend-projection.test.mjs ./scripts/growth/
+COPY scripts/growth/viral-product-drafts.mjs scripts/growth/viral-product-drafts.test.mjs scripts/growth/viral-content-engine.mjs scripts/growth/viral-content-engine.test.mjs ./scripts/growth/
+COPY scripts/growth/viral-template-cache.mjs scripts/growth/viral-template-cache.test.mjs ./scripts/growth/
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs scripts/growth/home-editorial-edition.mjs scripts/growth/home-editorial-edition.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
@@ -189,7 +195,7 @@ RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scrip
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
     && node --import tsx --test src/i18n/messages.test.ts src/i18n/landingSectionCopy.test.ts src/i18n/legalAvailability.test.ts src/i18n/accountWorkspaceCopy.test.ts src/i18n/authCopy.test.ts \
-    && node --test server/founder-access.test.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.test.mjs server/historical-analytics-demo.test.mjs server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs \
+    && node --test server/growth-owner-evidence-archive.test.mjs server/founder-access.test.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.test.mjs server/historical-analytics-demo.test.mjs server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs \
     && node --test server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs scripts/agent-operations-pilot-migration.test.mjs \
     && node --test server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
@@ -199,6 +205,8 @@ RUN --network=none node --test src/components/buddyFrontendPrompt.test.mjs scrip
     && node scripts/license-evidence.mjs \
     && node --import tsx --test scripts/frontend-security.test.mjs \
     && node --run lint && node --run test && node --run build \
+    && node --import tsx --test server/growth-owner-engine-readback.test.mjs \
+    && node --import tsx scripts/growth/owner-engine-snapshot.mjs > /app/growth-owner-engine-snapshot.json \
     && node scripts/verify-browser-boundary.mjs \
     && CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node --import tsx scripts/benchmark-scoring-capacity.mjs > /app/scoring-capacity.json
 
@@ -223,6 +231,7 @@ COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.s
 COPY docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md ./docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md
 COPY docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md ./docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
+COPY --from=build /app/growth-owner-engine-snapshot.json ./evidence/growth-owner-engine-snapshot.json
 COPY --from=build /app/packages/benchmark-core ./packages/benchmark-core
 COPY --from=build /app/contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
 COPY server/founder-access.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/blueprint-private-cloud.mjs server/blueprint-commerce.mjs server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/account-avatar.mjs server/profile-avatar-upload.mjs server/profile-avatar-clamav.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/well-known.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
@@ -236,7 +245,7 @@ COPY server/purchase-receipt.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
 COPY server/skill-routing-catalog.mjs ./server/
-COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-engine-readback.mjs server/growth-provider-read.mjs server/growth-gsc-readback.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt
