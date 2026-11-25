@@ -2,6 +2,7 @@ import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { LEARNING_ARTICLES, latestLearningArticles } from '../../data/learningArticles';
 import { getLicensedLearningGraphic } from './homeLearningGraphics';
 import { VerifiedEditorialImage } from './VerifiedEditorialImage';
+import { InteractiveArticleScene } from './InteractiveArticleScene';
 
 const teasers: Record<string, { title: string; summary: string }> = {
   'portfolio-risiko-korrelation': {
@@ -48,6 +49,7 @@ export function HomeLatestLearning({ onNavigate }: { onNavigate: (path: string) 
         </figure>}
         <h3 className="mt-3 text-sm font-bold leading-6 text-white">{teasers[article.id]?.title ?? article.title}</h3>
         <p className="mt-2 flex-1 text-sm leading-6 text-slate-300">{teasers[article.id]?.summary ?? article.body}</p>
+        <InteractiveArticleScene articleId={article.id} />
         <a href={`/learning?tab=news#${article.id}`}
           className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-amber-200 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-amber-300">
           {`Lesen: ${teasers[article.id]?.title ?? article.title}`} <span aria-hidden="true" className="ml-1">→</span>

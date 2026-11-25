@@ -1,3 +1,4 @@
+import { learningArticleScene, structuredNewsScene } from './articleSceneModel';
 import { getLicensedLearningGraphic, HOME_LEARNING_GRAPHICS } from './homeLearningGraphics';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -53,4 +54,26 @@ test('learning teaser renders at most three articles with dates and descriptive 
  test('unlicensed learning graphics never enter the public article cards', () => {
   for (const article of LEARNING_ARTICLES) assert.equal(getLicensedLearningGraphic(article, HOME_LEARNING_GRAPHICS, []), undefined);
   assert.equal(getLicensedLearningGraphic(LEARNING_ARTICLES[0], [], []), undefined);
+});
+
+test('three interactive article models use clearly identified synthetic data and bounded inputs',()=>{
+  const low=learningArticleScene('portfolio-risiko-korrelation',-1)!;
+  const high=learningArticleScene('portfolio-risiko-korrelation',1)!;
+  assert.equal(low.nodes[2].height,0);
+  assert.equal(high.nodes[2].height,2);
+  assert.equal(learningArticleScene('portfolio-risiko-korrelation',Infinity)!.nodes[2].height,Math.SQRT2);
+  assert.match(learningArticleScene('liquiditaet-spread',2)!.nodes[0].detail,/99,00/);
+  assert.match(learningArticleScene('liquiditaet-spread',2)!.nodes[2].detail,/101,00/);
+  assert.match(learningArticleScene('quellenzeit',99)!.description,/14 Tage/);
+  assert.equal(learningArticleScene('unreviewed-topic'),undefined);
+  const html=renderToStaticMarkup(<HomeLatestLearning onNavigate={()=>{}}/>);
+  assert.equal((html.match(/data-article-scene=/g)||[]).length,3);
+  assert.match(html,/Synthetisches Beispiel/);
+  assert.match(html,/3D-Modell erkunden/);
+  assert.doesNotMatch(html,/<canvas/);
+});
+test('news scenes preserve admitted labels and never create numeric data',()=>{
+  const scene=structuredNewsScene({kind:'status',rows:[{label:'Testnet',outcome:'Reset geplant'},{label:'Mainnet',outcome:'Läuft weiter'}]});
+  assert.deepEqual(scene.nodes.map(({label,detail})=>({label,detail})),[{label:'Testnet',detail:'Reset geplant'},{label:'Mainnet',detail:'Läuft weiter'}]);
+  assert.match(scene.description,/Kein Live-Marktdatenfeed/);
 });

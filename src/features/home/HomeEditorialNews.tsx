@@ -3,6 +3,8 @@ import { planContentCampaign } from '../../contracts/contentEngine.ts';
 import { projectHomeEditorial } from './homeEditorialAdmission.mjs';
 import type { RenderedNewsGraphic } from './homeEditorialPng';
 import { VerifiedEditorialImage } from './VerifiedEditorialImage';
+import { InteractiveArticleScene } from './InteractiveArticleScene';
+import { structuredNewsScene } from './articleSceneModel';
 import './homeEditorialNews.css';
 
 type ArticleGraphic =
@@ -30,6 +32,7 @@ function NewsGraphic({ graphic }: { graphic: ArticleGraphic }) {
     <figure className={`editorial-graphic editorial-graphic--${graphic.kind}`}>
       <figcaption>{graphic.caption}</figcaption>
       {graphic.kind === 'rendered-png' && <VerifiedEditorialImage graphic={graphic} />}
+      {graphic.kind !== 'rendered-png' && <InteractiveArticleScene newsScene={structuredNewsScene(graphic)} />}
       {graphic.kind === 'network' && (
         <>
           <p className="editorial-node">{graphic.center}</p>
