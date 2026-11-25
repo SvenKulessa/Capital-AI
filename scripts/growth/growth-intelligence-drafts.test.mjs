@@ -230,3 +230,10 @@ test('product research uses real Content Engine and Social package, never publis
   assert.equal(runProductMarketResearch({records},{...ledger,reviewGrants:[]}).pilot,null);
   assert.throws(()=>runProductMarketResearch({records,reviewGrants:ledger.reviewGrants},ledger));
 });
+
+test('Growth visual plans cover the seven source-bound campaigns without creating or publishing media',()=>{
+  const bundle=buildGrowthIntelligenceDraftBundle();
+  assert.equal(bundle.visualIntelligence.plannedScenes,7);
+  assert.equal(bundle.visualIntelligence.actualMediaAssets,0);
+  for(const draft of bundle.drafts){const v=draft.visualScene;assert.ok(v);assert.equal(v.contentId,draft.contentId);assert.equal(v.publicationAllowed,false);assert.equal(v.dataMode,'SCHEMATIC');assert.equal(v.actualMediaAssets,0);assert.equal(v.sceneSha256,createHash('sha256').update(JSON.stringify({sourceSha:v.sourceSha,scene:v.scene})).digest('hex'));}
+});
