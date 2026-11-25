@@ -55,6 +55,11 @@ export function publicSurfaceResearchTask(id: string) {
     domain: task.domain, query: 'Review repository evidence for CAI-PUBLIC-SURFACE@1 ' + task.id + ' ' + task.name + '. Report gaps; no mutation authority.' };
 }
 
+export function billingRecoveryResearchTask() {
+  return { schema:'CAPITAL_AI_OFFLINE_RESEARCH@1',task_id:'CAI-664-BILLING',domain:'TRUST',
+    query:'Review repository evidence for issue 664 billing metadata, WIF, zero-cost boundary and recovery gaps. Do not infer spend or export authority.' };
+}
+
 export function initialRows(): GrowthRow[] {
   return [
     { ...makeRow('ga4', 'GA4 Acquisition', 'GROWTH', 'Owner-Readback ausführen'),
@@ -71,6 +76,21 @@ export function initialRows(): GrowthRow[] {
       flow: 'Read-only Entwurfskoordination; keine Veröffentlichung' },
     makeRow('langgraph', 'LangGraph SOLO2', 'PLATFORM', 'Checkpoint und Workflow-Evidence abgleichen'),
     { ...makeRow('trust', 'Rechte, Consent, Freigaben', 'TRUST', 'Scope- und Rechte-Evidence prüfen'), priority: 'P0' },
+    { ...makeRow('x-growth-budget', 'X Growth · Budget', 'GROWTH', 'Kontoweite Freigabe, belastbare Recovery und Runtime-Reservierung verifizieren'),
+      priority: 'P0', flow: '30-Tage-Pilot · 20 EUR Obergrenze · keine automatische Aufladung',
+      approvals: 'Owner-Kostenfreigabe, aktuelles Guthaben und Kostenobergrenzen separat belegen',
+      operation: 'Planung; keine produktive Budgetkontrolle behauptet' },
+    { ...makeRow('x-growth-attribution', 'X Growth · Conversion-Funnel', 'GROWTH', 'Kampagnenspezifische GA4-, Supabase- und Stripe-Readbacks abgleichen'),
+      priority: 'P1', flow: 'UTM → consentierte Sessions → Registrierungen → bestätigte bezahlte Abos',
+      auth: 'Quellen getrennt; keine Kundendaten im Workspace; fehlend ist nicht Null',
+      operation: 'Kohorten- und Zuordnungsevidence offen' },
+    { ...makeRow('x-growth-graph', 'X Growth · LangGraph', 'PLATFORM', 'Budget- und Conversion-Evidence in bestehende Graph-Review integrieren'),
+      priority: 'P1', flow: 'Nur Status-Referenzen, keine Publishing- oder Kostenautorität',
+      operation: 'Runtime-Evidence offen' },
+    { ...makeRow('cai664-billing','Backup Billing #664','TRUST','Existing main-only billing-readback dispatch; review run evidence; no SQL or new export'),
+      priority:'P0',flow:'GitHub OIDC → existing Cloud Operator → BigQuery metadata only',
+      approvals:'Additional budget 0 EUR; production DB export blocked',
+      operation:'Metadata discovery only; actual and label costs NOT_PROVEN' },
     ...publicSurfaceRows(),
   ];
 }
@@ -117,6 +137,28 @@ export function projectGa4(raw: unknown, row: GrowthRow): GrowthRow {
   };
 }
 
+const xCampaignSchema = z.object({
+  schema:z.literal('CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1'),source:z.literal('GA4_DATA_API'),
+  private:z.literal(true),readOnly:z.literal(true),publicPublishAllowed:z.literal(false),
+  observedAt:z.iso.datetime(),period:z.object({start:z.literal('7daysAgo'),end:z.literal('yesterday'),timeZone:z.string().max(80).nullable()}).strict(),
+  campaignId:z.literal('capital-ai-growth-20261120'),contentId:z.literal('CAP-GROW-005'),
+  utmSource:z.literal('x'),utmMedium:z.literal('social'),attributionAuthority:z.literal('SESSION_UTM_ONLY'),
+  status:z.enum(['PROVIDER_READ_VERIFIED','NOT_PROVEN_NO_ROWS']),
+  metrics:z.object({sessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),engagedSessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)}).strict().nullable(),
+  registrations:z.null(),paidSubscriptions:z.null(),
+}).strict();
+export function projectXCampaignGa4(raw:unknown,row:GrowthRow):GrowthRow {
+  const d=xCampaignSchema.parse(raw);
+  if(row.id!=='x-campaign')throw Error('Falsche Quelle');
+  const verified=d.status==='PROVIDER_READ_VERIFIED',m=d.metrics;
+  if(verified?(!m||m.engagedSessions>m.sessions):m!==null)throw Error('Ungültige Kampagnenmetriken');
+  return {...row,name:'X Growth · GA4 Kampagne',domain:'GROWTH',origin:'GA4_READBACK',status:verified?'VERIFIED':'NOT_PROVEN',
+    endpoint:'/api/profile/growth-intelligence/x-campaign-readback',flow:'GA4 Session-UTM · keine Klick-, Registrierungs- oder Zahlungsbestätigung',
+    auth:'Owner-Readback',operation:'GA4 Kampagne: '+d.observedAt,error:'',
+    evidence:m?'7 abgeschlossene Tage: '+m.sessions+' Sessions, '+m.engagedSessions+' Engaged Sessions; '+d.campaignId+'/'+d.contentId:'Keine bestätigte Kampagnenzeile; keine gemessene Null',
+    tests:'Quellengetrennte Projektion; Registrierungen und zahlende Abos NOT_PROVEN'};
+}
+
 const graphSources = ['GA4','GSC','INSTAGRAM','YOUTUBE'] as const;
 const graphDigest = z.string().regex(/^[a-f0-9]{64}$/);
 const graphSource = z.object({
@@ -140,7 +182,19 @@ const graphHandoff = z.object({
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
-  const data=graphHandoff.parse(JSON.parse(raw));
+  const parsed=JSON.parse(raw);
+  if(parsed?.contractVersion==='CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'){
+    const result=z.object({contractVersion:z.literal('CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'),engine:z.literal('langgraph'),productId:z.literal('ai-smartcopy'),
+      quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),nextAction:z.enum(['VERIFY_SOURCE_AND_COHORT','REPAIR_INPUT']),providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
+      verifiedMetrics:z.object({paidLicenses:z.null(),revenueCents:z.null(),refunds:z.null()}).strict(),
+      publicationAllowed:z.literal(false),costActivationAllowed:z.literal(false),automaticChanges:z.literal(false)}).strict().parse(parsed);
+    if((result.quality==='BLOCKED')!==(result.nextAction==='REPAIR_INPUT'))throw Error('Invalid Smartcopy graph status');
+    const row={...makeRow('smartcopy-conversion-graph','AI-Smartcopy · Conversion-Review','GROWTH','Authentifizierte Quellen und vollständige Kohorte separat belegen'),
+      operation:'Graph-Qualität: '+result.quality,flow:'Offline-Graph · keine Live-KPI oder Lizenzautorität',
+      evidence:'Importdatei SHA-256 '+reportSha,auth:'NOT_PROVEN_BY_GRAPH'};
+    return [...rows.filter(r=>r.id!==row.id),row];
+  }
+  const data=graphHandoff.parse(parsed);
   const recorded=data.sources.filter(s=>s.status==='SOURCE_RECORDED_NOT_AUTHENTICATED');
   if(data.quality==='BLOCKED'?(data.sources.length!==0||data.eligibleForDraftReview):
     (data.sources.length!==4||new Set(data.sources.map(s=>s.source)).size!==4||

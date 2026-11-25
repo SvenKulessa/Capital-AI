@@ -52,6 +52,31 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     assert.equal(events.filter((c: any[]) => c[1] === 'page_view').length, 2);
     assert.equal(events.find((c: any[]) => c[1] === 'page_view')[2].page_referrer, 'https://www.google.de/');
     assert.doesNotMatch(JSON.stringify(events), /private@example|private-token|private-search|5cf37f93|value|currency/);
+    // X uses the exact existing Growth plan tuple, never raw UTM or user data.
+    const xQuery = '?utm_source=x&utm_medium=social&utm_campaign=capital-ai-growth-20261120&utm_content=CAP-GROW-005';
+    const xEvents = () => commands().filter((c: any[]) => c[1] === 'campaign_landing' && c[2]?.campaign_source === 'x');
+    w.location.pathname = '/';
+    for (const invalid of [xQuery.replace('CAP-GROW-005','CAP-GROW-999'),
+      xQuery+'&utm_content=CAP-GROW-005', xQuery.replace('utm_medium=social','utm_medium=paid'),
+      xQuery.replace('utm_source=x','utm_source=private@example.test')]) {
+      w.location.search = invalid; sendPageView('/');
+    }
+    assert.equal(xEvents().length,0);
+    w.location.search=xQuery;
+    w.location.pathname='/learning';sendPageView('/learning');
+    assert.equal(xEvents().length,0);
+    w.location.pathname='/';w.location.origin='https://preview.example.test';sendPageView('/');
+    assert.equal(xEvents().length,0);
+    w.location.origin='https://capital-ai.online';
+    w.location.search=xQuery+'&email=private@example.test&opaque=secret-token';
+    sendPageView('/');sendPageView('/');
+    assert.equal(xEvents().length,1);
+    assert.deepEqual(xEvents()[0][2], {send_to:'G-0542DT2HCE',
+      campaign_id:'capital-ai-growth-20261120',content_id:'CAP-GROW-005',
+      campaign_source:'x',campaign_medium:'social',
+      page_location:'https://capital-ai.online/',page_referrer:''});
+    assert.doesNotMatch(JSON.stringify(xEvents()),/private@example|secret-token|utm_/);
+    w.location.search='';
     // The public NOINDEX B2B route remains measurable only with analytics opt-in.
     // A receipt is local-only deduplication evidence and must never be transmitted.
     w.location.pathname = '/governance-evidence-sprint';

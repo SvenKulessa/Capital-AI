@@ -100,3 +100,42 @@ test('GSC direct owner report preserves source, import downgrade and missing ver
     {...report,metrics:{...report.metrics,ctr:0.8}},{...report,evidenceSha256:null}])assert.throws(()=>projectGsc(v,gsc));
   assert.throws(()=>projectGsc(report,row));
 });
+
+test('X acquisition inventory exposes only planning and never promotes missing conversions or budgets',()=>{
+  const rows=initialRows().filter(r=>r.id.startsWith('x-growth-'));
+  assert.deepEqual(rows.map(r=>r.id),['x-growth-budget','x-growth-attribution','x-growth-graph']);
+  assert.ok(rows.every(r=>r.origin==='OWNER_NOTE'&&r.status==='NOT_PROVEN'&&r.evidence===''));
+  assert.deepEqual(importWorkspace(exportWorkspace(appendSnapshot([],rows,at)))[0].rows,rows);
+  assert.match(rows[0].flow,/20 EUR/);
+  assert.match(rows[1].next,/GA4-, Supabase- und Stripe/);
+});
+
+test('X campaign source remains separate from total GA4 and missing commerce evidence',async()=>{
+  const {projectXCampaignGa4,makeRow}=await import('./growthOwnerWorkspaceModel');
+  const x=makeRow('x-campaign','X Growth','GROWTH');
+  const raw={schema:'CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1',source:'GA4_DATA_API',
+    private:true,readOnly:true,publicPublishAllowed:false,observedAt:at,
+    period:{start:'7daysAgo',end:'yesterday',timeZone:'Europe/Berlin'},
+    campaignId:'capital-ai-growth-20261120',contentId:'CAP-GROW-005',utmSource:'x',utmMedium:'social',
+    attributionAuthority:'SESSION_UTM_ONLY',status:'PROVIDER_READ_VERIFIED',
+    metrics:{sessions:10,engagedSessions:3},registrations:null,paidSubscriptions:null};
+  const projected=projectXCampaignGa4(raw,x);
+  assert.equal(projected.status,'VERIFIED');
+  assert.match(projected.evidence,/10 Sessions/);
+  assert.equal(projectXCampaignGa4({...raw,status:'NOT_PROVEN_NO_ROWS',metrics:null},x).status,'NOT_PROVEN');
+  for(const wrong of [{...raw,campaignId:'other'},{...raw,paidSubscriptions:1},{...raw,registrations:0},
+    {...raw,metrics:{sessions:1,engagedSessions:2}},{...raw,publicPublishAllowed:true}])
+    assert.throws(()=>projectXCampaignGa4(wrong,x));
+  assert.throws(()=>projectXCampaignGa4(raw,row));
+  assert.equal(importWorkspace(exportWorkspace(appendSnapshot([],[projected],at)))[0].rows[0].status,'NOT_PROVEN');
+});
+
+ test('CAI-664 billing task is offline, zero-budget and not live evidence',async()=>{const {billingRecoveryResearchTask}=await import('./growthOwnerWorkspaceModel');const row=initialRows().find(r=>r.id==='cai664-billing');assert.equal(row?.status,'NOT_PROVEN');assert.match(row?.approvals??'',/0 EUR/);const task=billingRecoveryResearchTask();assert.equal(task.schema,'CAPITAL_AI_OFFLINE_RESEARCH@1');assert.equal(task.domain,'TRUST');assert.ok(task.query.length<=300);});
+
+test('Smartcopy conversion graph import keeps candidate and live metrics separate, no forged authority',()=>{
+ const r={contractVersion:'CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1',engine:'langgraph',productId:'ai-smartcopy',quality:'PASS_WITH_GAPS',nextAction:'VERIFY_SOURCE_AND_COHORT',providerAuthentication:'NOT_PROVEN_BY_GRAPH',verifiedMetrics:{paidLicenses:null,revenueCents:null,refunds:null},publicationAllowed:false,costActivationAllowed:false,automaticChanges:false};
+ const live=[projectGa4(good,row),...initialRows().slice(1)],projected=projectGraphHandoff(JSON.stringify(r),reportSha,live);
+ assert.deepEqual(projected.slice(0,live.length),live);assert.equal(projected.at(-1)?.status,'NOT_PROVEN');
+ assert.equal(projectGraphHandoff(JSON.stringify(r),reportSha,projected).length,projected.length);
+ for(const patch of [{productId:'smartclip'},{verifiedMetrics:{paidLicenses:0,revenueCents:null,refunds:null}},{publicationAllowed:true},{nextAction:'REPAIR_INPUT'},{candidatePayments:1}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...r,...patch}),reportSha,live));
+});
