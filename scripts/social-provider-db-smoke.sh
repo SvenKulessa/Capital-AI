@@ -115,6 +115,68 @@ pg -f /work/scripts/social-provider-db-x-budget-after.sql
 pg -f /work/scripts/social-provider-db-x-consent.sql
 pg -f /work/scripts/social-provider-db-x-consent-test.sql
 
+# Race the same independently scoped payment in two real PG sessions.
+# Either order must converge on exactly one terminal revoked entitlement.
+smartcopy_race() {
+ pg -At -c "SELECT capital_growth_private.apply_smartcopy_sandbox_payment('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_lifecyclerace','ch_lifecyclerace',499,$1,false,date_trunc('day',now()),clock_timestamp(),$2);"
+}
+smartcopy_race 0 "repeat('7',64)" > "$one" 2>&1 &
+sc_grant=$!
+smartcopy_race 499 "null" > "$two" 2>&1 &
+sc_refund=$!
+wait "$sc_grant"
+wait "$sc_refund"
+grep -Eq '^(GRANTED|REVOKED)
+container="${SOCIAL_DB_TEST_CONTAINER:-}"
+if [[ "${GITHUB_ACTIONS:-}" != "true" || ! "$container" =~ ^[a-f0-9]{64}$ ]]; then
+  echo 'X_BUDGET_RESTART_REQUIRES_CI_SERVICE' >&2; exit 1
+fi
+if [[ "$(docker inspect --format '{{.Config.Image}}' "$container")" != "$image" ]]; then
+  echo 'X_BUDGET_RESTART_WRONG_IMAGE' >&2; exit 1
+fi
+before="$(pg -At -c 'SELECT pg_postmaster_start_time()')"
+docker restart --time 10 "$container" >/dev/null
+ready=0
+for attempt in {1..30}; do
+  if pg -At -c 'SELECT 1' >/dev/null 2>&1; then ready=1; break; fi
+  sleep 1
+done
+[[ "$ready" -eq 1 ]]
+after="$(pg -At -c 'SELECT pg_postmaster_start_time()')"
+[[ "$before" != "$after" ]]
+# Same receipt-free content remains claimed after the real server restart;
+# a different digest cannot spend the exhausted budget.
+budget_claim "$winner" > "$one"
+grep -q '"claimed": false' "$one"
+if budget_claim e > "$two" 2>&1; then
+  echo 'X_BUDGET_RESTART_CAP_BROKEN' >&2; exit 1
+fi
+grep -q 'X_BUDGET_EXHAUSTED' "$two"
+pg -f /work/scripts/social-provider-db-x-budget-after.sql
+echo 'PASS: X budget persisted after real PostgreSQL service restart'
+echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
+
+# Verify durable consent withdrawal and terminal invoice reversal after the same real restart.
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.x_consent WHERE revoked_at IS NOT NULL")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.x_initial_payment WHERE reversed")" == 1 ]]
+echo 'PASS: isolated consent and invoice reversal persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c 'SELECT count(*) FROM capital_growth_private.smartcopy_consent WHERE revoked_at IS NOT NULL')" == 2 ]]
+echo 'PASS: isolated Smartcopy consent withdrawal persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='GRANTED' AND charge_id IS NULL")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='REVOKED' AND charge_id IS NULL")" == 1 ]]
+echo 'PASS: independent synthetic entitlement states persisted; consent withdrawal did not alter licenses'
+
+# Same real PostgreSQL restart proves terminal lifecycle persistence.
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE charge_id IS NOT NULL AND state='REVOKED'")" == 3 ]]
+[[ "$(pg -At -c "SELECT refunded_cents FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecycle001'")" == 499 ]]
+echo 'PASS: isolated Smartcopy refund and dispute tombstones persisted after PostgreSQL restart'
+ "$one"
+grep -qx 'REVOKED' "$two"
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecyclerace' AND state='REVOKED' AND refunded_cents=499")" == 1 ]]
+echo 'PASS: independent PG connections converge on one terminal Smartcopy refund'
+
 # Restart only the exact ephemeral CI service, never a user-supplied remote DB.
 container="${SOCIAL_DB_TEST_CONTAINER:-}"
 if [[ "${GITHUB_ACTIONS:-}" != "true" || ! "$container" =~ ^[a-f0-9]{64}$ ]]; then
