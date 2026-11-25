@@ -47,8 +47,9 @@ function seal(value,kind='access'){
 function providerResult(status,payload){
   return {ok:status>=200&&status<300,status,text:async()=>JSON.stringify(payload)};
 }
-function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=3600000,launchMediaLoader}={}){
-  const receipt=new Map(),calls=[];
+function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=3600000,launchMediaLoader,
+  budgetOutcome='ok',budgetLedger=new Set(),receipt=new Map()}={}){
+  const calls=[];
   let accessCipher=seal('synthetic-ACCESS-OLD-TOKEN');
   let expiresAt=new Date(Date.now()+expires).toISOString();
   const auth={sameOrigin:req=>req.headers['sec-fetch-site']==='same-origin',
@@ -61,6 +62,13 @@ function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=
       calls.push(op);
       if(op==='x_credentials')return {accountId:ACCOUNT,handle:'CapitalAIOnline',
         accessCipher,expiresAt,leaseActive:false};
+      if(op==='growth_budget_claim'){
+        if(budgetOutcome==='denied'||budgetLedger.has(ctx.contentKey))return {claimed:false};
+        budgetLedger.add(ctx.contentKey);
+        if(budgetOutcome==='timeout')throw Error('ambiguous budget RPC');
+        return {claimed:true,accountId:budgetOutcome==='wrongAccount'?'999':ctx.accountId,
+          contentKey:ctx.contentKey,reservedMicroEur:1000000};
+      }
       if(op==='milestone_status')return receipt.has(ctx.contentKey)
         ? {found:true,...receipt.get(ctx.contentKey)}:{found:false,status:'NOT_SUBMITTED'};
       if(op==='milestone_claim'){
@@ -283,4 +291,51 @@ test('X launch refuses media writes without scope, approval or exact pinned imag
   await cross.handler.handle(request('POST',false),wrong,new URL(root+'/publish'),json);
   assert.equal(wrong.code,403);
   assert.deepEqual(cross.calls,[]);
+});
+
+const BUDGET_FLAGS={SOCIAL_X_GROWTH_PILOT_ENABLED:'true',SOCIAL_X_GROWTH_BUDGET_APPROVED:'true'};
+test('pilot denies unapproved, missing, mismatched and stale reservations before any X call',async()=>{
+  for(const settings of [
+    {flags:{...BUDGET_FLAGS,SOCIAL_X_GROWTH_BUDGET_APPROVED:'false'}},
+    {flags:BUDGET_FLAGS,budgetOutcome:'denied'},
+    {flags:BUDGET_FLAGS,budgetOutcome:'wrongAccount'},
+    {flags:BUDGET_FLAGS,expires:-1000},
+  ]){
+    const f=fixture(settings),r=response();
+    await f.handler.handle(request(),r,new URL(uri('/publish')),json);
+    assert.equal(r.code,503);
+    assert.deepEqual(f.stats(),{writeCount:0,readCount:0});
+    assert.ok(!f.calls.includes('refresh_claim'));
+    assert.ok(!f.calls.includes('milestone_claim'));
+  }
+});
+test('pilot durable claim precedes receipt and X provider; parallel duplicate writes never replay',async()=>{
+  const f=fixture({flags:BUDGET_FLAGS}),a=response(),b=response();
+  await Promise.all([a,b].map(r=>f.handler.handle(request(),r,new URL(uri('/publish')),json)));
+  assert.equal(f.stats().writeCount,1);assert.equal(f.stats().readCount,1);
+  assert.ok(f.calls.indexOf('growth_budget_claim')<f.calls.indexOf('milestone_claim'));
+  assert.ok([a,b].some(r=>r.body?.status==='VERIFIED_PUBLISHED'));
+  const again=response();await f.handler.handle(request(),again,new URL(uri('/publish')),json);
+  assert.equal(again.body.status,'VERIFIED_PUBLISHED');assert.equal(f.stats().writeCount,1);
+});
+test('lost reservation reply survives handler restart without X call or automatic retry',async()=>{
+  const budgetLedger=new Set(),receipt=new Map();
+  const a=fixture({flags:BUDGET_FLAGS,budgetLedger,receipt,budgetOutcome:'timeout'}),r=response();
+  await a.handler.handle(request(),r,new URL(uri('/publish')),json);
+  assert.equal(r.code,503);assert.equal(r.body.retryPublish,false);
+  assert.deepEqual(a.stats(),{writeCount:0,readCount:0});assert.equal(budgetLedger.size,1);
+  const b=fixture({flags:BUDGET_FLAGS,budgetLedger,receipt}),again=response();
+  await b.handler.handle(request(),again,new URL(uri('/publish')),json);
+  assert.equal(again.code,503);assert.equal(again.body.retryPublish,false);
+  assert.deepEqual(b.stats(),{writeCount:0,readCount:0});
+});
+test('unknown provider result retains durable budget and receipt after handler restart',async()=>{
+  const budgetLedger=new Set(),receipt=new Map();
+  const a=fixture({flags:BUDGET_FLAGS,budgetLedger,receipt,ambiguous:true}),r=response();
+  await a.handler.handle(request(),r,new URL(uri('/publish')),json);
+  assert.equal(r.code,503);assert.equal(a.stats().writeCount,1);assert.equal(budgetLedger.size,1);
+  const b=fixture({flags:BUDGET_FLAGS,budgetLedger,receipt}),again=response();
+  await b.handler.handle(request(),again,new URL(uri('/publish')),json);
+  assert.equal(again.code,409);assert.equal(again.body.status,'CLAIMED');
+  assert.deepEqual(b.stats(),{writeCount:0,readCount:0});
 });

@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'src/components/RenderOwnerDashboardPage.tsx'
+      - 'src/components/GrowthOwnerControlCenter.tsx'
+      - 'src/components/growthOwnerWorkspaceModel.ts'
+      - 'server/growth-owner-*.mjs'
+      - 'scripts/growth/owner-engine-snapshot.mjs'
       - 'src/components/OwnerAgentOperationsPanel.tsx'
       - 'src/components/OwnerOperationsVisualOverview.tsx'
       - 'src/components/ownerOperationsVisual.css'

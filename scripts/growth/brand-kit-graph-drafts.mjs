@@ -449,3 +449,50 @@ export function projectLicensedContextForGraph(input,trustedScope){
   };
   return {...projection,projectionSha256:sha(JSON.stringify(projection))};
 }
+
+// Reuse the actual first-party kit, renderer, MediaKit intake and Social Package.
+// No raw research text or customer terminal output enters this image.
+export async function buildSmartcopyMediaDraft(input,ledger){
+  const {runProductMarketResearch}=await import('./growth-intelligence-drafts.mjs');
+  const {importMediaKitV5Draft,MEDIAKIT_V5_ID}=await import('../../src/platform/SocialMediaEngine/Editing/MediaKitV5Import.ts');
+  const round=runProductMarketResearch(input,ledger);
+  const draft=round.pilot?.drafts.find(d=>d.channel==='x');
+  if(!draft||draft.socialPackage.approvals.length||draft.socialPackage.deliveries.length)throw Error('SMARTCOPY_MEDIA_RESEARCH_REQUIRED');
+  const kit=readBrandKit('X'),w=1200,h=1200;
+  const colors=kit.colors;
+  const text=(s,x,y,size,fill)=>svgText(s,x,y,size,fill);
+  const rows=[['01','AUSFÜHREN','Nichtinteraktiven Befehl starten'],['02','KOPIEREN','Synthetische Ausgabe übernehmen'],['03','PRÜFEN','Nativen Clipboard-Readback zeigen']];
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" role="img" width="1200" height="1200" viewBox="0 0 1200 1200" font-family="sans-serif"><title>AI-Smartcopy – Workflow-Entwurf</title><rect width="1200" height="1200" fill="'+kit.background+'"/><image x="44" y="36" width="174" height="99" href="data:image/jpeg;base64,'+kit.logo+'"/>'+
+  text('CAPITAL-AI · TECHNISCHE VORSCHAU',240,95,24,colors[2])+text('AI-Smartcopy',44,224,72,kit.foreground)+text('Terminalausgaben gezielt kopieren',44,287,37,colors[0])+
+  rows.map((r,i)=>{const y=356+i*180;return '<rect x="44" y="'+y+'" width="1112" height="154" rx="24" fill="#0C1330" stroke="'+colors[i]+'" stroke-width="3"/>'+text(r[0],72,y+68,40,colors[i])+text(r[1],160,y+65,34,kit.foreground)+text(r[2],160,y+112,27,kit.foreground);}).join('')+
+  colors.map((c,i)=>'<rect x="'+(44+i*159)+'" y="1030" width="154" height="9" rx="4" fill="'+c+'"/>').join('')+text('Privater Pilot · Kompatibilität und Freigaben offen',44,1102,27,kit.foreground)+text('DRAFT ONLY · KEIN VERKAUF',44,1152,25,colors[2])+'</svg>';
+  const image={svg,sha256:sha(Buffer.from(svg)),logoSha256:kit.logoSha256};
+  const rendered=await renderBrandPng({contractVersion:CONTRACT,publicationState:'DRAFT_ONLY',publicPublishAllowed:false,image,template:{width:w,height:h}});
+  const campaign={...draft.contentPlan.campaign,outputs:['TEXT','IMAGE']},contentId=draft.contentId;
+  const assetId=contentId+'-smartcopy-png',sourceSha=campaign.sourceSha;
+  const asset={assetId,contentId,kind:'IMAGE',sha256:rendered.sha256,mimeType:'image/png',sourceSha,evidenceRef:'docs/licenses/Capital-AI-BRANDING.md#first-party-logo',
+    originalGraphic:{assetId,contentId,sha256:rendered.sha256,mimeType:'image/png',sourceSha,sourceDigest:sourceSha,contentDigest:sha(JSON.stringify({svgSha256:image.sha256,pngSha256:rendered.sha256})),origin:'FIRST_PARTY_TEMPLATE',creationMethod:'AI_ASSISTED',renderer:{id:'CAPITAL_AI_BRAND_CONTEXT_RESVG',version:'1.0.0'},thirdPartyAssets:false}};
+  const socialPackage=buildDraftContentSocialPackage({campaign,contentId,assets:[...draft.socialPackage.assets,asset]});
+  const contentPlan=planContentCampaign(campaign,{originalGraphics:[asset.originalGraphic]});
+  const kitDraft=importMediaKitV5Draft({kitId:MEDIAKIT_V5_ID,manifestRef:'drafts/'+contentId+'/manifest.json',contentId,title:'AI-Smartcopy Workflow – Entwurf',slug:contentId,aspectRatio:'1:1',assets:[{assetId,kind:'IMAGE',reference:'drafts/'+contentId+'/workflow.png',sha256:rendered.sha256,mimeType:'image/png',provenance:{origin:'GENERATED',sourceRef:'docs/licenses/Capital-AI-BRANDING.md'},sourceRights:{status:'NOT_PROVEN'},mediaRights:{status:'NOT_PROVEN'},reviewStatus:'REVIEW_REQUIRED'}]});
+  if(socialPackage.approvals.length||socialPackage.deliveries.length||contentPlan.publication.publicPublishAllowed||contentPlan.graphicLicenses.some(x=>x.graphicUseAllowed||x.publicationAllowed)||kitDraft.publicPublishAllowed||kitDraft.approvals.length||kitDraft.deliveries.length)throw Error('SMARTCOPY_MEDIA_AUTHORITY_DENIED');
+  return {contractVersion:'CAPITAL_AI_SMARTCOPY_MEDIA_DRAFT@1',contentId,publicationState:'DRAFT_ONLY',publicPublishAllowed:false,rights:'REVIEW_REQUIRED',providerCalls:0,publishCalls:0,contentPlan,socialPackage,mediaKit:kitDraft,svgSha256:image.sha256,png:rendered};
+}
+
+// Route licensed, separately reviewed context from the existing RAG/crawler intake
+// into the same product research contract. No source retrieval or rights inference.
+export function projectLicensedProductResearch({records,rightsLedger,bindings},asOf){
+  if(!Array.isArray(bindings)||bindings.length>16||!Array.isArray(records)||records.length>16||!Array.isArray(rightsLedger)||rightsLedger.length>16)throw Error('PRODUCT_CONTEXT_INVALID');
+  const byId=new Map();
+  for(const b of bindings){
+    if(!b||Object.keys(b).sort().join(',')!=='entityId,kind,observedOn,productId,sourceId,summarySha256'||typeof b.sourceId!=='string'||byId.has(b.sourceId))throw Error('PRODUCT_CONTEXT_BINDING_INVALID');
+    byId.set(b.sourceId,b);
+  }
+  const context=assessContext(records,rightsLedger),projected=[];
+  for(const r of context.accepted){
+    const b=byId.get(r.id);
+    if(!b||b.summarySha256!==r.summarySha256)continue;
+    projected.push({productId:b.productId,kind:b.kind,entityId:b.entityId,sourceUrl:r.sourceUrl,observedOn:b.observedOn,summary:r.summary});
+  }
+  return {asOf,records:projected,sourceAuthentication:'NOT_PROVEN',rightsEvidence:'SEPARATE_LEDGER_REQUIRED',publicPublishAllowed:false,providerCalls:0};
+}

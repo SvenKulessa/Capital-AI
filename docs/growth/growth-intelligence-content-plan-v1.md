@@ -48,3 +48,13 @@ The bundle's sourceSha256 is the hash of the exact imported JSON. Each draft sou
 - This test is included in the existing npm test command; no new Required CI checks are introduced.
 
 The snapshot is reproducible but the GA4/Instagram/GSC metrics are NOT refreshed by the CLI. Any future live integration must first verify the account identity, provider rights, consent, freshness and the canonical event/identity contracts. Technical PASS never represents editorial, legal or publication approval.
+
+## 2026-11-24 – GA4 acquisition read adapter (v1)
+
+Existing owner-only GA4 MCP runtime now additionally handles `GET /api/profile/growth-intelligence/ga4-readback`. It reuses the configured property, verified owner + IAM owner authorization, fixed tool allowlist, 8s request deadline and 5-minute cache, without a second client, raw MCP endpoint or credential. A different simultaneous report returns a bounded 503 reason rather than closing another request's shared client session.
+
+The query reads only sessions and engagedSessions over the last seven completed property-local days (7daysAgo..yesterday). It accepts exact metric headers and one aggregate row; missing rows are NOT_PROVEN_NO_ROWS, never a measured zero. GA4 remains a separate measurement source; no GA4-to-UMAMI coercion, no fabricated campaign or content join, no automatic recommendation/publishing promotion. The endpoint is a private Growth data-source contract, not a public dashboard or automatic scheduler. The historical content-plan CLI remains deterministic and unchanged.
+
+Synthetic regressions in the existing GA4 test file cover owner authorization, fixed report, cache separation, cross-property denial, no-row handling, malformed reports, and shared-session concurrency. Production readback requires the real configured Render credentials and authenticated owner session; CI is not evidence of those.
+
+Current external connector discovery is independent of Render: GA4 Supermetrics query succeeded; Instagram query returned expired token despite account discovery; GSC connection missing in the tested connectors; Metricool workspace discovery did not identify a CAPITAL-AI brand. Do not commit provider login URLs, private account inventory, or real customer data. Continue with GSC/Instagram source-specific adapters only against confirmed identities and granted scopes. Existing Twenty and Stripe scope PRs remain separate.

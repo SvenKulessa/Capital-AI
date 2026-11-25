@@ -2,7 +2,7 @@ import { createHmac } from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import { createPurchaseReceipt } from './purchase-receipt.mjs';
+import { createPurchaseReceipt, createXInitialInvoiceObserver } from './purchase-receipt.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { BLUEPRINT_PRODUCTS } from './blueprint-commerce.mjs';
 const userId = '5cf37f93-1103-467d-9810-ea98f93fdca3';
@@ -19,9 +19,9 @@ function fixture(kind='learning') {
   const payments={has_more:false,data:[{status:'paid',payment:{payment_intent:{status:'succeeded',livemode:true,latest_charge:structuredClone(charge)}}}]};
   return {session,lines,payments};
 }
-async function invoke(f=fixture(), {user={userId},origin=true,method='POST',body={sessionId},secret=env.STRIPE_SECRET_KEY}={}) {
+async function invoke(f=fixture(), {user={userId},origin=true,method='POST',body={sessionId},secret=env.STRIPE_SECRET_KEY,initialInvoiceObserver}={}) {
   const calls=[];
-  const handler=createPurchaseReceipt({env:{...env,STRIPE_SECRET_KEY:secret},auth:{sameOrigin:()=>origin,verify:async()=>user},fetchImpl:async(url,options)=>{
+  const handler=createPurchaseReceipt({env:{...env,STRIPE_SECRET_KEY:secret},initialInvoiceObserver,auth:{sameOrigin:()=>origin,verify:async()=>user},fetchImpl:async(url,options)=>{
     assert.equal(options.method,undefined,'receipt makes GET requests exclusively');calls.push(url);
     return Response.json(url.includes('/line_items?')?f.lines:url.includes('/invoice_payments?')?f.payments:f.session);
   }});
@@ -61,4 +61,70 @@ test('a fully discounted completed Learning purchase preserves the existing zero
 test('Learning keeps the existing transaction identity across the confirmation migration',async()=>{
   const result=await invoke(fixture());
   assert.equal(result.payload.transactionId,createHmac('sha256',env.STRIPE_SECRET_KEY).update('learning-analytics:'+sessionId).digest('hex'));
+});
+
+
+test('optional trusted X invoice observer runs only after verified live initial invoice and confirmed user',async()=>{
+  const records=[], key='synthetic-dedicated-test-key-32-bytes';
+  const observer=createXInitialInvoiceObserver({key,record:async r=>{records.push(r);return true;},now:()=>1800000000000});
+  const f=fixture('saas');f.session.invoice.status_transitions={paid_at:1799999999};
+  const options={user:{userId,emailVerified:true},initialInvoiceObserver:observer};
+  const r=await invoke(f,options);
+  assert.equal(r.status,200);assert.equal(records.length,1);
+  assert.deepEqual(records[0],{p_user:userId,
+    p_invoice:createHmac('sha256',key).update('CAI-X-GROWTH@1:invoice:in_fixture').digest('hex'),
+    p_subscription:createHmac('sha256',key).update('CAI-X-GROWTH@1:subscription:sub_fixture').digest('hex'),
+    p_paid:new Date(1799999999000).toISOString(),p_observed:new Date(1800000000000).toISOString(),p_cents:700});
+  assert.doesNotMatch(JSON.stringify(r.payload),/p_invoice|p_user|in_fixture/);
+  assert.equal(r.calls.length,3);
+  await invoke(f,{...options,user:{userId,emailVerified:false}});
+  await invoke(f,{...options,initialInvoiceObserver:undefined});
+  const bad=fixture('saas');bad.session.invoice.status_transitions={paid_at:1799999999};
+  bad.payments.data[0].payment.payment_intent.latest_charge.refunded=true;
+  assert.equal((await invoke(bad,options)).status,409);
+  await invoke(fixture('saas'),options);
+  assert.equal(records.length,1);
+  assert.equal((await invoke(f,{...options,initialInvoiceObserver:async()=>{throw Error('private');}})).status,200);
+});
+
+import './smartcopy-sandbox-readback.test.mjs';
+test('Smartcopy composition is absent by default, cannot override canonical auth or add an HTTP route',async()=>{
+  let calls=0;
+  const auth={sameOrigin:()=>false,verify:async()=>{throw Error('unexpected auth read')}};
+  const config={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},auth:{sameOrigin:()=>true,verify:async()=>({userId,emailVerified:true})},readConsent:async()=>{calls++;return null},readVerifiedOneTimeReceipt:async()=>{calls++;return null},readEntitlement:async()=>{calls++;return null}};
+  const disabled=createPurchaseReceipt({env:{},auth});
+  assert.equal(disabled.readSmartcopySandbox,undefined);
+  const enabled=createPurchaseReceipt({env:{},auth,smartcopySandbox:config,fetchImpl:async()=>{throw Error('no provider call expected')}});
+  assert.equal((await enabled.readSmartcopySandbox({}, {}, 'cs_test_fixture12345')).reason,'AUTH_REQUIRED');
+  assert.equal(await enabled.handle({}, {}, new URL('https://capital-ai.online/api/billing/smartcopy-sandbox'),()=>{throw Error('no new route')}),false);
+  assert.equal(calls,0);
+  assert.throws(()=>createPurchaseReceipt({env:{},auth,smartcopySandbox:{...config,scope:{...config.scope,sku:'SMARTCLIP_PERSONAL'}}}));
+  assert.throws(()=>createPurchaseReceipt({env:{},auth,smartcopySandbox:{...config,scope:{...config.scope,mode:'live'}}}));
+});
+test('Smartcopy composition uses canonical authenticated consent before receipt read',async()=>{
+  const calls=[];
+  const scope={productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'};
+  const now=()=>Date.parse('2026-11-25T05:00:00.000Z');
+  const handler=createPurchaseReceipt({env:{},auth:{sameOrigin:()=>true,verify:async()=>({userId,emailVerified:true})},smartcopySandbox:{scope,now,readConsent:async ctx=>{calls.push('consent');assert.equal(ctx.userId,userId);return null},readVerifiedOneTimeReceipt:async()=>{calls.push('receipt');throw Error('unexpected')},readEntitlement:async()=>{calls.push('license');throw Error('unexpected')}}});
+  assert.equal((await handler.readSmartcopySandbox({}, {}, 'cs_test_fixture12345')).reason,'CONSENT_REQUIRED');
+  assert.deepEqual(calls,['consent']);
+});
+
+test('explicit provider sandbox composition uses canonical auth and never starts on default production configuration',async()=>{
+ let calls=0;const auth={sameOrigin:()=>false,verify:async()=>{throw Error('unexpected')}};
+ const provider={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},stripeTestKey:'rk_test_fixture_1234567890',consentProjectRef:'a'.repeat(20),consentTestSecret:'sb_secret_fixture_12345678901234567890'};
+ const options={auth,env:{STRIPE_SECRET_KEY:'sk_live_fixture'},fetchImpl:async()=>{calls++;throw Error('unexpected')}};
+ assert.equal(createPurchaseReceipt(options).readSmartcopySandbox,undefined);
+ const configured=createPurchaseReceipt({...options,smartcopyProviderSandbox:provider});
+ assert.equal((await configured.readSmartcopySandbox({}, {},'cs_test_fixture12345')).reason,'AUTH_REQUIRED');
+ assert.equal(calls,0);
+ assert.throws(()=>createPurchaseReceipt({...options,smartcopyProviderSandbox:{...provider,stripeTestKey:'rk_live_fixture_1234567890'}}));
+ assert.throws(()=>createPurchaseReceipt({...options,smartcopySandbox:{},smartcopyProviderSandbox:provider}));
+});
+
+test('provider sandbox cannot replace independently persisted entitlement reader',()=>{
+ const provider={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},stripeTestKey:'rk_test_fixture_1234567890',consentProjectRef:'a'.repeat(20),consentTestSecret:'sb_secret_fixture_12345678901234567890'};
+ const auth={sameOrigin:()=>true,verify:async()=>({userId,emailVerified:true})};
+ assert.throws(()=>createPurchaseReceipt({env:{},auth,smartcopyProviderSandbox:{...provider,readEntitlement:async()=>null}}),/SMARTCOPY_PROVIDER_ENTITLEMENT_OVERRIDE/);
+ assert.equal(typeof createPurchaseReceipt({env:{},auth,smartcopyProviderSandbox:provider}).readSmartcopySandbox,'function');
 });

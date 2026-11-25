@@ -1,5 +1,6 @@
 import { HubNavigationPanel } from './HubNavigationPanel';
 import React from 'react';
+import { hasControlCenterAccess } from '../../shared/control-center-access.mjs';
 import { AnalysisComponentExplorer } from '../features/analysis/AnalysisComponentExplorer';
 import { PipelineConfiguratorConsole } from '../features/analysis/PipelineConfiguratorConsole';
 import { analysisUiEnabled } from '../features/analysis/analysisUiFlags';
@@ -59,7 +60,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((session) => {
         if (controller.signal.aborted) return;
-        const allowed = session?.authenticated === true && session?.account?.iamRole === 'owner';
+        const allowed = hasControlCenterAccess(session);
         setOwnerAccess(allowed ? 'allowed' : 'denied');
         if (!allowed) onBackToHome?.();
       })
@@ -88,14 +89,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
     hasShownSection.current = true;
   }, [activeTab, ownerAccess]);
 
-  const navigateSection = (value: string) => {
-    const section = CONTROL_CENTER_SECTION_IDS.find((id) => id === value);
-    if (!section) return;
-    const target = '/control-center/' + section;
-    if (onNavigateTab) onNavigateTab(target);
-    else navigateAppLocation(target);
-  };
-
+  if (ownerAccess === 'checking') return <p role="status" className="p-4 text-sm text-slate-300">Berechtigung wird geprüft …</p>;
   if (ownerAccess !== 'allowed') return null;
 
   const currentSection = SECTIONS.find((section) => section.id === activeTab);
