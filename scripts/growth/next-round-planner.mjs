@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { discoverGrowthTools } from '../../server/tool-update-discovery.mjs';
+const DISCOVERY_CLAUSE = "GROWTH_TOOL_DISCOVERY@1: Suche bei der Ausführung aktiv nach aufgabenrelevanten externen Tools, Plugins und kommerziell nutzbaren Alternativen über tatsächlich verfügbare autorisierte Verzeichnisse und offizielle Quellen; vergleiche zuerst vorhandene Integrationen. Verwende ausschließlich nicht vertrauliche Suchbegriffe. Dokumentiere Quelle, Zeitpunkt, Zweck, Version, Kosten, Datenschutz, kommerzielle Nutzungs-, Weitergabe- und Outputrechte sowie Verbindungs-/Runtime-Status getrennt im vorhandenen Owner-Anwendungskatalog. Fehlt eine Suchquelle oder belastbare Rechte-Evidence, kennzeichne dies NOT_PROVEN; keine automatische Installation, Freigabe, Veröffentlichung oder Kostenaktivierung. ";
 
 /**
  * Offline-only next-round draft projection for the existing Social Content Engine.
@@ -72,11 +74,22 @@ export function buildNextRoundDrafts(sourceText, registry) {
       throw Error('SKILL_NOT_IN_CANONICAL_REGISTRY');
     return {index:index+1,recipeId:recipe.id,title:recipe.title,priority:recipe.priority,
       domain:recipe.domain,state:'DRAFT_ONLY',suggestedSkills:skillSet,
-      prompt:recipe.prompt,checksRequired:'FRESH_ROOT_AGENTS_AND_REPO_RULESETS'};
+      prompt:recipe.prompt+' '+DISCOVERY_CLAUSE,checksRequired:'FRESH_ROOT_AGENTS_AND_REPO_RULESETS'};
   }).sort((a,b)=>(a.priority??99)-(b.priority??99)||a.index-b.index);
   return {schema:CONTRACT,sourceSha256:sha256(sourceText),
     sourceType:'USER_SUPPLIED_NEXT_STEPS',authority:'NONE',publicationState:'DRAFT_ONLY',
     publicPublishAllowed:false,autoExecuteAllowed:false,autoMergeAllowed:false,
     providerCalls:0,paymentCalls:0,executedSkills:[],nextWake:'REVALIDATE_ON_VERIFIED_CYCLE_COMPLETION',
     pendingCiPollSeconds:30,steps:plan};
+}
+
+// Explicit private operator path. Offline draft generation remains provider-free.
+// Queries use fixed public topics only; never forward task text, credentials or identities.
+export async function buildPrivateNextRoundDrafts(sourceText, registry, {fetchImpl=fetch, now=Date.now}={}) {
+  const draft=buildNextRoundDrafts(sourceText,registry);
+  const byDomain={PRODUCT:['accessibility','content-generation','mcp-server'],MARKET:['finance','data-analysis','mcp-server'],PLATFORM:['developer-tools','observability','mcp-server'],TRUST:['security','testing','mcp-server'],GROWTH:['analytics','advertising','seo','tag-manager','mcp-server']};
+  const domains=[...new Set(draft.steps.filter(step=>step.prompt!==null).map(step=>step.domain))];
+  const radar={};
+  for(const domain of domains) radar[domain]=await discoverGrowthTools({topics:byDomain[domain],fetchImpl,now});
+  return {...draft,toolDiscovery:{schema:'GROWTH_TOOL_DISCOVERY@1',scope:'PRIVATE_OPERATOR',metadataOnly:true,automaticInstall:false,commercialRights:'NOT_PROVEN',externalMetadataReads:domains.reduce((n,d)=>n+radar[d].topics.length,0),byDomain:radar},steps:draft.steps.map(step=>step.prompt===null?step:{...step,toolDiscoveryDomain:step.domain,toolDiscoveryState:radar[step.domain].topics.some(t=>t.status==='METADATA_OBSERVED')?'REVIEW_REQUIRED':'NOT_PROVEN'})};
 }
