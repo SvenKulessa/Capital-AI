@@ -100,7 +100,7 @@ export function buildChatFollowUps(input: string, hint?: ChatDomain): ChatFollow
     : engineering
       ? 'Reproduziere den konkreten Fehler, implementiere den kleinsten sicheren Fix im bestehenden Scope, führe Negativtests und vorhandene CI durch; bei belegter Mergefreigabe regulär squash-mergen. '
       : 'Analysiere zuerst den konkreten Bedarf und liefere die kleinste fachlich richtige, nachprüfbare Umsetzung oder Erklärung; leite aus einer Frage keine Schreibfreigabe ab. ';
-  const base = taskLine + source + council + orchestration + socialClause + ' ';
+  const base = taskLine + source + council + orchestration + socialClause + ' ' + "GROWTH_TOOL_DISCOVERY@1: Suche bei der Ausführung aktiv nach aufgabenrelevanten externen Tools, Plugins und kommerziell nutzbaren Alternativen über tatsächlich verfügbare autorisierte Verzeichnisse und offizielle Quellen; vergleiche zuerst vorhandene Integrationen. Verwende ausschließlich nicht vertrauliche Suchbegriffe. Dokumentiere Quelle, Zeitpunkt, Zweck, Version, Kosten, Datenschutz, kommerzielle Nutzungs-, Weitergabe- und Outputrechte sowie Verbindungs-/Runtime-Status getrennt im vorhandenen Owner-Anwendungskatalog. Fehlt eine Suchquelle oder belastbare Rechte-Evidence, kennzeichne dies NOT_PROVEN; keine automatische Installation, Freigabe, Veröffentlichung oder Kostenaktivierung. ";
   return [
     { id: 'execute', label: readOnly ? 'Read-only prüfen und belegen' : engineering ? 'Fehler beheben und validieren' : 'Aufgabe strukturiert ausführen',
       prompt: base + execution + limits, skills, domain },
