@@ -210,3 +210,7 @@ import './social-trend-projection.test.mjs';
 import './viral-product-drafts.test.mjs';
 import './viral-content-engine.test.mjs';
 import './viral-template-cache.test.mjs';
+
+// Product-channel planning uses the existing Growth test entrypoint.
+import './product-channel-intelligence.test.mjs';
+test('existing Growth bundle carries deterministic product-channel plans without publishing rights',()=>{const a=buildGrowthIntelligenceDraftBundle();assert.equal(a.productToMarket.contractVersion,'CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1');assert.equal(a.productToMarket.publicPublishAllowed,false);assert.ok(a.productToMarket.products.some(p=>p.id==='ai-smartcopy'));});
