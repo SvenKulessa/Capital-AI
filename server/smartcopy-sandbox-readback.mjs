@@ -106,3 +106,17 @@ export function createSmartcopyConsentReader({projectRef,secret,fetchImpl=fetch}
     return row;
   };
 }
+
+// Independently persisted license state, never inferred from the payment or consent.
+// No write method, no generic RPC selection, no environment fallback.
+export function createSmartcopyEntitlementReader({projectRef,secret,fetchImpl=fetch}={}){
+  if(typeof projectRef!=='string'||!/^[a-z]{20}$/.test(projectRef)||['ryzywoktpmyhwzxmstyu','wcvorlvhwvuprqsjcten'].includes(projectRef)||typeof secret!=='string'||!/^sb_secret_[A-Za-z0-9_-]{20,}$/.test(secret))throw Error('SMARTCOPY_ENTITLEMENT_TEST_CONFIG');
+  return async (ctx,intentId)=>{
+    if(ctx?.productId!=='ai-smartcopy'||ctx.mode!=='test'||typeof ctx.userId!=='string'||!UUID.test(ctx.userId)||typeof ctx.campaignId!=='string'||!/^smartcopy-[a-f0-9]{24}$/.test(ctx.campaignId)||typeof ctx.releaseSha256!=='string'||!SHA.test(ctx.releaseSha256)||typeof intentId!=='string'||!PI.test(intentId))throw Error('SMARTCOPY_ENTITLEMENT_SCOPE');
+    const response=await fetchImpl('https://'+projectRef+'.supabase.co/rest/v1/rpc/capital_smartcopy_read_entitlement',{method:'POST',headers:{apikey:secret,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({p_user:ctx.userId,p_campaign:ctx.campaignId,p_release:ctx.releaseSha256,p_intent:intentId}),redirect:'error',signal:AbortSignal.timeout(5000)});
+    const row=await boundedJson(response,8192);
+    if(row===null)return null;
+    if(!exact(row,licenseKeys)||!matches(row,ctx.userId,ctx)||row.intentId!==intentId||!['GRANTED','REVOKED'].includes(row.state)||!time(row.observedAt))throw Error('SMARTCOPY_ENTITLEMENT_RESPONSE');
+    return row;
+  };
+}

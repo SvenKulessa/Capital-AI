@@ -90,3 +90,32 @@ begin
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
+
+-- Independent fixture license records. Only the disposable database owner seeds them.
+insert into capital_growth_private.smartcopy_entitlement_fixture(user_id,campaign_id,release_sha256,intent_id,state)
+values ('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_fixturegranted','GRANTED'),
+ ('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_fixturerevoked','REVOKED');
+set role service_role;
+do $$
+declare u uuid:='a0000000-0000-4000-8000-000000000001'; c text:='smartcopy-'||repeat('c',24); r text:=repeat('d',64);
+begin
+ if public.capital_smartcopy_read_entitlement(u,c,r,'pi_fixturegranted') is not null then raise exception 'ENTITLEMENT_NO_CONSENT'; end if;
+ if not capital_growth_private.grant_smartcopy_consent(u,c,r,repeat('9',64)) then raise exception 'ENTITLEMENT_CONSENT_FAILED'; end if;
+ if public.capital_smartcopy_read_entitlement(u,c,r,'pi_fixturegranted')->>'state' is distinct from 'GRANTED' or public.capital_smartcopy_read_entitlement(u,c,r,'pi_fixturerevoked')->>'state' is distinct from 'REVOKED' then raise exception 'ENTITLEMENT_STATE_INVALID'; end if;
+ if public.capital_smartcopy_read_entitlement(u,c,repeat('a',64),'pi_fixturegranted') is not null or public.capital_smartcopy_read_entitlement(u,'smartcopy-'||repeat('a',24),r,'pi_fixturegranted') is not null or public.capital_smartcopy_read_entitlement('a0000000-0000-4000-8000-000000000002',c,r,'pi_fixturegranted') is not null or public.capital_smartcopy_read_entitlement(u,c,r,'pi_otherintent') is not null then raise exception 'ENTITLEMENT_FOREIGN_READ'; end if;
+ begin
+ update capital_growth_private.smartcopy_entitlement_fixture set state='GRANTED';
+ raise exception 'ENTITLEMENT_WRITE_ALLOWED';
+ exception when insufficient_privilege then null; end;
+ if not capital_growth_private.withdraw_smartcopy_consent(u,c,r) then raise exception 'ENTITLEMENT_WITHDRAW_FAILED'; end if;
+ if public.capital_smartcopy_read_entitlement(u,c,r,'pi_fixturegranted') is not null then raise exception 'ENTITLEMENT_WITHDRAW_READ'; end if;
+end $$;
+reset role;
+set role authenticated;
+do $$ begin
+ begin
+ perform public.capital_smartcopy_read_entitlement('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_fixturegranted');
+ raise exception 'ENTITLEMENT_BROWSER_ALLOWED';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
