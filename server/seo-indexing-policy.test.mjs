@@ -275,7 +275,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.match(sitemapResponse.headers.get('content-type') || '', /^application\/xml/i);
     const sitemap = await sitemapResponse.text();
     assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
-    assert.match(sitemap, /<loc>https:\/\/capital-ai.online\/<\/loc><lastmod>2026-11-13<\/lastmod>/);
+    assert.match(sitemap, /<loc>https:\/\/capital-ai.online\/<\/loc><lastmod>2026-11-25<\/lastmod>/);
     assert.equal((sitemap.match(/<lastmod>/g) || []).length, 5, 'Only reviewed homepage, article listing and three dated articles have lastmod');
     for (const route of EXPECTED_INDEX_PATHS) {
       const url = route === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${route}`;
@@ -330,7 +330,10 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
       assert.doesNotMatch(html, /\/profile\/key-vault|\/control-center|\/api\/billing/, route);
       assert.doesNotMatch(html, /"@type":"Offer"|<script[^>]*src="https:\/\//, route);
       if (route === '/') {
-        assert.match(html, /<h1>Marktnews verstehen\. Charts besser einordnen\.<\/h1>/);
+        assert.match(html, /<h1>Finanzmärkte verstehen\. Daten nachvollziehbar einordnen\.<\/h1>/);
+        assert.match(html, /<section id="growth-intelligence" lang="de"><h2>Growth Intelligence Engine/);
+        assert.match(html, /<h3>Intelligence-Pipeline<\/h3>/);
+        assert.match(html, /Coming Soon/);
         assert.match(html, /href="\/learning">Learning Hub öffnen<\/a>/);
         assert.match(html, /href="\/pricing">Tarife und Leistungen ansehen<\/a>/);
         assert.match(html, /href="\/login">Anmelden<\/a>/);
