@@ -94,3 +94,14 @@ test('Render Dockerfile consumes only its own nonsecret build SHA arg', () => {
   assert.ok(dockerfile.includes('render-git "${RENDER_GIT_COMMIT:-}"'));
   assert.ok(!dockerfile.includes('ARG GITHUB_SHA'));
 });
+
+
+test('reverse mixed provenance and ambiguous Render declarations are denied', () => {
+  const render = bindRenderGitIdentity(SOURCE, SHA);
+  assert.throws(() => bindRuntimeIdentity(render, SHA), /Mixing Render and GitHub/);
+  const baked = bindRuntimeIdentity(SOURCE, SHA);
+  assert.throws(() => verifyBakedRuntimeIdentity(baked.replace('__CAPITAL_AI_RENDER_GIT_SHA_UNBOUND__', foreignSha), SHA), /Mixing Render and GitHub/);
+  assert.throws(() => verifyBakedRuntimeIdentity(baked + "\nconst embeddedRenderGitSha = '" + foreignSha + "';", SHA));
+  assert.throws(() => runtimeIdentityDocument([SHA]));
+  assert.throws(() => bindRenderGitIdentity(SOURCE, [SHA]));
+});

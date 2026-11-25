@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -268,9 +268,9 @@ export function GrowthOwnerControlCenter() {
         }
       }}>Public-Surface-Audit ergänzen</button>
       <p className="text-xs text-slate-400">Audit-Aufgaben können als lokale Offline-Recherchedatei exportiert werden. Kein Worker-Start und keine Freigabe.</p>
-      {rows.filter(r => r.id.startsWith('audit-')).map(r => <button key={r.id} type="button" className={button} disabled={pending} onClick={() => {
+      {rows.filter(r => r.id.startsWith('audit-') || r.id === 'cai664-billing').map(r => <button key={r.id} type="button" className={button} disabled={pending} onClick={() => {
         try {
-          const task = publicSurfaceResearchTask(r.id);
+          const task = r.id === 'cai664-billing' ? billingRecoveryResearchTask() : publicSurfaceResearchTask(r.id);
           const url = URL.createObjectURL(new Blob([JSON.stringify(task,null,2)], {type:'application/json'}));
           const link = document.createElement('a'); link.href = url; link.download = r.id + '.json'; link.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
