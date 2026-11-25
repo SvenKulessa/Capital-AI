@@ -280,5 +280,41 @@
     "domain": "TRUST",
     "path": "docs/platform/CHATGPT-MULTI-AGENT-AUTOMATIONS-20261119.md",
     "application": "Extern verwalteter read-only Multi-Agent-Quality-Sentinel; Laufstatus seit Reaktivierung NOT_PROVEN"
+  },
+  {
+    "name": "HYPD Google Tag Manager",
+    "domain": "GROWTH",
+    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
+    "application": "Private Owner-Tracking-Audit; ChatGPT connector, no repository runtime or commercial service grant"
+  },
+  {
+    "name": "HYPD Paid Ads & Analytics",
+    "domain": "GROWTH",
+    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
+    "application": "Private advertising analytics candidate; account connection and runtime separately required"
+  },
+  {
+    "name": "ChatGPT Ads Manager",
+    "domain": "GROWTH",
+    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
+    "application": "Private Owner campaign analysis/draft candidate; separate explicit approval for writes and spend"
+  },
+  {
+    "name": "Supermetrics Marketing Agent",
+    "domain": "GROWTH",
+    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
+    "application": "Existing ChatGPT marketing analytics integration candidate; runtime and rights NOT_PROVEN"
+  },
+  {
+    "name": "Windsor.ai",
+    "domain": "GROWTH",
+    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
+    "application": "Existing ChatGPT cross-channel analytics alternative; runtime and rights NOT_PROVEN"
+  },
+  {
+    "name": "OpenSEO",
+    "domain": "GROWTH",
+    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
+    "application": "Suggested SEO / competitor research candidate; installation, data rights and costs NOT_PROVEN"
   }
 ]
