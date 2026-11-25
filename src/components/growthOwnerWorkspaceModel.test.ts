@@ -72,6 +72,41 @@ test('graph report rejects forged authority, raw metrics, inconsistent sources a
   assert.throws(()=>projectGraphHandoff(' '.repeat(16385),reportSha,initialRows()));
 });
 
+const conversionGraphReport={
+  contractVersion:'CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1',engine:'langgraph',
+  quality:'PASS_WITH_GAPS',nextAction:'VERIFY_SOURCE_AND_COHORT',
+  providerAuthentication:'NOT_PROVEN_BY_GRAPH',registrations:null,paidSubscriptions:null,
+  revenueCents:null,publicationAllowed:false,costActivationAllowed:false,automaticChanges:false,
+};
+test('conversion graph import is reference-only, versioned and preserves every live source',()=>{
+  const live=[projectGa4(good,row),...initialRows().filter(r=>r.id!==row.id)];
+  const imported=projectGraphHandoff(JSON.stringify(conversionGraphReport),reportSha,live);
+  assert.deepEqual(imported.slice(0,-1),live);
+  const graph=imported.at(-1)!;
+  assert.equal(graph.id,'x-conversion-graph-handoff');
+  assert.equal(graph.status,'NOT_PROVEN');
+  assert.equal(graph.origin,'OWNER_NOTE');
+  assert.match(graph.evidence,new RegExp(reportSha));
+  const blocked={...conversionGraphReport,quality:'BLOCKED',nextAction:'REPAIR_INPUT'};
+  const updated=projectGraphHandoff(JSON.stringify(blocked),reportSha,imported);
+  assert.equal(updated.length,imported.length);
+  assert.deepEqual(updated.slice(0,-1),live);
+  assert.match(updated.at(-1)!.operation,/BLOCKED/);
+  assert.equal(updated.at(-1)!.status,'NOT_PROVEN');
+  const restored=importWorkspace(exportWorkspace(appendSnapshot([],updated,at)))[0].rows;
+  assert.equal(restored.at(-1)!.status,'NOT_PROVEN');
+});
+test('conversion graph import rejects fabricated metrics, authority and inconsistent quality',()=>{
+  for(const wrong of [
+    {registrations:0},{paidSubscriptions:1},{revenueCents:0},{providerAuthentication:'VERIFIED'},
+    {publicationAllowed:true},{costActivationAllowed:true},{automaticChanges:true},
+    {quality:'BLOCKED'},{nextAction:'REPAIR_INPUT'},{candidateRegistrations:1},
+    {subjectKey:'synthetic'},{contractVersion:'CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@2'},
+  ])assert.throws(()=>projectGraphHandoff(JSON.stringify({...conversionGraphReport,...wrong}),reportSha,initialRows()));
+  assert.throws(()=>projectGraphHandoff(JSON.stringify(conversionGraphReport),'bad',initialRows()));
+  assert.throws(()=>projectGraphHandoff(' '.repeat(16385),reportSha,initialRows()));
+});
+
 test('public surface planning rows are unique, idempotent and never claim live evidence', () => {
   const audit = publicSurfaceRows();
   assert.equal(audit.length, 10);
