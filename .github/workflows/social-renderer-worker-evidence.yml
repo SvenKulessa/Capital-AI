@@ -5,6 +5,7 @@ on:
     paths:
       - "deploy/social-media/**"
       - "scripts/media/**"
+      - "public/branding/capital-ai-logo.jpg"
       - "public/branding/asset-pack/meta/social-render-tokens.json"
       - ".github/workflows/social-renderer-worker-evidence.yml"
       - "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
@@ -84,6 +85,7 @@ jobs:
             deploy/social-media/Dockerfile.renderer \
             deploy/social-media/renderer-requirements.txt \
             scripts/media \
+            public/branding/capital-ai-logo.jpg \
             public/branding/asset-pack/meta/social-render-tokens.json \
           | docker build \
             --file deploy/social-media/Dockerfile.renderer \

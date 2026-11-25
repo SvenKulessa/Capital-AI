@@ -72,6 +72,7 @@ RUN python -m pip install \
 COPY --from=ffmpeg-build /opt/ffmpeg /opt/ffmpeg
 COPY scripts/media /opt/capital-ai-media/scripts/media
 COPY public/branding/asset-pack/meta/social-render-tokens.json /opt/capital-ai-media/public/branding/asset-pack/meta/social-render-tokens.json
+COPY public/branding/capital-ai-logo.jpg /opt/capital-ai-media/public/branding/capital-ai-logo.jpg
 
 ENV PYTHONPATH="/opt/capital-ai-media/scripts/media" \
     PATH="/opt/ffmpeg/bin:${PATH}" \
