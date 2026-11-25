@@ -171,7 +171,7 @@ class GitHubRenderActions:
         self.assessment = assessment
         self.executor = executor
         self.enable_merge = enable_merge is True
-        if self.enable_merge and not (sha(approved_head_sha) and sha(approved_base_sha)):
+        if (self.enable_merge or self.executor is not None) and not (sha(approved_head_sha) and sha(approved_base_sha)):
             raise ValueError("mutating adapter requires exact trusted head/base SHAs")
         self.approved_head_sha = approved_head_sha
         self.approved_base_sha = approved_base_sha
@@ -199,14 +199,14 @@ class GitHubRenderActions:
         )
         title = pr.get("title")
         good = (pr.get("state") == "open" and pr.get("draft") is False
-                and (not self.enable_merge or (isinstance(title, str) and bool(title.strip())
+                and (not (self.enable_merge or self.executor is not None) or (isinstance(title, str) and bool(title.strip())
                                                 and HOLD_TITLE.search(title) is None))
                 and base.get("ref") == "main" and sha(base.get("sha"))
                 and sha(head_sha) and sha(main_sha)
                 and isinstance(head_ref, str)
                 and (BRANCH_RE.fullmatch(head_ref) is not None or dependabot_readback)
                 and head.get("repo", {}).get("full_name") == REPO
-                and (not self.enable_merge or (
+                and (not (self.enable_merge or self.executor is not None) or (
                     head_sha == self.approved_head_sha
                     and base.get("sha") == self.approved_base_sha
                     and main_sha == self.approved_base_sha)))
@@ -296,6 +296,12 @@ class GitHubRenderActions:
     def repair(self, state):
         if self.executor is None:
             return {"ok": False}
+        # A pending repair may resume after the approved PR or main has moved.
+        # Revalidate the trusted scope before any executor side effect.
+        try:
+            self._current()
+        except (ValueError, TypeError):
+            return {"ok": False, "failure_class": "PERMISSION_STOP"}
         return {"ok": self.executor.repair(state) is True}
 
     def evidence(self, state):
