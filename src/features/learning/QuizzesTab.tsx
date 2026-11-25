@@ -1,9 +1,10 @@
 import { useState, type KeyboardEvent } from 'react';
 import { VocabularySoloQuiz } from './VocabularyGame';
 import { PortfolioRiskQuiz } from './PortfolioRiskQuiz';
+import { GrowthIntelligenceQuiz } from './GrowthIntelligenceQuiz';
 
-type Category = 'quant' | 'portfolio' | 'vocabulary';
-const categories: readonly Category[] = ['quant', 'portfolio', 'vocabulary'];
+type Category = 'quant' | 'portfolio' | 'vocabulary' | 'growth';
+const categories: readonly Category[] = ['quant', 'portfolio', 'vocabulary', 'growth'];
 
 export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
   const [category, setCategory] = useState<Category>('quant');
@@ -30,7 +31,7 @@ export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
             aria-controls={'quizzes-panel-' + item} onClick={() => setCategory(item)}
             className={'min-h-11 rounded-t-lg px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-amber-300 ' +
               (item === category ? 'border-b-2 border-amber-300 bg-amber-400/10 text-amber-200' : 'text-slate-300 hover:text-white')}>
-            {item === 'quant' ? 'Quant & Trader' : item === 'portfolio' ? 'Portfolio-Risiko' : 'Wörter-Quiz'}
+            {item === 'quant' ? 'Quant & Trader' : item === 'portfolio' ? 'Portfolio-Risiko' : item === 'vocabulary' ? 'Wörter-Quiz' : 'Growth Intelligence'}
           </button>
         ))}
       </div>
@@ -52,6 +53,9 @@ export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
       </div>
       <div id="quizzes-panel-vocabulary" role="tabpanel" aria-labelledby="quizzes-tab-vocabulary" hidden={category !== 'vocabulary'}>
         {category === 'vocabulary' && <VocabularySoloQuiz />}
+      </div>
+      <div id="quizzes-panel-growth" role="tabpanel" aria-labelledby="quizzes-tab-growth" hidden={category !== 'growth'}>
+        {category === 'growth' && <GrowthIntelligenceQuiz />}
       </div>
     </section>
   );
