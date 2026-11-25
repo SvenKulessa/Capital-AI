@@ -186,6 +186,22 @@ rg -q 'would be affected by row-level security' "$scratch/rls.err" || {
 }
 printf 'PASS full app dump fails under RLS without BYPASSRLS\n'
 
+
+# New synthetic alternative: RLS-enabled dumps can succeed while omitting rows.
+# A narrowly assigned SELECT policy may restore complete visibility for ONE
+# explicitly selected fixture table without a role-wide BYPASSRLS attribute.
+# This does not isolate PUBLIC grants or authorize a production policy.
+dump_as_reader --data-only --table=app.notes --enable-row-security --inserts > "$scratch/rls-partial.sql"
+source_admin -qc 'CREATE POLICY fixture_backup_select ON app.notes FOR SELECT TO capital_ai_backup_reader USING (true)'
+assert_query f "$reader" "SELECT rolbypassrls FROM pg_roles WHERE rolname=current_user"
+assert_query 2 "$reader" 'SELECT count(*) FROM app.notes'
+assert_query 1 fixture_tenant 'SELECT count(*) FROM app.notes'
+dump_as_reader --data-only --table=app.notes --enable-row-security --inserts > "$scratch/rls-allowlist.sql"
+source_admin -qc 'DROP POLICY fixture_backup_select ON app.notes'
+assert_query 0 "$reader" 'SELECT count(*) FROM app.notes'
+assert_query 1 fixture_tenant 'SELECT count(*) FROM app.notes'
+printf 'PASS scoped synthetic RLS policy added and removed without BYPASSRLS; archive completeness checked below\n'
+
 source_admin -q <<'SQL'
 ALTER ROLE capital_ai_backup_reader BYPASSRLS;
 REVOKE ALL ON SCHEMA net FROM capital_ai_backup_reader;
@@ -357,3 +373,25 @@ restore_hash="$(fingerprint "$restore_port")"
 printf 'Scoped archive SHA-256 %s\n' "$(sha256sum "$scratch/app.sql" | cut -d ' ' -f 1)"
 printf 'Source/restore fingerprint SHA-256 %s\n' "$source_hash"
 printf 'PASS scoped dump, separate-cluster restore, ACL recreation and tenant isolation\n'
+
+
+# Use the already isolated restore cluster, never a new provider resource.
+# Both archives had pg_dump exit 0. Read back the actual restored row set,
+# not just the exit code or an INSERT count in SQL text. Roll back each import.
+check_rls_archive() {
+  local archive=$1 expected=$2 output
+  output="$(
+    {
+      printf 'BEGIN;\nTRUNCATE app.notes;\n\\i %s\n' "$archive"
+      printf "%s\n" "SELECT 'CAI664_RLS_ROWS=' || coalesce(string_agg(tenant || ':' || revision, ',' ORDER BY tenant), 'EMPTY') FROM app.notes;" 'ROLLBACK;'
+    } | restore_admin -Atq
+  )"
+  printf '%s\n' "$output" | rg -Fxq "CAI664_RLS_ROWS=$expected" ||
+    fail "RLS archive row coverage mismatch: $(basename "$archive")"
+}
+
+check_rls_archive "$scratch/rls-partial.sql" 'EMPTY'
+check_rls_archive "$scratch/rls-allowlist.sql" 'another_tenant:2,fixture_tenant:1'
+assert_query 1 fixture_tenant 'SELECT count(*) FROM app.notes' "$restore_port"
+[[ $(fingerprint "$restore_port") == "$restore_hash" ]] || fail 'RLS archive checks changed restored fingerprint'
+printf 'PASS RLS-enabled dump can silently omit rows; scoped policy archive restores exact fixture rows without BYPASSRLS\n'
