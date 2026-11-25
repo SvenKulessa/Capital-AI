@@ -55,6 +55,11 @@ export function publicSurfaceResearchTask(id: string) {
     domain: task.domain, query: 'Review repository evidence for CAI-PUBLIC-SURFACE@1 ' + task.id + ' ' + task.name + '. Report gaps; no mutation authority.' };
 }
 
+export function billingRecoveryResearchTask() {
+  return { schema:'CAPITAL_AI_OFFLINE_RESEARCH@1',task_id:'CAI-664-BILLING',domain:'TRUST',
+    query:'Review repository evidence for issue 664 billing metadata, WIF, zero-cost boundary and recovery gaps. Do not infer spend or export authority.' };
+}
+
 export function initialRows(): GrowthRow[] {
   return [
     { ...makeRow('ga4', 'GA4 Acquisition', 'GROWTH', 'Owner-Readback ausführen'),
@@ -82,6 +87,10 @@ export function initialRows(): GrowthRow[] {
     { ...makeRow('x-growth-graph', 'X Growth · LangGraph', 'PLATFORM', 'Budget- und Conversion-Evidence in bestehende Graph-Review integrieren'),
       priority: 'P1', flow: 'Nur Status-Referenzen, keine Publishing- oder Kostenautorität',
       operation: 'Runtime-Evidence offen' },
+    { ...makeRow('cai664-billing','Backup Billing #664','TRUST','Existing main-only billing-readback dispatch; review run evidence; no SQL or new export'),
+      priority:'P0',flow:'GitHub OIDC → existing Cloud Operator → BigQuery metadata only',
+      approvals:'Additional budget 0 EUR; production DB export blocked',
+      operation:'Metadata discovery only; actual and label costs NOT_PROVEN' },
     ...publicSurfaceRows(),
   ];
 }
