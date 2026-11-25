@@ -1,12 +1,12 @@
 // Owner-only discovery, public topic queries, existing encrypted archive format.
 import {createHash} from 'node:crypto';
-import {discoverGrowthTools} from './tool-update-discovery.mjs';
+import {discoverGrowthTools,discoverMcpRegistry} from './tool-update-discovery.mjs';
 import {createGrowthEvidenceArchive} from './growth-owner-evidence-archive.mjs';
 export const DOMAIN_TOPICS=Object.freeze({PRODUCT:['accessibility','content-generation','mcp-server'],MARKET:['finance','data-analysis','mcp-server'],PLATFORM:['developer-tools','observability','mcp-server'],TRUST:['security','testing','mcp-server'],GROWTH:['analytics','advertising','seo','tag-manager','mcp-server']});
 const PATH='/api/internal/growth-tool-candidates';
 const domainOk=v=>typeof v==='string'&&Object.hasOwn(DOMAIN_TOPICS,v);
 const repoOk=v=>typeof v==='string'&&v.length<=110&&/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(v);
-const idFor=v=>'tool-'+createHash('sha256').update(v.toLowerCase()).digest('hex').slice(0,48);
+const idFor=(v,prefix='tool')=>prefix+'-'+createHash('sha256').update(v.toLowerCase()).digest('hex').slice(0,48);
 const allowedLicenses=new Set(['MIT','Apache-2.0','BSD-2-Clause','BSD-3-Clause','ISC','MPL-2.0']);
 export function mergeToolCandidates(previous,radar,domain){
   if(!domainOk(domain)||!Array.isArray(previous)||previous.length>100||radar?.schema!=='CAPITAL_AI_GROWTH_TOOL_RADAR@1'||radar.metadataOnly!==true||radar.automaticInstall!==false||radar.publicPublishAllowed!==false||radar.paidProviderCalls!==0||!Array.isArray(radar.candidates)||radar.candidates.length>40||!Array.isArray(radar.topics)||!radar.topics.every(t=>DOMAIN_TOPICS[domain].includes(t.topic)))throw Error('INVALID_RADAR');
@@ -22,11 +22,24 @@ export function mergeToolCandidates(previous,radar,domain){
     if(!rows.has(id)&&rows.size>=100)throw Error('CATALOG_CAPACITY');
     rows.set(id,row);
   }
+  if(radar.registry!==undefined){
+    const registry=radar.registry;
+    if(registry?.source!=='OFFICIAL_MCP_REGISTRY'||!['METADATA_OBSERVED','NOT_PROVEN'].includes(registry.status)||!Array.isArray(registry.candidates)||registry.candidates.length>8)throw Error('INVALID_MCP_REGISTRY');
+    if(registry.status==='METADATA_OBSERVED')for(const c of registry.candidates){
+      if(!repoOk(c?.name)||typeof c.version!=='string'||! /^[A-Za-z0-9][A-Za-z0-9.+_-]{0,79}$/.test(c.version)||c.installAllowed!==false||c.activationAllowed!==false||c.commercialRights!=='NOT_PROVEN'||c.outputRights!=='NOT_PROVEN')throw Error('INVALID_MCP_CANDIDATE');
+      const id=idFor(c.name,'mcp'),row={id,name:c.name,domain,priority:'P2',status:'NOT_PROVEN',endpoint:'https://registry.modelcontextprotocol.io/v0.1/servers/'+encodeURIComponent(c.name)+'/versions/'+encodeURIComponent(c.version),auth:'Registry metadata only; runtime NOT_PROVEN',flow:'Official MCP Registry metadata; no server invoked',tests:'NOT_PROVEN',error:'',dependencies:'Alternatives: compare existing catalog; NOT_PROVEN',approvals:'Commercial / redistribution / output rights NOT_PROVEN; cost NOT_PROVEN',operation:'Declared MCP version '+c.version+'; license NOT_PROVEN',next:'Review exact artifact, license, security, costs and data rights before use',evidence:'Observed '+observedAt,origin:'OWNER_NOTE'};
+      if(!rows.has(id)&&rows.size>=100)throw Error('CATALOG_CAPACITY');
+      if(!rows.has(id)||rows.get(id).evidence<=row.evidence)rows.set(id,row);
+    }
+  }
+  // Do not create a new immutable archive entry for an identical metadata observation.
+  for(const [id,row] of rows){const old=previous.find(x=>x.id===id);if(old&&JSON.stringify({...old,evidence:''})===JSON.stringify({...row,evidence:''}))rows.set(id,old);}
   return [...rows.values()].sort((a,b)=>a.id.localeCompare(b.id));
 }
 export async function discoverPrivateDomain(domain,{fetchImpl=fetch,now=Date.now}={}){
   if(!domainOk(domain))throw Error('INVALID_DOMAIN');
-  return discoverGrowthTools({topics:DOMAIN_TOPICS[domain],fetchImpl,now});
+  const [radar,registry]=await Promise.all([discoverGrowthTools({topics:DOMAIN_TOPICS[domain],fetchImpl,now}),discoverMcpRegistry(domain,{fetchImpl,now})]);
+  return {...radar,registry};
 }
 async function readDomain(req){
   if(req.headers['content-type']!=='application/json')throw Error('INVALID_CONTENT_TYPE');
@@ -64,7 +77,7 @@ export function createPrivateToolCatalogApi({authorized,auth,env=process.env,fet
       const radar=await discoverPrivateDomain(domain,{fetchImpl,now});
       const rows=mergeToolCandidates([],radar,domain);
       let storage='BLOCKED_RECOVERY',persisted=false;
-      if(storageReady()){
+      if(storageReady()&&(radar.topics.some(t=>t.status==='METADATA_OBSERVED')||radar.registry.status==='METADATA_OBSERVED')){
         try{
           const prior=await latest(),merged=mergeToolCandidates(prior.rows,radar,domain);
           if(JSON.stringify(merged)!==JSON.stringify(prior.rows)){
@@ -74,7 +87,7 @@ export function createPrivateToolCatalogApi({authorized,auth,env=process.env,fet
           storage='AVAILABLE';persisted=true;
         }catch{storage='NOT_PROVEN';}
       }
-      json(res,200,{schema:'GROWTH_TOOL_DISCOVERY@1',domain,observedAt:radar.observedAt,topics:radar.topics,rows,storage,persisted,pluginDirectory:'NOT_PROVEN_IN_RUNTIME',commercialRights:'NOT_PROVEN',automaticInstall:false});
+      json(res,200,{schema:'GROWTH_TOOL_DISCOVERY@1',domain,observedAt:radar.observedAt,topics:radar.topics,rows,storage,persisted,mcpRegistry:radar.registry.status,pluginDirectory:'CHATGPT_DIRECTORY_NOT_PROVEN_IN_RUNTIME',commercialRights:'NOT_PROVEN',automaticInstall:false});
     }catch{json(res,422,{error:'discovery_rejected'});}finally{busy=false;}
     return true;
   }};
