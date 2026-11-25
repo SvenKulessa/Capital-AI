@@ -86,6 +86,10 @@ test('public Growth article has seven named stages and honest product states, wi
   assert.match(html,/GROWTH INTELLIGENCE ENGINE/);
   assert.match(html,/Horizontale Intelligence-Pipeline/);
   for(const title of ['Learning Hub','CADS','SmartClip','Digitale Blueprints','SOLO2 RAG'])assert.ok(html.includes(title));
-  assert.equal((html.match(/aria-pressed="(?:true|false)"/g)||[]).length,14);
+  assert.equal((html.match(/aria-pressed="(?:true|false)"/g)||[]).length,7);
+  assert.equal((html.match(/data-growth-pipeline-badge=/g)||[]).length,7);
+  const core=html.slice(html.indexOf('data-growth-globe-core'),html.indexOf('3D-Globus starten'));
+  assert.ok(core.includes('/branding/universe/hero-universe-globe.webp'));
+  assert.doesNotMatch(core,/data-growth-pipeline-badge/);
   assert.match(html,/Coming Soon/);assert.doesNotMatch(html,/<canvas|OWNER_NOTE|\/api\/profile|REVIEW_REQUIRED/);
 });
