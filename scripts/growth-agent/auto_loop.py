@@ -34,6 +34,11 @@ class LoopState(TypedDict, total=False):
     merge_sha: str
     observed_sha: str
     history: list[str]
+    failure_class: str
+    stop_reason: str
+    failure_fingerprint: str
+    repair_fingerprints: list[str]
+    wait_phase: str
 
 
 @dataclass(frozen=True)
@@ -49,6 +54,12 @@ class Authority:
         if not 0 <= self.max_repairs <= 3:
             raise ValueError("max_repairs must be between 0 and 3")
 
+
+HARD_STOPS = frozenset({"SECURITY_STOP", "PERMISSION_STOP", "COST_STOP",
+                        "DATA_INTEGRITY_STOP", "LICENSE_STOP"})
+FAILURE_CLASSES = HARD_STOPS | {"CI_FAILURE", "API_FAILURE", "NETWORK_FAILURE",
+                                "ADAPTER_UNAVAILABLE", "CI_PENDING", "DEPLOY_PENDING"}
+WAIT_PHASES = {"test": "CI_PENDING", "observe": "DEPLOY_PENDING"}
 
 REQUIRED_CHECKS = ("Docker Security Gate", "Domain Governance")
 EVIDENCE_KEYS = ("base_sha", "head_sha", "checks", "applicable_checks_green",
@@ -136,13 +147,50 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
         return event(state, "implement", status="IMPLEMENTED" if ok else "BLOCKED")
 
     def test(state):
-        passed = call("test", state).get("passed") is True
-        return event(state, "test", checks_passed=passed, status="TESTED" if passed else "TEST_FAILED")
+        if authority.read_only or not authority.allow_changes:
+            return event(state, "test_denied", status="BLOCKED", stop_reason="PERMISSION_STOP", checks_passed=False)
+        result = call("test", state)
+        kind = result.get("failure_class")
+        if not isinstance(kind, str) or kind not in FAILURE_CLASSES:
+            kind = "CI_FAILURE"
+        status = result.get("status")
+        clean = dict(checks_passed=False, evidence={}, wait_phase="", failure_fingerprint="")
+        if kind in HARD_STOPS:
+            return event(state, "test_blocked", status="BLOCKED", failure_class=kind, stop_reason=kind, **clean)
+        if status == "WAIT" and kind == "CI_PENDING" and result.get("passed") is not True:
+            return event(state, "wait_ci", status="WAIT", failure_class=kind, stop_reason="", **{**clean, "wait_phase": "test"})
+        if result.get("passed") is True and status in (None, "TESTED"):
+            return event(state, "test", status="TESTED", checks_passed=True, stop_reason="", failure_class="", wait_phase="", failure_fingerprint="")
+        if result.get("passed") is not False or status not in (None, "TEST_FAILED"):
+            return event(state, "test_not_proven", status="NOT_PROVEN", failure_class="ADAPTER_UNAVAILABLE", stop_reason="NOT_PROVEN", **clean)
+        fingerprint = result.get("failure_fingerprint")
+        if not isinstance(fingerprint, str) or re.fullmatch(r"[0-9a-f]{64}", fingerprint) is None:
+            fingerprint = "unclassified"
+        repeated = fingerprint in state.get("repair_fingerprints", [])
+        reason = ("NO_PROGRESS" if repeated else "RETRY_EXHAUSTED"
+                  if state.get("attempts", 0) >= authority.max_repairs else "")
+        return event(state, "test", status="TEST_FAILED", failure_class=kind, stop_reason=reason,
+                     **{**clean, "failure_fingerprint": fingerprint})
 
     def repair(state):
+        # Recheck authority and the current retry budget at the side-effect boundary:
+        # a resumed checkpoint may have been routed under older permissions.
+        if authority.read_only or not authority.allow_changes:
+            return event(state, "repair_denied", status="BLOCKED", stop_reason="PERMISSION_STOP")
+        if state.get("attempts", 0) >= authority.max_repairs:
+            return event(state, "repair_budget_exhausted", status="BLOCKED", stop_reason="RETRY_EXHAUSTED")
+        fingerprint = state.get("failure_fingerprint") or "unclassified"
+        prior = state.get("repair_fingerprints", [])
+        if state.get("status") != "TEST_FAILED" or fingerprint in prior or state.get("stop_reason"):
+            return event(state, "repair_no_progress", status="BLOCKED", stop_reason="NO_PROGRESS")
         attempts = state.get("attempts", 0) + 1
-        ok = call("repair", {**state, "attempts": attempts}).get("ok") is True
-        return event(state, "repair", attempts=attempts, status="REPAIRED" if ok else "BLOCKED")
+        result = call("repair", {**state, "attempts": attempts})
+        kind = result.get("failure_class")
+        hard_stop = isinstance(kind, str) and kind in HARD_STOPS
+        ok = result.get("ok") is True and not hard_stop
+        return event(state, "repair", attempts=attempts, repair_fingerprints=[*prior, fingerprint],
+                     status="REPAIRED" if ok else "BLOCKED",
+                     stop_reason="" if ok else kind if hard_stop else "REPAIR_FAILED")
 
     def evidence(state):
         if not binding_valid(state):
@@ -161,7 +209,7 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
                 or not state.get("checks_passed")
                 or not merge_evidence_verified(state.get("evidence"))):
             return event(state, "merge_not_authorized", status=(
-                state.get("status") if state.get("status") in {"BLOCKED", "READ_ONLY_COMPLETE", "TEST_FAILED"}
+                state.get("status") if state.get("status") in {"BLOCKED", "READ_ONLY_COMPLETE", "TEST_FAILED", "NOT_PROVEN"}
                 else "MERGE_NOT_PROVEN"))
         return event(state, "merge_authorized", status="MERGE_READY")
 
@@ -179,13 +227,20 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
 
     def observe(state):
         # Observe normal main-triggered deployment only; never trigger a manual deploy.
+        if authority.read_only or not authority.observe_existing_deploy:
+            return event(state, "observe_denied", status="BLOCKED", stop_reason="PERMISSION_STOP")
         result = call("observe_deployment", state)
+        if (result.get("status") == "WAIT" and result.get("failure_class") == "DEPLOY_PENDING"
+                and result.get("deployed") is not True):
+            return event(state, "wait_deploy", status="WAIT", wait_phase="observe", failure_class="DEPLOY_PENDING", stop_reason="")
         sha = result.get("deployed_sha")
         ok = result.get("deployed") is True and sha == state.get("merge_sha")
         return event(state, "observe_deployment", status="DEPLOYED" if ok else "DEPLOYMENT_NOT_PROVEN",
-                     observed_sha=sha if ok else "")
+                     observed_sha=sha if ok else "", wait_phase="", failure_class="")
 
     def verify(state):
+        if authority.read_only or not authority.observe_existing_deploy:
+            return event(state, "verify_denied", status="BLOCKED", stop_reason="PERMISSION_STOP")
         result = call("verify_runtime", state)
         ok = result.get("verified") is True and result.get("deployed_sha") == state.get("merge_sha")
         return event(state, "verify_runtime", status="VERIFIED" if ok else "NOT_PROVEN")
@@ -196,14 +251,25 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
         return "evidence" if authority.read_only else ("implement" if authority.allow_changes else "end")
 
     def after_test(s):
-        if s["status"] == "TESTED":
+        if s["status"] == "WAIT":
+            return "wait"
+        if s["status"] != "TEST_FAILED" or s.get("stop_reason"):
             return "evidence"
         return "repair" if s.get("attempts", 0) < authority.max_repairs else "evidence"
+
+    def wait(state):
+        phase = state.get("wait_phase")
+        allowed = (phase == "test" and authority.allow_changes and not authority.read_only
+                   or phase == "observe" and authority.observe_existing_deploy and not authority.read_only)
+        if (not allowed or not binding_valid(state) or state.get("status") != "WAIT"
+                or WAIT_PHASES.get(phase) != state.get("failure_class")):
+            return event(state, "resume_denied", status="BLOCKED", stop_reason="PERMISSION_STOP", wait_phase="")
+        return event(state, "resume_wait")
 
     builder = StateGraph(LoopState)
     for name, node in (("analyze", analyze), ("implement", implement), ("test", test),
                        ("repair", repair), ("evidence", evidence), ("authorize", authorize),
-                       ("merge", merge), ("observe", observe), ("verify", verify)):
+                       ("merge", merge), ("observe", observe), ("verify", verify), ("wait", wait)):
         builder.add_node(name, node)
     builder.add_edge(START, "analyze")
     builder.add_conditional_edges("analyze", after_analyze,
@@ -211,7 +277,9 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
     builder.add_conditional_edges("implement",
                                   lambda s: "test" if s["status"] == "IMPLEMENTED" else "evidence",
                                   {"test": "test", "evidence": "evidence"})
-    builder.add_conditional_edges("test", after_test, {"repair": "repair", "evidence": "evidence"})
+    builder.add_conditional_edges("test", after_test, {"repair": "repair", "evidence": "evidence", "wait": "wait"})
+    builder.add_conditional_edges("wait", lambda s: s["wait_phase"] if s["status"] == "WAIT" else "end",
+                                  {"test": "test", "observe": "observe", "end": END})
     builder.add_conditional_edges("repair",
                                   lambda s: "test" if s["status"] == "REPAIRED" else "evidence",
                                   {"test": "test", "evidence": "evidence"})
@@ -223,11 +291,11 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
                                   lambda s: "observe" if s["status"] == "MERGED" and authority.observe_existing_deploy else "end",
                                   {"observe": "observe", "end": END})
     builder.add_conditional_edges("observe",
-                                  lambda s: "verify" if s["status"] == "DEPLOYED" else "end",
-                                  {"verify": "verify", "end": END})
+                                  lambda s: "verify" if s["status"] == "DEPLOYED" else "wait" if s["status"] == "WAIT" else "end",
+                                  {"verify": "verify", "wait": "wait", "end": END})
     builder.add_edge("verify", END)
     return builder.compile(checkpointer=checkpointer if checkpointer is not None else InMemorySaver(),
-                           interrupt_after=interrupt_after)
+                           interrupt_after=interrupt_after, interrupt_before=["wait"])
 
 
 def execute(actions, authority: Authority, task_id: str) -> LoopState:

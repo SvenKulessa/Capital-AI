@@ -168,6 +168,40 @@ Für Weboptimierung gehören messbare Nutzerwirkungen wie barrierefreie Navigati
 
 Die Iteration endet, wenn das Ziel erreicht ist, kein unabhängiger ausführbarer Schritt im beauftragten Umfang bleibt oder sich das beobachtbare Ergebnis trotz eines begründet anderen Ansatzes nicht ändert. Bestehende HOLDs, Merge-Bedingungen und Produktionsgrenzen gelten. Diese Arbeitsweise läuft im aktiven Auftrag. Zeitgesteuerte Ausführung braucht eine gesondert eingerichtete Automation.
 
+## CAPITAL_AI_ERROR_RECOVERY@1 – Fehlerbehebung und Abbruch
+
+Konkretisierung von SOLO_MAINTAINER_FLOW@2 / AUTONOMOUS_EXECUTION_FIRST;
+keine neue Governance-Instanz, keine zusätzlichen Required Checks,
+keine zusätzliche Provider- oder Ausführungsberechtigung.
+
+- Fehler reproduzieren, Ursache und betroffenen Wirkungspfad eingrenzen,
+  kleinsten sicheren Fix und passende Positiv-/Negativtests wählen.
+  Standardbudget zwei Reparaturversuche; bestehende technische Obergrenze
+  drei nur bei explizit autorisierter Konfiguration. Keine identischen
+  Reparaturwiederholungen ohne neue belastbare Erkenntnis. Budget und
+  Berechtigungen bei jedem Wiederanlauf erneut prüfen.
+- Nachweislich laufende CI oder erwartetes SHA-gebundenes Deployment:
+  WAIT am bestehenden Checkpoint, kein Reparaturversuch, kein neuer
+  Workflow, kein automatischer Scheduler. Bei erneuter autorisierter
+  Invocation nur den wartenden Lesevorgang fortsetzen; keine erneute
+  Implementierung oder Merge-Mutation.
+- SECURITY_STOP, PERMISSION_STOP, COST_STOP, DATA_INTEGRITY_STOP und
+  LICENSE_STOP beenden den betroffenen unsicheren Wirkungspfad.
+  NO_PROGRESS und RETRY_EXHAUSTED beenden den Reparaturkreislauf.
+  Unbekannte oder nicht belegte Ergebnisse bleiben NOT_PROVEN;
+  fehlende Messwerte sind keine gemessenen Nullwerte. Unabhängige
+  autorisierte Arbeit fortsetzen, global nur bei übergreifendem Risiko stoppen.
+- Nur begrenzte, typisierte Fehlerklassen und nicht vertrauliche
+  Fingerprints, SHA/Run-IDs und Status im Checkpoint. Keine Rohfehler,
+  Tokens oder Provider-Payloads. Unklare Schreibresultate zuerst durch
+  unabhängigen Readback klären; keine blinden Wiederholungen. Terminale
+  Checkpoints nicht automatisch neu starten.
+- API-401/403 und Kontobindungsfehler nicht umgehen; autorisierte direkte
+  Provider-Adapter verwenden. Rate-Limits und Retry-After respektieren;
+  nur sichere, begrenzte Reads erneut versuchen. Keine nicht autorisierten
+  Mehrkosten oder produktiven Datenbankmutationen. Merge, Recovery und
+  Deployment weiterhin nach den unveränderten bestehenden Regeln.
+
 ## Entwicklungsfluss
 
 Die Primary Domain (`PRODUCT`, `MARKET`, `PLATFORM`, `TRUST` oder `GROWTH`) bestimmt beide Namen. Verwende das Format auch beim späteren Bearbeiten eines PR-Titels.

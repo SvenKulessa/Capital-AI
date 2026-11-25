@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+from hashlib import sha256
 import os
 import re
 from urllib.error import HTTPError, URLError
@@ -113,13 +114,14 @@ class SafeHTTP:
         return self._request("https://capital-ai.online/healthz")
 
 
-def required_workflow_group_verified(http, name, runs, head_sha):
+def required_workflow_group_verified(http, name, runs, head_sha, *, allow_pending=False):
     """Accept repeated canonical successes only when every run proves provenance."""
     workflow = REQUIRED_WORKFLOWS.get(name)
     if workflow is None or not runs or not sha(head_sha):
         return False
     workflow_ids = set()
     check_ids = set()
+    pending = False
     for run in runs:
         app = run.get("app")
         run_id = run.get("id")
@@ -127,22 +129,28 @@ def required_workflow_group_verified(http, name, runs, head_sha):
         match = ACTIONS_CHECK_URL.fullmatch(url) if isinstance(url, str) else None
         if (run.get("name") != name or run.get("head_sha") != head_sha
                 or not isinstance(app, dict) or (app.get("slug"), app.get("id")) != CHECK_SOURCES[name]
-                or run.get("status") != "completed" or run.get("conclusion") != "success"
+                or not ((run.get("status") == "completed" and run.get("conclusion") == "success")
+                        or (allow_pending and run.get("status") in ("queued", "in_progress", "waiting", "requested", "pending")
+                            and run.get("conclusion") is None))
                 or type(run_id) is not int or run_id in check_ids
                 or match is None or int(match[2]) != run_id):
             return False
         workflow_run_id = int(match[1])
         if workflow_run_id in workflow_ids:
             return False
+        run_pending = run.get("status") != "completed"
         workflow_run = http.github(f"/actions/runs/{workflow_run_id}")
         if (not isinstance(workflow_run, dict) or workflow_run.get("id") != workflow_run_id
                 or (workflow_run.get("workflow_id"), workflow_run.get("path")) != workflow
                 or workflow_run.get("head_sha") != head_sha or workflow_run.get("event") != "pull_request"
-                or workflow_run.get("status") != "completed" or workflow_run.get("conclusion") != "success"):
+                or not ((workflow_run.get("status") == "completed" and workflow_run.get("conclusion") == "success")
+                        or (allow_pending and run_pending and workflow_run.get("status") in ("queued", "in_progress", "waiting", "requested", "pending")
+                            and workflow_run.get("conclusion") is None))):
             return False
+        pending = pending or run_pending
         workflow_ids.add(workflow_run_id)
         check_ids.add(run_id)
-    return True
+    return pending if allow_pending else True
 
 
 class GitHubRenderActions:
@@ -163,7 +171,7 @@ class GitHubRenderActions:
         self.assessment = assessment
         self.executor = executor
         self.enable_merge = enable_merge is True
-        if self.enable_merge and not (sha(approved_head_sha) and sha(approved_base_sha)):
+        if (self.enable_merge or self.executor is not None) and not (sha(approved_head_sha) and sha(approved_base_sha)):
             raise ValueError("mutating adapter requires exact trusted head/base SHAs")
         self.approved_head_sha = approved_head_sha
         self.approved_base_sha = approved_base_sha
@@ -191,14 +199,14 @@ class GitHubRenderActions:
         )
         title = pr.get("title")
         good = (pr.get("state") == "open" and pr.get("draft") is False
-                and (not self.enable_merge or (isinstance(title, str) and bool(title.strip())
+                and (not (self.enable_merge or self.executor is not None) or (isinstance(title, str) and bool(title.strip())
                                                 and HOLD_TITLE.search(title) is None))
                 and base.get("ref") == "main" and sha(base.get("sha"))
                 and sha(head_sha) and sha(main_sha)
                 and isinstance(head_ref, str)
                 and (BRANCH_RE.fullmatch(head_ref) is not None or dependabot_readback)
                 and head.get("repo", {}).get("full_name") == REPO
-                and (not self.enable_merge or (
+                and (not (self.enable_merge or self.executor is not None) or (
                     head_sha == self.approved_head_sha
                     and base.get("sha") == self.approved_base_sha
                     and main_sha == self.approved_base_sha)))
@@ -206,7 +214,7 @@ class GitHubRenderActions:
             raise ValueError("PR scope not verified")
         return pr, main_sha
 
-    def _checks(self, head_sha):
+    def _checks(self, head_sha, *, include_progress=False):
         data = self.http.github(f"/commits/{head_sha}/check-runs?per_page=100")
         runs = data.get("check_runs") if isinstance(data, dict) else None
         if (not isinstance(runs, list) or not 1 <= len(runs) <= 100
@@ -235,19 +243,33 @@ class GitHubRenderActions:
                     (not isinstance(app, dict) or (app.get("slug"), app.get("id")) != source)):
                 by_name[name] = "invalid_provenance"
             elif run.get("status") != "completed":
-                by_name[name] = "pending"
+                by_name[name] = ("pending" if run.get("status") in ("queued", "in_progress", "waiting", "requested", "pending")
+                                 and run.get("conclusion") is None else "not_success")
             else:
                 result = run.get("conclusion")
                 by_name[name] = result if result in ("success", "skipped") else "not_success"
         for name, group in required_runs.items():
-            by_name[name] = ("success" if required_workflow_group_verified(self.http, name, group, head_sha)
-                             else "not_success")
+            if include_progress and any(run.get("status") != "completed" for run in group):
+                by_name[name] = ("pending" if required_workflow_group_verified(self.http, name, group, head_sha, allow_pending=True)
+                                 else "not_success")
+            else:
+                by_name[name] = ("success" if required_workflow_group_verified(self.http, name, group, head_sha)
+                                 else "not_success")
         required_ok = all(by_name.get(name) == "success" for name in CHECK_SOURCES)
         applicable_ok = all(status == "success" or (status == "skipped" and name in OPTIONAL_SKIP)
                             for name, status in by_name.items())
         # Check names and conclusions from other apps never enter persisted evidence.
-        return ({name: by_name[name] for name in CHECK_SOURCES if name in by_name},
-                required_ok and applicable_ok, sorted(ids))
+        result = ({name: by_name[name] for name in CHECK_SOURCES if name in by_name},
+                  required_ok and applicable_ok, sorted(ids))
+        if not include_progress:
+            return result
+        pending_only = (all(name in by_name for name in CHECK_SOURCES)
+                        and "pending" in by_name.values()
+                        and all(status in ("success", "pending") or (status == "skipped" and name in OPTIONAL_SKIP)
+                                for name, status in by_name.items()))
+        # Derive a bounded digest from canonical names and statuses, not logs or secrets.
+        fingerprint = sha256(json.dumps(sorted(by_name.items()), separators=(",", ":")).encode()).hexdigest()
+        return (*result, pending_only, fingerprint)
 
     def analyze(self, state):
         pr, _ = self._current()
@@ -262,12 +284,24 @@ class GitHubRenderActions:
 
     def test(self, state):
         pr, _ = self._current()
-        _, ok, _ = self._checks(pr["head"]["sha"])
-        return {"passed": ok}
+        _, ok, _, pending, fingerprint = self._checks(pr["head"]["sha"], include_progress=True)
+        if ok:
+            return {"passed": True}
+        if pending:
+            return {"passed": False, "status": "WAIT", "failure_class": "CI_PENDING"}
+        if self.executor is None:
+            return {"status": "NOT_PROVEN"}
+        return {"passed": False, "failure_class": "CI_FAILURE", "failure_fingerprint": fingerprint}
 
     def repair(self, state):
         if self.executor is None:
             return {"ok": False}
+        # A pending repair may resume after the approved PR or main has moved.
+        # Revalidate the trusted scope before any executor side effect.
+        try:
+            self._current()
+        except (ValueError, TypeError):
+            return {"ok": False, "failure_class": "PERMISSION_STOP"}
         return {"ok": self.executor.repair(state) is True}
 
     def evidence(self, state):
@@ -337,6 +371,10 @@ class GitHubRenderActions:
         if (deploy.get("status") == "live" and isinstance(commit, dict)
                 and commit.get("id") == target):
             return {"deployed": True, "deployed_sha": target}
+        if (isinstance(commit, dict) and commit.get("id") == target
+                and deploy.get("status") in ("created", "build_in_progress", "update_in_progress",
+                                             "pre_deploy_in_progress", "queued")):
+            return {"status": "WAIT", "failure_class": "DEPLOY_PENDING"}
         return {}
 
     def verify_runtime(self, state):
