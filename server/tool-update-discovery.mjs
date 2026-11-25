@@ -187,3 +187,24 @@ export async function discoverGrowthTools({fetchImpl=fetch,now=Date.now,topics=G
   return {schema:'CAPITAL_AI_GROWTH_TOOL_RADAR@1',observedAt,metadataOnly:true,automaticInstall:false,
     publicPublishAllowed:false,paidProviderCalls:0,topics:rows.map(({topic,status})=>({topic,status})),candidates};
 }
+
+// Official public MCP registry: names and version metadata only, never execute a server.
+export const MCP_REGISTRY_SEARCH=Object.freeze({PRODUCT:'accessibility',MARKET:'finance',PLATFORM:'developer',TRUST:'security',GROWTH:'analytics'});
+export async function discoverMcpRegistry(domain,{fetchImpl=fetch,now=Date.now}={}){
+  if(!Object.hasOwn(MCP_REGISTRY_SEARCH,domain))throw Error('INVALID_DOMAIN');
+  const observedAt=new Date(now()).toISOString(),url=new URL('https://registry.modelcontextprotocol.io/v0.1/servers');
+  url.search=new URLSearchParams({search:MCP_REGISTRY_SEARCH[domain],version:'latest',limit:'8'}).toString();
+  try{
+    const v=await boundedJson(fetchImpl,url.href,350000);
+    if(!Array.isArray(v.servers)||v.servers.length>8)throw Error('REGISTRY_INVALID');
+    const seen=new Set(),candidates=[];
+    for(const item of v.servers){
+      const server=item?.server,name=server?.name,version=server?.version;
+      if(typeof name!=='string'||name.length>110||!GH_REPO.test(name)||typeof version!=='string'||! /^[A-Za-z0-9][A-Za-z0-9.+_-]{0,79}$/.test(version)||seen.has(name.toLowerCase()))continue;
+      const status=item?._meta?.['io.modelcontextprotocol.registry/official']?.status;
+      if(status&&status!=='active')continue;
+      seen.add(name.toLowerCase());candidates.push({name,version,commercialRights:'NOT_PROVEN',outputRights:'NOT_PROVEN',installAllowed:false,activationAllowed:false});
+    }
+    return {source:'OFFICIAL_MCP_REGISTRY',status:'METADATA_OBSERVED',observedAt,candidates,partial:Boolean(v.metadata?.nextCursor)};
+  }catch{return {source:'OFFICIAL_MCP_REGISTRY',status:'NOT_PROVEN',observedAt,candidates:[],partial:null};}
+}
