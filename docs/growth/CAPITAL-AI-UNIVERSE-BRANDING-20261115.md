@@ -61,3 +61,25 @@ Aktuelle deterministische Ausgaben: 1280×720, 1080×1080, 1080×1920 und Szenen
 Keine Neugenerierung oder Rückwirkung auf bereits veröffentlichte Inhalte ohne gesonderte, quellen-/lizenzgeprüfte Migration. Keine Veröffentlichung, Secret-Änderung oder kostenpflichtige Modellaktivierung durch das Branding. Das erstmalige Vorliegen der Vertragsdaten beweist nicht, dass alle unabhängigen Legacy-Renderer bereits migriert sind; solche Generatoren sind separat gegen den Token-Vertrag zu inventarisieren.
 
 **Fertig für einen Release-Slice**, wenn die bestehenden relevanten CI-Gates inklusive Docker Security Gate und Domain Governance am aktuellen Head grün sind und die Renderer-Snapshots visuell (Mobile/Desktop, Alt-Text und Lizenzgrenzen) geprüft wurden.
+
+## Owner-Designentscheidung · 2026-11-25 · BR-02 bis BR-04
+
+Der Owner hat die folgenden **Designanforderungen**, nicht die Freigabe neuer Masterassets oder Nutzungsrechte, bestätigt.
+
+| Paket | Auswahl | Umsetzung |
+| --- | --- | --- |
+| BR-02 | `extended` | Pro Produkt ein kanonisches statisches Masterlogo, eine davon abgeleitete interaktive 3D-Variante, eine Videoanimation und ein App-Icon. |
+| BR-04 | `premium` | Lernzertifikate im Universe-Premium-Design: dunkelblau, Goldakzent, diskrete Siebenfarben-Signatur, Plus Jakarta Sans, kontrastreiche lesbare Felder und druckfähige Fassung. |
+| BR-04 | `3d` | Vorhandene Abo- und Rollen-Badges byteidentisch erhalten; ergänzende 3D-Ausführungen als separat versionierte Derivate derselben Identität. |
+| BR-03 | keine neue Medienauswahl | Leere Auswahl protokolliert; bestehender Integrationsauftrag bleibt unverändert. Keine zusätzliche Kanal-, Veröffentlichungs- oder Rechtefreigabe. |
+
+### Ableitungs- und Abnahmeanforderungen
+
+- Master-ID, Version, SHA-256 und Rechtebezug bleiben die Identitätsgrundlage. Jede Ableitung erhält eigene Asset-ID, Version und Prüfsumme sowie Referenz auf den unveränderten Master. Keine eigenmächtige Neugenerierung vorhandener Marken.
+- 3D und Video: bestehende Renderer wiederverwenden; Pause, Reduced Motion und statischer Fallback. App-Icons: geeigneter Safe Area und Erkennbarkeit in kleinen Größen. Keine neue Abhängigkeit oder Kostenaktivierung allein aufgrund dieser Auswahl.
+- Zertifikate: zugänglicher Text, ausstellende Stelle, Lernleistung, Ausstellungsdatum und eindeutige Referenz; nur tatsächlich nachgewiesene Leistungen bescheinigen. Keine erfundenen Qualifikationen oder Akkreditierungen.
+- Badge-Derivate sind ausschließlich visuelle Darstellungen, keine Rollen- oder Abo-Berechtigung. Vorhandene serverseitige Berechtigungslogik bleibt unberührt.
+- Neue Masterlogos, konkrete Entwürfe und Rechte benötigen persönliche Bestätigung. Produktspezifische Logoformen wurden in dieser Auswahl noch nicht festgelegt. Kundenlogos bleiben vom Corporate-Namensraum getrennt.
+- Der private Workspace bleibt bis zur separaten Freigabe und serverseitigen Owner-Isolationsprüfung unveröffentlicht.
+
+**Status:** Designanforderungen bestätigt; konkrete Master, Derivate, Generatorintegration, CI und Produktionswirkung noch nicht nachgewiesen. Keine Änderung der Root-Engineering-Richtlinie oder neuer Required Checks.
