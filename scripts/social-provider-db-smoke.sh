@@ -153,6 +153,11 @@ echo 'PASS: isolated consent and invoice reversal persisted after PostgreSQL res
 [[ "$(pg -At -c 'SELECT count(*) FROM capital_growth_private.smartcopy_consent WHERE revoked_at IS NOT NULL')" == 2 ]]
 echo 'PASS: isolated Smartcopy consent withdrawal persisted after PostgreSQL restart'
 
-[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='GRANTED'")" == 1 ]]
-[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='REVOKED'")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='GRANTED' AND charge_id IS NULL")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='REVOKED' AND charge_id IS NULL")" == 1 ]]
 echo 'PASS: independent synthetic entitlement states persisted; consent withdrawal did not alter licenses'
+
+# Same real PostgreSQL restart proves terminal lifecycle persistence.
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE charge_id IS NOT NULL AND state='REVOKED'")" == 2 ]]
+[[ "$(pg -At -c "SELECT refunded_cents FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecycle001'")" == 499 ]]
+echo 'PASS: isolated Smartcopy refund and dispute tombstones persisted after PostgreSQL restart'

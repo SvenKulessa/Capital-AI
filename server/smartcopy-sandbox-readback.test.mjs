@@ -92,3 +92,29 @@ test('independent entitlement errors, missing rows and oversize response fail cl
  for(const response of [()=>Response.json({}, {status:403}),()=>new Response(' '.repeat(8193))]){
  await assert.rejects(()=>createSmartcopyEntitlementReader({...cfg,fetchImpl:async()=>response()})(p.ctx,intent));}
 });
+
+import {createSmartcopySandboxLifecycle} from './smartcopy-sandbox-readback.mjs';
+test('isolated lifecycle uses provider read, independent delivery and private fixture writer; no live metrics',async()=>{
+ const f=providerFixture(),calls=[];
+ const proof={...f.ctx,intentId:intent,receiptSha256:'7'.repeat(64),purpose:'CONTRACT_DELIVERY'};delete proof.mode;
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},
+ readDeliveryProof:async()=>{calls.push('delivery');return proof},recordFixture:async v=>{calls.push('fixture');assert.equal(v.p_intent,intent);assert.equal(v.p_delivery,proof.receiptSha256);return 'GRANTED'}};
+ const result=await createSmartcopySandboxLifecycle(opts)({}, {},session);
+ assert.equal(result.licenseCandidate,'GRANTED');assert.equal(result.liveMetrics,null);assert.deepEqual(calls,['delivery','fixture']);assert.equal(f.calls.length,8);
+ assert.throws(()=>createSmartcopySandboxLifecycle({...opts,mode:'live'}));
+});
+test('lifecycle refuses marketing consent, foreign identity, live session and unauthenticated request',async()=>{
+ const f=providerFixture();let writes=0;
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},readDeliveryProof:async()=>null,recordFixture:async()=>{writes++;return 'GRANTED'}};
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).reason,'DELIVERY_NOT_PROVEN');
+ const bad={userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,intentId:intent,receiptSha256:'7'.repeat(64),purpose:'PRODUCT_CONVERSION'};
+ assert.equal((await createSmartcopySandboxLifecycle({...opts,readDeliveryProof:async()=>bad})({}, {},session)).reason,'DELIVERY_NOT_PROVEN');
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},'cs_live_fixture12345')).reason,'SESSION_INVALID');
+ assert.equal((await createSmartcopySandboxLifecycle({...opts,auth:{sameOrigin:()=>false,verify:async()=>null}})({}, {},session)).reason,'AUTH_REQUIRED');assert.equal(writes,0);
+});
+test('terminal refund does not require marketing or delivery proof and rejects a non-revoked fixture result',async()=>{
+ const f=providerFixture();const ch=f.data['/charges/ch_fixture12345'];ch.amount_refunded=499;ch.refunded=true;
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},readDeliveryProof:async()=>{throw Error('must not call')},recordFixture:async v=>{assert.equal(v.p_refunded,499);assert.equal(v.p_delivery,null);return 'REVOKED'}};
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).licenseCandidate,'REVOKED');
+ assert.equal((await createSmartcopySandboxLifecycle({...opts,recordFixture:async()=> 'GRANTED'})({}, {},session)).reason,'FIXTURE_STATE_DENIED');
+});

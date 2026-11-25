@@ -120,3 +120,36 @@ export function createSmartcopyEntitlementReader({projectRef,secret,fetchImpl=fe
     return row;
   };
 }
+
+// Explicit disposable-test orchestration only. Separate from optional analytics
+// consent and the read-only public purchase receipt. No production factory
+// caller, HTTP route or remote write transport. The caller must bind the private
+// fixture writer and independently verified contractual delivery evidence.
+// Never pass this output to the live conversion contract.
+export function createSmartcopySandboxLifecycle({scope,key,auth,readDeliveryProof,recordFixture,fetchImpl=fetch,now=Date.now,mode}={}){
+  if(mode!=='DISPOSABLE_CI_ONLY'||typeof auth?.sameOrigin!=='function'||typeof auth?.verify!=='function'||typeof readDeliveryProof!=='function'||typeof recordFixture!=='function')throw Error('SMARTCOPY_LIFECYCLE_TEST_CONFIG');
+  const read=createSmartcopyStripeReader({scope,key,fetchImpl,now}),s=Object.freeze({...scope});
+  const no=reason=>Object.freeze({...denied(reason),fixtureOnly:true});
+  return async(req,res,sessionId)=>{
+    if(typeof sessionId!=='string'||!SID.test(sessionId))return no('SESSION_INVALID');
+    try{
+      if(await auth.sameOrigin(req)!==true)return no('AUTH_REQUIRED');
+      const user=await auth.verify(req,res);
+      if(typeof user?.userId!=='string'||!UUID.test(user.userId)||user.emailVerified!==true)return no('AUTH_REQUIRED');
+      const ctx=Object.freeze({userId:user.userId,productId:s.productId,campaignId:s.campaignId,releaseSha256:s.releaseSha256,mode:'test'});
+      const p=await read(ctx,sessionId);
+      const terminal=p.disputed||p.refundedCents===p.paidCents;
+      let delivery=null;
+      if(!terminal){
+        const proof=await readDeliveryProof(ctx,p.intentId);
+        if(!exact(proof,['userId','productId','campaignId','releaseSha256','intentId','receiptSha256','purpose'])||!matches(proof,ctx.userId,s)||proof.intentId!==p.intentId||proof.purpose!=='CONTRACT_DELIVERY'||typeof proof.receiptSha256!=='string'||!SHA.test(proof.receiptSha256))return no('DELIVERY_NOT_PROVEN');
+        delivery=proof.receiptSha256;
+      }
+      const observed=Date.parse(p.observedAt),end=now();
+      if(!Number.isSafeInteger(end)||end<observed||end-observed>5000)return no('SOURCE_STALE');
+      const state=await recordFixture(Object.freeze({p_user:ctx.userId,p_campaign:s.campaignId,p_release:s.releaseSha256,p_intent:p.intentId,p_charge:p.chargeId,p_paid:p.paidCents,p_refunded:p.refundedCents,p_disputed:p.disputed,p_paid_at:p.paidAt,p_observed:p.observedAt,p_delivery:delivery}));
+      if(!['GRANTED','REVOKED'].includes(state)||(terminal&&state!=='REVOKED'))return no('FIXTURE_STATE_DENIED');
+      return Object.freeze({...no('ISOLATED_FIXTURE_ONLY'),status:'SANDBOX_LIFECYCLE_CANDIDATE',licenseCandidate:state});
+    }catch{return no('SOURCE_UNAVAILABLE');}
+  };
+}
