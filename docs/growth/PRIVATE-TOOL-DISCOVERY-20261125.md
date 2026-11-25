@@ -23,3 +23,10 @@ Output is private operator evidence; do not commit it or send it to public CI. U
 The catalog lists the known integrations after merge. Continuous persistence of dynamic suggestions into the owner catalog, authorized provider runtime adapters, and live coverage of other prompt generators are not established by this slice. Reuse the existing owner-only growth data layer and LangGraph, not a competing runtime or scheduler.
 
 Rollback: revert the scoped branch changes; no database, account, credential, advertising, or billing mutations.
+
+## Provider references and activation boundary
+
+- HYPD remote MCP client setup: https://feedback.hypd.ai/en/help/articles/8454256-use-hypd-with-other-mcp-clients-copilot-codex-cursor-and — documented OAuth for supported remote clients; separate engine authorization required. The documented client URL is not an authenticated runtime receipt. Commercial account-specific terms and plan not verified: https://www.hypd.ai/terms.
+- OpenAI Advertiser API: https://developers.openai.com/ads/api-overview — separate ad-account-scoped key in Ads Manager settings; approved API access only. https://openai.com/policies/advertising-terms/ and https://openai.com/policies/ad-tools-terms/. No API key issued or copied, no spend or campaign change. Customer-facing redistribution is outside scope.
+- Additional alternative: https://www.hypd.ai/openai-ads-mcp — candidate only; exact artifact, license, execution permissions and cost not yet independently verified. Prefer native existing account access before adding redundant adapters.
+- OpenSEO plugin directory discovery is a suggestion, not installation. Supermetrics and Windsor.ai are alternatives, not additional attribution authorities. Keep sources and provider metrics separate.
