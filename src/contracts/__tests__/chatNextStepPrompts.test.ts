@@ -146,3 +146,10 @@ test('lazy JaJa open events are replayed once, including a click before module m
   assert.equal(takePendingHeroBuddyOpen(), true);
   assert.equal(takePendingHeroBuddyOpen(), false);
 });
+
+test('all generated chat followups require external tool research without implying authorization',()=>{
+  for(const task of ['GA4 Attribution','OAuth tenant isolation','Render Docker','Portfolio Backtest','Chat Layout']){
+    const steps=buildChatFollowUps(task);
+    assert.ok(steps.every(step=>step.prompt.includes('GROWTH_TOOL_DISCOVERY@1')&&step.prompt.includes('nicht vertrauliche Suchbegriffe')&&step.prompt.includes('keine automatische Installation')));
+  }
+});
