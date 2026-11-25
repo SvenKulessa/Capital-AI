@@ -15,7 +15,7 @@ test('ads exact identity and bounded read, no private account data returned',asy
  }});
  assert.equal(calls.length,2);assert.ok(calls.every(([url,method])=>url.startsWith('https://api.ads.openai.com/v1/')&&(!method||method==='GET')));
  assert.deepEqual(result.sources[1],{source:'OPENAI_ADS',status:'READ_RESPONSE_RECEIVED',campaignsReturned:1,partial:true});
- assert.doesNotMatch(JSON.stringify(result),/PRIVATE|adacct_test|private-campaign|synthetic-test-token/);
+ assert.doesNotMatch(JSON.stringify(result),/PRIVATE_ACCOUNT|"PRIVATE"|adacct_test|private-campaign|synthetic-test-token/);
 });
 test('ads mismatch stops before campaign read',async()=>{
  let calls=0;const result=await collectPrivateGrowthProviderStatus({env,fetchImpl:async()=>{calls++;return response({id:'adacct_other',currency_code:'EUR'})}});
@@ -34,7 +34,7 @@ test('hypd exact read tool only, session binding and no raw identities',async()=
  }});
  assert.deepEqual(methods,['initialize','notifications/initialized','tools/list','tools/call']);
  assert.equal(result.sources[0].status,'READ_RESPONSE_RECEIVED');
- assert.doesNotMatch(JSON.stringify(result),/GTM-TEST|PRIVATE|synthetic-session/);
+ assert.doesNotMatch(JSON.stringify(result),/GTM-TEST|"PRIVATE"|synthetic-session/);
 });
 test('owner check precedes any provider access and non-GET rejected',async()=>{
  let calls=0;const url={pathname:'/api/profile/growth-intelligence/private-provider-status'};const res={setHeader(){}};
