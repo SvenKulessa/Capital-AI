@@ -119,3 +119,75 @@ do $$ begin
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
+
+-- Independently recorded contractual acceptance (synthetic CI records).
+insert into capital_growth_private.smartcopy_delivery_fixture(intent_id,user_id,campaign_id,release_sha256,receipt_sha256,terms_sha256,accepted_at)
+select v.intent_id,u.id,'smartcopy-'||repeat('c',24),repeat('d',64),repeat(v.digest,64),repeat('8',64),u.email_confirmed_at
+from auth.users u cross join (values ('pi_lifecycle001','7'),('pi_lifecycle002','6'),('pi_lifecycle003','5'),('pi_lifecyclerollback','4'),('pi_lifecyclerace','3')) as v(intent_id,digest)
+where u.id='a0000000-0000-4000-8000-000000000001';
+set role service_role;
+do $$ declare u uuid:='a0000000-0000-4000-8000-000000000001'; c text:='smartcopy-'||repeat('c',24); r text:=repeat('d',64);
+begin
+ if public.capital_smartcopy_read_delivery(u,c,r,'pi_lifecycle001')->>'receiptSha256' is distinct from repeat('7',64) then raise exception 'DELIVERY_READ_FAILED'; end if;
+ if public.capital_smartcopy_read_delivery(u,c,repeat('b',64),'pi_lifecycle001') is not null or public.capital_smartcopy_read_delivery('a0000000-0000-4000-8000-000000000002',c,r,'pi_lifecycle001') is not null then raise exception 'DELIVERY_SCOPE_BROKEN'; end if;
+ begin
+ update capital_growth_private.smartcopy_delivery_fixture set terms_sha256=repeat('a',64);
+ raise exception 'DELIVERY_SERVICE_WRITE_ALLOWED';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+set role authenticated;
+do $$ begin
+ begin
+ perform public.capital_smartcopy_read_delivery('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_lifecycle001');
+ raise exception 'DELIVERY_BROWSER_READ_ALLOWED';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+
+-- Lifecycle is invoked by the disposable database owner, never the service role.
+-- Use independent contract delivery evidence, NOT the optional marketing consent.
+do $$
+declare u uuid:='a0000000-0000-4000-8000-000000000001'; c text:='smartcopy-'||repeat('c',24); r text:=repeat('d',64);
+ t timestamptz:=clock_timestamp(); paid timestamptz:=t-interval '1 hour'; d text:=repeat('7',64);
+begin
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,0,false,paid,t,null)<>'DENIED' then raise exception 'MISSING_DELIVERY_GRANTED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,0,false,paid,t,repeat('9',64))<>'DENIED' then raise exception 'FORGED_DELIVERY_GRANTED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,0,false,paid,t,d)<>'GRANTED' then raise exception 'LIFECYCLE_GRANT_FAILED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,0,false,paid,t,d)<>'GRANTED' then raise exception 'REPLAY_FAILED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle002','ch_lifecycle001',499,0,false,paid,t,repeat('6',64))<>'DENIED' then raise exception 'DUPLICATE_CHARGE'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,repeat('b',64),'pi_lifecycle001','ch_lifecycle001',499,499,false,paid,t,null)<>'DENIED' then raise exception 'CROSS_RELEASE_REVOKE'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,100,false,paid,t,d)<>'GRANTED' then raise exception 'PARTIAL_REFUND_FAILED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,0,false,paid,t-interval '1 second',d)<>'GRANTED' then raise exception 'STALE_REPLAY_FAILED'; end if;
+ if (select refunded_cents from capital_growth_private.smartcopy_entitlement_fixture where intent_id='pi_lifecycle001')<>100 then raise exception 'REFUND_REGRESSED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,499,false,paid,t,null)<>'REVOKED' then raise exception 'FULL_REFUND_FAILED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle001','ch_lifecycle001',499,0,false,paid,t,d)<>'REVOKED' then raise exception 'LATE_GRANT_RESURRECTED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle003','ch_lifecycle003',499,0,true,paid,t,null)<>'REVOKED' then raise exception 'DISPUTE_TOMBSTONE_FAILED'; end if;
+ if capital_growth_private.apply_smartcopy_sandbox_payment(u,c,r,'pi_lifecycle003','ch_lifecycle003',499,0,false,paid,t,repeat('5',64))<>'REVOKED' then raise exception 'DISPUTE_RESURRECTED'; end if;
+ if public.capital_smartcopy_read_entitlement(u,c,r,'pi_lifecycle001') is not null then raise exception 'WITHDRAWN_ANALYTICS_LEAK'; end if;
+end $$;
+set role service_role;
+do $$ begin
+ begin
+ perform capital_growth_private.apply_smartcopy_sandbox_payment(null,null,null,null,null,null,null,null,null,null,null);
+ raise exception 'SERVICE_LIFECYCLE_WRITE_ALLOWED';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+set role authenticated;
+do $$ begin
+ begin
+ perform capital_growth_private.apply_smartcopy_sandbox_payment(null,null,null,null,null,null,null,null,null,null,null);
+ raise exception 'BROWSER_LIFECYCLE_WRITE_ALLOWED';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+-- Explicit transaction rollback (no fixture remains).
+begin;
+do $$ begin
+ if capital_growth_private.apply_smartcopy_sandbox_payment('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_lifecyclerollback','ch_lifecyclerollback',499,0,false,now()-interval '1 hour',now(),repeat('4',64))<>'GRANTED' then raise exception 'ROLLBACK_PRECONDITION_FAILED'; end if;
+end $$;
+rollback;
+do $$ begin
+ if exists(select 1 from capital_growth_private.smartcopy_entitlement_fixture where intent_id='pi_lifecyclerollback') then raise exception 'ROLLBACK_FAILED'; end if;
+end $$;
