@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "capital-ai-github-oss": {
+      "command": "python3",
+      "args": [
+        "scripts/growth-agent/oss_mcp.py",
+        "launch",
+        "github"
+      ]
+    },
+    "capital-ai-playwright-oss": {
+      "command": "python3",
+      "args": [
+        "scripts/growth-agent/oss_mcp.py",
+        "launch",
+        "playwright"
+      ]
+    },
+    "capital-ai-browser-use-oss": {
+      "command": "python3",
+      "args": [
+        "scripts/growth-agent/oss_mcp.py",
+        "launch",
+        "browser-use"
+      ]
+    }
+  }
+}

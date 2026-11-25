@@ -1,6 +1,7 @@
 """Independent standard-library TRUST/QUALITY negatives for offline scope."""
 import sqlite3
 import unittest
+from test_oss_mcp import OSSReadbackTests
 
 from offline_scope import bind_checkpoint, scoped_thread_id
 
