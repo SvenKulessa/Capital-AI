@@ -191,6 +191,8 @@ printf 'PASS full app dump fails under RLS without BYPASSRLS\n'
 # A narrowly assigned SELECT policy may restore complete visibility for ONE
 # explicitly selected fixture table without a role-wide BYPASSRLS attribute.
 # This does not isolate PUBLIC grants or authorize a production policy.
+rls_archive_sequence="$(source_admin -Atqc 'SELECT last_value, is_called FROM app.notes_id_seq')"
+[[ $rls_archive_sequence =~ ^[0-9]+\|[tf]$ ]] || fail 'invalid source sequence state'
 dump_as_reader --data-only --table=app.notes --enable-row-security --inserts > "$scratch/rls-partial.sql"
 source_admin -qc 'CREATE POLICY fixture_backup_select ON app.notes FOR SELECT TO capital_ai_backup_reader USING (true)'
 assert_query f "$reader" "SELECT rolbypassrls FROM pg_roles WHERE rolname=current_user"
@@ -379,15 +381,30 @@ printf 'PASS scoped dump, separate-cluster restore, ACL recreation and tenant is
 # Both archives had pg_dump exit 0. Read back the actual restored row set,
 # not just the exit code or an INSERT count in SQL text. Roll back each import.
 check_rls_archive() {
-  local archive=$1 expected=$2 output
+  local archive=$1 expected=$2 output before_seq value called after_seq
+  before_seq="$(restore_admin -Atqc 'SELECT last_value, is_called FROM app.notes_id_seq')"
+  [[ $before_seq =~ ^[0-9]+\|[tf]$ ]] || fail 'invalid restore sequence state'
+  IFS='|' read -r value called <<< "$before_seq"
   output="$(
     {
       printf 'BEGIN;\nTRUNCATE app.notes;\n\\i %s\n' "$archive"
-      printf "%s\n" "SELECT 'CAI664_RLS_ROWS=' || coalesce(string_agg(tenant || ':' || revision, ',' ORDER BY tenant), 'EMPTY') FROM app.notes;" 'ROLLBACK;'
+      printf "%s\n" "SELECT 'CAI664_RLS_ROWS=' || coalesce(string_agg(tenant || ':' || revision, ',' ORDER BY tenant), 'EMPTY') FROM app.notes;" \
+        "SELECT 'CAI664_RLS_SEQUENCE=' || last_value || '|' || CASE WHEN is_called THEN 't' ELSE 'f' END FROM app.notes_id_seq;" 'ROLLBACK;'
     } | restore_admin -Atq
   )"
   printf '%s\n' "$output" | rg -Fxq "CAI664_RLS_ROWS=$expected" ||
     fail "RLS archive row coverage mismatch: $(basename "$archive")"
+  printf '%s\n' "$output" | rg -Fxq "CAI664_RLS_SEQUENCE=$rls_archive_sequence" ||
+    fail "RLS archive sequence coverage mismatch: $(basename "$archive")"
+
+  # pg_dump restores owned sequences with setval(), which is not rolled back.
+  # Prove that exact effect, then restore the fixture's original sequence state.
+  after_seq="$(restore_admin -Atqc 'SELECT last_value, is_called FROM app.notes_id_seq')"
+  [[ $after_seq == "$rls_archive_sequence" ]] || fail 'unexpected post-rollback sequence state'
+  printf 'PASS archive sequence state verified after rollback (%s)\n' "$(basename "$archive")"
+  restore_admin -qc "SELECT pg_catalog.setval('app.notes_id_seq'::regclass, $value, '$called'::boolean)" >/dev/null
+  assert_query "$before_seq" "$admin" 'SELECT last_value, is_called FROM app.notes_id_seq' "$restore_port"
+  [[ $(fingerprint "$restore_port") == "$restore_hash" ]] || fail 'RLS archive cleanup changed restored fingerprint'
 }
 
 check_rls_archive "$scratch/rls-partial.sql" 'EMPTY'
