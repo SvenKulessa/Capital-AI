@@ -115,3 +115,12 @@ test('fresh Node processes recover encrypted history after restart and independe
    await invoke(restored,'deny',ownerId,'b5'.repeat(32));
  }finally{await rm(base,{recursive:true,force:true});}
 });
+
+test('GSC readback origin is archived as documentation without changing recovery gates',async()=>isolated(async(base,vault)=>{
+  const next=JSON.parse(raw);
+  next.snapshots[0].rows[0]={...row,id:'gsc',origin:'GSC_READBACK',name:'GSC'};
+  const bytes=Buffer.from(JSON.stringify(next));
+  const saved=await vault.put(bytes);
+  assert.equal(saved.authority,'DOCUMENTATION_ONLY');
+  assert.deepEqual(await vault.read(saved.id),bytes);
+}));

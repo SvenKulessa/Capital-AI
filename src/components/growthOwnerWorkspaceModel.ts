@@ -12,7 +12,7 @@ export const rowSchema = z.object({
   status: z.enum(statuses),
   endpoint: note, auth: note, flow: note, tests: note, error: note,
   dependencies: note, approvals: note, operation: note, next: note, evidence: note,
-  origin: z.enum(['OWNER_NOTE', 'GA4_READBACK']),
+  origin: z.enum(['OWNER_NOTE', 'GA4_READBACK', 'GSC_READBACK']),
 }).strict();
 export type GrowthRow = z.infer<typeof rowSchema>;
 const snapshotSchema = z.object({
@@ -55,6 +55,11 @@ export function publicSurfaceResearchTask(id: string) {
     domain: task.domain, query: 'Review repository evidence for CAI-PUBLIC-SURFACE@1 ' + task.id + ' ' + task.name + '. Report gaps; no mutation authority.' };
 }
 
+export function billingRecoveryResearchTask() {
+  return { schema:'CAPITAL_AI_OFFLINE_RESEARCH@1',task_id:'CAI-664-BILLING',domain:'TRUST',
+    query:'Review repository evidence for issue 664 billing metadata, WIF, zero-cost boundary and recovery gaps. Do not infer spend or export authority.' };
+}
+
 export function initialRows(): GrowthRow[] {
   return [
     { ...makeRow('ga4', 'GA4 Acquisition', 'GROWTH', 'Owner-Readback ausführen'),
@@ -71,6 +76,21 @@ export function initialRows(): GrowthRow[] {
       flow: 'Read-only Entwurfskoordination; keine Veröffentlichung' },
     makeRow('langgraph', 'LangGraph SOLO2', 'PLATFORM', 'Checkpoint und Workflow-Evidence abgleichen'),
     { ...makeRow('trust', 'Rechte, Consent, Freigaben', 'TRUST', 'Scope- und Rechte-Evidence prüfen'), priority: 'P0' },
+    { ...makeRow('x-growth-budget', 'X Growth · Budget', 'GROWTH', 'Kontoweite Freigabe, belastbare Recovery und Runtime-Reservierung verifizieren'),
+      priority: 'P0', flow: '30-Tage-Pilot · 20 EUR Obergrenze · keine automatische Aufladung',
+      approvals: 'Owner-Kostenfreigabe, aktuelles Guthaben und Kostenobergrenzen separat belegen',
+      operation: 'Planung; keine produktive Budgetkontrolle behauptet' },
+    { ...makeRow('x-growth-attribution', 'X Growth · Conversion-Funnel', 'GROWTH', 'Kampagnenspezifische GA4-, Supabase- und Stripe-Readbacks abgleichen'),
+      priority: 'P1', flow: 'UTM → consentierte Sessions → Registrierungen → bestätigte bezahlte Abos',
+      auth: 'Quellen getrennt; keine Kundendaten im Workspace; fehlend ist nicht Null',
+      operation: 'Kohorten- und Zuordnungsevidence offen' },
+    { ...makeRow('x-growth-graph', 'X Growth · LangGraph', 'PLATFORM', 'Budget- und Conversion-Evidence in bestehende Graph-Review integrieren'),
+      priority: 'P1', flow: 'Nur Status-Referenzen, keine Publishing- oder Kostenautorität',
+      operation: 'Runtime-Evidence offen' },
+    { ...makeRow('cai664-billing','Backup Billing #664','TRUST','Existing main-only billing-readback dispatch; review run evidence; no SQL or new export'),
+      priority:'P0',flow:'GitHub OIDC → existing Cloud Operator → BigQuery metadata only',
+      approvals:'Additional budget 0 EUR; production DB export blocked',
+      operation:'Metadata discovery only; actual and label costs NOT_PROVEN' },
     ...publicSurfaceRows(),
   ];
 }
@@ -115,6 +135,28 @@ export function projectGa4(raw: unknown, row: GrowthRow): GrowthRow {
     evidence: data.metrics ? '7 abgeschlossene Tage: Sessions ' + data.metrics.sessions + ', Engaged Sessions ' + data.metrics.engagedSessions : 'Keine Report-Zeilen; keine gemessene Null',
     error: '', tests: 'Server-Readback-Vertrag geprüft; keine Aussage über andere Quellen',
   };
+}
+
+const xCampaignSchema = z.object({
+  schema:z.literal('CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1'),source:z.literal('GA4_DATA_API'),
+  private:z.literal(true),readOnly:z.literal(true),publicPublishAllowed:z.literal(false),
+  observedAt:z.iso.datetime(),period:z.object({start:z.literal('7daysAgo'),end:z.literal('yesterday'),timeZone:z.string().max(80).nullable()}).strict(),
+  campaignId:z.literal('capital-ai-growth-20261120'),contentId:z.literal('CAP-GROW-005'),
+  utmSource:z.literal('x'),utmMedium:z.literal('social'),attributionAuthority:z.literal('SESSION_UTM_ONLY'),
+  status:z.enum(['PROVIDER_READ_VERIFIED','NOT_PROVEN_NO_ROWS']),
+  metrics:z.object({sessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),engagedSessions:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)}).strict().nullable(),
+  registrations:z.null(),paidSubscriptions:z.null(),
+}).strict();
+export function projectXCampaignGa4(raw:unknown,row:GrowthRow):GrowthRow {
+  const d=xCampaignSchema.parse(raw);
+  if(row.id!=='x-campaign')throw Error('Falsche Quelle');
+  const verified=d.status==='PROVIDER_READ_VERIFIED',m=d.metrics;
+  if(verified?(!m||m.engagedSessions>m.sessions):m!==null)throw Error('Ungültige Kampagnenmetriken');
+  return {...row,name:'X Growth · GA4 Kampagne',domain:'GROWTH',origin:'GA4_READBACK',status:verified?'VERIFIED':'NOT_PROVEN',
+    endpoint:'/api/profile/growth-intelligence/x-campaign-readback',flow:'GA4 Session-UTM · keine Klick-, Registrierungs- oder Zahlungsbestätigung',
+    auth:'Owner-Readback',operation:'GA4 Kampagne: '+d.observedAt,error:'',
+    evidence:m?'7 abgeschlossene Tage: '+m.sessions+' Sessions, '+m.engagedSessions+' Engaged Sessions; '+d.campaignId+'/'+d.contentId:'Keine bestätigte Kampagnenzeile; keine gemessene Null',
+    tests:'Quellengetrennte Projektion; Registrierungen und zahlende Abos NOT_PROVEN'};
 }
 
 const graphSources = ['GA4','GSC','INSTAGRAM','YOUTUBE'] as const;
@@ -162,4 +204,32 @@ export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow
   });
   // Remove stale graph-import sources on a blocked/new report; preserve every other row.
   return [...rows.filter(r=>r.id!=='growth-graph-handoff'&&!graphSources.some(s=>r.id==='graph-source-'+s.toLowerCase())),...updates];
+}
+
+const gscSchema=z.object({
+  schema:z.literal('CAPITAL_AI_GROWTH_GSC_READBACK@1'),source:z.literal('GSC_SEARCH_ANALYTICS_API'),
+  private:z.literal(true),readOnly:z.literal(true),publicPublishAllowed:z.literal(false),
+  attributionAuthority:z.literal('SEPARATE_FROM_GA4_UMAMI_SOCIAL'),property:z.literal('sc-domain:capital-ai.online'),
+  observedAt:z.iso.datetime(),status:z.enum(['PROVIDER_READ_VERIFIED','NOT_PROVEN']),
+  transport:z.enum(['DISABLED','AUTH_REQUIRED','RATE_LIMITED','PROVIDER_UNAVAILABLE','INVALID_RESPONSE','IDENTITY_MISMATCH','INCOMPLETE_PERIOD','READ_RESPONSE_RECEIVED']),
+  period:z.object({startDate:z.iso.date(),endDate:z.iso.date()}).strict().nullable(),
+  metrics:z.object({clicks:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+    impressions:z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    ctr:z.number().min(0).max(1),position:z.number().nonnegative().max(Number.MAX_SAFE_INTEGER)}).strict().nullable(),
+  evidenceSha256:graphDigest.nullable(),
+}).strict();
+export function projectGsc(raw:unknown,row:GrowthRow):GrowthRow {
+  const data=gscSchema.parse(raw);
+  if(row.id!=='gsc')throw Error('Falsche Quelle');
+  const verified=data.status==='PROVIDER_READ_VERIFIED';
+  const m=data.metrics,p=data.period;
+  if(verified?(!m||!p||!data.evidenceSha256||data.transport!=='READ_RESPONSE_RECEIVED'||
+      m.clicks>m.impressions||Math.abs(m.ctr-m.clicks/m.impressions)>1e-12||
+      Date.parse(p.endDate)-Date.parse(p.startDate)!==6*86400000||p.endDate>=data.observedAt.slice(0,10)):
+      (m!==null||p!==null||data.evidenceSha256!==null))throw Error('Ungültiger GSC-Readback');
+  return {...row,origin:'GSC_READBACK',status:verified?'VERIFIED':'NOT_PROVEN',name:'Google Search Console',domain:'GROWTH',
+    endpoint:'/api/profile/growth-intelligence/gsc-readback',flow:'GSC → aggregierter Growth Data Layer; keine Attribution',
+    auth:data.transport,operation:'GSC Readback: '+data.observedAt,error:verified?'':'Kein bestätigter Report',
+    evidence:m&&p?p.startDate+' – '+p.endDate+': Klicks '+m.clicks+', Impressionen '+m.impressions+', CTR '+(m.ctr*100).toFixed(2)+' %, Position '+m.position+'; SHA-256 '+data.evidenceSha256:'',
+    tests:'Quellengetrennter serverseitiger Readback; keine Aussage über andere Quellen'};
 }

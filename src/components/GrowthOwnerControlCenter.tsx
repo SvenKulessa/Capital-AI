@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -42,23 +42,33 @@ export function GrowthOwnerControlCenter() {
     try { save(applyOwnerEdit(draft)); setDraft(null); setView('matrix'); setMessage('Arbeitsstand versioniert. Keine operative Änderung.'); }
     catch { setMessage('Eingaben ungültig oder Integrationslimit erreicht.'); }
   }
-  async function readGa4() {
-    const row = rows.find(r => r.id === 'ga4');
-    if (!row || pending) return;
-    setPending(true); setMessage('');
-    try {
-      const response = await fetch('/api/profile/growth-intelligence/ga4-readback', {
-        method: 'GET', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!response.ok) throw new Error('Readback unavailable');
-      save(projectGa4(await response.json(), row));
-      setMessage('GA4-Antwort geprüft und als neue Version erfasst.');
-    } catch {
-      save({ ...row, status: 'NOT_PROVEN', origin: 'OWNER_NOTE', evidence: '', operation: 'Aktueller Readback nicht nachgewiesen',
-        error: 'Readback nicht verfügbar, nicht berechtigt oder ungültig.' });
-      setMessage('GA4 aktuell NOT_PROVEN. Vorherige Version bleibt erhalten.');
-    } finally { setPending(false); }
+  async function readAnalytics() {
+    if(pending)return;
+    setPending(true);setMessage('');
+    try{
+      const readRow=async (id:'ga4'|'gsc'|'x-campaign')=>{
+        const row=rows.find(r=>r.id===id)??makeRow(id,id==='ga4'?'GA4 Acquisition':id==='x-campaign'?'X Growth · GA4 Kampagne':'Google Search Console','GROWTH');
+        try{
+          const response=await fetch('/api/profile/growth-intelligence/'+id+'-readback',{method:'GET',credentials:'same-origin',
+            cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(25000)});
+          if(!response.ok)throw Error('Readback unavailable');
+          const raw:unknown=await response.json();
+          return id==='ga4'?projectGa4(raw,row):id==='x-campaign'?projectXCampaignGa4(raw,row):projectGsc(raw,row);
+        }catch{
+          return {...row,status:'NOT_PROVEN' as const,origin:'OWNER_NOTE' as const,evidence:'',
+            operation:'Aktueller Readback nicht nachgewiesen',error:'Readback nicht verfügbar, nicht berechtigt oder ungültig.'};
+        }
+      };
+      // Existing GA4 client has a shared in-flight lock; never query both GA4 kinds concurrently.
+      const updates=await Promise.all([readRow('ga4'),readRow('gsc')]);
+      updates.push(await readRow('x-campaign'));
+      const byId=new Map(updates.map(r=>[r.id,r]));
+      const next=rows.map(r=>byId.get(r.id)??r);
+      for(const r of updates)if(!rows.some(existing=>existing.id===r.id))next.push(r);
+      setHistory(appendSnapshot(history,next,new Date().toISOString()));
+      setMessage('GA4, X-Kampagne und GSC getrennt erfasst. Fehlende Readbacks bleiben NOT_PROVEN; vorherige Version erhalten.');
+    }catch{setMessage('Analytics-Arbeitsstand nicht übernommen; Historie unverändert.');}
+    finally{setPending(false);}
   }
   async function archiveRequest(mode: 'list' | 'save' | 'load' | 'restore', id?: string, file?: File) {
     if (pending) return;
@@ -184,7 +194,7 @@ export function GrowthOwnerControlCenter() {
           onClick={() => { setView(key); if (key === 'edit' && !draft) setDraft(rows[0] ?? makeRow('new', 'Neue Integration', 'GROWTH')); }}>{label}</button>)}
     </nav>
     <div className="flex flex-wrap gap-2">
-      <button type="button" className={button} disabled={pending || !rows.some(r => r.id === 'ga4')} onClick={() => void readGa4()}> GA4 Read-only prüfen</button>
+      <button type="button" className={button} disabled={pending} onClick={() => void readAnalytics()}>GA4, X-Kampagne und GSC Read-only prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
       <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>
@@ -219,7 +229,7 @@ export function GrowthOwnerControlCenter() {
       <button type="button" disabled={pending || rows.length >= 100} className={button} onClick={() => { setDraft(makeRow('integration-' + crypto.randomUUID(), 'Neue Integration', 'GROWTH')); setView('edit'); }}>Integration hinzufügen</button>
       <div className="grid gap-2 sm:grid-cols-2">{filtered.map(r => <article key={r.id} className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-3">
         <p className="text-xs text-slate-400">{r.domain} · {r.priority}</p><h3 className="font-bold break-words">{r.name}</h3>
-        <p className={'text-xs font-semibold ' + colors[r.status]}>{r.status} · {r.origin === 'GA4_READBACK' ? 'GA4 Readback' : 'Dokumentation'}</p>
+        <p className={'text-xs font-semibold ' + colors[r.status]}>{r.status} · {r.origin === 'GA4_READBACK' ? 'GA4 Readback' : r.origin === 'GSC_READBACK' ? 'GSC Readback' : 'Dokumentation'}</p>
         <p className="break-words text-xs text-slate-300">{r.next || 'Nächster Schritt offen'}</p>
         {r.evidence && <p className="break-words text-xs text-slate-400">{r.evidence}</p>}
         <button type="button" disabled={pending} className={button} onClick={() => { setDraft({...r}); setView('edit'); }}>Details bearbeiten</button>
@@ -258,9 +268,9 @@ export function GrowthOwnerControlCenter() {
         }
       }}>Public-Surface-Audit ergänzen</button>
       <p className="text-xs text-slate-400">Audit-Aufgaben können als lokale Offline-Recherchedatei exportiert werden. Kein Worker-Start und keine Freigabe.</p>
-      {rows.filter(r => r.id.startsWith('audit-')).map(r => <button key={r.id} type="button" className={button} disabled={pending} onClick={() => {
+      {rows.filter(r => r.id.startsWith('audit-') || r.id === 'cai664-billing').map(r => <button key={r.id} type="button" className={button} disabled={pending} onClick={() => {
         try {
-          const task = publicSurfaceResearchTask(r.id);
+          const task = r.id === 'cai664-billing' ? billingRecoveryResearchTask() : publicSurfaceResearchTask(r.id);
           const url = URL.createObjectURL(new Blob([JSON.stringify(task,null,2)], {type:'application/json'}));
           const link = document.createElement('a'); link.href = url; link.download = r.id + '.json'; link.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);

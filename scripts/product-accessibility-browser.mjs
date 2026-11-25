@@ -80,7 +80,7 @@ async function checkPage(path, viewport) {
   if (path === '/' || path.startsWith('/blog/')) {
     await evaluate(`(() => {
       const panel = document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
-      const reject = [...(panel?.querySelectorAll('button') || [])].find(el => el.textContent.trim() === 'Nur notwendige');
+      const reject = panel?.querySelector('button[data-consent-choice="necessary"]');
       reject?.click();
     })()`);
     await pause(200);

@@ -1,4 +1,8 @@
-"""Synthetic negative tests for Issue #874 source-bound LangGraph review."""
+"""Synthetic negative tests for Issue #874 source-bound LangGraph review.
+
+Keep this suite Python-only for the unactivated offline worker image.
+Cross-language subprocess coverage belongs to host CI in test_growth_streaming_e2e.py.
+"""
 import importlib.util
 import io
 import json
@@ -222,6 +226,142 @@ class GrowthReadGraphTests(unittest.TestCase):
         self.assertEqual(denied["quality"], "BLOCKED")
         self.assertFalse(denied["eligibleForDraftReview"])
 
+
+
+
+def viral_payload():
+    return {"contractVersion": graph.VIRAL_INPUT_CONTRACT,
+            "status": "SOURCE_RECORDED_NOT_AUTHENTICATED", "analyzedTrendsCount": 31,
+            "opportunities": [{"recordSha256": "a" * 64, "productContextSha256": "b" * 64,
+                               "productSourceSha": "c" * 40, "draftSha256": "d" * 64,
+                               "sourcePlatform": "X", "correlationScore": 90, "review": "REVIEW_REQUIRED"}],
+            "publicationState": "DRAFT_ONLY", "publicPublishAllowed": False, "providerCalls": 0,
+            "additionalCostUsd": 0, "providerAuthentication": "NOT_PROVEN"}
+
+
+class ViralReadGraphTests(unittest.TestCase):
+    def test_reference_only_validation_rejects_authority_and_bad_scores(self):
+        payload = viral_payload()
+        self.assertTrue(graph.viral_source_review({"payload": payload})["viral_valid"])
+        for key, value in [("publicPublishAllowed", True), ("providerCalls", 1),
+                           ("additionalCostUsd", 0.1), ("analyzedTrendsCount", 0),
+                           ("providerAuthentication", "VERIFIED")]:
+            invalid = viral_payload()
+            invalid[key] = value
+            self.assertFalse(graph.viral_source_review({"payload": invalid})["viral_valid"])
+        for key, value in [("correlationScore", 69), ("draftSha256", "invalid"),
+                           ("review", "APPROVED"), ("sourcePlatform", [])]:
+            invalid = viral_payload()
+            invalid["opportunities"][0][key] = value
+            self.assertFalse(graph.viral_source_review({"payload": invalid})["viral_valid"])
+        invalid = viral_payload()
+        invalid["opportunities"].append(invalid["opportunities"][0])
+        self.assertFalse(graph.viral_source_review({"payload": invalid})["viral_valid"])
+
+    def test_actual_viral_graph_draft_only(self):
+        try:
+            from langgraph.graph import StateGraph
+        except ImportError:
+            self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
+        _ = StateGraph
+        compiled = graph.build_viral_read_graph()
+        report = compiled.invoke({"payload": viral_payload(), "findings": []}, {"recursion_limit": 8})["report"]
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertTrue(report["eligibleForDraftReview"])
+        self.assertFalse(report["publicationAllowed"])
+        self.assertFalse(report["costActivationAllowed"])
+        self.assertFalse(report["automaticChanges"])
+        self.assertEqual(report["attributionEvents"], [])
+        empty = viral_payload()
+        empty.update(status="NOT_PROVEN", analyzedTrendsCount=0, opportunities=[])
+        self.assertFalse(compiled.invoke({"payload": empty, "findings": []}, {"recursion_limit": 8})["report"]["eligibleForDraftReview"])
+        invalid = viral_payload()
+        invalid["publicPublishAllowed"] = True
+        self.assertEqual(compiled.invoke({"payload": invalid, "findings": []}, {"recursion_limit": 8})["report"]["quality"], "BLOCKED")
+
+
+
+
+class XConversionReviewTests(unittest.TestCase):
+    def fixture(self):
+        return {"contractVersion": "CAPITAL_AI_X_CONVERSION_CANDIDATES@1",
+                "campaignId": "capital-ai-growth-20261120", "contentId": "CAP-GROW-005",
+                "start": "2026-11-20T00:00:00.000Z", "end": "2026-11-24T00:00:00.000Z",
+                "asOf": "2026-11-24T12:00:00.000Z",
+                "status": "SOURCE_RECORDED_NOT_AUTHENTICATED",
+                "candidateRegistrations": 1, "candidatePaidSubscribers": 1,
+                "candidateInitialInvoiceCents": 2500, "registrations": None,
+                "paidSubscriptions": None, "revenueCents": None,
+                "providerAuthentication": "NOT_PROVEN", "publicPublishAllowed": False,
+                "costActivationAllowed": False, "providerCalls": 0, "automaticChanges": False}
+
+    def run_graph(self, payload):
+        return graph.build_conversion_read_graph().invoke(
+            {"payload": payload, "findings": []}, {"recursion_limit": 8})["report"]
+
+    def test_review_never_promotes_candidate_counts(self):
+        r = self.run_graph(self.fixture())
+        self.assertEqual(r["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(r["nextAction"], "VERIFY_SOURCE_AND_COHORT")
+        self.assertIsNone(r["paidSubscriptions"])
+        self.assertIsNone(r["revenueCents"])
+        self.assertFalse(r["costActivationAllowed"])
+        self.assertFalse(r["publicationAllowed"])
+
+    def test_rejects_forged_metrics_wrong_cohort_and_authority(self):
+        for change in ({"registrations": 1}, {"providerAuthentication": "VERIFIED"},
+                       {"costActivationAllowed": True}, {"campaignId": "other"},
+                       {"candidatePaidSubscribers": 2}, {"candidatePaidSubscribers": True},
+                       {"candidateInitialInvoiceCents": None}, {"providerCalls": 1},
+                       {"end": "2026-12-24T00:00:00Z"}, {"email": "synthetic@example.invalid"}):
+            with self.subTest(change=change):
+                self.assertEqual(self.run_graph({**self.fixture(), **change})["quality"], "BLOCKED")
+
+
+
+class ProductChannelReviewTests(unittest.TestCase):
+    def fixture(self):
+        return {"contractVersion": "CAPITAL_AI_PRODUCT_CHANNEL_GRAPH_INPUT@1",
+                "sourceSha256": "a" * 64, "publicationState": "DRAFT_ONLY",
+                "publicPublishAllowed": False, "liveSalesAllowed": False, "providerCalls": 0,
+                "campaignSpend": 0, "products": [
+                    {"id": "ai-smartcopy", "researchStatus": "CANDIDATES_REVIEW_REQUIRED",
+                     "channels": [{"id": "acode", "priority": "P0", "rule": "LISTING_REVIEW_REQUIRED"},
+                                  {"id": "showHN", "priority": "P2", "rule": "HUMAN_ONLY_NO_GENERATED_TEXT"}]},
+                    {"id": "unknown", "researchStatus": "UNMAPPED_RESEARCH_REQUIRED", "channels": []}]}
+
+    def test_channel_source_rejects_forged_authority_and_unsupported_rows(self):
+        self.assertTrue(graph.channel_source_review({"payload": self.fixture()})["channel_valid"])
+        for key, value in [("publicPublishAllowed", True), ("liveSalesAllowed", True),
+                           ("providerCalls", False), ("campaignSpend", 1), ("sourceSha256", "bad")]:
+            p = self.fixture()
+            p[key] = value
+            self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+        p = self.fixture()
+        p["products"][0]["channels"][1]["rule"] = "REVIEW_REQUIRED"
+        self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+        p = self.fixture()
+        p["products"].append(p["products"][0])
+        self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+        p = self.fixture()
+        p["products"][1]["channels"] = [{"id": "unknown", "priority": "P0", "rule": "REVIEW_REQUIRED"}]
+        self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+
+    def test_actual_existing_review_topology_preserves_queue_and_denies_publication(self):
+        try:
+            from langgraph.graph import StateGraph
+        except ImportError:
+            self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
+        _ = StateGraph
+        compiled = graph.build_channel_read_graph()
+        report = compiled.invoke({"payload": self.fixture(), "findings": []}, {"recursion_limit": 8})["report"]
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(report["researchQueue"], ["unknown"])
+        self.assertFalse(report["publicationAllowed"])
+        self.assertFalse(report["liveSalesAllowed"])
+        self.assertFalse(report["costActivationAllowed"])
+        self.assertFalse(report["automaticChanges"])
+        self.assertEqual(report["attributionEvents"], [])
 
 
 if __name__ == "__main__":
