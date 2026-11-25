@@ -178,11 +178,41 @@ const graphHandoff = z.object({
   costActivationAllowed:z.literal(false), automaticChanges:z.literal(false),
 }).strict();
 
+const conversionGraphHandoff = z.object({
+  contractVersion:z.literal('CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1'),
+  engine:z.literal('langgraph'), quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),
+  nextAction:z.enum(['VERIFY_SOURCE_AND_COHORT','REPAIR_INPUT']),
+  providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
+  registrations:z.null(), paidSubscriptions:z.null(), revenueCents:z.null(),
+  publicationAllowed:z.literal(false), costActivationAllowed:z.literal(false),
+  automaticChanges:z.literal(false),
+}).strict();
+
+function projectConversionGraphHandoff(raw:unknown, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
+  const data=conversionGraphHandoff.parse(raw);
+  if(data.nextAction!==(data.quality==='BLOCKED'?'REPAIR_INPUT':'VERIFY_SOURCE_AND_COHORT'))
+    throw Error('Invalid conversion graph report');
+  const row:GrowthRow={
+    ...makeRow('x-conversion-graph-handoff','X Growth · Conversion-Graph-Import','PLATFORM',
+      data.quality==='BLOCKED'?'Graph-Eingabe korrigieren':'Authentifizierte Quellen und vollständige Kohorte separat verifizieren'),
+    flow:'Offline-Conversion-Graph → Owner-Dokumentation; keine Live-Metriken',
+    operation:'Importierte Conversion-Graph-Qualität: '+data.quality,
+    auth:'NOT_PROVEN_BY_GRAPH',
+    evidence:'Importdatei SHA-256 '+reportSha,
+    approvals:'Keine Publikations-, Kosten- oder Mutationsfreigabe',
+    tests:'Registrierungen, zahlende Abos und Umsatz: NOT_PROVEN',
+  };
+  return [...rows.filter(r=>r.id!==row.id),row];
+}
+
 /** Untrusted offline status-only report; separate rows never overwrite live owner readbacks. */
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
   const parsed=JSON.parse(raw);
+  if(parsed && typeof parsed==='object' && 'contractVersion' in parsed &&
+    parsed.contractVersion==='CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1')
+    return projectConversionGraphHandoff(parsed,reportSha,rows);
   if(parsed?.contractVersion==='CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'){
     const result=z.object({contractVersion:z.literal('CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'),engine:z.literal('langgraph'),productId:z.literal('ai-smartcopy'),
       quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),nextAction:z.enum(['VERIFY_SOURCE_AND_COHORT','REPAIR_INPUT']),providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
