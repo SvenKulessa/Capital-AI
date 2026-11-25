@@ -49,3 +49,39 @@ export function buildSmartcopyPilot(plan,input,{planContentCampaign,buildDraftCo
   }
   return {contractVersion:'CAPITAL_AI_SMARTCOPY_PILOT_DRAFT@1',publicationState:'DRAFT_ONLY',publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,drafts,manualChannelPreparation:p.channels.filter(c=>!Object.hasOwn(pilotChannels,c.id)).map(c=>({id:c.id,rule:c.rule})),conversionPlan:{status:'NOT_PROVEN_NO_PRODUCT_SCOPED_READBACK',existingXContractReuse:'BLOCKED_FIXED_CAMPAIGN_IDENTITY',events:['PRODUCT_VIEWED','INSTALLATION_VERIFIED','CLIPBOARD_READBACK_VERIFIED','CHECKOUT_STARTED','LICENSE_GRANTED','REFUNDED'],metrics:{visits:null,verifiedInstalls:null,paidLicenses:null,refunds:null,revenueCents:null},consentRequiredForOptionalAnalytics:true,clipboardPayloadCollection:false,automaticPromotion:false}};
 }
+
+// Offline candidate reconciliation. The scope must be provided independently by the
+// operator/server, not derived from client receipts. No provider authentication here.
+export function reconcileSmartcopyConversionCandidates(raw, scope) {
+  const digest=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
+  const ts=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString()===v;
+  const fail=()=>{throw Error('SMARTCOPY_CONVERSION_INPUT_REJECTED');};
+  const exact=(v,k)=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===k.length&&k.every(x=>Object.hasOwn(v,x));
+  if(!exact(scope,['campaignId','releaseSha256'])||typeof scope.campaignId!=='string'||!/^smartcopy-[a-f0-9]{24}$/.test(scope.campaignId)||!digest(scope.releaseSha256)||!exact(raw,['asOf','start','end','consents','payments'])||![raw.asOf,raw.start,raw.end].every(ts)||!Array.isArray(raw.consents)||!Array.isArray(raw.payments)||raw.consents.length>1000||raw.payments.length>1000)fail();
+  const now=Date.parse(raw.asOf),start=Date.parse(raw.start),end=Date.parse(raw.end),day=86400000;
+  if(!(start<end&&end<=now&&end-start<=30*day))fail();
+  const matching=r=>r.productId==='ai-smartcopy'&&r.campaignId===scope.campaignId&&r.releaseSha256===scope.releaseSha256&&digest(r.subjectKey)&&digest(r.receiptSha256);
+  const consents=new Map(),receipts=new Set(),charges=new Set(),subjects=new Set();
+  const unique=(set,v)=>{if(set.has(v))fail();set.add(v);};
+  for(const r of raw.consents){
+    if(!exact(r,['productId','campaignId','releaseSha256','subjectKey','receiptSha256','source','purpose','grantedAt','expiresAt','revokedAt'])||!matching(r)||r.source!=='SERVER_CONSENT_LEDGER'||r.purpose!=='PRODUCT_CONVERSION'||![r.grantedAt,r.expiresAt].every(ts)||!(r.revokedAt===null||ts(r.revokedAt))||Date.parse(r.grantedAt)>now||Date.parse(r.expiresAt)<=Date.parse(r.grantedAt)||Date.parse(r.expiresAt)-Date.parse(r.grantedAt)>180*day||(r.revokedAt!==null&&(Date.parse(r.revokedAt)<Date.parse(r.grantedAt)||Date.parse(r.revokedAt)>now))||consents.has(r.subjectKey))fail();
+    unique(receipts,r.receiptSha256);consents.set(r.subjectKey,r);
+  }
+  let eligible=0,active=0,refunded=0,partial=0,disputed=0,net=0;
+  for(const r of raw.payments){
+    if(!exact(r,['productId','campaignId','releaseSha256','subjectKey','receiptSha256','source','consentSha256','chargeKey','billing','live','currency','paidAt','observedAt','paidCents','refundedCents','disputed','licenseState'])||!matching(r)||r.source!=='STRIPE_ONE_TIME_RECEIPT'||r.billing!=='one_time'||r.live!==true||r.currency!=='EUR'||!digest(r.consentSha256)||!digest(r.chargeKey)||![r.paidAt,r.observedAt].every(ts)||!Number.isSafeInteger(r.paidCents)||r.paidCents<1||r.paidCents>100000000||!Number.isSafeInteger(r.refundedCents)||r.refundedCents<0||r.refundedCents>r.paidCents||typeof r.disputed!=='boolean'||!['GRANTED','REVOKED'].includes(r.licenseState))fail();
+    unique(receipts,r.receiptSha256);unique(charges,r.chargeKey);unique(subjects,r.subjectKey);
+    const paid=Date.parse(r.paidAt),observed=Date.parse(r.observedAt),c=consents.get(r.subjectKey);
+    if(!c||c.receiptSha256!==r.consentSha256||paid<start||paid>=end||observed<paid||observed>now||now-observed>day||Date.parse(c.grantedAt)>paid||Date.parse(c.expiresAt)<=paid)fail();
+    const reversed=r.refundedCents===r.paidCents||r.disputed;
+    if(reversed&&r.licenseState!=='REVOKED')fail();
+    if(c.revokedAt!==null||Date.parse(c.expiresAt)<=now)continue;
+    eligible++;
+    if(r.refundedCents===r.paidCents)refunded++;
+    else if(r.refundedCents>0)partial++;
+    if(r.disputed)disputed++;
+    if(!reversed&&r.licenseState==='GRANTED')active++;
+    if(!r.disputed)net+=r.paidCents-r.refundedCents;
+  }
+  return {contractVersion:'CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1',productId:'ai-smartcopy',campaignId:scope.campaignId,asOf:raw.asOf,status:'SOURCE_RECORDED_NOT_AUTHENTICATED',candidatePayments:eligible||null,candidateActiveLicenses:eligible?active:null,candidateFullRefunds:eligible?refunded:null,candidatePartialRefunds:eligible?partial:null,candidateDisputes:eligible?disputed:null,candidateNetPaidCents:eligible?net:null,verifiedMetrics:{paidLicenses:null,revenueCents:null,refunds:null},providerAuthentication:'NOT_PROVEN',publicPublishAllowed:false,liveSalesAllowed:false,automaticChanges:false,providerCalls:0,campaignSpend:0};
+}

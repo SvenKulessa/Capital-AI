@@ -124,6 +124,8 @@ export function GrowthOwnerControlCenter() {
         m?.state!=='SOURCE_SNAPSHOT_ONLY'||typeof m.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(m.date)||!count(m.homepage,3)||!count(m.overview,3)||!count(m.archive,10000)||!digest(m.editionSha256)||!digest(m.indexSha256)||
         c?.state!=='DRAFT_ONLY'||!count(c.drafts,100)||!digest(c.sourceSha256)||!digest(c.bundleSha256)||
         g?.state!=='SOURCE_ONLY_RUNTIME_NOT_PROVEN'||!digest(g.sourceSha256))throw new Error('Invalid engine snapshot');
+      const p=data.productChannels;
+      if(p!==undefined&&(p?.state!=='DRAFT_ONLY'||!count(p.products,133)||!count(p.mapped,133)||!count(p.researchQueue,133)||p.mapped+p.researchQueue!==p.products||!digest(p.sourceSha256)||p.liveMetrics!==null))throw new Error('Invalid product channel snapshot');
       const updates:GrowthRow[]=[
         {...makeRow('marketnews','Marktnews-Pipeline','MARKET','Live-Scheduler und Rechte-Evidence separat prüfen'),operation:'Build-Snapshot '+m.date,
           evidence:'Homepage '+m.homepage+' / Überblick '+m.overview+' / Archiv '+m.archive+'; Edition SHA-256 '+m.editionSha256+'; Index '+m.indexSha256},
@@ -132,6 +134,7 @@ export function GrowthOwnerControlCenter() {
         {...makeRow('langgraph','LangGraph SOLO2','PLATFORM','Laufzeit-Checkpoint und Graph-Evidence separat prüfen'),operation:'Graph-Quelle vorhanden · Runtime NOT_PROVEN',
           evidence:'SOLO2 Graph-Quellcode SHA-256 '+g.sourceSha256}
       ];
+      if(p!==undefined)updates.push({...makeRow('product-channel-intelligence','Product-to-Market Intelligence','GROWTH','Unmapped products und autorisierte Research-Adapter prüfen'),operation:'DRAFT_ONLY · '+p.products+' Produktkandidaten',evidence:p.mapped+' mit Kanalprofil / '+p.researchQueue+' Recherche offen; Register SHA-256 '+p.sourceSha256+'; Live-Metriken NOT_PROVEN'});
       const byId=new Map(updates.map(x=>[x.id,x]));
       const next=rows.map(row=>{
         const update=byId.get(row.id);if(!update)return row;byId.delete(row.id);
