@@ -210,3 +210,30 @@ import './social-trend-projection.test.mjs';
 import './viral-product-drafts.test.mjs';
 import './viral-content-engine.test.mjs';
 import './viral-template-cache.test.mjs';
+
+// Product-channel planning uses the existing Growth test entrypoint.
+import './product-channel-intelligence.test.mjs';
+test('existing Growth bundle carries deterministic product-channel plans without publishing rights',()=>{const a=buildGrowthIntelligenceDraftBundle();assert.equal(a.productToMarket.contractVersion,'CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1');assert.equal(a.productToMarket.publicPublishAllowed,false);assert.ok(a.productToMarket.products.some(p=>p.id==='ai-smartcopy'));});
+
+import './product-market-research.test.mjs';
+import {researchDigest} from './product-market-research.mjs';
+import {runProductMarketResearch} from './growth-intelligence-drafts.mjs';
+test('product research uses real Content Engine and Social package, never publishing or billing',()=>{
+  const a={productId:'ai-smartcopy',kind:'PLATFORM_RULE',entityId:'acode',sourceUrl:'https://docs.acode.app/docs/getting-started/publish-from-ci',observedOn:'2026-11-25',summary:'Official docs describe CI publishing.'};
+  const b={...a,kind:'COMPETITOR',entityId:'termux-api',sourceUrl:'https://f-droid.org/packages/com.termux.api/',summary:'Clipboard from shell scripts in Termux.'};
+  const records=[a,b],ledger={asOf:'2026-11-25',reviewGrants:records.map(r=>({digest:researchDigest(r),reviewRef:'synthetic-test-review'}))};
+  const r=runProductMarketResearch({records},ledger);
+  assert.ok(r.pilot.drafts.length>1);
+  assert.ok(r.pilot.drafts.every(d=>d.contentPlan.cadsQuality.technicalStatus==='PASS'&&d.socialPackage.approvals.length===0&&d.socialPackage.deliveries.length===0));
+  assert.ok(r.pilot.manualChannelPreparation.some(c=>c.id==='showHN'));
+  assert.equal(r.pilot.conversionPlan.metrics.revenueCents,null);
+  assert.equal(runProductMarketResearch({records},{...ledger,reviewGrants:[]}).pilot,null);
+  assert.throws(()=>runProductMarketResearch({records,reviewGrants:ledger.reviewGrants},ledger));
+});
+
+test('Growth visual plans cover the seven source-bound campaigns without creating or publishing media',()=>{
+  const bundle=buildGrowthIntelligenceDraftBundle();
+  assert.equal(bundle.visualIntelligence.plannedScenes,7);
+  assert.equal(bundle.visualIntelligence.actualMediaAssets,0);
+  for(const draft of bundle.drafts){const v=draft.visualScene;assert.ok(v);assert.equal(v.contentId,draft.contentId);assert.equal(v.publicationAllowed,false);assert.equal(v.dataMode,'SCHEMATIC');assert.equal(v.actualMediaAssets,0);assert.equal(v.sceneSha256,createHash('sha256').update(JSON.stringify({sourceSha:v.sourceSha,scene:v.scene})).digest('hex'));}
+});
