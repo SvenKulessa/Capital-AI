@@ -198,6 +198,25 @@ try {
     await until(() => evaluate("!document.querySelector('.hero-globe-pause')"), 'FALLBACK_HAS_NO_PLAYBACK_CONTROL');
     await until(() => evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity === '1'"), 'FALLBACK_POSTER_FULLY_VISIBLE');
     report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', keyboardPauseResume: 'PASS', contextLossFallback: 'PASS' });
+    // Actual article scene, existing anonymous browser QA; no external sources.
+    await evaluate(`document.querySelector('[data-article-scene="portfolio"] button').click()`);
+    await until(() => evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState === '3d'`), 'ARTICLE_WEBGL_READY');
+    await evaluate(`document.querySelector('[data-article-scene="portfolio"] canvas').scrollIntoView({block:'center',behavior:'instant'})`);
+    const articleClip=await evaluate(`(() => {const r=document.querySelector('[data-article-scene="portfolio"] canvas').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1};})()`);
+    assert.ok(articleClip.width>0 && articleClip.height>0 && articleClip.y>=0 && articleClip.y+articleClip.height<=viewport.height);
+    const articleBefore=await shot('article-3d-'+viewport.width,articleClip);
+    const modelBefore=await evaluate(`document.querySelector('[data-article-scene="portfolio"] [aria-live]').textContent`);
+    await evaluate(`document.querySelector('[data-article-scene="portfolio"] input[type="range"]').focus({preventScroll:true})`);
+    await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+    await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+    await until(async()=>await evaluate(`document.querySelector('[data-article-scene="portfolio"] [aria-live]').textContent`)!==modelBefore,'ARTICLE_MODEL_CHANGE');
+    await pause(100);
+    assert.notEqual(await shot(null,articleClip),articleBefore,'3D article geometry did not respond to the input');
+    const articleLost=await evaluate(`(() => {const ext=document.querySelector('[data-article-scene="portfolio"] canvas').getContext('webgl2')?.getExtension('WEBGL_lose_context');if(!ext)return false;ext.loseContext();return true;})()`);
+    assert.equal(articleLost,true,'Article context-loss test unavailable');
+    await until(()=>evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState==='fallback'`),'ARTICLE_CONTEXT_LOSS');
+    assert.match(await evaluate(`document.querySelector('[data-article-scene="portfolio"]').textContent`),/Textmodell bleibt nutzbar/);
+    report.checks.push({viewport,article3d:'SOFTWARE_WEBGL_PASS',keyboardScenario:'PASS',articleFallback:'PASS'});
   }
   await navigate();
   await evaluate("document.getElementById('hero-open-learning-link').focus()");

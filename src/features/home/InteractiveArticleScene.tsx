@@ -39,7 +39,7 @@ export function InteractiveArticleScene(props: Props) {
   useEffect(()=>{if(!enabled||!ready||!model)return;try{api.current?.draw(model,angle,zoom);}catch{setEnabled(false);setReady(false);setFailed(true);}},[enabled,ready,model,angle,zoom]);
   if(!model)return null;
   const palette=Object.values(BRAND_COLORS);
-  return <section data-article-scene={model.kind} aria-label="Interaktives Artikelmodell" className="mt-4 min-w-0 rounded-xl border border-slate-700 bg-[#071126] p-3">
+  return <section data-article-scene={model.kind} data-scene-state={ready && enabled ? "3d" : failed ? "fallback" : enabled ? "loading" : "text"} aria-label="Interaktives Artikelmodell" className="mt-4 min-w-0 rounded-xl border border-slate-700 bg-[#071126] p-3">
     <div aria-hidden="true" className="mb-3 h-[3px] rounded-full" style={{background:'linear-gradient(90deg, '+palette.join(', ')+')'}}/>
     <p className="text-xs font-semibold text-cyan-200">{props.newsScene?'Interaktives Quellenmodell':'Interaktive Lernsimulation'}</p>
     <p className="mt-1 text-xs leading-5 text-slate-300" aria-live="polite">{model.description}</p>
