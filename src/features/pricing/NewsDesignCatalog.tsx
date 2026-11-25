@@ -84,6 +84,20 @@ export function NewsDesignCatalog() {
 }
 
 
+export function isLearningUniverseInquiryOnlyDraft(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const draft = value as Record<string, unknown>;
+  return draft.schema === 'CAPITAL_AI_LEARNING_UNIVERSE_COMMERCIAL_DRAFTS@1' &&
+    draft.status === 'DRAFT_ONLY' && draft.salesMode === 'INQUIRY_ONLY' &&
+    draft.priceStatus === 'OWNER_INTERNAL_TARGET_APPROVED_PUBLIC_SALES_HOLD' &&
+    draft.publicPriceReference === 'NOT_PROVEN' && draft.rightsStatus === 'REVIEW_REQUIRED' &&
+    draft.amountCents === null && draft.stripeProductId === null && draft.stripePriceId === null &&
+    draft.signedAgreement === false && draft.publicPromotionAllowed === false &&
+    draft.licensedUseAllowed === false && draft.publishingAllowed === false &&
+    draft.buyerEntitled === false && draft.automaticFulfilmentAllowed === false &&
+    draft.rawAssetResaleAllowed === false && draft.sublicensingAllowed === false;
+}
+
 /** Phase A: public-facing copy prepared only in the unmerged Draft PR.
  * No contact fields, backend write, price, checkout, license or entitlement.
  * External publication still needs the owner-approved release path. */
@@ -100,12 +114,7 @@ export function LearningUniverseB2BInquirySection() {
   const drafts = concepts.map(concept => ({
     ...concept, draft: buildLearningUniverseCommercialDraft(concept.key),
   }));
-  if (drafts.some(({ draft }) =>
-    draft.status !== 'DRAFT_ONLY' || draft.salesMode !== 'INQUIRY_ONLY' ||
-    draft.amountCents !== null || draft.publicPromotionAllowed !== false ||
-    draft.licensedUseAllowed !== false || draft.publishingAllowed !== false ||
-    draft.buyerEntitled !== false || draft.automaticFulfilmentAllowed !== false ||
-    draft.rawAssetResaleAllowed !== false || draft.sublicensingAllowed !== false)) return null;
+  if (drafts.some(({ draft }) => !isLearningUniverseInquiryOnlyDraft(draft))) return null;
 
   return (
     <section aria-labelledby="learning-universe-b2b-heading"
