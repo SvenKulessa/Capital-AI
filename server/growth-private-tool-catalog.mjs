@@ -38,7 +38,7 @@ async function readDomain(req){
 export function createPrivateToolCatalogApi({authorized,auth,env=process.env,fetchImpl=fetch,now=Date.now,archive}={}){
   // Separate catalog snapshots on the existing private disk; never overwrite evidence-history.
   const store=archive??createGrowthEvidenceArchive({root:'/var/data/capital-ai-growth-tool-evidence',ownerId:env.CAPITAL_AI_RENDER_OWNER_USER_ID,keyHex:env.BLUEPRINT_DISK_ENCRYPTION_KEY});
-  const storageReady=()=>env.CAPITAL_AI_GROWTH_EVIDENCE_ARCHIVE_ENABLED==='true'&&env.CAPITAL_AI_GROWTH_EVIDENCE_RECOVERY_VERIFIED==='true'&&store.configured();
+  const storageReady=()=>env.CAPITAL_AI_GROWTH_EVIDENCE_ARCHIVE_ENABLED==='true'&&env.CAPITAL_AI_GROWTH_EVIDENCE_RECOVERY_VERIFIED==='true'&&env.GROWTH_TOOL_CATALOG_RECOVERY_VERIFIED==='true'&&store.configured();
   let busy=false;
   async function latest(){
     const entries=await store.list();
