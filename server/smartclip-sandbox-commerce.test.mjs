@@ -433,3 +433,27 @@ test('provider failure causes retryable 503 rather than false success',async()=>
   const r=await call('webhook','POST',raw,{fixture:f,headers:{'stripe-signature':sign(raw)}});
   assert.equal(r.statusCode,503);assert.equal(f.ledger.size,0);
 });
+
+test('license access is private and digest-bound; unsupported binary delivery stays denied before and after grant',async()=>{
+ const fixture=makeFixture();
+ const initial=await call('access','GET',undefined,{fixture});
+ assert.deepEqual(initial.payload,{entitled:false,releaseSha256:null});
+ assert.equal(initial.headers['Cache-Control'],'private, no-store');
+ assert.match(initial.headers['X-Robots-Tag'],/noindex/);
+ const before=fixture.calls.length;
+ for(const action of ['download','delivery','asset','access?releaseSha256='+SMARTCLIP_PINNED_SHA256]){
+   const denied=await call(action,'GET',undefined,{fixture});
+   assert.ok([400,404].includes(denied.statusCode));
+ }
+ assert.equal((await call('access','GET',undefined,{fixture,user:null})).statusCode,401);
+ assert.equal((await call('access','GET',undefined,{fixture,origin:false})).statusCode,403);
+ assert.equal(fixture.calls.length,before);
+ const paid=event('checkout.session.completed',{id:sid});
+ assert.equal((await call('webhook','POST',paid,{fixture,headers:{'stripe-signature':sign(paid)}})).payload.granted,true);
+ assert.deepEqual((await call('access','GET',undefined,{fixture})).payload,{entitled:true,releaseSha256:SMARTCLIP_PINNED_SHA256});
+ assert.equal((await call('download','GET',undefined,{fixture})).statusCode,404);
+ fixture.charge.refunded=true;fixture.charge.amount_refunded=249;
+ const refund=event('charge.refunded',{id:chargeId});
+ assert.equal((await call('webhook','POST',refund,{fixture,headers:{'stripe-signature':sign(refund)}})).payload.revoked,true);
+ assert.deepEqual((await call('access','GET',undefined,{fixture})).payload,{entitled:false,releaseSha256:null});
+});
