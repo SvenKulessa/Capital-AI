@@ -82,3 +82,12 @@ test('direct GSC owner route binds fixed property, isolates disabled/auth failur
  assert.deepEqual((await call(handler)).data,read.data);
  assert.equal(calls,2);
 });
+
+test('owner snapshot exposes only draft channel counts and source hash; no live metrics or self-promotion',()=>{
+ const actual=buildOwnerEngineSnapshot(),p=actual.productChannels;
+ assert.ok(p.products>0);assert.equal(p.mapped+p.researchQueue,p.products);assert.equal(p.liveMetrics,null);
+ assert.deepEqual(validateEngineSnapshot(actual).productChannels,p);
+ assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...p,liveMetrics:{sales:0}}}));
+ assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...p,mapped:p.products+1}}));
+ const {productChannels,...legacy}=actual;assert.deepEqual(validateEngineSnapshot(legacy),legacy);
+});

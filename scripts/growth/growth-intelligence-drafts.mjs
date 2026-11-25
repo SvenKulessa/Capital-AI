@@ -119,6 +119,21 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       process.exitCode=1;
     }
   }
+  else if(args.length===3 && args[0]==='--smartcopy-media') {
+    try {
+      const {buildSmartcopyMediaDraft}=await import('./brand-kit-graph-drafts.mjs');
+      const result=await buildSmartcopyMediaDraft(readViralJsonFile(args[1],{ledger:true}),readViralJsonFile(args[2],{ledger:true}));
+      const {bytes,...meta}=result.png;
+      process.stdout.write(JSON.stringify({...result,png:{...meta,base64:bytes.toString('base64')}})+'\n');
+    } catch { process.stderr.write('SMARTCOPY_MEDIA_REJECTED\n');process.exitCode=1; }
+  }
+  else if(args.length===3 && args[0]==='--smartcopy-conversion') {
+    try {
+      const {reconcileSmartcopyConversionCandidates}=await import('./product-market-research.mjs');
+      const result=reconcileSmartcopyConversionCandidates(readViralJsonFile(args[1],{ledger:true}),readViralJsonFile(args[2],{ledger:true}));
+      process.stdout.write(JSON.stringify(result)+'\n');
+    } catch { process.stderr.write('SMARTCOPY_CONVERSION_REJECTED\n');process.exitCode=1; }
+  }
   else if(args.length===1 && args[0]==='--read-providers') process.stdout.write(JSON.stringify(await collectGrowthProviderData(),null,2)+'\n');
   else if(args.length===2 && args[0]==='--read-providers' && args[1]==='--graph-handoff')
     process.stdout.write(JSON.stringify(await collectGrowthProviderData({includeDraftBundle:false}))+'\n');
