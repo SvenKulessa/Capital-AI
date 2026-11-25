@@ -80,6 +80,67 @@ nicht autorisierende gemeinsame Vorlage
 Deren alte Analyse-/Berichts-Stopps sind bei einem ausdrücklichen
 Implementierungsauftrag nur interne Phasengrenzen, kein neues Gate.
 
+### PROCESS_ACCELERATION@1 – kürzester sicherer Ausführungspfad
+
+`MODE=SHORTEST_PATH_EXECUTION_FIRST`, integriert in SOLO2, SOLO2-CHAT und
+`AUTONOMOUS_EXECUTION_FIRST`. Diese Ausführungspräferenz schafft weder
+neue Rechte noch Gates, sondern konkretisiert die bestehende Delegation.
+
+- **Prozessökonomie:** Vorhandene Evidence, Berechtigungen, APIs, Federation,
+  Service-Accounts, Skills und Agentenprozesse wiederverwenden, soweit gültig
+  und auf den Scope anwendbar. Redundante Inventare, Audits, Handoffs und
+  Freigabeschleifen vermeiden. Unabhängige Aufgaben parallelisieren;
+  bei nachgewiesenem technischen Fehler einen geeigneten alternativen Pfad
+  wählen. Autorisierte Umsetzung, Tests, Reparatur und Verifikation möglichst
+  im selben Arbeitsablauf abschließen. Prozessoptimierungspotenziale aktiv
+  identifizieren und im autorisierten Scope umsetzen.
+- **Evidence proportional zum Risiko:** Für das Solo-Unternehmen in der
+  Vorumsatzphase den kleinsten aussagekräftigen Nachweis wählen: bei
+  Dokumentation gezielter Diff-/Konsistenzcheck, bei gewöhnlichen Features
+  relevante Tests und bestehende CI, bei geänderten Trust Boundaries
+  gezielte Negativtests und entscheidungsrelevanter Runtime-Readback,
+  bei produktiven Datenbankänderungen, Zahlungen oder Datenverlustrisiken
+  die konkret erforderliche Sicherheits-, Freigabe- und Recovery-Evidence.
+  Vor Zusatznachweisen deren Entscheidungsnutzen prüfen; vorhandene
+  Nachweise nur bei gültiger Bindung wiederverwenden. Bestehende Required
+  Checks, Rulesets, verpflichtende Nachweise und die Merge-Regel bleiben
+  vollständig erhalten. Keine unbelegten VERIFIED-Status.
+- **Supabase:** Erforderliche Mutationen frühzeitig konkret mit Zielprojekt,
+  SQL-/Migrationsumfang, Risiko, Tests und angemessenem Rollback bündeln.
+  Nach tatsächlich gültiger, scopegebundener Owner-Freigabe durchführen und
+  per Readback verifizieren; gültige Freigaben nicht wiederholen. Produktive
+  Mutationen weiterhin nur mit gesonderter Autorisierung und belastbarer
+  Backup-/Recovery-Evidence. Isolierte Testmutationen sind ebenfalls an
+  ihren autorisierten Scope gebunden. Keine Selbstautorisierung.
+- **GROWTH/MARKET – Commercial Readiness:** Marktbedarf, Wettbewerb,
+  Preispositionierung, Aufwand, Time-to-Market, Marge und Umsatzpotenzial
+  anhand realer Quellen oder klar gekennzeichneter Hypothesen bewerten.
+  Für geeignete eigene Produkte den kleinsten vollständigen Vertriebsweg
+  mit Produktkatalog, versioniertem Release, SEO-Produktseite, Preis,
+  Lizenzentwurf, Checkout, signaturgeprüften/idempotenten Webhooks,
+  Lizenzvergabe, geschützter Auslieferung, Support, Rückerstattung und
+  consent-konformer Conversion-Messung über bestehende Infrastruktur
+  umsetzen. Technische Angebotsreife und tatsächliche kommerzielle
+  Freigabe getrennt ausweisen; keine unautorisierte Veröffentlichung,
+  Provideraktivierung oder Kosten.
+- **Lizenzierung:** Kommerzielle Nutzung, Redistribution und jeweilige
+  Drittanbieter-, Daten-, Modell- und Medienrechte versionsbezogen prüfen.
+  Für eigene Produkte passende versionierte Lizenzentwürfe einschließlich
+  Nutzungsumfang, Weitergabe, Laufzeit, Support und Rechte Dritter erstellen;
+  rechtsverbindliche Annahme und Veröffentlichung bleiben beim Owner.
+  Ungeklärte Rechte sperren nur den betroffenen Vertriebspfad.
+- **SEO und autonome Optimierung:** Bestehende SEO-Tabellen, Search Console,
+  GA4, rechtmäßig verfügbare Marktquellen, `scripts/growth-agent/auto_loop.py`,
+  Skill-Registry und RAG wiederverwenden. Technische SEO, Suchintention,
+  Indexierbarkeit, strukturierte Daten, interne Links, mobile Leistung,
+  Barrierefreiheit und Conversion verbessern. LangGraph/RAG im erlaubten
+  Scope mit persistenten Checkpoints, begrenzten Reparaturzyklen,
+  Quellenherkunft/Lizenz/Freshness, Tenant-Isolation und tatsächlichen
+  Vergleichstests autonom optimieren. Keine konkurrierenden Agenten,
+  Scheduler oder erfundenen Kennzahlen; keine neue laufende Ressource
+  ohne erforderliche Kostenfreigabe. Zeitgesteuerte Ausführung bleibt
+  an die bestehende autorisierte Automation gebunden.
+
 ### Auftragsgrenzen bei neuen Prompts – keine pauschale Sperrvererbung
 
 - **Fortsetzung desselben Auftrags:** Ausdrücklich vereinbarte Read-only-, No-Merge-, No-Deploy- oder No-Publish-Grenzen gelten auch bei kurzen Fortsetzungen wie „fahre fort“, solange der Auftrag unverändert fortgesetzt wird.
