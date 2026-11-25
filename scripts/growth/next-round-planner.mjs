@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, readSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { discoverGrowthTools } from '../../server/tool-update-discovery.mjs';
+import { discoverPrivateDomain } from '../../server/growth-private-tool-catalog.mjs';
 const DISCOVERY_CLAUSE = "GROWTH_TOOL_DISCOVERY@1: Suche bei der Ausführung aktiv nach aufgabenrelevanten externen Tools, Plugins und kommerziell nutzbaren Alternativen über tatsächlich verfügbare autorisierte Verzeichnisse und offizielle Quellen; vergleiche zuerst vorhandene Integrationen. Verwende ausschließlich nicht vertrauliche Suchbegriffe. Dokumentiere Quelle, Zeitpunkt, Zweck, Version, Kosten, Datenschutz, kommerzielle Nutzungs-, Weitergabe- und Outputrechte sowie Verbindungs-/Runtime-Status getrennt im vorhandenen Owner-Anwendungskatalog. Fehlt eine Suchquelle oder belastbare Rechte-Evidence, kennzeichne dies NOT_PROVEN; keine automatische Installation, Freigabe, Veröffentlichung oder Kostenaktivierung. ";
 
 /**
@@ -89,11 +89,10 @@ export function buildNextRoundDrafts(sourceText, registry) {
 // Queries use fixed public topics only; never forward task text, credentials or identities.
 export async function buildPrivateNextRoundDrafts(sourceText, registry, {fetchImpl=fetch, now=Date.now}={}) {
   const draft=buildNextRoundDrafts(sourceText,registry);
-  const byDomain={PRODUCT:['accessibility','content-generation','mcp-server'],MARKET:['finance','data-analysis','mcp-server'],PLATFORM:['developer-tools','observability','mcp-server'],TRUST:['security','testing','mcp-server'],GROWTH:['analytics','advertising','seo','tag-manager','mcp-server']};
   const domains=[...new Set(draft.steps.filter(step=>step.prompt!==null).map(step=>step.domain))];
   const radar={};
-  for(const domain of domains) radar[domain]=await discoverGrowthTools({topics:byDomain[domain],fetchImpl,now});
-  return {...draft,toolDiscovery:{schema:'GROWTH_TOOL_DISCOVERY@1',scope:'PRIVATE_OPERATOR',metadataOnly:true,automaticInstall:false,commercialRights:'NOT_PROVEN',externalMetadataReadAttempts:domains.reduce((n,d)=>n+radar[d].topics.length,0),byDomain:radar},steps:draft.steps.map(step=>step.prompt===null?step:{...step,toolDiscoveryDomain:step.domain,toolDiscoveryState:radar[step.domain].topics.some(t=>t.status==='METADATA_OBSERVED')?'REVIEW_REQUIRED':'NOT_PROVEN'})};
+  for(const domain of domains) radar[domain]=await discoverPrivateDomain(domain,{fetchImpl,now});
+  return {...draft,toolDiscovery:{schema:'GROWTH_TOOL_DISCOVERY@1',scope:'PRIVATE_OPERATOR',metadataOnly:true,automaticInstall:false,commercialRights:'NOT_PROVEN',externalMetadataReadAttempts:domains.reduce((n,d)=>n+radar[d].topics.length+1,0),byDomain:radar},steps:draft.steps.map(step=>step.prompt===null?step:{...step,toolDiscoveryDomain:step.domain,toolDiscoveryState:(radar[step.domain].topics.some(t=>t.status==='METADATA_OBSERVED')||radar[step.domain].registry.status==='METADATA_OBSERVED')?'REVIEW_REQUIRED':'NOT_PROVEN'})};
 }
 
 if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
