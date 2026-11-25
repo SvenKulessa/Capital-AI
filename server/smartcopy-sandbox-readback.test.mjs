@@ -39,6 +39,7 @@ function providerFixture(){
  ['/invoices/'+iid]:object(iid,'invoice',{metadata:meta,customer:cid,status:'paid',currency:'eur',total:499,amount_paid:499,amount_remaining:0,status_transitions:{paid_at:paid}}),
  ['/invoice_payments?invoice='+iid+'&limit=2']:{object:'list',has_more:false,data:[object('inpay_fixture','invoice_payment',{invoice:iid,status:'paid',currency:'eur',amount_paid:499,amount_requested:499,payment:{type:'payment_intent',payment_intent:intent},status_transitions:{paid_at:paid}})]},
  ['/charges/'+chargeId]:object(chargeId,'charge',{payment_intent:intent,customer:cid,status:'succeeded',currency:'eur',paid:true,captured:true,amount:499,amount_captured:499,amount_refunded:0,refunded:false,disputed:false})};
+ data['/refunds?charge='+chargeId+'&limit=100']={object:'list',has_more:false,data:[]};
  const calls=[],key='rk_test_fixture_1234567890';
  const deps={scope,key,now:()=>t,fetchImpl:async(url,opts)=>{assert.equal(opts.method,'GET');assert.equal(opts.redirect,'error');assert.equal(opts.headers.Authorization,'Bearer '+key);assert.ok(url.startsWith('https://api.stripe.com/v1'));const p=url.slice('https://api.stripe.com/v1'.length);calls.push(p);assert.ok(Object.hasOwn(data,p));return Response.json(data[p])}};
  return {data,calls,deps,ctx:{userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,mode:'test'},run(){return createSmartcopyStripeReader(deps)(this.ctx,session)}};
@@ -96,11 +97,11 @@ test('independent entitlement errors, missing rows and oversize response fail cl
 import {createSmartcopySandboxLifecycle} from './smartcopy-sandbox-readback.mjs';
 test('isolated lifecycle uses provider read, independent delivery and private fixture writer; no live metrics',async()=>{
  const f=providerFixture(),calls=[];
- const proof={...f.ctx,intentId:intent,receiptSha256:'7'.repeat(64),purpose:'CONTRACT_DELIVERY'};delete proof.mode;
+ const proof={...f.ctx,intentId:intent,receiptSha256:'7'.repeat(64),termsSha256:'8'.repeat(64),acceptedAt:'2026-11-24T00:00:00.000Z',purpose:'CONTRACT_DELIVERY'};delete proof.mode;
  const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},
  readDeliveryProof:async()=>{calls.push('delivery');return proof},recordFixture:async v=>{calls.push('fixture');assert.equal(v.p_intent,intent);assert.equal(v.p_delivery,proof.receiptSha256);return 'GRANTED'}};
  const result=await createSmartcopySandboxLifecycle(opts)({}, {},session);
- assert.equal(result.licenseCandidate,'GRANTED');assert.equal(result.liveMetrics,null);assert.deepEqual(calls,['delivery','fixture']);assert.equal(f.calls.length,8);
+ assert.equal(result.licenseCandidate,'GRANTED');assert.equal(result.liveMetrics,null);assert.deepEqual(calls,['delivery','fixture']);assert.equal(f.calls.length,10);
  assert.throws(()=>createSmartcopySandboxLifecycle({...opts,mode:'live'}));
 });
 test('lifecycle refuses marketing consent, foreign identity, live session and unauthenticated request',async()=>{
@@ -114,7 +115,36 @@ test('lifecycle refuses marketing consent, foreign identity, live session and un
 });
 test('terminal refund does not require marketing or delivery proof and rejects a non-revoked fixture result',async()=>{
  const f=providerFixture();const ch=f.data['/charges/ch_fixture12345'];ch.amount_refunded=499;ch.refunded=true;
+ f.data['/refunds?charge=ch_fixture12345&limit=100'].data=[{id:'re_fixture12345',object:'refund',charge:ch.id,payment_intent:intent,currency:'eur',amount:499,status:'succeeded'}];
  const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},readDeliveryProof:async()=>{throw Error('must not call')},recordFixture:async v=>{assert.equal(v.p_refunded,499);assert.equal(v.p_delivery,null);return 'REVOKED'}};
  assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).licenseCandidate,'REVOKED');
  assert.equal((await createSmartcopySandboxLifecycle({...opts,recordFixture:async()=> 'GRANTED'})({}, {},session)).reason,'FIXTURE_STATE_DENIED');
+});
+
+import {createSmartcopyDeliveryReader} from './smartcopy-sandbox-readback.mjs';
+test('delivery proof is read independently and bound to terms, intent and acceptance timestamp',async()=>{
+ const f=providerFixture(),proof={userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,intentId:intent,receiptSha256:'7'.repeat(64),termsSha256:'8'.repeat(64),acceptedAt:'2026-11-24T00:00:00.000Z',purpose:'CONTRACT_DELIVERY'};
+ const cfg={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890',fetchImpl:async(url,o)=>{assert.equal(url,'https://'+'a'.repeat(20)+'.supabase.co/rest/v1/rpc/capital_smartcopy_read_delivery');assert.equal(o.headers.apikey,cfg.secret);assert.deepEqual(JSON.parse(o.body),{p_user:user,p_campaign:scope.campaignId,p_release:scope.releaseSha256,p_intent:intent});return Response.json(proof)}};
+ const read=createSmartcopyDeliveryReader(cfg);assert.deepEqual(await read(f.ctx,intent),proof);
+ assert.throws(()=>createSmartcopyDeliveryReader({...cfg,projectRef:'ryzywoktpmyhwzxmstyu'}));
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},readDeliveryProof:read,recordFixture:async()=> 'GRANTED'};
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).licenseCandidate,'GRANTED');
+ proof.acceptedAt='2026-11-24T02:00:00.000Z';
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).reason,'DELIVERY_NOT_PROVEN');
+ proof.releaseSha256='b'.repeat(64);await assert.rejects(()=>read(f.ctx,intent));
+});
+test('refund reconciliation rejects incomplete, pending, duplicate, foreign and inconsistent records',async()=>{
+ for(const kind of ['page','pending','duplicate','foreign','sum','charge-race']){
+  const f=providerFixture(),ch=f.data['/charges/ch_fixture12345'],list=f.data['/refunds?charge=ch_fixture12345&limit=100'];
+  ch.amount_refunded=100;
+  const row={id:'re_fixture12345',object:'refund',charge:ch.id,payment_intent:intent,currency:'eur',amount:100,status:'succeeded'};
+  list.data=[row];
+  if(kind==='page')list.has_more=true;
+  if(kind==='pending')row.status='pending';
+  if(kind==='duplicate')list.data.push({...row});
+  if(kind==='foreign')row.payment_intent='pi_foreign12345';
+  if(kind==='sum')row.amount=50;
+  if(kind==='charge-race'){const fetch=f.deps.fetchImpl;let n=0;f.deps.fetchImpl=async(url,opt)=>{const res=await fetch(url,opt);if(url.endsWith('/charges/ch_fixture12345')&&++n===2)return Response.json({...ch,amount_refunded:200});return res;};}
+  await assert.rejects(()=>createSmartcopyStripeReader({...f.deps,reconcileRefunds:true})(f.ctx,session),/SMARTCOPY_STRIPE_RECEIPT_DENIED/);
+ }
 });

@@ -121,7 +121,7 @@ smartcopy_paid="$(pg -At -c "SELECT (email_confirmed_at+interval '1 second')::te
 smartcopy_race() {
  pg -At -c "SELECT capital_growth_private.apply_smartcopy_sandbox_payment('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_lifecyclerace','ch_lifecyclerace',499,$1,false,'$smartcopy_paid'::timestamptz,clock_timestamp(),$2);"
 }
-smartcopy_race 0 "repeat('7',64)" > "$one" 2>&1 &
+smartcopy_race 0 "repeat('3',64)" > "$one" 2>&1 &
 sc_grant=$!
 smartcopy_race 499 "null" > "$two" 2>&1 &
 sc_refund=$!
@@ -178,3 +178,6 @@ echo 'PASS: independent synthetic entitlement states persisted; consent withdraw
 [[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE charge_id IS NOT NULL AND state='REVOKED'")" == 3 ]]
 [[ "$(pg -At -c "SELECT refunded_cents FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecycle001'")" == 499 ]]
 echo 'PASS: isolated Smartcopy refund and dispute tombstones persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_delivery_fixture")" == 5 ]]
+echo 'PASS: independent contractual proof records persisted after PostgreSQL restart'

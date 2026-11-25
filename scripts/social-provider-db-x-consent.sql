@@ -233,6 +233,32 @@ alter table capital_growth_private.smartcopy_entitlement_fixture
  (charge_id is null and paid_cents is null and refunded_cents is null and disputed is null and paid_at is null and source_observed_at is null and delivery_sha256 is null)
  or (charge_id is not null and paid_cents is not null and refunded_cents is not null and disputed is not null and paid_at is not null and source_observed_at is not null and source_observed_at>=paid_at
  and (state='REVOKED' or (delivery_sha256 is not null and not disputed and refunded_cents<paid_cents))));
+-- Independent accepted terms / contractual delivery proof. Disposable fixture
+-- owner seeds a confirmed record; no browser or service-role grant method.
+create table capital_growth_private.smartcopy_delivery_fixture (
+ intent_id text primary key check(intent_id ~ '^pi_[A-Za-z0-9_]{8,240}$'),
+ user_id uuid not null references auth.users(id) on delete cascade,
+ campaign_id text not null check(campaign_id ~ '^smartcopy-[a-f0-9]{24}$'),
+ release_sha256 text not null check(release_sha256 ~ '^[a-f0-9]{64}$'),
+ receipt_sha256 text not null unique check(receipt_sha256 ~ '^[a-f0-9]{64}$'),
+ terms_sha256 text not null check(terms_sha256 ~ '^[a-f0-9]{64}$'),
+ accepted_at timestamptz not null
+);
+alter table capital_growth_private.smartcopy_delivery_fixture enable row level security;
+revoke all on capital_growth_private.smartcopy_delivery_fixture from public,anon,authenticated,service_role;
+create function public.capital_smartcopy_read_delivery(p_user uuid,p_campaign text,p_release text,p_intent text)
+returns jsonb language sql security definer set search_path='' as $$
+ select jsonb_build_object('userId',d.user_id,'productId','ai-smartcopy','campaignId',d.campaign_id,
+ 'releaseSha256',d.release_sha256,'intentId',d.intent_id,'receiptSha256',d.receipt_sha256,
+ 'termsSha256',d.terms_sha256,'purpose','CONTRACT_DELIVERY','acceptedAt',
+ to_char(d.accepted_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'))
+ from capital_growth_private.smartcopy_delivery_fixture d
+ where d.user_id=p_user and d.campaign_id=p_campaign and d.release_sha256=p_release and d.intent_id=p_intent
+ and d.accepted_at<=clock_timestamp()
+$$;
+revoke all on function public.capital_smartcopy_read_delivery(uuid,text,text,text) from public,anon,authenticated,service_role;
+grant execute on function public.capital_smartcopy_read_delivery(uuid,text,text,text) to service_role;
+
 -- Invoker rights: only disposable DB owner can execute. All inputs below are
 -- normalized trusted sandbox observations, not request bodies. Terminal reversal
 -- is conservative and irreversible even if a later provider read clears dispute.
@@ -250,7 +276,8 @@ begin
  or p_observed>t or p_observed<t-interval '1 hour'
  or (p_delivery is not null and p_delivery !~ '^[a-f0-9]{64}$') then return 'DENIED'; end if;
  terminal:=p_disputed or p_refunded=p_paid;
- if not terminal and (p_delivery is null or not exists(select 1 from auth.users where id=p_user and email_confirmed_at is not null and email_confirmed_at<=p_paid_at)) then return 'DENIED'; end if;
+ if not terminal and (p_delivery is null or not exists(select 1 from auth.users where id=p_user and email_confirmed_at is not null and email_confirmed_at<=p_paid_at)
+ or not exists(select 1 from capital_growth_private.smartcopy_delivery_fixture d where d.user_id=p_user and d.campaign_id=p_campaign and d.release_sha256=p_release and d.intent_id=p_intent and d.receipt_sha256=p_delivery and d.accepted_at<=p_paid_at)) then return 'DENIED'; end if;
  if not exists(select 1 from auth.users where id=p_user) then return 'DENIED'; end if;
  insert into capital_growth_private.smartcopy_entitlement_fixture as e
  (user_id,campaign_id,release_sha256,intent_id,charge_id,paid_cents,refunded_cents,disputed,paid_at,source_observed_at,delivery_sha256,state)
