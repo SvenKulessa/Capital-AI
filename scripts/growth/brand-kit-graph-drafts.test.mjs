@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { buildGrowthIntelligenceDraftBundle } from './growth-intelligence-drafts.mjs';
-import { CONTRACT,brandDraftTemplate,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
+import { CONTRACT,readCorporateAssetInventory,brandDraftTemplate,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
 import { buildSocialPublisherHandoff } from '../../src/contracts/socialPublisherAdapter.ts';
 import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
@@ -410,4 +410,16 @@ test('a self-hashed logo, profile swap or changed valid palette cannot impersona
     {...kit,...Object.fromEntries(Object.entries(readBrandKit('INSTAGRAM')).filter(([key])=>key.startsWith('profile')))}]) {
     assert.throws(()=>drawBrandedSvg({draft,kit:altered,context:{accepted:[]},template:brandDraftTemplate('X')}),/BRAND_KIT_NOT_TRUSTED|BRAND_PROFILE_NOT_VERIFIED/);
   }
+});
+
+
+test('corporate inventory projects existing manifests without granting publishing or customer reuse',()=>{
+  const rows=readCorporateAssetInventory();
+  assert.equal(new Set(rows.map(a=>a.id)).size,rows.length);
+  assert.ok(rows.some(a=>a.id==='CAI-LOGO'));
+  assert.ok(rows.some(a=>a.id==='CAI-GLOBE'));
+  assert.ok(rows.some(a=>a.id==='capital-ai-badge-pro'));
+  assert.ok(rows.some(a=>a.id==='learning-universe-glossar'));
+  assert.ok(rows.some(a=>a.id==='typography:PlusJakartaSans-Regular.ttf'));
+  assert.ok(rows.every(a=>a.identityStatus==='VERIFIED_BYTES'&&a.namespace==='CAPITAL_AI_CORPORATE'&&!a.publicPublishAllowed&&!a.customerRedistributionAllowed));
 });

@@ -5,6 +5,7 @@
  */
 import { createHash } from 'node:crypto';
 import { BRAND_COLORS } from '../../shared/hub-branding.mjs';
+import { LEARNING_UNIVERSE_ASSETS } from '../../src/platform/SocialMediaEngine/Branding/learningUniverseAssetRegistry.mjs';
 import { readFileSync, lstatSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { join, resolve } from 'node:path';
@@ -37,6 +38,33 @@ const ASSET_PROFILE = Object.freeze({
   X:{path:'social/x-link-card-1200x675.jpg',sha256:'0238503dd58d879f822edb9ac7c8146336cdaf68de12ddb579e5dd96eb90c56a'},
   INSTAGRAM:{path:'social/instagram-portrait-1080x1350.jpg',sha256:'297761f524292ce90a8704e18e1441c48a1972c8fc8018436d5e0b2f701a4d47'},
 });
+
+/** Read-only projection of existing authorities. No new asset registry or channel grant. */
+export function readCorporateAssetInventory() {
+  const root = new URL('../../',import.meta.url);
+  const json = path => JSON.parse(readFileSync(new URL(path,root),'utf8'));
+  const pack = json('public/branding/asset-pack/meta/asset-manifest.json');
+  const badges = json('docs/licenses/capital-ai-badges.manifest.json');
+  const screener = json('docs/licenses/screener-blueprint-badges.manifest.json');
+  const fonts = json('public/fonts/provenance.json');
+  const refs = [
+    {id:'CAI-LOGO',path:pack.source.repositoryPath,sha256:pack.source.sha256,version:pack.schemaVersion,rightsRef:pack.source.rightsReference},
+    ...pack.assets.map(a=>({id:'asset-pack:'+a.path,path:'public/branding/asset-pack/'+a.path,sha256:a.sha256,version:pack.schemaVersion,rightsRef:pack.source.rightsReference})),
+    ...badges.assets.map(a=>({id:a.id,path:a.path,sha256:a.sha256,version:badges.schemaVersion,rightsRef:a.licenseRef})),
+    ...screener.assets.map(a=>({id:'screener-badge:'+a.variant,path:a.path,sha256:a.sha256,version:screener.schemaVersion,rightsRef:a.license})),
+    ...LEARNING_UNIVERSE_ASSETS.map(a=>({id:a.id,path:a.repositoryPath,sha256:a.sha256,version:'CAPITAL_AI_LEARNING_UNIVERSE_ASSETS@1',rightsRef:a.provenanceRef})),
+    ...fonts.files.map(a=>({id:'typography:'+a.path.split('/').at(-1),path:a.path,sha256:a.sha256,version:fonts.upstreamCommit,rightsRef:'public/fonts/OFL.txt'})),
+    {id:'CAI-GLOBE',path:'public/branding/universe/hero-universe-globe.webp',sha256:'d510ac752e79314d69475a7645c554625b86ed676b0b04aabbc2869599de8eb4',version:'LicenseRef-CAPITAL-AI-UNIVERSE-HERO-1.0',rightsRef:'docs/licenses/CAPITAL-AI-UNIVERSE-HERO-20261015.md'},
+  ];
+  const seen=new Set();
+  return refs.map(a=>{
+    if(seen.has(a.id)||!/^public\/(?:branding|fonts)\/[A-Za-z0-9._/-]+$/.test(a.path)||a.path.split('/').some(p=>p==='..'||p==='.')||!digest.test(a.sha256??'')||!a.version||!a.rightsRef)throw Error('CORPORATE_INVENTORY_INVALID');
+    seen.add(a.id);
+    const path=fileURLToPath(new URL(a.path,root)), st=lstatSync(path);
+    if(!st.isFile()||st.isSymbolicLink()||sha(readFileSync(path))!==a.sha256)throw Error('CORPORATE_INVENTORY_DIGEST_MISMATCH');
+    return Object.freeze({...a,namespace:'CAPITAL_AI_CORPORATE',identityStatus:'VERIFIED_BYTES',publicPublishAllowed:false,customerRedistributionAllowed:false});
+  });
+}
 
 /** Return the existing immutable render profile, not a new publishing authority. */
 export function brandDraftTemplate(channel) {
