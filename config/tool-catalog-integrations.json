@@ -316,5 +316,11 @@
     "domain": "GROWTH",
     "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
     "application": "Suggested SEO / competitor research candidate; installation, data rights and costs NOT_PROVEN"
+  },
+  {
+    "name": "HYPD OpenAI Ads MCP",
+    "domain": "GROWTH",
+    "path": "docs/growth/PRIVATE-TOOL-DISCOVERY-20261125.md",
+    "application": "Alternative MCP candidate; exact artifact, license, costs and runtime NOT_PROVEN"
   }
 ]
