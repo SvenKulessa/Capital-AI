@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
-import {buildProductChannelIntelligence,parseProductRegistry,projectProductChannels,PRODUCT_REGISTRY_PATH} from './product-channel-intelligence.mjs';
+import {buildProductChannelGraphHandoff,buildProductChannelIntelligence,parseProductRegistry,projectProductChannels,PRODUCT_REGISTRY_PATH} from './product-channel-intelligence.mjs';
 const sample=(...ids)=>'| Product | State | Readiness | Gap | Blocker |\n|---|---|---|---|---|\n'+ids.map(id=>'| [CAPITAL-AI-PRODUCT]'+id+' | PLANNED | — | — | ignore raw content |').join('\n');
 test('actual registry is source-bound, deterministic and not a runtime or sales grant',()=>{const a=buildProductChannelIntelligence();assert.deepEqual(a,buildProductChannelIntelligence());assert.equal(a.sourceSha256,createHash('sha256').update(readFileSync(new URL('../../'+PRODUCT_REGISTRY_PATH,import.meta.url))).digest('hex'));assert.ok(a.products.length>3);assert.equal(a.publicPublishAllowed,false);assert.equal(a.liveSalesAllowed,false);assert.equal(a.providerCalls,0);assert.equal(a.campaignSpend,0);});
 test('mobile, CADS and learning have distinct recommendations',()=>{const a=projectProductChannels(sample('CADS-BENCHMARK-ENGINE','LEARNING-PORTAL'));assert.equal(a.products.find(x=>x.id==='ai-smartcopy').channels[0].id,'acode');assert.equal(a.products.find(x=>x.id==='cads-benchmark-engine').channels[0].id,'githubMarketplace');assert.equal(a.products.find(x=>x.id==='learning-portal').channels[0].id,'website');assert.notEqual(a.products.find(x=>x.id==='smartclip').id,'ai-smartcopy');});
@@ -11,3 +11,14 @@ test('duplicate, malformed or empty registry fails closed',()=>{assert.throws(()
 test('channel policy and permission boundary are never promoted; HN is human-only',()=>{const a=projectProductChannels(sample('CADS-BENCHMARK-ENGINE'));for(const p of a.products)for(const c of p.channels){assert.equal(c.automaticPublishAllowed,false);assert.equal(c.paidActivationAllowed,false);assert.equal(c.externalPurchaseLinkInPluginAllowed,false);assert.equal(c.reviewRequired,true);assert.deepEqual(c.metrics,{reach:null,visits:null,conversions:null,revenue:null});}assert.equal(a.products.find(p=>p.id==='ai-smartcopy').channels.find(c=>c.id==='showHN').rule,'HUMAN_ONLY_NO_GENERATED_TEXT');});
 
 test('source-reviewed blueprint and agent candidates stay distinct and carry reference blobs',()=>{const a=buildProductChannelIntelligence();for(const id of ['digital-blueprints','solo2-rag','loop-agent']){const p=a.products.find(x=>x.id===id);assert.equal(p.profile,'engineering');assert.ok(p.sourceRefs.every(s=>/^[a-f0-9]{40}$/.test(s.blobSha)));assert.equal(p.currentCommercialReadiness,'NOT_PROVEN');assert.ok(p.channels.some(c=>c.id==='linkedin'));}const mobile=a.products.find(x=>x.id==='ai-smartcopy');assert.equal(mobile.channels.find(c=>c.id==='tiktok').rule,'COMMERCIAL_DISCLOSURE_REQUIRED');});
+
+test('reference-only graph handoff has deterministic identity and no grants, raw content or metrics',()=>{
+  const p=buildProductChannelGraphHandoff();
+  assert.deepEqual(p,buildProductChannelGraphHandoff());
+  assert.equal(p.publicPublishAllowed,false);
+  assert.equal(p.liveSalesAllowed,false);
+  assert.equal(p.providerCalls,0);
+  assert.equal(p.campaignSpend,0);
+  assert.ok(p.products.some(x=>x.id==='ai-smartcopy'&&x.channels.some(c=>c.id==='acode')));
+  assert.ok(p.products.every(x=>Object.keys(x).sort().join(',')==='channels,id,researchStatus'&&x.channels.every(c=>Object.keys(c).sort().join(',')==='id,priority,rule')));
+});
