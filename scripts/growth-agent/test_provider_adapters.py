@@ -152,6 +152,16 @@ class ProviderAdapterTests(unittest.TestCase):
                 self.assertNotIn("merge", state["history"])
                 self.assertEqual(client.mutation_count, 0)
 
+    def test_direct_ci_pending_is_wait_not_repair_and_failed_provenance_is_not_wait(self):
+        client = FakeHTTP()
+        run = next(r for r in client.checks if r["name"] == "Docker Security Gate")
+        run.update(status="in_progress", conclusion=None)
+        adapter = self.adapter(client)
+        self.assertEqual(adapter.test({}), {"passed": False, "status": "WAIT", "failure_class": "CI_PENDING"})
+        run["head_sha"] = "f" * 40
+        self.assertNotEqual(adapter.test({}).get("status"), "WAIT")
+        self.assertEqual(client.mutation_count, 0)
+
     def test_optional_skips_do_not_block_but_unknown_skip_does(self):
         c = FakeHTTP()
         self.assertTrue(self.adapter(c)._checks(HEAD)[1])

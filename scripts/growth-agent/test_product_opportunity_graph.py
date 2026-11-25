@@ -318,5 +318,84 @@ class XConversionReviewTests(unittest.TestCase):
                 self.assertEqual(self.run_graph({**self.fixture(), **change})["quality"], "BLOCKED")
 
 
+
+class ProductChannelReviewTests(unittest.TestCase):
+    def fixture(self):
+        return {"contractVersion": "CAPITAL_AI_PRODUCT_CHANNEL_GRAPH_INPUT@1",
+                "sourceSha256": "a" * 64, "publicationState": "DRAFT_ONLY",
+                "publicPublishAllowed": False, "liveSalesAllowed": False, "providerCalls": 0,
+                "campaignSpend": 0, "products": [
+                    {"id": "ai-smartcopy", "researchStatus": "CANDIDATES_REVIEW_REQUIRED",
+                     "channels": [{"id": "acode", "priority": "P0", "rule": "LISTING_REVIEW_REQUIRED"},
+                                  {"id": "showHN", "priority": "P2", "rule": "HUMAN_ONLY_NO_GENERATED_TEXT"}]},
+                    {"id": "unknown", "researchStatus": "UNMAPPED_RESEARCH_REQUIRED", "channels": []}]}
+
+    def test_channel_source_rejects_forged_authority_and_unsupported_rows(self):
+        self.assertTrue(graph.channel_source_review({"payload": self.fixture()})["channel_valid"])
+        for key, value in [("publicPublishAllowed", True), ("liveSalesAllowed", True),
+                           ("providerCalls", False), ("campaignSpend", 1), ("sourceSha256", "bad")]:
+            p = self.fixture()
+            p[key] = value
+            self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+        p = self.fixture()
+        p["products"][0]["channels"][1]["rule"] = "REVIEW_REQUIRED"
+        self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+        p = self.fixture()
+        p["products"].append(p["products"][0])
+        self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+        p = self.fixture()
+        p["products"][1]["channels"] = [{"id": "unknown", "priority": "P0", "rule": "REVIEW_REQUIRED"}]
+        self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+
+    def test_actual_existing_review_topology_preserves_queue_and_denies_publication(self):
+        try:
+            from langgraph.graph import StateGraph
+        except ImportError:
+            self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
+        _ = StateGraph
+        compiled = graph.build_channel_read_graph()
+        report = compiled.invoke({"payload": self.fixture(), "findings": []}, {"recursion_limit": 8})["report"]
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(report["researchQueue"], ["unknown"])
+        self.assertFalse(report["publicationAllowed"])
+        self.assertFalse(report["liveSalesAllowed"])
+        self.assertFalse(report["costActivationAllowed"])
+        self.assertFalse(report["automaticChanges"])
+        self.assertEqual(report["attributionEvents"], [])
+
+
+
+class SmartcopyConversionReviewTests(unittest.TestCase):
+    def fixture(self):
+        return {"contractVersion": "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1",
+                "productId": "ai-smartcopy", "campaignId": "smartcopy-" + "a" * 24,
+                "asOf": "2026-11-25T12:00:00.000Z", "status": "SOURCE_RECORDED_NOT_AUTHENTICATED",
+                "candidatePayments": 2, "candidateActiveLicenses": 1, "candidateFullRefunds": 1,
+                "candidatePartialRefunds": 0, "candidateDisputes": 0, "candidateNetPaidCents": 499,
+                "verifiedMetrics": {"paidLicenses": None, "revenueCents": None, "refunds": None},
+                "providerAuthentication": "NOT_PROVEN", "publicPublishAllowed": False, "liveSalesAllowed": False,
+                "automaticChanges": False, "providerCalls": 0, "campaignSpend": 0}
+
+    def test_valid_and_forged_source(self):
+        p = self.fixture()
+        self.assertTrue(graph.smartcopy_conversion_valid(p))
+        for change in ({"productId": "smartclip"}, {"candidatePayments": True}, {"candidateActiveLicenses": 2},
+                       {"candidateNetPaidCents": -1}, {"verifiedMetrics": {"paidLicenses": 1}},
+                       {"liveSalesAllowed": True}, {"providerAuthentication": "VERIFIED"}, {"campaignSpend": 1}):
+            self.assertFalse(graph.smartcopy_conversion_valid({**p, **change}))
+
+    def test_existing_graph_never_promotes_candidate_aggregates(self):
+        compiled = graph.build_conversion_read_graph()
+        report = compiled.invoke({"payload": self.fixture(), "findings": []}, {"recursion_limit": 8})["report"]
+        self.assertEqual(report["contractVersion"], "CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1")
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(report["verifiedMetrics"], {"paidLicenses": None, "revenueCents": None, "refunds": None})
+        self.assertFalse(report["publicationAllowed"])
+        self.assertNotIn("candidatePayments", report)
+        p = self.fixture()
+        p["liveSalesAllowed"] = True
+        self.assertEqual(compiled.invoke({"payload": p, "findings": []}, {"recursion_limit": 8})["report"]["quality"], "BLOCKED")
+
+
 if __name__ == "__main__":
     unittest.main()

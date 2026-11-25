@@ -55,6 +55,11 @@ export function publicSurfaceResearchTask(id: string) {
     domain: task.domain, query: 'Review repository evidence for CAI-PUBLIC-SURFACE@1 ' + task.id + ' ' + task.name + '. Report gaps; no mutation authority.' };
 }
 
+export function billingRecoveryResearchTask() {
+  return { schema:'CAPITAL_AI_OFFLINE_RESEARCH@1',task_id:'CAI-664-BILLING',domain:'TRUST',
+    query:'Review repository evidence for issue 664 billing metadata, WIF, zero-cost boundary and recovery gaps. Do not infer spend or export authority.' };
+}
+
 export function initialRows(): GrowthRow[] {
   return [
     { ...makeRow('ga4', 'GA4 Acquisition', 'GROWTH', 'Owner-Readback ausführen'),
@@ -82,6 +87,10 @@ export function initialRows(): GrowthRow[] {
     { ...makeRow('x-growth-graph', 'X Growth · LangGraph', 'PLATFORM', 'Budget- und Conversion-Evidence in bestehende Graph-Review integrieren'),
       priority: 'P1', flow: 'Nur Status-Referenzen, keine Publishing- oder Kostenautorität',
       operation: 'Runtime-Evidence offen' },
+    { ...makeRow('cai664-billing','Backup Billing #664','TRUST','Existing main-only billing-readback dispatch; review run evidence; no SQL or new export'),
+      priority:'P0',flow:'GitHub OIDC → existing Cloud Operator → BigQuery metadata only',
+      approvals:'Additional budget 0 EUR; production DB export blocked',
+      operation:'Metadata discovery only; actual and label costs NOT_PROVEN' },
     ...publicSurfaceRows(),
   ];
 }
@@ -173,7 +182,19 @@ const graphHandoff = z.object({
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
-  const data=graphHandoff.parse(JSON.parse(raw));
+  const parsed=JSON.parse(raw);
+  if(parsed?.contractVersion==='CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'){
+    const result=z.object({contractVersion:z.literal('CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'),engine:z.literal('langgraph'),productId:z.literal('ai-smartcopy'),
+      quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),nextAction:z.enum(['VERIFY_SOURCE_AND_COHORT','REPAIR_INPUT']),providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
+      verifiedMetrics:z.object({paidLicenses:z.null(),revenueCents:z.null(),refunds:z.null()}).strict(),
+      publicationAllowed:z.literal(false),costActivationAllowed:z.literal(false),automaticChanges:z.literal(false)}).strict().parse(parsed);
+    if((result.quality==='BLOCKED')!==(result.nextAction==='REPAIR_INPUT'))throw Error('Invalid Smartcopy graph status');
+    const row={...makeRow('smartcopy-conversion-graph','AI-Smartcopy · Conversion-Review','GROWTH','Authentifizierte Quellen und vollständige Kohorte separat belegen'),
+      operation:'Graph-Qualität: '+result.quality,flow:'Offline-Graph · keine Live-KPI oder Lizenzautorität',
+      evidence:'Importdatei SHA-256 '+reportSha,auth:'NOT_PROVEN_BY_GRAPH'};
+    return [...rows.filter(r=>r.id!==row.id),row];
+  }
+  const data=graphHandoff.parse(parsed);
   const recorded=data.sources.filter(s=>s.status==='SOURCE_RECORDED_NOT_AUTHENTICATED');
   if(data.quality==='BLOCKED'?(data.sources.length!==0||data.eligibleForDraftReview):
     (data.sources.length!==4||new Set(data.sources.map(s=>s.source)).size!==4||
