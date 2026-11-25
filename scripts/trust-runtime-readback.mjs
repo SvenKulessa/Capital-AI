@@ -208,6 +208,17 @@ export async function readTinyFishConfig({ token, fetchImpl = fetch } = {}) {
   }
 }
 
+// Diagnostic codes only; never print raw exceptions, URLs, headers or response bodies.
+export function safeHealthFailure(error) {
+  const message=error instanceof Error?error.message:'';
+  const allowed=new Set(['BODY_MISSING','BODY_TOO_LARGE','INVALID_JSON','HTTP_STATUS_NOT_200','HEALTH_IDENTITY_MISSING',
+    'HEALTH_STATUS_INVALID','BUILD_BOUND_INVALID','INVALID_SOURCE_SHA','BUILD_IDENTITY_INCONSISTENT',
+    'UNBOUND_IDENTITY_INCONSISTENT','RENDER_BUILD_SHAPE_INVALID','RENDER_BUILD_PROVENANCE_CONFLICT','ORIGIN_NOT_ALLOWLISTED']);
+  if(allowed.has(message)||/^HEALTH_HTTP_[1-5][0-9]{2}$/.test(message))return message;
+  if(error instanceof Error&&error.name==='TimeoutError')return 'HEALTH_FETCH_TIMEOUT';
+  return 'HEALTH_FETCH_OR_IO_FAILED';
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (process.argv.includes('--health')) {
     try {
@@ -219,8 +230,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       if (process.env.GITHUB_STEP_SUMMARY) {
         appendFileSync(process.env.GITHUB_STEP_SUMMARY, healthReadbackSummary(report));
       }
-    } catch {
-      console.error('HEALTHZ_IDENTITY_NOT_PROVEN');
+    } catch (error) {
+      console.error('HEALTHZ_IDENTITY_NOT_PROVEN ' + safeHealthFailure(error));
       process.exitCode = 1;
     }
   } else if (process.argv.includes('--flag')) {
