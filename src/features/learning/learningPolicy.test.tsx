@@ -1,4 +1,5 @@
 import React from 'react';
+import { GrowthIntelligenceQuiz, GROWTH_QUIZ_QUESTIONS, growthAnswerCorrect } from './GrowthIntelligenceQuiz';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -245,4 +246,51 @@ test('owner-only frontend prompt selection and screen capture remain local and f
   assert.match(hero,/JaJa CAM: Screenshot aufnehmen/);
   assert.match(hero,/JaJa Stift: Bereiche markieren/);
   assert.match(buddy,/Kein automatischer Export/);
+});
+
+
+test('growth intelligence catalog has three complete learning levels and unique questions', () => {
+  assert.equal(GROWTH_QUIZ_QUESTIONS.length, 30);
+  assert.equal(new Set(GROWTH_QUIZ_QUESTIONS.map(item => item.id)).size, 30);
+  assert.equal(new Set(GROWTH_QUIZ_QUESTIONS.map(item => item.question)).size, 30);
+  for (const level of ['notebook', 'specialist', 'universal']) {
+    const questions = GROWTH_QUIZ_QUESTIONS.filter(item => item.level === level);
+    assert.equal(questions.length, 10);
+    assert.equal(new Set(questions.map(item => item.domain)).size, 10);
+    assert.ok(questions.some(item => item.correct.length > 1));
+    for (const item of questions) {
+      assert.equal(item.options.length, 4);
+      assert.equal(new Set(item.options).size, 4);
+      assert.ok(item.question.trim() && item.explanation.trim());
+      assert.ok(item.options.every(option => option.trim()));
+      assert.ok(item.correct.length >= 1 && item.correct.length < 4);
+      assert.equal(new Set(item.correct).size, item.correct.length);
+      assert.ok(item.correct.every(index => Number.isInteger(index) && index >= 0 && index < 4));
+      assert.equal(growthAnswerCorrect(item, item.correct), true);
+      assert.equal(growthAnswerCorrect(item, [...item.correct].reverse()), true);
+      assert.equal(growthAnswerCorrect(item, []), false);
+      assert.equal(growthAnswerCorrect(item, [...item.correct, item.correct[0]]), false);
+      assert.equal(growthAnswerCorrect(item, [...item.correct, 99]), false);
+      assert.equal(growthAnswerCorrect(item, [0,1,2,3]), false);
+      if (item.correct.length > 1) {
+        assert.equal(growthAnswerCorrect(item, item.correct.slice(1)), false);
+        assert.equal(growthAnswerCorrect(item, [item.correct[0], item.correct[0]]), false);
+      }
+      for (let index = 0; index < 4; index++) {
+        if (!item.correct.includes(index)) assert.equal(growthAnswerCorrect(item, [index]), false);
+      }
+    }
+  }
+});
+
+test('growth intelligence quiz exposes accessible controls without a provider or persisted badge', () => {
+  const html = renderToStaticMarkup(<GrowthIntelligenceQuiz />);
+  assert.match(html, /id="growth-quiz-title"/);
+  assert.match(html, /for="growth-quiz-level"/);
+  assert.match(html, /<fieldset/);
+  assert.match(html, /<legend/);
+  assert.match(html, /type="radio"/);
+  assert.match(html, /0 von 10 Fragen beantwortet/);
+  assert.match(html, /keine Anrechnung auf das private Vocabulary-Abzeichen/);
+  assert.doesNotMatch(html, /<iframe/);
 });
