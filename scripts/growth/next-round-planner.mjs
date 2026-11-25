@@ -93,7 +93,7 @@ export async function buildPrivateNextRoundDrafts(sourceText, registry, {fetchIm
   const domains=[...new Set(draft.steps.filter(step=>step.prompt!==null).map(step=>step.domain))];
   const radar={};
   for(const domain of domains) radar[domain]=await discoverGrowthTools({topics:byDomain[domain],fetchImpl,now});
-  return {...draft,toolDiscovery:{schema:'GROWTH_TOOL_DISCOVERY@1',scope:'PRIVATE_OPERATOR',metadataOnly:true,automaticInstall:false,commercialRights:'NOT_PROVEN',externalMetadataReads:domains.reduce((n,d)=>n+radar[d].topics.length,0),byDomain:radar},steps:draft.steps.map(step=>step.prompt===null?step:{...step,toolDiscoveryDomain:step.domain,toolDiscoveryState:radar[step.domain].topics.some(t=>t.status==='METADATA_OBSERVED')?'REVIEW_REQUIRED':'NOT_PROVEN'})};
+  return {...draft,toolDiscovery:{schema:'GROWTH_TOOL_DISCOVERY@1',scope:'PRIVATE_OPERATOR',metadataOnly:true,automaticInstall:false,commercialRights:'NOT_PROVEN',externalMetadataReadAttempts:domains.reduce((n,d)=>n+radar[d].topics.length,0),byDomain:radar},steps:draft.steps.map(step=>step.prompt===null?step:{...step,toolDiscoveryDomain:step.domain,toolDiscoveryState:radar[step.domain].topics.some(t=>t.status==='METADATA_OBSERVED')?'REVIEW_REQUIRED':'NOT_PROVEN'})};
 }
 
 if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
