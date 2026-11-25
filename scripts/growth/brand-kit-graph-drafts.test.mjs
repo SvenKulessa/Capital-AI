@@ -372,3 +372,27 @@ test('TRUST: injected source and tenant spoof cannot reach persisted Graph input
   assert.throws(()=>projectLicensedContextForGraph(requestRound(),
     {...scopeRound(),tenantId:'tenant_beta_001'}),/LICENSED_TENANT_AUTH_REQUIRED/);
 });
+
+import {buildSmartcopyMediaDraft} from './brand-kit-graph-drafts.mjs';
+import {researchDigest} from './product-market-research.mjs';
+test('Smartcopy uses real Resvg PNG, existing MediaKit quarantine and immutable Social manifest',async()=>{
+ const records=[{productId:'ai-smartcopy',kind:'PLATFORM_RULE',entityId:'acode',sourceUrl:'https://docs.acode.app/docs/getting-started/publish-from-ci',observedOn:'2026-11-25',summary:'Official docs describe CI publishing.'},{productId:'ai-smartcopy',kind:'COMPETITOR',entityId:'termux-api',sourceUrl:'https://f-droid.org/packages/com.termux.api/',observedOn:'2026-11-25',summary:'Clipboard access from shell scripts.'}];
+ const ledger={asOf:'2026-11-25',reviewGrants:records.map(r=>({digest:researchDigest(r),reviewRef:'synthetic-review'}))};
+ const r=await buildSmartcopyMediaDraft({records},ledger);
+ assert.equal(r.png.width,1200);assert.equal(r.png.height,1200);assert.equal(r.png.sha256,sha(r.png.bytes));assert.equal(r.socialPackage.assets.find(a=>a.kind==='IMAGE').sha256,r.png.sha256);
+ assert.equal(r.mediaKit.reviewAssets[0].sha256,r.png.sha256);assert.equal(r.mediaKit.reviewAssets[0].identityStatus,'NOT_PROVEN');
+ assert.equal(r.mediaKit.publicPublishAllowed,false);assert.equal(r.contentPlan.graphicLicenses[0].graphicUseAllowed,false);assert.deepEqual(r.socialPackage.approvals,[]);
+ await assert.rejects(()=>buildSmartcopyMediaDraft({records},{...ledger,reviewGrants:[]}));
+});
+
+import {projectLicensedProductResearch} from './brand-kit-graph-drafts.mjs';
+test('existing licensed context adapter cannot bypass separate research review or product binding',()=>{
+ const summary='Official Acode documentation describes API publishing.';
+ const record={id:'source_acode',tool:'LANGGRAPH',graphRunId:'graph-run-1234',sourceUrl:'https://docs.acode.app/docs/getting-started/publish-from-ci',summary,summarySha256:sha(summary)};
+ const right={sourceId:record.id,sourceUrl:record.sourceUrl,summarySha256:record.summarySha256,commercialParaphraseAllowed:true,reviewed:true,evidenceRef:'rights-ledger:source_acode'};
+ const binding={sourceId:record.id,summarySha256:record.summarySha256,productId:'ai-smartcopy',entityId:'acode',kind:'PLATFORM_RULE',observedOn:'2026-11-25'};
+ assert.equal(projectLicensedProductResearch({records:[record],rightsLedger:[],bindings:[binding]},'2026-11-25').records.length,0);
+ assert.equal(projectLicensedProductResearch({records:[record],rightsLedger:[right],bindings:[{...binding,summarySha256:'a'.repeat(64)}]},'2026-11-25').records.length,0);
+ const r=projectLicensedProductResearch({records:[record],rightsLedger:[right],bindings:[binding]},'2026-11-25');
+ assert.equal(r.records.length,1);assert.equal(r.publicPublishAllowed,false);assert.equal(r.sourceAuthentication,'NOT_PROVEN');
+});
