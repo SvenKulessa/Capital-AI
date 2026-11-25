@@ -36,7 +36,7 @@ function providerFixture(){
  ['/prices/'+scope.stripePriceId]:object(scope.stripePriceId,'price',{active:true,type:'one_time',recurring:null,currency:'eur',unit_amount:499,product:scope.stripeProductId}),
  ['/products/'+scope.stripeProductId]:object(scope.stripeProductId,'product',{active:true,metadata:{sku:scope.sku}}),
  ['/payment_intents/'+intent]:object(intent,'payment_intent',{metadata:meta,status:'succeeded',currency:'eur',amount:499,amount_received:499,customer:cid,latest_charge:chargeId}),
- ['/invoices/'+iid]:object(iid,'invoice',{customer:cid,status:'paid',currency:'eur',total:499,amount_paid:499,amount_remaining:0,status_transitions:{paid_at:paid}}),
+ ['/invoices/'+iid]:object(iid,'invoice',{metadata:meta,customer:cid,status:'paid',currency:'eur',total:499,amount_paid:499,amount_remaining:0,status_transitions:{paid_at:paid}}),
  ['/invoice_payments?invoice='+iid+'&limit=2']:{object:'list',has_more:false,data:[object('inpay_fixture','invoice_payment',{invoice:iid,status:'paid',currency:'eur',amount_paid:499,amount_requested:499,payment:{type:'payment_intent',payment_intent:intent},status_transitions:{paid_at:paid}})]},
  ['/charges/'+chargeId]:object(chargeId,'charge',{payment_intent:intent,customer:cid,status:'succeeded',currency:'eur',paid:true,captured:true,amount:499,amount_captured:499,amount_refunded:0,refunded:false,disputed:false})};
  const calls=[],key='rk_test_fixture_1234567890';
@@ -64,4 +64,9 @@ test('consent Data API uses dedicated project, exact scoped RPC and no productio
  const read=createSmartcopyConsentReader(config);assert.deepEqual(await read(ctx),f.c);
  f.c.releaseSha256='b'.repeat(64);await assert.rejects(()=>read(ctx));
  for(const projectRef of ['ryzywoktpmyhwzxmstyu','wcvorlvhwvuprqsjcten','evil.com'])assert.throws(()=>createSmartcopyConsentReader({...config,projectRef}));
+});
+
+test('provider reader rejects coercible identifiers before transport',async()=>{
+ const f=providerFixture();assert.throws(()=>createSmartcopyStripeReader({...f.deps,scope:{...scope,stripePriceId:[scope.stripePriceId]}}));
+ await assert.rejects(()=>createSmartcopyStripeReader(f.deps)(f.ctx,[session]));assert.deepEqual(f.calls,[]);
 });
