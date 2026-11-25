@@ -114,3 +114,23 @@ test('invalid dates, resellers and untrusted inputs cannot enter promotion compu
     assert.throws(() => getLearningUniverseResellerPilotTarget(bad), /RESELLER_PILOT_INVALID_OFFER/);
   }
 });
+
+test('forged agreement, payment and delivery arguments cannot turn a draft into a grant',()=>{
+ const forged={signedAgreement:true,buyerEntitled:true,licensedUseAllowed:true,automaticFulfilmentAllowed:true,
+   publishingAllowed:true,publicPromotionAllowed:true,amountCents:1,stripePriceId:'price_forged'};
+ for(const offer of ['PUBLISHER','STUDIO','RESELLER']){
+   const draft=buildLearningUniverseCommercialDraft(offer,forged);
+   assert.equal(draft.signedAgreement,false);
+   assert.equal(draft.buyerEntitled,false);
+   assert.equal(draft.licensedUseAllowed,false);
+   assert.equal(draft.automaticFulfilmentAllowed,false);
+   assert.equal(draft.publishingAllowed,false);
+   assert.equal(draft.publicPromotionAllowed,false);
+   assert.equal(draft.amountCents,null);
+   assert.equal(draft.stripePriceId,null);
+   assert.equal(draft.rightsStatus,'REVIEW_REQUIRED');
+   assert.ok(draft.assetBindings.every(Object.isFrozen));
+   assert.throws(()=>{draft.assetBindings[0].sha256='0'.repeat(64);},TypeError);
+   assert.deepEqual(draft,buildLearningUniverseCommercialDraft(offer));
+ }
+});
