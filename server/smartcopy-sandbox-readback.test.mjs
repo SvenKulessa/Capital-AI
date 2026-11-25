@@ -24,3 +24,44 @@ test('consent withdrawal during source read suppresses result',async()=>{const f
 test('adapter error is redacted; no receipt, user or secret leaked',async()=>{const f=fixture();f.deps.readVerifiedOneTimeReceipt=async()=>{throw Error('private secret and '+user)};const r=await f.run();assert.equal(r.reason,'SOURCE_UNAVAILABLE');assert.doesNotMatch(JSON.stringify(r),/private secret|de305d54/)});
 
 test('source timestamps observed during a bounded read are accepted, slow reads denied',async()=>{const f=fixture();let clock=t;f.deps.now=()=>clock;f.deps.readVerifiedOneTimeReceipt=async()=>({...f.p,observedAt:new Date(clock+=1000).toISOString()});f.deps.readEntitlement=async()=>({...f.l,observedAt:new Date(clock+=1000).toISOString()});assert.equal((await f.run()).status,'SANDBOX_CANDIDATE');const slow=fixture();clock=t;slow.deps.now=()=>clock;slow.deps.readVerifiedOneTimeReceipt=async()=>({...slow.p,observedAt:new Date(clock+=31000).toISOString()});assert.equal((await slow.run()).reason,'CONSENT_CHANGED')});
+
+import {createSmartcopyStripeReader,createSmartcopyConsentReader} from './smartcopy-sandbox-readback.mjs';
+function providerFixture(){
+ const cid='cus_fixture12345',iid='in_fixture12345',chargeId='ch_fixture12345',paid=Math.floor(Date.parse('2026-11-24T01:00:00.000Z')/1000);
+ const meta={sku:scope.sku,user_id:user,campaign_id:scope.campaignId,release_sha256:scope.releaseSha256};
+ const object=(id,object,extra)=>({id,object,livemode:false,...extra});
+ const data={
+ ['/checkout/sessions/'+session]:object(session,'checkout.session',{mode:'payment',status:'complete',payment_status:'paid',client_reference_id:user,metadata:meta,currency:'eur',amount_total:499,amount_subtotal:499,total_details:{amount_discount:0},payment_intent:intent,invoice:iid,customer:cid}),
+ ['/checkout/sessions/'+session+'/line_items?limit=2']:{object:'list',has_more:false,data:[{quantity:1,amount_subtotal:499,amount_total:499,currency:'eur',price:{id:scope.stripePriceId}}]},
+ ['/prices/'+scope.stripePriceId]:object(scope.stripePriceId,'price',{active:true,type:'one_time',recurring:null,currency:'eur',unit_amount:499,product:scope.stripeProductId}),
+ ['/products/'+scope.stripeProductId]:object(scope.stripeProductId,'product',{active:true,metadata:{sku:scope.sku}}),
+ ['/payment_intents/'+intent]:object(intent,'payment_intent',{metadata:meta,status:'succeeded',currency:'eur',amount:499,amount_received:499,customer:cid,latest_charge:chargeId}),
+ ['/invoices/'+iid]:object(iid,'invoice',{customer:cid,status:'paid',currency:'eur',total:499,amount_paid:499,amount_remaining:0,status_transitions:{paid_at:paid}}),
+ ['/invoice_payments?invoice='+iid+'&limit=2']:{object:'list',has_more:false,data:[object('inpay_fixture','invoice_payment',{invoice:iid,status:'paid',currency:'eur',amount_paid:499,amount_requested:499,payment:{type:'payment_intent',payment_intent:intent},status_transitions:{paid_at:paid}})]},
+ ['/charges/'+chargeId]:object(chargeId,'charge',{payment_intent:intent,customer:cid,status:'succeeded',currency:'eur',paid:true,captured:true,amount:499,amount_captured:499,amount_refunded:0,refunded:false,disputed:false})};
+ const calls=[],key='rk_test_fixture_1234567890';
+ const deps={scope,key,now:()=>t,fetchImpl:async(url,opts)=>{assert.equal(opts.method,'GET');assert.equal(opts.redirect,'error');assert.equal(opts.headers.Authorization,'Bearer '+key);assert.ok(url.startsWith('https://api.stripe.com/v1'));const p=url.slice('https://api.stripe.com/v1'.length);calls.push(p);assert.ok(Object.hasOwn(data,p));return Response.json(data[p])}};
+ return {data,calls,deps,ctx:{userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,mode:'test'},run(){return createSmartcopyStripeReader(deps)(this.ctx,session)}};
+}
+test('Stripe GET adapter verifies exact invoice payment and captured charge; composes with existing sandbox readback',async()=>{
+ const p=providerFixture(),f=fixture();f.deps.readVerifiedOneTimeReceipt=createSmartcopyStripeReader(p.deps);
+ assert.equal((await f.run()).status,'SANDBOX_CANDIDATE');assert.equal(p.calls.length,8);
+ const r=await p.run();assert.equal(r.paidCents,499);assert.equal(r.refundedCents,0);
+});
+test('Stripe reader denies external payment, extra allocation, cross identity, incomplete capture, subscriptions and live credentials',async()=>{
+ const cases=[['/invoice_payments',v=>v.data[0].payment.type='payment_record'],['/invoice_payments',v=>v.has_more=true],['/invoice_payments',v=>v.data[0].payment.payment_intent='pi_foreign12345'],['/invoice_payments',v=>v.data[0].amount_paid=1],['/charges/',v=>v.amount_captured=1],['/prices/',v=>v.type='recurring'],['/products/',v=>v.metadata.sku='SMARTCLIP_PERSONAL'],['/checkout/sessions/',v=>v.metadata.campaign_id='other'],['/invoices/',v=>v.livemode=true]];
+ for(const [prefix,mutate] of cases){const f=providerFixture();mutate(f.data[Object.keys(f.data).find(k=>k.startsWith(prefix))]);await assert.rejects(()=>f.run(),/SMARTCOPY_STRIPE_RECEIPT_DENIED/);}
+ const f=providerFixture();assert.throws(()=>createSmartcopyStripeReader({...f.deps,key:'rk_live_fixture_1234567890'}));assert.deepEqual(f.calls,[]);
+});
+test('Stripe refund readback retains partial and full refund; existing entitlement reversal gate remains authoritative',async()=>{
+ const p=providerFixture(),f=fixture(),ch=p.data['/charges/ch_fixture12345'];f.deps.readVerifiedOneTimeReceipt=createSmartcopyStripeReader(p.deps);
+ ch.amount_refunded=100;assert.equal((await f.run()).refundCandidate,'PARTIAL');
+ ch.amount_refunded=499;ch.refunded=true;assert.equal((await f.run()).reason,'REVERSAL_NOT_PROVEN');f.l.state='REVOKED';assert.equal((await f.run()).refundCandidate,'FULL');
+});
+test('consent Data API uses dedicated project, exact scoped RPC and no production or recovery target',async()=>{
+ const f=fixture(),ctx={userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,mode:'test'};
+ const config={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890',fetchImpl:async(url,opts)=>{assert.equal(url,'https://'+'a'.repeat(20)+'.supabase.co/rest/v1/rpc/capital_smartcopy_read_consent');assert.equal(opts.method,'POST');assert.equal(opts.redirect,'error');assert.deepEqual(JSON.parse(opts.body),{p_user:user,p_campaign:scope.campaignId,p_release:scope.releaseSha256});return Response.json(f.c)}};
+ const read=createSmartcopyConsentReader(config);assert.deepEqual(await read(ctx),f.c);
+ f.c.releaseSha256='b'.repeat(64);await assert.rejects(()=>read(ctx));
+ for(const projectRef of ['ryzywoktpmyhwzxmstyu','wcvorlvhwvuprqsjcten','evil.com'])assert.throws(()=>createSmartcopyConsentReader({...config,projectRef}));
+});
