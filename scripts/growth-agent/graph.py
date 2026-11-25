@@ -110,7 +110,10 @@ def google_agent(state: GrowthState) -> dict:
 
 
 def marketing_agent(state: GrowthState) -> dict:
+    visual = source(state["repo_root"], "src/shared/growthVisualScenes.ts")
+    radar = source(state["repo_root"], "server/tool-update-discovery.mjs")
     return {"findings": [
+        finding("marketing", "SOURCE_OBSERVED" if visual and radar else "NOT_PROVEN", "3D draft recipes and public tool discovery source; daily evidence, commercial output rights and renderer runtime require independent review."),
         finding("marketing", "PROPOSED", "Separate B2B fintech integration/data-rights content from learner vocabulary and trader tooling; validate demand using actual GSC reports."),
         finding("marketing", "PROPOSED", "Countries DE/IT/ES/PT/GB; language rollout de-DE, en-GB, it-IT, es-ES, pt-PT. Localized previews stay noindex until complete crawlable translations."),
     ]}

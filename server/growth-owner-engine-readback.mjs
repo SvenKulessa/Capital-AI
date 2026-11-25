@@ -12,7 +12,10 @@ export function validateEngineSnapshot(v){
     g?.state!=='SOURCE_ONLY_RUNTIME_NOT_PROVEN'||!sha(g.sourceSha256))throw Error('INVALID_ENGINE_SNAPSHOT');
   const p=v.productChannels;
   if(p!==undefined&&(p?.state!=='DRAFT_ONLY'||!count(p.products,133)||!count(p.mapped,133)||!count(p.researchQueue,133)||p.mapped+p.researchQueue!==p.products||!sha(p.sourceSha256)||p.liveMetrics!==null))throw Error('INVALID_PRODUCT_CHANNEL_SNAPSHOT');
+  const visual=v.visualIntelligence;
+  if(visual!==undefined&&(visual?.state!=='DRAFT_ONLY'||visual.actualMediaAssets!==0||visual.publicPublishAllowed!==false||visual.toolRadar!=='SCHEDULED_SOURCE_ONLY'||!Array.isArray(visual.sceneIds)||visual.sceneIds.length>100||new Set(visual.sceneIds).size!==visual.sceneIds.length||visual.sceneIds.some(id=>typeof id!=='string'||!/^CAP-GROW-[0-9]{3}$/.test(id))))throw Error('INVALID_VISUAL_SNAPSHOT');
   return {schema:v.schema,scope:v.scope,private:true,readOnly:true,publicPublishAllowed:false,
+    ...(visual===undefined?{}:{visualIntelligence:{state:'DRAFT_ONLY',sceneIds:visual.sceneIds,actualMediaAssets:0,publicPublishAllowed:false,toolRadar:'SCHEDULED_SOURCE_ONLY'}}),
     ...(p===undefined?{}:{productChannels:{state:p.state,products:p.products,mapped:p.mapped,researchQueue:p.researchQueue,sourceSha256:p.sourceSha256,liveMetrics:null}}),
     market:{state:m.state,date:m.date,homepage:m.homepage,overview:m.overview,archive:m.archive,editionSha256:m.editionSha256,indexSha256:m.indexSha256},
     content:{state:c.state,drafts:c.drafts,sourceSha256:c.sourceSha256,bundleSha256:c.bundleSha256},
