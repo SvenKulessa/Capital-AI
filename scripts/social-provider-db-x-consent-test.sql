@@ -61,3 +61,32 @@ begin
   exception when insufficient_privilege then null; end;
 end $$;
 reset role;
+
+-- Smartcopy fixture: independent from X campaign and no shared payment authority.
+set role service_role;
+do $$
+declare u uuid:='a0000000-0000-4000-8000-000000000002'; c text:='smartcopy-'||repeat('a',24); r text:=repeat('e',64); v jsonb;
+begin
+ if capital_growth_private.grant_smartcopy_consent('a0000000-0000-4000-8000-000000000003',c,r,repeat('f',64)) then raise exception 'SMARTCOPY_UNCONFIRMED_GRANTED'; end if;
+ if not capital_growth_private.grant_smartcopy_consent(u,c,r,repeat('f',64)) then raise exception 'SMARTCOPY_GRANT_FAILED'; end if;
+ v:=public.capital_smartcopy_read_consent(u,c,r);
+ if v->>'productId' is distinct from 'ai-smartcopy' or v->>'purpose' is distinct from 'PRODUCT_CONVERSION' or v->>'revokedAt' is not null then raise exception 'SMARTCOPY_READ_INVALID'; end if;
+ if public.capital_smartcopy_read_consent(u,c,repeat('b',64)) is not null or public.capital_smartcopy_read_consent(u,'smartcopy-'||repeat('b',24),r) is not null or public.capital_smartcopy_read_consent('a0000000-0000-4000-8000-000000000001',c,r) is not null then raise exception 'SMARTCOPY_FOREIGN_READ'; end if;
+ if not capital_growth_private.withdraw_smartcopy_consent(u,c,r) then raise exception 'SMARTCOPY_WITHDRAW_FAILED'; end if;
+ if public.capital_smartcopy_read_consent(u,c,r)->>'revokedAt' is null then raise exception 'SMARTCOPY_WITHDRAW_NOT_READ'; end if;
+ if capital_growth_private.grant_smartcopy_consent(u,c,r,repeat('1',64)) then raise exception 'SMARTCOPY_REGRANTED'; end if;
+ begin
+  update capital_growth_private.smartcopy_consent set revoked_at=null;
+  raise exception 'SMARTCOPY_DIRECT_WRITE_ALLOWED';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+set role authenticated;
+do $$
+begin
+ begin
+  perform public.capital_smartcopy_read_consent('a0000000-0000-4000-8000-000000000002','smartcopy-'||repeat('a',24),repeat('e',64));
+  raise exception 'SMARTCOPY_BROWSER_READ_ALLOWED';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;

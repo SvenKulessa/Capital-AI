@@ -142,3 +142,52 @@ grant execute on function capital_growth_private.grant_x_consent(text),
  capital_growth_private.reverse_x_initial_payment(uuid,text),
  capital_growth_private.x_conversion_candidates(timestamptz,timestamptz) to service_role;
 commit;
+
+-- Independent product-purpose consent ledger in the SAME disposable CI schema.
+-- No public execution privileges, no production migration or automatic grant.
+begin;
+create table capital_growth_private.smartcopy_consent (
+ user_id uuid not null references auth.users(id) on delete cascade,
+ campaign_id text not null check(campaign_id ~ '^smartcopy-[a-f0-9]{24}$'),
+ release_sha256 text not null check(release_sha256 ~ '^[a-f0-9]{64}$'),
+ receipt_sha256 text not null unique check(receipt_sha256 ~ '^[a-f0-9]{64}$'),
+ granted_at timestamptz not null,expires_at timestamptz not null,revoked_at timestamptz,
+ primary key(user_id,campaign_id,release_sha256),
+ check(expires_at>granted_at and expires_at<=granted_at+interval '30 days'),
+ check(revoked_at is null or revoked_at>=granted_at)
+);
+alter table capital_growth_private.smartcopy_consent enable row level security;
+revoke all on capital_growth_private.smartcopy_consent from public,anon,authenticated,service_role;
+-- Trusted server supplies a separately captured affirmative choice and receipt digest.
+create function capital_growth_private.grant_smartcopy_consent(p_user uuid,p_campaign text,p_release text,p_receipt text)
+returns boolean language plpgsql security definer set search_path='' as $$
+declare t timestamptz:=clock_timestamp();
+begin
+ if p_user is null or p_campaign is null or p_release is null or p_receipt is null or
+ p_campaign !~ '^smartcopy-[a-f0-9]{24}$' or p_release !~ '^[a-f0-9]{64}$' or p_receipt !~ '^[a-f0-9]{64}$' then return false; end if;
+ if not exists(select 1 from auth.users where id=p_user and email_confirmed_at is not null and email_confirmed_at<=t) then return false; end if;
+ insert into capital_growth_private.smartcopy_consent(user_id,campaign_id,release_sha256,receipt_sha256,granted_at,expires_at)
+ values(p_user,p_campaign,p_release,p_receipt,t,t+interval '30 days') on conflict do nothing;
+ return found;
+end $$;
+create function capital_growth_private.withdraw_smartcopy_consent(p_user uuid,p_campaign text,p_release text)
+returns boolean language plpgsql security definer set search_path='' as $$
+begin
+ update capital_growth_private.smartcopy_consent set revoked_at=clock_timestamp()
+ where user_id=p_user and campaign_id=p_campaign and release_sha256=p_release and revoked_at is null;
+ return found;
+end $$;
+-- Data API read only. ISO UTC milliseconds match the server receipt contract.
+create function public.capital_smartcopy_read_consent(p_user uuid,p_campaign text,p_release text)
+returns jsonb language sql security definer set search_path='' as $$
+ select jsonb_build_object('userId',user_id,'productId','ai-smartcopy','campaignId',campaign_id,
+ 'releaseSha256',release_sha256,'receiptSha256',receipt_sha256,'purpose','PRODUCT_CONVERSION','analytics',true,
+ 'grantedAt',to_char(granted_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+ 'expiresAt',to_char(expires_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+ 'revokedAt',case when revoked_at is null then null else to_char(revoked_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end)
+ from capital_growth_private.smartcopy_consent
+ where user_id=p_user and campaign_id=p_campaign and release_sha256=p_release
+$$;
+revoke all on function capital_growth_private.grant_smartcopy_consent(uuid,text,text,text),capital_growth_private.withdraw_smartcopy_consent(uuid,text,text),public.capital_smartcopy_read_consent(uuid,text,text) from public,anon,authenticated,service_role;
+grant execute on function capital_growth_private.grant_smartcopy_consent(uuid,text,text,text),capital_growth_private.withdraw_smartcopy_consent(uuid,text,text),public.capital_smartcopy_read_consent(uuid,text,text) to service_role;
+commit;
