@@ -169,7 +169,8 @@ test('footer uses locally bundled provider logos and consolidates license naviga
   assert.match(footer, /\/branding\/social\/\$\{id\}\.svg/);
   // Localized footer retains the German legally meaningful destination label.
   const dictionary = await readFile(new URL('../src/i18n/messages.ts', import.meta.url), 'utf8');
-  assert.doesNotMatch(footer, /t\('docs'\)|href="\/blog"/);
+  assert.match(footer, /path:'\/dokumentation',label:t\('docs'\)/);
+  assert.doesNotMatch(footer, /href="\/blog"/);
   assert.match(dictionary, /'Dokumentation & Lizenzen'/);
   assert.doesNotMatch(footer, /footer-nav-forschung|footer-nav-oss-market-architecture|Schriftlizenz/);
   assert.match(docs, /OSS Market Architektur/);

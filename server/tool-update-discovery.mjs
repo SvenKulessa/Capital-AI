@@ -155,3 +155,33 @@ export async function discoverRepositoryUpdates({ entries, sourceSha, blockedUpd
     requiresReview: findings.filter(x => x.state === 'REVIEW_REQUIRED').length,
   };
 }
+
+/** Bounded public discovery for NEW content tools. Metadata never constitutes a commercial grant. */
+export const GROWTH_TOOL_TOPICS = Object.freeze(['webgpu','3d-rendering','video-editing','mcp-server','content-generation']);
+const PERMISSIVE = new Set(['MIT','Apache-2.0','BSD-2-Clause','BSD-3-Clause','ISC','MPL-2.0']);
+export async function discoverGrowthTools({fetchImpl=fetch,now=Date.now}={}) {
+  const observedAt=new Date(now()).toISOString();
+  const rows=await mapBounded(GROWTH_TOOL_TOPICS,2,async topic=>{
+    const url=new URL('https://api.github.com/search/repositories');
+    url.searchParams.set('q','topic:'+topic+' archived:false fork:false stars:>=20');
+    url.searchParams.set('sort','updated');url.searchParams.set('order','desc');url.searchParams.set('per_page','8');
+    try {
+      const response=await boundedJson(fetchImpl,url.href,350000);
+      if(!Array.isArray(response.items))throw Error('DISCOVERY_INVALID');
+      const candidates=response.items.slice(0,8).filter(item=>GH_REPO.test(item?.full_name||'')&&item.archived===false&&item.fork===false)
+        .map(item=>{
+          const license=typeof item.license?.spdx_id==='string'&&/^[A-Za-z0-9.+-]{1,40}$/.test(item.license.spdx_id)?item.license.spdx_id:null;
+          return {repository:item.full_name,officialUrl:'https://github.com/'+item.full_name,
+            declaredLicense:license,topic,commercialCandidate:PERMISSIVE.has(license),
+            state:PERMISSIVE.has(license)?'REVIEW_REQUIRED':'BLOCKED_UNKNOWN_OR_COMPLEX_LICENSE',
+            exactRevision:null,artifactDigest:null,commercialRights:'NOT_PROVEN',outputRights:'NOT_PROVEN',
+            installAllowed:false,activationAllowed:false};
+        });
+      return {topic,status:'METADATA_OBSERVED',candidates};
+    } catch {return {topic,status:'NOT_PROVEN',candidates:[]};}
+  });
+  const seen=new Set();
+  const candidates=rows.flatMap(row=>row.candidates||[]).filter(row=>!seen.has(row.repository.toLowerCase())&&seen.add(row.repository.toLowerCase()));
+  return {schema:'CAPITAL_AI_GROWTH_TOOL_RADAR@1',observedAt,metadataOnly:true,automaticInstall:false,
+    publicPublishAllowed:false,paidProviderCalls:0,topics:rows.map(({topic,status})=>({topic,status})),candidates};
+}

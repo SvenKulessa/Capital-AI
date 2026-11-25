@@ -16,7 +16,16 @@ export type TypeScriptEvidence = {
   evidenceUrl?: string;
 };
 export type AcodeXArchiveFile = { url: string; sha256: string };
+export type AcodeXRecovery = {
+  classification: 'OWNER_TERMINAL_RECOVERY_SNAPSHOT'; provenance: 'OWNER_TERMINAL_OUTPUT';
+  status: 'VERIFIED'; historicalIncidentStatus: 'BLOCKED_OBSERVED'; currentDeviceStatus: 'NOT_PROVEN';
+  baselineUtc: string; expectedStartUtc: string; latestSuccessUtc: string; checkedUtc: string;
+  healthExit: 0; outerExit: 0; guardAuditExit: 0; acopyCommandExit: 0;
+  lockClear: true; newOAuthFailures: 0; newPullFailures: 0; postBaselineSuccessCount: number;
+  pullShaMatch: true; guardShaMatch: true; filtersPresent: true; bridgeAckStatus: 'NOT_PROVEN';
+};
 export type AcodeXArchive = {
+  recovery?: AcodeXRecovery;
   workstream: string; evidenceVersion: string;
   classification: 'HISTORICAL_REFERENCE_ONLY';
   provenance: 'OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK';
@@ -61,6 +70,21 @@ const archiveFile = (value: unknown): boolean =>
   isRecord(value) && typeof value.url === 'string' &&
   /^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/view\?usp=drivesdk$/.test(value.url) &&
   typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256);
+const recoveryRecord = (value: unknown): boolean => {
+  if (!isRecord(value) || value.classification !== 'OWNER_TERMINAL_RECOVERY_SNAPSHOT' ||
+      value.provenance !== 'OWNER_TERMINAL_OUTPUT' || value.status !== 'VERIFIED' ||
+      value.historicalIncidentStatus !== 'BLOCKED_OBSERVED' || value.currentDeviceStatus !== 'NOT_PROVEN' ||
+      value.bridgeAckStatus !== 'NOT_PROVEN' ||
+      ![value.baselineUtc, value.expectedStartUtc, value.latestSuccessUtc, value.checkedUtc].every(safeDate) ||
+      ![value.healthExit, value.outerExit, value.guardAuditExit, value.acopyCommandExit,
+        value.newOAuthFailures, value.newPullFailures].every(v => v === 0) ||
+      ![value.lockClear, value.pullShaMatch, value.guardShaMatch, value.filtersPresent].every(v => v === true) ||
+      typeof value.postBaselineSuccessCount !== 'number' || !Number.isSafeInteger(value.postBaselineSuccessCount) ||
+      value.postBaselineSuccessCount < 1) return false;
+  const times = [value.baselineUtc, value.expectedStartUtc, value.latestSuccessUtc, value.checkedUtc]
+    .map(v => Date.parse(v as string));
+  return times[0] < times[1] && times[1] <= times[2] && times[2] <= times[3];
+};
 const archiveRecord = (value: unknown): boolean => {
   if (!isRecord(value) || value.classification !== 'HISTORICAL_REFERENCE_ONLY' ||
       value.provenance !== 'OWNER_TERMINAL_OUTPUT_AND_DRIVE_SHA256_READBACK' ||
@@ -70,7 +94,8 @@ const archiveRecord = (value: unknown): boolean => {
       value.healthExit !== 0 || value.outerExit !== 0 || value.guardAuditExit !== 0 ||
       value.lockClear !== true || value.newOAuthFailures !== 0 || value.newPullFailures !== 0 ||
       !isRecord(value.evidence)) return false;
-  return ['v1', 'v11', 'standard'].every(k => archiveFile((value.evidence as Record<string, unknown>)[k]));
+  return (value.recovery === undefined || recoveryRecord(value.recovery)) &&
+    ['v1', 'v11', 'standard'].every(k => archiveFile((value.evidence as Record<string, unknown>)[k]));
 };
 export function readDashboardSnapshot(value: unknown): DashboardReadback | null {
   if (!isRecord(value) || value.schema !== OPERATIONS_SCHEMA || value.private !== true ||

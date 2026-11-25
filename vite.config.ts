@@ -15,6 +15,7 @@ import { createLimiter } from './server/http-security.mjs';
 import homeEditorialEdition from './src/features/home/homeEditorialEdition.json' with { type: 'json' };
 import { HOME_PUBLIC_DISPLAY_REVIEWS } from './src/features/home/homeEditorialRightsLedger.mjs';
 import { HOME_GRAPHIC_OWNER_GRANTS } from './src/features/home/homeGraphicOwnerGrants.ts';
+import { HOME_LEARNING_GRAPHICS } from './src/features/home/homeLearningGraphics.ts';
 import { validateHomeEditorialAssets } from './src/features/home/validateHomeEditorialAssets.ts';
 
 function publicArtifactInventoryPlugin(): Plugin {
@@ -43,7 +44,7 @@ function homeEditorialAssetsPlugin(): Plugin {
     configResolved(config) { publicDir = config.publicDir; },
     async buildStart() {
       await validateHomeEditorialAssets(homeEditorialEdition.stories, new Date().toISOString().slice(0, 10),
-        publicDir, HOME_PUBLIC_DISPLAY_REVIEWS, HOME_GRAPHIC_OWNER_GRANTS);
+        publicDir, HOME_PUBLIC_DISPLAY_REVIEWS, HOME_GRAPHIC_OWNER_GRANTS, HOME_LEARNING_GRAPHICS);
     },
   };
 }
