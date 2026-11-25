@@ -24,3 +24,127 @@ test('consent withdrawal during source read suppresses result',async()=>{const f
 test('adapter error is redacted; no receipt, user or secret leaked',async()=>{const f=fixture();f.deps.readVerifiedOneTimeReceipt=async()=>{throw Error('private secret and '+user)};const r=await f.run();assert.equal(r.reason,'SOURCE_UNAVAILABLE');assert.doesNotMatch(JSON.stringify(r),/private secret|de305d54/)});
 
 test('source timestamps observed during a bounded read are accepted, slow reads denied',async()=>{const f=fixture();let clock=t;f.deps.now=()=>clock;f.deps.readVerifiedOneTimeReceipt=async()=>({...f.p,observedAt:new Date(clock+=1000).toISOString()});f.deps.readEntitlement=async()=>({...f.l,observedAt:new Date(clock+=1000).toISOString()});assert.equal((await f.run()).status,'SANDBOX_CANDIDATE');const slow=fixture();clock=t;slow.deps.now=()=>clock;slow.deps.readVerifiedOneTimeReceipt=async()=>({...slow.p,observedAt:new Date(clock+=31000).toISOString()});assert.equal((await slow.run()).reason,'CONSENT_CHANGED')});
+
+import {createSmartcopyStripeReader,createSmartcopyConsentReader} from './smartcopy-sandbox-readback.mjs';
+function providerFixture(){
+ const cid='cus_fixture12345',iid='in_fixture12345',chargeId='ch_fixture12345',paid=Math.floor(Date.parse('2026-11-24T01:00:00.000Z')/1000);
+ const meta={sku:scope.sku,user_id:user,campaign_id:scope.campaignId,release_sha256:scope.releaseSha256};
+ const object=(id,object,extra)=>({id,object,livemode:false,...extra});
+ const data={
+ ['/checkout/sessions/'+session]:object(session,'checkout.session',{mode:'payment',status:'complete',payment_status:'paid',client_reference_id:user,metadata:meta,currency:'eur',amount_total:499,amount_subtotal:499,total_details:{amount_discount:0},payment_intent:intent,invoice:iid,customer:cid}),
+ ['/checkout/sessions/'+session+'/line_items?limit=2']:{object:'list',has_more:false,data:[{quantity:1,amount_subtotal:499,amount_total:499,currency:'eur',price:{id:scope.stripePriceId}}]},
+ ['/prices/'+scope.stripePriceId]:object(scope.stripePriceId,'price',{active:true,type:'one_time',recurring:null,currency:'eur',unit_amount:499,product:scope.stripeProductId}),
+ ['/products/'+scope.stripeProductId]:object(scope.stripeProductId,'product',{active:true,metadata:{sku:scope.sku}}),
+ ['/payment_intents/'+intent]:object(intent,'payment_intent',{metadata:meta,status:'succeeded',currency:'eur',amount:499,amount_received:499,customer:cid,latest_charge:chargeId}),
+ ['/invoices/'+iid]:object(iid,'invoice',{metadata:meta,customer:cid,status:'paid',currency:'eur',total:499,amount_paid:499,amount_remaining:0,status_transitions:{paid_at:paid}}),
+ ['/invoice_payments?invoice='+iid+'&limit=2']:{object:'list',has_more:false,data:[object('inpay_fixture','invoice_payment',{invoice:iid,status:'paid',currency:'eur',amount_paid:499,amount_requested:499,payment:{type:'payment_intent',payment_intent:intent},status_transitions:{paid_at:paid}})]},
+ ['/charges/'+chargeId]:object(chargeId,'charge',{payment_intent:intent,customer:cid,status:'succeeded',currency:'eur',paid:true,captured:true,amount:499,amount_captured:499,amount_refunded:0,refunded:false,disputed:false})};
+ data['/refunds?charge='+chargeId+'&limit=100']={object:'list',has_more:false,data:[]};
+ const calls=[],key='rk_test_fixture_1234567890';
+ const deps={scope,key,now:()=>t,fetchImpl:async(url,opts)=>{assert.equal(opts.method,'GET');assert.equal(opts.redirect,'error');assert.equal(opts.headers.Authorization,'Bearer '+key);assert.ok(url.startsWith('https://api.stripe.com/v1'));const p=url.slice('https://api.stripe.com/v1'.length);calls.push(p);assert.ok(Object.hasOwn(data,p));return Response.json(data[p])}};
+ return {data,calls,deps,ctx:{userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,mode:'test'},run(){return createSmartcopyStripeReader(deps)(this.ctx,session)}};
+}
+test('Stripe GET adapter verifies exact invoice payment and captured charge; composes with existing sandbox readback',async()=>{
+ const p=providerFixture(),f=fixture();f.deps.readVerifiedOneTimeReceipt=createSmartcopyStripeReader(p.deps);
+ assert.equal((await f.run()).status,'SANDBOX_CANDIDATE');assert.equal(p.calls.length,8);
+ const r=await p.run();assert.equal(r.paidCents,499);assert.equal(r.refundedCents,0);
+});
+test('Stripe reader denies external payment, extra allocation, cross identity, incomplete capture, subscriptions and live credentials',async()=>{
+ const cases=[['/invoice_payments',v=>v.data[0].payment.type='payment_record'],['/invoice_payments',v=>v.has_more=true],['/invoice_payments',v=>v.data[0].payment.payment_intent='pi_foreign12345'],['/invoice_payments',v=>v.data[0].amount_paid=1],['/charges/',v=>v.amount_captured=1],['/prices/',v=>v.type='recurring'],['/products/',v=>v.metadata.sku='SMARTCLIP_PERSONAL'],['/checkout/sessions/',v=>v.metadata.campaign_id='other'],['/invoices/',v=>v.livemode=true]];
+ for(const [prefix,mutate] of cases){const f=providerFixture();mutate(f.data[Object.keys(f.data).find(k=>k.startsWith(prefix))]);await assert.rejects(()=>f.run(),/SMARTCOPY_STRIPE_RECEIPT_DENIED/);}
+ const f=providerFixture();assert.throws(()=>createSmartcopyStripeReader({...f.deps,key:'rk_live_fixture_1234567890'}));assert.deepEqual(f.calls,[]);
+});
+test('Stripe refund readback retains partial and full refund; existing entitlement reversal gate remains authoritative',async()=>{
+ const p=providerFixture(),f=fixture(),ch=p.data['/charges/ch_fixture12345'];f.deps.readVerifiedOneTimeReceipt=createSmartcopyStripeReader(p.deps);
+ ch.amount_refunded=100;assert.equal((await f.run()).refundCandidate,'PARTIAL');
+ ch.amount_refunded=499;ch.refunded=true;assert.equal((await f.run()).reason,'REVERSAL_NOT_PROVEN');f.l.state='REVOKED';assert.equal((await f.run()).refundCandidate,'FULL');
+});
+test('consent Data API uses dedicated project, exact scoped RPC and no production or recovery target',async()=>{
+ const f=fixture(),ctx={userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,mode:'test'};
+ const config={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890',fetchImpl:async(url,opts)=>{assert.equal(url,'https://'+'a'.repeat(20)+'.supabase.co/rest/v1/rpc/capital_smartcopy_read_consent');assert.equal(opts.method,'POST');assert.equal(opts.redirect,'error');assert.deepEqual(JSON.parse(opts.body),{p_user:user,p_campaign:scope.campaignId,p_release:scope.releaseSha256});return Response.json(f.c)}};
+ const read=createSmartcopyConsentReader(config);assert.deepEqual(await read(ctx),f.c);
+ f.c.releaseSha256='b'.repeat(64);await assert.rejects(()=>read(ctx));
+ for(const projectRef of ['ryzywoktpmyhwzxmstyu','wcvorlvhwvuprqsjcten','evil.com'])assert.throws(()=>createSmartcopyConsentReader({...config,projectRef}));
+});
+
+test('provider reader rejects coercible identifiers before transport',async()=>{
+ const f=providerFixture();assert.throws(()=>createSmartcopyStripeReader({...f.deps,scope:{...scope,stripePriceId:[scope.stripePriceId]}}));
+ await assert.rejects(()=>createSmartcopyStripeReader(f.deps)(f.ctx,[session]));assert.deepEqual(f.calls,[]);
+});
+
+import {createSmartcopyEntitlementReader} from './smartcopy-sandbox-readback.mjs';
+test('independent entitlement RPC scope and identity are exact; no live project or mutable endpoint',async()=>{
+ const f=fixture(),p=providerFixture(),ctx=p.ctx;let calls=0;
+ const config={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890',fetchImpl:async(url,opt)=>{calls++;assert.equal(url,'https://'+'a'.repeat(20)+'.supabase.co/rest/v1/rpc/capital_smartcopy_read_entitlement');assert.equal(opt.redirect,'error');assert.equal(opt.method,'POST');assert.equal(opt.headers.apikey,config.secret);assert.deepEqual(JSON.parse(opt.body),{p_user:user,p_campaign:scope.campaignId,p_release:scope.releaseSha256,p_intent:intent});return Response.json(f.l)}};
+ const read=createSmartcopyEntitlementReader(config);
+ assert.deepEqual(await read(ctx,intent),f.l);
+ await assert.rejects(()=>read({...ctx,mode:'live'},intent));await assert.rejects(()=>read(ctx,[intent]));assert.equal(calls,1);
+ for(const projectRef of ['ryzywoktpmyhwzxmstyu','wcvorlvhwvuprqsjcten','evil.com'])assert.throws(()=>createSmartcopyEntitlementReader({...config,projectRef}));
+ for(const patch of [{productId:'smartclip'},{intentId:'pi_foreign12345'},{releaseSha256:'b'.repeat(64)},{state:'UNKNOWN'}]){
+ const original={...f.l};Object.assign(f.l,patch);await assert.rejects(()=>read(ctx,intent));Object.assign(f.l,original);}
+ f.deps.readEntitlement=read;f.deps.readVerifiedOneTimeReceipt=createSmartcopyStripeReader(p.deps);
+ assert.equal((await f.run()).status,'SANDBOX_CANDIDATE');
+ p.data['/charges/ch_fixture12345'].amount_refunded=499;p.data['/charges/ch_fixture12345'].refunded=true;
+ assert.equal((await f.run()).reason,'REVERSAL_NOT_PROVEN');f.l.state='REVOKED';assert.equal((await f.run()).refundCandidate,'FULL');
+});
+test('independent entitlement errors, missing rows and oversize response fail closed',async()=>{
+ const p=providerFixture(),cfg={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890'};
+ assert.equal(await createSmartcopyEntitlementReader({...cfg,fetchImpl:async()=>Response.json(null)})(p.ctx,intent),null);
+ for(const response of [()=>Response.json({}, {status:403}),()=>new Response(' '.repeat(8193))]){
+ await assert.rejects(()=>createSmartcopyEntitlementReader({...cfg,fetchImpl:async()=>response()})(p.ctx,intent));}
+});
+
+import {createSmartcopySandboxLifecycle} from './smartcopy-sandbox-readback.mjs';
+test('isolated lifecycle uses provider read, independent delivery and private fixture writer; no live metrics',async()=>{
+ const f=providerFixture(),calls=[];
+ const proof={...f.ctx,intentId:intent,receiptSha256:'7'.repeat(64),termsSha256:'8'.repeat(64),acceptedAt:'2026-11-24T00:00:00.000Z',purpose:'CONTRACT_DELIVERY'};delete proof.mode;
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},
+ readDeliveryProof:async()=>{calls.push('delivery');return proof},recordFixture:async v=>{calls.push('fixture');assert.equal(v.p_intent,intent);assert.equal(v.p_delivery,proof.receiptSha256);return 'GRANTED'}};
+ const result=await createSmartcopySandboxLifecycle(opts)({}, {},session);
+ assert.equal(result.licenseCandidate,'GRANTED');assert.equal(result.liveMetrics,null);assert.deepEqual(calls,['delivery','fixture']);assert.equal(f.calls.length,10);
+ assert.throws(()=>createSmartcopySandboxLifecycle({...opts,mode:'live'}));
+});
+test('lifecycle refuses marketing consent, foreign identity, live session and unauthenticated request',async()=>{
+ const f=providerFixture();let writes=0;
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},readDeliveryProof:async()=>null,recordFixture:async()=>{writes++;return 'GRANTED'}};
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).reason,'DELIVERY_NOT_PROVEN');
+ const bad={userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,intentId:intent,receiptSha256:'7'.repeat(64),purpose:'PRODUCT_CONVERSION'};
+ assert.equal((await createSmartcopySandboxLifecycle({...opts,readDeliveryProof:async()=>bad})({}, {},session)).reason,'DELIVERY_NOT_PROVEN');
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},'cs_live_fixture12345')).reason,'SESSION_INVALID');
+ assert.equal((await createSmartcopySandboxLifecycle({...opts,auth:{sameOrigin:()=>false,verify:async()=>null}})({}, {},session)).reason,'AUTH_REQUIRED');assert.equal(writes,0);
+});
+test('terminal refund does not require marketing or delivery proof and rejects a non-revoked fixture result',async()=>{
+ const f=providerFixture();const ch=f.data['/charges/ch_fixture12345'];ch.amount_refunded=499;ch.refunded=true;
+ f.data['/refunds?charge=ch_fixture12345&limit=100'].data=[{id:'re_fixture12345',object:'refund',charge:ch.id,payment_intent:intent,currency:'eur',amount:499,status:'succeeded'}];
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},readDeliveryProof:async()=>{throw Error('must not call')},recordFixture:async v=>{assert.equal(v.p_refunded,499);assert.equal(v.p_delivery,null);return 'REVOKED'}};
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).licenseCandidate,'REVOKED');
+ assert.equal((await createSmartcopySandboxLifecycle({...opts,recordFixture:async()=> 'GRANTED'})({}, {},session)).reason,'FIXTURE_STATE_DENIED');
+});
+
+import {createSmartcopyDeliveryReader} from './smartcopy-sandbox-readback.mjs';
+test('delivery proof is read independently and bound to terms, intent and acceptance timestamp',async()=>{
+ const f=providerFixture(),proof={userId:user,productId:scope.productId,campaignId:scope.campaignId,releaseSha256:scope.releaseSha256,intentId:intent,receiptSha256:'7'.repeat(64),termsSha256:'8'.repeat(64),acceptedAt:'2026-11-24T00:00:00.000Z',purpose:'CONTRACT_DELIVERY'};
+ const cfg={projectRef:'a'.repeat(20),secret:'sb_secret_fixture_12345678901234567890',fetchImpl:async(url,o)=>{assert.equal(url,'https://'+'a'.repeat(20)+'.supabase.co/rest/v1/rpc/capital_smartcopy_read_delivery');assert.equal(o.headers.apikey,cfg.secret);assert.deepEqual(JSON.parse(o.body),{p_user:user,p_campaign:scope.campaignId,p_release:scope.releaseSha256,p_intent:intent});return Response.json(proof)}};
+ const read=createSmartcopyDeliveryReader(cfg);assert.deepEqual(await read(f.ctx,intent),proof);
+ assert.throws(()=>createSmartcopyDeliveryReader({...cfg,projectRef:'ryzywoktpmyhwzxmstyu'}));
+ const opts={...f.deps,mode:'DISPOSABLE_CI_ONLY',auth:{sameOrigin:()=>true,verify:async()=>({userId:user,emailVerified:true})},readDeliveryProof:read,recordFixture:async()=> 'GRANTED'};
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).licenseCandidate,'GRANTED');
+ proof.acceptedAt='2026-11-24T02:00:00.000Z';
+ assert.equal((await createSmartcopySandboxLifecycle(opts)({}, {},session)).reason,'DELIVERY_NOT_PROVEN');
+ proof.releaseSha256='b'.repeat(64);await assert.rejects(()=>read(f.ctx,intent));
+});
+test('refund reconciliation rejects incomplete, pending, duplicate, foreign and inconsistent records',async()=>{
+ for(const kind of ['page','pending','duplicate','foreign','sum','charge-race']){
+  const f=providerFixture(),ch=f.data['/charges/ch_fixture12345'],list=f.data['/refunds?charge=ch_fixture12345&limit=100'];
+  ch.amount_refunded=100;
+  const row={id:'re_fixture12345',object:'refund',charge:ch.id,payment_intent:intent,currency:'eur',amount:100,status:'succeeded'};
+  list.data=[row];
+  if(kind==='page')list.has_more=true;
+  if(kind==='pending')row.status='pending';
+  if(kind==='duplicate')list.data.push({...row});
+  if(kind==='foreign')row.payment_intent='pi_foreign12345';
+  if(kind==='sum')row.amount=50;
+  if(kind==='charge-race'){const fetch=f.deps.fetchImpl;let n=0;f.deps.fetchImpl=async(url,opt)=>{const res=await fetch(url,opt);if(url.endsWith('/charges/ch_fixture12345')&&++n===2)return Response.json({...ch,amount_refunded:200});return res;};}
+  await assert.rejects(()=>createSmartcopyStripeReader({...f.deps,reconcileRefunds:true})(f.ctx,session),/SMARTCOPY_STRIPE_RECEIPT_DENIED/);
+ }
+});

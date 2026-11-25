@@ -109,3 +109,22 @@ test('Smartcopy composition uses canonical authenticated consent before receipt 
   assert.equal((await handler.readSmartcopySandbox({}, {}, 'cs_test_fixture12345')).reason,'CONSENT_REQUIRED');
   assert.deepEqual(calls,['consent']);
 });
+
+test('explicit provider sandbox composition uses canonical auth and never starts on default production configuration',async()=>{
+ let calls=0;const auth={sameOrigin:()=>false,verify:async()=>{throw Error('unexpected')}};
+ const provider={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},stripeTestKey:'rk_test_fixture_1234567890',consentProjectRef:'a'.repeat(20),consentTestSecret:'sb_secret_fixture_12345678901234567890'};
+ const options={auth,env:{STRIPE_SECRET_KEY:'sk_live_fixture'},fetchImpl:async()=>{calls++;throw Error('unexpected')}};
+ assert.equal(createPurchaseReceipt(options).readSmartcopySandbox,undefined);
+ const configured=createPurchaseReceipt({...options,smartcopyProviderSandbox:provider});
+ assert.equal((await configured.readSmartcopySandbox({}, {},'cs_test_fixture12345')).reason,'AUTH_REQUIRED');
+ assert.equal(calls,0);
+ assert.throws(()=>createPurchaseReceipt({...options,smartcopyProviderSandbox:{...provider,stripeTestKey:'rk_live_fixture_1234567890'}}));
+ assert.throws(()=>createPurchaseReceipt({...options,smartcopySandbox:{},smartcopyProviderSandbox:provider}));
+});
+
+test('provider sandbox cannot replace independently persisted entitlement reader',()=>{
+ const provider={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},stripeTestKey:'rk_test_fixture_1234567890',consentProjectRef:'a'.repeat(20),consentTestSecret:'sb_secret_fixture_12345678901234567890'};
+ const auth={sameOrigin:()=>true,verify:async()=>({userId,emailVerified:true})};
+ assert.throws(()=>createPurchaseReceipt({env:{},auth,smartcopyProviderSandbox:{...provider,readEntitlement:async()=>null}}),/SMARTCOPY_PROVIDER_ENTITLEMENT_OVERRIDE/);
+ assert.equal(typeof createPurchaseReceipt({env:{},auth,smartcopyProviderSandbox:provider}).readSmartcopySandbox,'function');
+});
