@@ -495,13 +495,15 @@ def render_brand_card(
     draw = ImageDraw.Draw(image)
     pad = max(36, width // 24)
     emblem_size = max(82, min(width, height) // 8)
-    image.paste(_render_corporate_logo(logo_path, emblem_size, palette), (pad, pad))
+    # Keep the header below the seven-color rail, including tall portraits.
+    header_top = max(pad, max(12, height // 30) + max(5, height // 240) + 8)
+    image.paste(_render_corporate_logo(logo_path, emblem_size, palette), (pad, header_top))
 
     brand_font = _font(max(28, width // 28), bold=True)
-    draw.text((pad + emblem_size + 18, pad + emblem_size * 0.18), kicker, fill=palette.gold, font=brand_font)
-    draw.line((pad, pad + emblem_size + 18, width - pad, pad + emblem_size + 18), fill=palette.gold, width=max(3, width // 360))
+    draw.text((pad + emblem_size + 18, header_top + emblem_size * 0.18), kicker, fill=palette.gold, font=brand_font)
+    draw.line((pad, header_top + emblem_size + 18, width - pad, header_top + emblem_size + 18), fill=palette.gold, width=max(3, width // 360))
 
-    content_top = pad + emblem_size + 48
+    content_top = header_top + emblem_size + 48
     if source_image is not None:
         if not source_image.is_file():
             raise MediaRenderError(f"source image not found: {source_image}")
@@ -562,7 +564,8 @@ def render_scene_frame(
     image = _background(width, height, palette)
     draw = ImageDraw.Draw(image)
     pad = 72
-    image.paste(_render_corporate_logo(logo_path, 132, palette), (pad, 70))
+    logo_top = max(70, max(12, height // 30) + max(5, height // 240) + 8)
+    image.paste(_render_corporate_logo(logo_path, 132, palette), (pad, logo_top))
     draw.text((238, 105), scene.kicker, fill=palette.gold, font=_font(43, bold=True))
     draw.text((width - pad, 120), f"{scene_index:02d}/{scene_count:02d}", fill=palette.text_secondary, font=_font(28), anchor="ra")
     draw.line((pad, 235, width - pad, 235), fill=palette.gold, width=5)
