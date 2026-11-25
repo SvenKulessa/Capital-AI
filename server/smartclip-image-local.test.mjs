@@ -98,3 +98,17 @@ test('fails closed on truncated and decompression-bomb PNGs', () => {
   const valid = ingestSmartclipPng(tooLarge, origin);
   assert.equal(valid.height, 4096);
 });
+
+
+test('rejects extra bytes inside IDAT after the validated zlib stream', () => {
+  const clean = png({ note: false });
+  const header = clean.subarray(8, 33);
+  const compressed = deflateSync(Buffer.alloc(5));
+  for (const trailing of [Buffer.from('synthetic-private-marker'), deflateSync(Buffer.alloc(5))]) {
+    const malformed = Buffer.concat([
+      sig, header, chunk('IDAT', Buffer.concat([compressed, trailing])), chunk('IEND', Buffer.alloc(0)),
+    ]);
+    assert.throws(() => ingestSmartclipPng(malformed, origin), /png_deflate_trailing/);
+  }
+  assert.equal(ingestSmartclipPng(clean, origin).width, 1);
+});
