@@ -1,6 +1,7 @@
 // Existing Growth Intelligence draft-only product/channel projection. No network or publication.
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 export const PRODUCT_REGISTRY_PATH = "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md";
 const channels = {
   "website": {
@@ -283,4 +284,26 @@ export function projectProductChannels(markdown) {
 export function buildProductChannelIntelligence() {
   const bytes = readFileSync(new URL('../../'+PRODUCT_REGISTRY_PATH,import.meta.url));
   return {...projectProductChannels(bytes.toString('utf8')),sourcePath:PRODUCT_REGISTRY_PATH,sourceSha256:createHash('sha256').update(bytes).digest('hex'),sourceState:'HISTORICAL_REGISTRY_NOT_RUNTIME_EVIDENCE'};
+}
+
+export function buildProductChannelGraphHandoff() {
+  const plan=buildProductChannelIntelligence();
+  return {
+    contractVersion:'CAPITAL_AI_PRODUCT_CHANNEL_GRAPH_INPUT@1',
+    sourceSha256:plan.sourceSha256,
+    publicationState:'DRAFT_ONLY',publicPublishAllowed:false,liveSalesAllowed:false,
+    providerCalls:0,campaignSpend:0,
+    products:plan.products.map(p=>({id:p.id,researchStatus:p.researchStatus,
+      channels:p.channels.map(c=>({id:c.id,priority:c.priority,rule:c.rule}))}))
+  };
+}
+
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+  if(process.argv.length!==3||process.argv[2]!=='--graph-handoff'){
+    process.stderr.write('PRODUCT_CHANNEL_CLI_REJECTED\n');
+    process.exitCode=1;
+  }else{
+    try{process.stdout.write(JSON.stringify(buildProductChannelGraphHandoff())+'\n');}
+    catch{process.stderr.write('PRODUCT_CHANNEL_HANDOFF_REJECTED\n');process.exitCode=1;}
+  }
 }
