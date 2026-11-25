@@ -209,10 +209,21 @@ function projectConversionGraphHandoff(raw:unknown, reportSha:string, rows:Growt
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
-  const parsed:unknown=JSON.parse(raw);
+  const parsed=JSON.parse(raw);
   if(parsed && typeof parsed==='object' && 'contractVersion' in parsed &&
     parsed.contractVersion==='CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1')
     return projectConversionGraphHandoff(parsed,reportSha,rows);
+  if(parsed?.contractVersion==='CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'){
+    const result=z.object({contractVersion:z.literal('CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'),engine:z.literal('langgraph'),productId:z.literal('ai-smartcopy'),
+      quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),nextAction:z.enum(['VERIFY_SOURCE_AND_COHORT','REPAIR_INPUT']),providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
+      verifiedMetrics:z.object({paidLicenses:z.null(),revenueCents:z.null(),refunds:z.null()}).strict(),
+      publicationAllowed:z.literal(false),costActivationAllowed:z.literal(false),automaticChanges:z.literal(false)}).strict().parse(parsed);
+    if((result.quality==='BLOCKED')!==(result.nextAction==='REPAIR_INPUT'))throw Error('Invalid Smartcopy graph status');
+    const row={...makeRow('smartcopy-conversion-graph','AI-Smartcopy · Conversion-Review','GROWTH','Authentifizierte Quellen und vollständige Kohorte separat belegen'),
+      operation:'Graph-Qualität: '+result.quality,flow:'Offline-Graph · keine Live-KPI oder Lizenzautorität',
+      evidence:'Importdatei SHA-256 '+reportSha,auth:'NOT_PROVEN_BY_GRAPH'};
+    return [...rows.filter(r=>r.id!==row.id),row];
+  }
   const data=graphHandoff.parse(parsed);
   const recorded=data.sources.filter(s=>s.status==='SOURCE_RECORDED_NOT_AUTHENTICATED');
   if(data.quality==='BLOCKED'?(data.sources.length!==0||data.eligibleForDraftReview):

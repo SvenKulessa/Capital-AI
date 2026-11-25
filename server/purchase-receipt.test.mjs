@@ -86,3 +86,45 @@ test('optional trusted X invoice observer runs only after verified live initial 
   assert.equal(records.length,1);
   assert.equal((await invoke(f,{...options,initialInvoiceObserver:async()=>{throw Error('private');}})).status,200);
 });
+
+import './smartcopy-sandbox-readback.test.mjs';
+test('Smartcopy composition is absent by default, cannot override canonical auth or add an HTTP route',async()=>{
+  let calls=0;
+  const auth={sameOrigin:()=>false,verify:async()=>{throw Error('unexpected auth read')}};
+  const config={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},auth:{sameOrigin:()=>true,verify:async()=>({userId,emailVerified:true})},readConsent:async()=>{calls++;return null},readVerifiedOneTimeReceipt:async()=>{calls++;return null},readEntitlement:async()=>{calls++;return null}};
+  const disabled=createPurchaseReceipt({env:{},auth});
+  assert.equal(disabled.readSmartcopySandbox,undefined);
+  const enabled=createPurchaseReceipt({env:{},auth,smartcopySandbox:config,fetchImpl:async()=>{throw Error('no provider call expected')}});
+  assert.equal((await enabled.readSmartcopySandbox({}, {}, 'cs_test_fixture12345')).reason,'AUTH_REQUIRED');
+  assert.equal(await enabled.handle({}, {}, new URL('https://capital-ai.online/api/billing/smartcopy-sandbox'),()=>{throw Error('no new route')}),false);
+  assert.equal(calls,0);
+  assert.throws(()=>createPurchaseReceipt({env:{},auth,smartcopySandbox:{...config,scope:{...config.scope,sku:'SMARTCLIP_PERSONAL'}}}));
+  assert.throws(()=>createPurchaseReceipt({env:{},auth,smartcopySandbox:{...config,scope:{...config.scope,mode:'live'}}}));
+});
+test('Smartcopy composition uses canonical authenticated consent before receipt read',async()=>{
+  const calls=[];
+  const scope={productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'};
+  const now=()=>Date.parse('2026-11-25T05:00:00.000Z');
+  const handler=createPurchaseReceipt({env:{},auth:{sameOrigin:()=>true,verify:async()=>({userId,emailVerified:true})},smartcopySandbox:{scope,now,readConsent:async ctx=>{calls.push('consent');assert.equal(ctx.userId,userId);return null},readVerifiedOneTimeReceipt:async()=>{calls.push('receipt');throw Error('unexpected')},readEntitlement:async()=>{calls.push('license');throw Error('unexpected')}}});
+  assert.equal((await handler.readSmartcopySandbox({}, {}, 'cs_test_fixture12345')).reason,'CONSENT_REQUIRED');
+  assert.deepEqual(calls,['consent']);
+});
+
+test('explicit provider sandbox composition uses canonical auth and never starts on default production configuration',async()=>{
+ let calls=0;const auth={sameOrigin:()=>false,verify:async()=>{throw Error('unexpected')}};
+ const provider={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},stripeTestKey:'rk_test_fixture_1234567890',consentProjectRef:'a'.repeat(20),consentTestSecret:'sb_secret_fixture_12345678901234567890'};
+ const options={auth,env:{STRIPE_SECRET_KEY:'sk_live_fixture'},fetchImpl:async()=>{calls++;throw Error('unexpected')}};
+ assert.equal(createPurchaseReceipt(options).readSmartcopySandbox,undefined);
+ const configured=createPurchaseReceipt({...options,smartcopyProviderSandbox:provider});
+ assert.equal((await configured.readSmartcopySandbox({}, {},'cs_test_fixture12345')).reason,'AUTH_REQUIRED');
+ assert.equal(calls,0);
+ assert.throws(()=>createPurchaseReceipt({...options,smartcopyProviderSandbox:{...provider,stripeTestKey:'rk_live_fixture_1234567890'}}));
+ assert.throws(()=>createPurchaseReceipt({...options,smartcopySandbox:{},smartcopyProviderSandbox:provider}));
+});
+
+test('provider sandbox cannot replace independently persisted entitlement reader',()=>{
+ const provider={scope:{productId:'ai-smartcopy',campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:'b'.repeat(64),sku:'AI_SMARTCOPY_PERSONAL',stripeProductId:'prod_fixture1',stripePriceId:'price_fixture1',amountCents:499,mode:'test'},stripeTestKey:'rk_test_fixture_1234567890',consentProjectRef:'a'.repeat(20),consentTestSecret:'sb_secret_fixture_12345678901234567890'};
+ const auth={sameOrigin:()=>true,verify:async()=>({userId,emailVerified:true})};
+ assert.throws(()=>createPurchaseReceipt({env:{},auth,smartcopyProviderSandbox:{...provider,readEntitlement:async()=>null}}),/SMARTCOPY_PROVIDER_ENTITLEMENT_OVERRIDE/);
+ assert.equal(typeof createPurchaseReceipt({env:{},auth,smartcopyProviderSandbox:provider}).readSmartcopySandbox,'function');
+});

@@ -2,7 +2,7 @@ export const SEO_PROVENANCE_GENERATED_AT_MAIN_SHA = '6add02eac321c8b4dfc40fca8f9
 
 export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'src/i18n/landingSectionCopy.ts': Object.freeze({ sourceBlobSha: '0b845b24a15f710b02bc5740ac5a00a53a8e112b', contentSha256: 'b3ae90f8714804da050cb8e62734b6fd0efc5eb3f0ba0b3050c7a2251407a904' }),
-  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: 'da1bc882303fde14c0a1520807db2c31bf710167', contentSha256: 'd9da6e11f978d171c59e785f929e61e2bd6dbd19539b1e146c0d0941825b0adb' }),
+  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: 'c97417631ea35350ae7dc2ce4a9ea4203539ff23', contentSha256: '54721cf17444f95ed0ea993280f69a1001ccf6bec824502f8fea7b612ce9dca7' }),
   'shared/architecture-governance-vocabulary.mjs': Object.freeze({ sourceBlobSha: '086dce314dc661a0e169667e7ebc1bd8ec3a1631', contentSha256: 'f87c8d3f79133e4aa056ce7ffe1ee14e7f4283ac66a4b1f01e2744e2143ad646' }),
   'src/components/ContactForm.tsx': Object.freeze({ sourceBlobSha: 'a9253f4c2c8d775bbafa2977a7e62c4b2f8943db', contentSha256: '61ce8299bf918d853a14f054280395f232394a1071a5eae1e6d571adef47dde4' }),
   'shared/researched-vocabulary.json': Object.freeze({ sourceBlobSha: 'cf4e634f349481e2062e699d897fd5631249744c', contentSha256: '88a076f2f0e003ac0acfed62bfd6fd3cff50c8c64329054f402ec02abf7d5120' }),
@@ -18,10 +18,9 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     sourceBlobSha: '41065d1e7025f3b4afec3ee05d60687fc231de37',
     contentSha256: 'c385d667c66cc02ca92dbaf3becb2ee6f535fed884984a76d725b5c4b5b54d59',
   }),
-  'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: '2b997c9f26f4160d4011d225d6053e220754bfe5',
-    contentSha256: 'a24b15061236a87c35c5f1ea08c36c38a65f440d7dd2b7a06bb05bb8c3d07a6b',
-  }),
+  'src/features/home/HomePage.tsx': Object.freeze({ sourceBlobSha: 'b91f2e6ec06fa9709cb18ddb7748b7951db56d69', contentSha256: '0bc15bc4385f9dfe9b3b8f08cf59806021171d6dc91a981264eaafc9823c3d35' }),
+  'shared/public-search-focus.mjs': Object.freeze({ sourceBlobSha: 'fd17d2f80101808f8f3407bb9ed371c4c3f802ea', contentSha256: '551b6621a5bd422bf95862a88bf8b6d77b46fc987cfa807025d63e8c1ab7daec' }),
+  'src/features/home/GrowthIntelligenceArticle.tsx': Object.freeze({ sourceBlobSha: '2686aa38d6c693c231d93b791dc25e8cb64be71c', contentSha256: 'c3671011c39c024d438d956bb8d41bc0f7727f87272fae90394b7033d084dd0f' }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
     sourceBlobSha: '6aa8da4597ba971d4fccf1d24c83ec369740b93e', contentSha256: '22d78321820411193eb42b053515f803b034046e451c31c2e148da159c417f65',
   }),
@@ -66,10 +65,10 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '0e809eaf86887dbc990b70fc18582bd73b6db821b58594d40aa8b9f7a565027b',
+  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '956b156836b41ad84ca738a10d58cef7f7f9f8d5f1a8d3df3275feee0f235b56',
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '99d4c8d690867e44917152117eecf455da8964b71c414b96f19efb9e15e256dd',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
-  'index.html|src/features/home/HomePage.tsx': 'b3c2d5ea2cb63542fcfb463a5fec24b8b7726c55cff61107d9f879588bcb6eab',
+  'index.html|shared/public-search-focus.mjs|src/features/home/GrowthIntelligenceArticle.tsx|src/features/home/HomePage.tsx': '80abbc0bf1dbfb122861840ba48715e973a43fc0efd167c7a698244c6c153078',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '20af20e9dfb2739d828fb8bf41146fe6abbedfc0dc46cc4a09d6adcd73a095bd',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',

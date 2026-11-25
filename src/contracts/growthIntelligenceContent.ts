@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
+import { growthVisualScene } from '../shared/growthVisualScenes.ts';
 import {
   ContentCampaignBriefSchema,
   planContentCampaign,
@@ -225,6 +226,14 @@ export function buildGrowthIntelligenceContentDrafts(raw: unknown) {
       consent: 'NOT_PROVEN' as const,
       publicPublishAllowed: false as const,
       actualMediaAssets: 0 as const,
+      visualScene: (() => {
+        const scene = growthVisualScene(item.content_id);
+        return scene ? { contentId: item.content_id, channel, sourceSha, scene,
+          sceneSha256: createHash('sha256').update(JSON.stringify({sourceSha, scene})).digest('hex'),
+          renderer: 'ArticleSceneRenderer', dataMode: 'SCHEMATIC', state: 'REVIEW_REQUIRED',
+          exportTarget: channel === 'WEBSITE' ? 'INTERACTIVE_WEB' : channel === 'YOUTUBE' ? 'VIDEO_DRAFT' : 'IMAGE_DRAFT',
+          publicationAllowed: false, actualMediaAssets: 0 } : null;
+      })(),
     };
   });
 }
