@@ -184,7 +184,7 @@ export async function readTinyFishConfig({ token, fetchImpl = fetch } = {}) {
   let stage = 'SERVICE_FLAG';
   try {
     const direct = await renderGet(fetchImpl, `/v1/services/${SERVICE_ID}/env-vars/${FLAG}`, token);
-    if (direct) return { status: 'VERIFIED_CONFIG', enabled: flagValue(direct), source: 'SERVICE_DIRECT',
+    if (direct !== null) return { status: 'VERIFIED_CONFIG', enabled: flagValue(direct), source: 'SERVICE_DIRECT',
       runtimeValidated: false };
 
     // A 404 can mean an inaccessible service, not only an absent key.

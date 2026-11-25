@@ -259,3 +259,16 @@ test('foreign linked group and malformed metadata stop before any group value re
     assert.equal(calls, 3);
   }
 });
+
+test('HTTP 200 with malformed falsy JSON never masquerades as a direct key 404', async () => {
+  for (const [body, reason] of [[null, 'INVALID_JSON'], [false, 'FLAG_SHAPE_INVALID'], [0, 'FLAG_SHAPE_INVALID'], ['', 'FLAG_SHAPE_INVALID']]) {
+    let calls = 0;
+    const result = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => {
+      calls++;
+      return toResponse(body);
+    } });
+    assert.equal(result.reason, reason);
+    assert.equal(result.stage, 'SERVICE_FLAG');
+    assert.equal(calls, 1);
+  }
+});
