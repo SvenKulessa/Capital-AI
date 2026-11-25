@@ -71,7 +71,7 @@ import {
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { createBlueprintCommerce } from './blueprint-commerce.mjs';
-import { createSmartclipSandboxCommerce } from './smartclip-sandbox-commerce.mjs';
+import { createSmartclipSandboxCommerce, createSmartclipPrivateReleaseReader } from './smartclip-sandbox-commerce.mjs';
 import { createBlueprintDiskVault } from './blueprint-private-cloud.mjs';
 import { createPrivateKnowledgeVault } from './private-knowledge-vault.mjs';
 import { createPrivateKnowledgeApi } from './private-knowledge-api.mjs';
@@ -515,7 +515,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const privateBlueprintCloud = options.privateBlueprintCloud || createBlueprintDiskVault({ keyHex: runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY });
   const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, privateCloud: privateBlueprintCloud });
-  const smartclipSandboxCommerce = createSmartclipSandboxCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, readAdmittedPrivateRelease: options.smartclipReadAdmittedPrivateRelease });
+  const smartclipSandboxCommerce = createSmartclipSandboxCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, readAdmittedPrivateRelease: options.smartclipReadAdmittedPrivateRelease ?? createSmartclipPrivateReleaseReader({env:runtimeEnv}) });
   const knowledgeVault = options.knowledgeVault || createPrivateKnowledgeVault({keyHex:runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY});
   const privateKnowledgeApi = createPrivateKnowledgeApi({auth,vault:knowledgeVault});
   const founderAccess = createFounderAccess({auth,env:runtimeEnv});

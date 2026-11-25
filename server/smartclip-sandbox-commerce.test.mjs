@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash, createHmac, generateKeyPairSync, sign as signDevice } from 'node:crypto';
+import { createHash, createHmac, generateKeyPairSync, sign as signDevice, webcrypto } from 'node:crypto';
+import { mkdtemp, writeFile, chmod, symlink, unlink, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createSmartclipPairingClient } from './smartclip-client-pairing.mjs';
 import { Readable } from 'node:stream';
-import { createSmartclipSandboxCommerce, SMARTCLIP_PINNED_SHA256, SMARTCLIP_SKU, inspectSmartclipReleaseBytes, preflightSmartclipSandboxDelivery, prepareSmartclipPrivateDownload } from './smartclip-sandbox-commerce.mjs';
+import { createSmartclipSandboxCommerce, SMARTCLIP_PINNED_SHA256, SMARTCLIP_SKU, inspectSmartclipReleaseBytes, preflightSmartclipSandboxDelivery, prepareSmartclipPrivateDownload, readSmartclipPrivateArtifact, createSmartclipPrivateReleaseReader } from './smartclip-sandbox-commerce.mjs';
 
 const userId = '00000000-0000-4000-8000-000000000001';
 const otherUserId = '00000000-0000-4000-8000-000000000002';
@@ -631,4 +635,56 @@ test('device pairing is opt-in, authenticated, exact-shape, signed and replay-sa
   assert.equal((await call('device-status','POST',request,opts)).payload.active,false);
   assert.equal((await call('device-status','POST',{publicKey:publicKey2},opts)).payload.active,false);
   assert.equal((await call('device-activate','POST',thirdProof,opts)).statusCode,403);
+});
+
+test('private disk reader accepts only admitted bounded immutable exact ZIP in private directory',async()=>{
+  const root=await mkdtemp(join(tmpdir(),'smartclip-private-'));
+  const zip=join(root,'SmartClip-acode-bridge-v2.zip'), manifest=join(root,'admission.json');
+  const bytes=Buffer.from([0x50,0x4b,3,4,1,2,3,4]);
+  const identity={sku:SMARTCLIP_SKU,releaseId:'acode-bridge-v2',licenseVersion:'draft-v3',
+    releaseSha256:createHash('sha256').update(bytes).digest('hex')};
+  const approval={admission:'TEST_ONLY_APPROVED',...identity};
+  const read=()=>readSmartclipPrivateArtifact({root,identity});
+  try{
+    assert.equal(createSmartclipPrivateReleaseReader({env}),undefined);
+    assert.equal(await read(),null);
+    await writeFile(zip,bytes,{mode:0o600});
+    await writeFile(manifest,JSON.stringify(approval),{mode:0o600});
+    assert.deepEqual(await read(),{...approval,bytes});
+    await chmod(zip,0o644);assert.equal(await read(),null);await chmod(zip,0o600);
+    await writeFile(manifest,JSON.stringify({...approval,admission:'DRAFT_ONLY'}));assert.equal(await read(),null);
+    await writeFile(manifest,JSON.stringify(approval));
+    await writeFile(zip,Buffer.from([0x50,0x4b,3,4,9]));assert.equal(await read(),null);
+    await unlink(zip);await symlink(manifest,zip);assert.equal(await read(),null);
+    const enabled=createSmartclipPrivateReleaseReader({env:{...env,SMARTCLIP_SANDBOX_PRIVATE_DELIVERY_ENABLED:'true'}});
+    assert.equal(await enabled(identity),null); // synthetic digest cannot enter production pin
+  }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('portable pairing client persists nonextractable key, checks server challenge and reuses existing session contract',async()=>{
+  const fixture=makeFixture(), cfg={...env,SMARTCLIP_SANDBOX_DEVICE_ENABLED:'true'};
+  const keys=new Map();let posts=0;
+  const store={get:async id=>keys.get(id),add:async(id,pair)=>{if(keys.has(id))throw Error('duplicate');keys.set(id,pair);}};
+  const raw=event('checkout.session.completed',{id:sid});
+  await call('webhook','POST',raw,{fixture,headers:{'stripe-signature':sign(raw)}});
+  const fetchImpl=async(url,init)=>{
+    posts++;assert.equal(init.credentials,'same-origin');assert.equal(init.redirect,'error');
+    const output=await call(new URL(url).pathname.split('/').at(-1),'POST',JSON.parse(init.body),{fixture,cfg});
+    return reply(output.payload,output.statusCode);
+  };
+  const options={userId,origin:'https://capital-ai.online',cryptoImpl:webcrypto,store,fetchImpl};
+  assert.throws(()=>createSmartclipPairingClient({...options,origin:'file://'}),/pairing_context_unavailable/);
+  const c=createSmartclipPairingClient(options);
+  assert.deepEqual(await c.activate(),{active:true,testOnly:true});
+  assert.equal(keys.size,1);
+  const pair=[...keys.values()][0];assert.equal(pair.privateKey.extractable,false);
+  await assert.rejects(()=>webcrypto.subtle.exportKey('pkcs8',pair.privateKey));
+  assert.deepEqual(await createSmartclipPairingClient(options).status(),{active:true,testOnly:true});
+  assert.deepEqual(await c.revoke(),{revoked:true,testOnly:true});
+  assert.deepEqual(await c.status(),{active:false,testOnly:true});
+  const before=posts;
+  const tampered=createSmartclipPairingClient({...options,fetchImpl:async()=>reply({testOnly:true,challenge:'1'.repeat(64),message:'wrong',expiresInSeconds:120})});
+  await assert.rejects(()=>tampered.activate(),/challenge_invalid/);assert.equal(posts,before);
+  const noStorage=createSmartclipPairingClient({...options,store:{get:async()=>null,add:async()=>{throw Error('no storage');}}});
+  await assert.rejects(()=>noStorage.activate(),/secure_key_unavailable/);
 });

@@ -2,6 +2,9 @@
 // No live key can activate this handler; no success-page fulfillment or synthetic receipts.
 import { createHash, createHmac, timingSafeEqual, createPublicKey, randomBytes, verify as verifySignature } from 'node:crypto';
 import { boundedJson, readJson, secureUrl } from './http-security.mjs';
+import { constants as fsConstants } from 'node:fs';
+import { lstat, open, realpath } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 
 // Same Stripe v1 timestamp/HMAC contract as Blueprint Commerce. Keep this leaf module
 // independent of the Blueprint email transporter during pre-install security CI.
@@ -496,7 +499,7 @@ export async function preflightSmartclipSandboxDelivery({
 
 /** Internal private delivery contract, not a public release admission mechanism.
  * The trusted reader must return the exact admitted release, never a client path.
- * Only an explicitly injected, trusted server-side reader can enable delivery;
+ * Only an explicitly injected or owner-enabled private reader can enable delivery;
  * the default server composition has no reader and the HTTP path stays 404.
  * Copy the bytes before validation so a reader cannot mutate the verified buffer
  * during the second entitlement read. A refund after HTTP transmission starts
@@ -526,4 +529,70 @@ export async function prepareSmartclipPrivateDownload({
   const manifest = inspectSmartclipReleaseBytes(bytes);
   if (!(await entitled())) return null;
   return { bytes, manifest };
+}
+
+/** Read-only private artifact adapter. No directory creation, writes, provider calls,
+ * client paths or public static files. Provisioning/admission remains an owner action.
+ * The explicit root and identity are internal test seams, never HTTP parameters.
+ */
+const SMARTCLIP_PRIVATE_ROOT = '/var/data/capital-ai-private-smartclip';
+const privateIdentity = Object.freeze({sku:SMARTCLIP_SKU,releaseId:SMARTCLIP_RELEASE,
+  releaseSha256:SMARTCLIP_PINNED_SHA256,licenseVersion:SMARTCLIP_LICENSE});
+const sameFile = (a,b) => a.dev===b.dev && a.ino===b.ino && a.size===b.size &&
+  a.mode===b.mode && a.uid===b.uid && a.nlink===b.nlink && a.mtimeMs===b.mtimeMs && a.ctimeMs===b.ctimeMs;
+
+async function readPrivateFile(path, max, uid) {
+  const initial=await lstat(path);
+  const acceptable=s=>s.isFile() && !s.isSymbolicLink() && s.uid===uid &&
+    (s.mode & 0o077)===0 && s.nlink===1 && s.size>0 && s.size<=max;
+  if(!acceptable(initial) || !fsConstants.O_NOFOLLOW) throw Error('private_artifact_invalid');
+  const handle=await open(path,fsConstants.O_RDONLY|fsConstants.O_NOFOLLOW|fsConstants.O_NONBLOCK);
+  try {
+    const before=await handle.stat();
+    if(!acceptable(before)||!sameFile(initial,before))throw Error('private_artifact_changed');
+    const bytes=Buffer.alloc(before.size);
+    let offset=0;
+    while(offset<bytes.length){
+      const {bytesRead}=await handle.read(bytes,offset,bytes.length-offset,offset);
+      if(!bytesRead)throw Error('private_artifact_changed');
+      offset+=bytesRead;
+    }
+    const after=await handle.stat();
+    const current=await lstat(path);
+    if(!sameFile(before,after)||!sameFile(after,current))throw Error('private_artifact_changed');
+    return bytes;
+  }finally{await handle.close();}
+}
+
+export async function readSmartclipPrivateArtifact({root,identity}={}) {
+  if(typeof process.getuid!=='function'||typeof root!=='string'||resolve(root)!==root||
+     root==='/'||identity?.sku!==SMARTCLIP_SKU||identity.releaseId!==SMARTCLIP_RELEASE||
+     identity.licenseVersion!==SMARTCLIP_LICENSE||!SHA.test(identity.releaseSha256||''))return null;
+  try{
+    const uid=process.getuid();
+    const directory=await lstat(root);
+    if(!directory.isDirectory()||directory.isSymbolicLink()||directory.uid!==uid||
+       (directory.mode&0o077)!==0||await realpath(root)!==root)return null;
+    const admissionPath=join(root,'admission.json');
+    const raw=await readPrivateFile(admissionPath,4096,uid);
+    const approval=JSON.parse(raw.toString('utf8'));
+    const exact=['admission','licenseVersion','releaseId','releaseSha256','sku'];
+    if(!approval||Object.keys(approval).sort().join(',')!==exact.join(',')||
+       approval.admission!=='TEST_ONLY_APPROVED'||
+       Object.keys(identity).some(k=>approval[k]!==identity[k]))return null;
+    const bytes=await readPrivateFile(join(root,'SmartClip-acode-bridge-v2.zip'),8*1024*1024,uid);
+    inspectSmartclipReleaseBytes(bytes,identity.releaseSha256);
+    const rechecked=await readPrivateFile(admissionPath,4096,uid);
+    const final=await lstat(root);
+    if(!raw.equals(rechecked)||!sameFile(directory,final)||await realpath(root)!==root)return null;
+    return {...approval,bytes};
+  }catch{return null;}
+}
+
+export function createSmartclipPrivateReleaseReader({env=process.env}={}) {
+  if(env.SMARTCLIP_SANDBOX_ENABLED!=='true'||env.SMARTCLIP_SANDBOX_PRIVATE_DELIVERY_ENABLED!=='true')return undefined;
+  return async identity=>{
+    if(!identity||Object.keys(privateIdentity).some(k=>identity[k]!==privateIdentity[k]))return null;
+    return readSmartclipPrivateArtifact({root:SMARTCLIP_PRIVATE_ROOT,identity:privateIdentity});
+  };
 }
