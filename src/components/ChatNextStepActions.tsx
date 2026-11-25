@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Copy, AlertCircle } from 'lucide-react';
 import { buildChatFollowUps, type ChatDomain } from '../contracts/chatNextStepPrompts';
+import {ownerToolDiscovery,discoveryPromptEvidence,type DiscoveryResult} from '../shared/privateToolDiscoveryClient';
 
 /** Shared, responsive copy-only follow-up controls. No silent send or tool invocation. */
 export function ChatNextStepActions({
   task, domain, compact = false,
 }: { task: string; domain?: ChatDomain; compact?: boolean }): React.ReactElement | null {
   const followUps = useMemo(() => buildChatFollowUps(task, domain), [task, domain]);
+  const [research,setResearch]=useState<{task:string;domain?:ChatDomain;state:'pending'|'done';result:DiscoveryResult|null}|null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [copyFailed, setCopyFailed] = useState<string | null>(null);
   // An older clipboard promise must never confirm a different task or newer click.
@@ -19,6 +21,25 @@ export function ChatNextStepActions({
     setCopyFailed(null);
   }, [task, domain]);
 
+  useEffect(()=>{
+    if(!followUps.length)return;
+    const controller=new AbortController();
+    setResearch(null);
+    void (async()=>{
+      try{
+        const session=await fetch('/api/auth/session',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+        if(!session.ok)return;
+        const account=await session.json();
+        if(controller.signal.aborted||account.authenticated!==true||account.mfaRequired===true||account.account?.iamRole!=='owner'||account.account?.available!==true)return;
+        setResearch({task,domain,state:'pending',result:null});
+        const result=await ownerToolDiscovery(followUps[0].domain,AbortSignal.any([controller.signal,AbortSignal.timeout(30000)])).catch(()=>null);
+        if(!controller.signal.aborted)setResearch({task,domain,state:'done',result});
+      }catch{/* no owner authorization, no search */}
+    })();
+    return()=>controller.abort();
+  },[task,domain,followUps]);
+  const activeResearch=research?.task===task&&research?.domain===domain?research:null;
+  const withEvidence=(prompt:string)=>activeResearch?.state==='done'?prompt+discoveryPromptEvidence(activeResearch.result):prompt;
   async function copyPrompt(id: string, prompt: string): Promise<void> {
     const sequence = ++copySequence.current;
     const selection = { task, domain };
@@ -28,7 +49,7 @@ export function ChatNextStepActions({
       if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
         throw new Error('CLIPBOARD_UNAVAILABLE');
       }
-      await navigator.clipboard.writeText(prompt);
+      await navigator.clipboard.writeText(withEvidence(prompt));
       if (!stillCurrent()) return;
       setCopied(id);
       setCopyFailed(null);
@@ -47,6 +68,7 @@ export function ChatNextStepActions({
       <p className="mb-2 text-[11px] leading-snug text-slate-400">
         Multi-Agent-Rat und LangGraph · passende Repository-Skills · keine automatische Ausführung
       </p>
+      {activeResearch&&<p className="text-[11px] text-slate-400" aria-live="polite">{activeResearch.state==='pending'?'Owner-Werkzeugrecherche läuft':activeResearch.result?'Owner-Recherche: '+activeResearch.result.rows.length+' Kandidaten · Rechte NOT_PROVEN':'Owner-Recherche NOT_PROVEN'}</p>}
       <ol className="space-y-1.5">
         {followUps.map((item, index) => (
           <li key={item.id} className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700/70 bg-slate-900/80 px-2 py-1.5">
@@ -55,6 +77,7 @@ export function ChatNextStepActions({
             </span>
             <button
               type="button"
+              disabled={activeResearch?.state==='pending'}
               aria-label={item.label + ': Prompt kopieren'}
               onClick={() => { void copyPrompt(item.id, item.prompt); }}
               className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-cyan-300/40 bg-cyan-500/10 px-3 text-[11px] font-semibold text-cyan-100 hover:bg-cyan-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
@@ -76,7 +99,7 @@ export function ChatNextStepActions({
           </p>
           <textarea
             readOnly
-            value={fallback.prompt}
+            value={withEvidence(fallback.prompt)}
             onFocus={event => event.currentTarget.select()}
             aria-label="Vollständigen Prompt manuell kopieren"
             rows={compact ? 3 : 4}
