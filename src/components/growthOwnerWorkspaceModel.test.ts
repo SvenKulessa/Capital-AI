@@ -129,3 +129,5 @@ test('X campaign source remains separate from total GA4 and missing commerce evi
   assert.throws(()=>projectXCampaignGa4(raw,row));
   assert.equal(importWorkspace(exportWorkspace(appendSnapshot([],[projected],at)))[0].rows[0].status,'NOT_PROVEN');
 });
+
+ test('CAI-664 billing task is offline, zero-budget and not live evidence',async()=>{const {billingRecoveryResearchTask}=await import('./growthOwnerWorkspaceModel');const row=initialRows().find(r=>r.id==='cai664-billing');assert.equal(row?.status,'NOT_PROVEN');assert.match(row?.approvals??'',/0 EUR/);const task=billingRecoveryResearchTask();assert.equal(task.schema,'CAPITAL_AI_OFFLINE_RESEARCH@1');assert.equal(task.domain,'TRUST');assert.ok(task.query.length<=300);});
