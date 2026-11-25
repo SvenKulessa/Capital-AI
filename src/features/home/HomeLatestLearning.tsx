@@ -1,5 +1,7 @@
 import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { LEARNING_ARTICLES, latestLearningArticles } from '../../data/learningArticles';
+import { getLicensedLearningGraphic } from './homeLearningGraphics';
+import { VerifiedEditorialImage } from './VerifiedEditorialImage';
 
 const teasers: Record<string, { title: string; summary: string }> = {
   'portfolio-risiko-korrelation': {
@@ -35,18 +37,22 @@ export function HomeLatestLearning({ onNavigate }: { onNavigate: (path: string) 
       </a>
     </div>
     <div className="grid gap-4 md:grid-cols-3">
-      {articles.map((article, index) => <article key={article.id} style={{ borderTopColor: [BRAND_COLORS.blue, BRAND_COLORS.green, BRAND_COLORS.pink][index] }} className="flex min-w-0 flex-col rounded-2xl border border-t-[3px] border-slate-700 bg-slate-950 p-5">
+      {articles.map((article, index) => { const graphic = getLicensedLearningGraphic(article); return <article key={article.id} style={{ borderTopColor: [BRAND_COLORS.blue, BRAND_COLORS.green, BRAND_COLORS.pink][index] }} className="flex min-w-0 flex-col rounded-2xl border border-t-[3px] border-slate-700 bg-slate-950 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
           <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-200">{{ learning: "Finanzwissen", marketscreener: "Marktanalyse", studio: "Methoden und Werkzeuge" }[article.hub]}</span>
           <time dateTime={article.publishedAt}>{new Intl.DateTimeFormat('de-DE').format(new Date(article.publishedAt+'T12:00:00Z'))}</time>
         </div>
+        {graphic && <figure className="mt-3 overflow-hidden rounded-xl border border-slate-700 [&_img]:block [&_img]:h-auto [&_img]:w-full">
+          <VerifiedEditorialImage graphic={graphic} />
+          <figcaption className="px-3 py-2 text-xs leading-5 text-slate-300">{graphic.caption} · Eigene Illustration, KI-unterstützt</figcaption>
+        </figure>}
         <h3 className="mt-3 text-sm font-bold leading-6 text-white">{teasers[article.id]?.title ?? article.title}</h3>
         <p className="mt-2 flex-1 text-sm leading-6 text-slate-300">{teasers[article.id]?.summary ?? article.body}</p>
         <a href={`/learning?tab=news#${article.id}`}
           className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-amber-200 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-amber-300">
           {`Lesen: ${teasers[article.id]?.title ?? article.title}`} <span aria-hidden="true" className="ml-1">→</span>
         </a>
-      </article>)}
+      </article>; })}
     </div>
   </section>;
 }

@@ -1,3 +1,4 @@
+import { getLicensedLearningGraphic, HOME_LEARNING_GRAPHICS } from './homeLearningGraphics';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { HomeLatestLearning } from './HomeLatestLearning';
@@ -47,4 +48,9 @@ test('learning teaser renders at most three articles with dates and descriptive 
   const html = renderToStaticMarkup(<HomeLatestLearning onNavigate={() => {}} />);
   for (const color of ['#60A5FA', '#4ADE80', '#F9A8D4']) assert.ok(html.includes(color), color);
   assert.match(html, /Finanzwissen/);
+});
+
+ test('unlicensed learning graphics never enter the public article cards', () => {
+  for (const article of LEARNING_ARTICLES) assert.equal(getLicensedLearningGraphic(article, HOME_LEARNING_GRAPHICS, []), undefined);
+  assert.equal(getLicensedLearningGraphic(LEARNING_ARTICLES[0], [], []), undefined);
 });
