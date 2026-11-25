@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { Readable } from 'node:stream';
-import { createSmartclipSandboxCommerce, SMARTCLIP_PINNED_SHA256, SMARTCLIP_SKU } from './smartclip-sandbox-commerce.mjs';
+import { createSmartclipSandboxCommerce, SMARTCLIP_PINNED_SHA256, SMARTCLIP_SKU, inspectSmartclipReleaseBytes, preflightSmartclipSandboxDelivery } from './smartclip-sandbox-commerce.mjs';
 
 const userId = '00000000-0000-4000-8000-000000000001';
 const otherUserId = '00000000-0000-4000-8000-000000000002';
@@ -456,4 +456,38 @@ test('license access is private and digest-bound; unsupported binary delivery st
  const refund=event('charge.refunded',{id:chargeId});
  assert.equal((await call('webhook','POST',refund,{fixture,headers:{'stripe-signature':sign(refund)}})).payload.revoked,true);
  assert.deepEqual((await call('access','GET',undefined,{fixture})).payload,{entitled:false,releaseSha256:null});
+});
+
+test('offline ZIP byte verifier accepts only bounded exact digest and returns metadata, never bytes',()=>{
+  const bytes=Buffer.from([0x50,0x4b,3,4,1,2,3,4]);
+  const sha=createHash('sha256').update(bytes).digest('hex');
+  assert.deepEqual(inspectSmartclipReleaseBytes(bytes,sha),{sha256:sha,byteLength:8,mime:'application/zip'});
+  assert.throws(()=>inspectSmartclipReleaseBytes(bytes),/release_digest_mismatch/);
+  assert.throws(()=>inspectSmartclipReleaseBytes(Buffer.from('bad!'),sha),/release_invalid/);
+  assert.throws(()=>inspectSmartclipReleaseBytes(Buffer.alloc(8*1024*1024+1),sha),/release_invalid/);
+  assert.throws(()=>inspectSmartclipReleaseBytes(new Uint8Array(bytes),sha),/release_invalid/);
+  assert.throws(()=>inspectSmartclipReleaseBytes(bytes,'not-a-digest'),/release_invalid/);
+});
+test('private delivery preflight is default off, denies missing or foreign entitlement and rejects unpinned bytes',async()=>{
+  let access=0,reads=0;
+  const readEntitlement=async(id,sha)=>{
+    access++;assert.equal(id,userId);assert.equal(sha,SMARTCLIP_PINNED_SHA256);
+    return {entitled:true,releaseSha256:sha};
+  };
+  const readPrivateRelease=async(sha)=>{
+    reads++;assert.equal(sha,SMARTCLIP_PINNED_SHA256);
+    return Buffer.from([0x50,0x4b,3,4,1]);
+  };
+  const input={userId,readEntitlement,readPrivateRelease};
+  const blocked={status:'BLOCKED',deliveryAllowed:false};
+  assert.deepEqual(await preflightSmartclipSandboxDelivery(input),blocked);
+  assert.deepEqual(await preflightSmartclipSandboxDelivery({...input,enabled:true,userId:'bad'}),blocked);
+  assert.equal(access,0);assert.equal(reads,0);
+  for(const result of [{entitled:false},{entitled:true,releaseSha256:'0'.repeat(64)}]){
+    assert.deepEqual(await preflightSmartclipSandboxDelivery({...input,enabled:true,readEntitlement:async()=>result}),blocked);
+  }
+  assert.equal(reads,0);
+  assert.deepEqual(await preflightSmartclipSandboxDelivery({...input,enabled:true}),blocked);
+  assert.equal(access,1);assert.equal(reads,1);
+  assert.deepEqual(await preflightSmartclipSandboxDelivery({...input,enabled:true,readEntitlement:async()=>{throw Error('private');}}),blocked);
 });

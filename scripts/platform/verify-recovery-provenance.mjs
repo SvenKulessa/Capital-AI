@@ -2,7 +2,7 @@
 // No cloud requests, credentials, decryption, or claim of provider provenance.
 import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
-import { open, realpath, readFile } from 'node:fs/promises';
+import { open, realpath, readFile, lstat } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -44,7 +44,8 @@ export function validateManifest(manifest) {
     requireCheck(typeof object.path === 'string' && object.path.length > 0,
       'Storage object relative path required');
     requireCheck(!isAbsolute(object.path) && !object.path.split(/[\\/]/).includes('..')
-      && !object.path.split(/[\\/]/).includes('.') && !object.path.includes('\\')
+      && !object.path.split(/[\\/]/).includes('.') && !object.path.split('/').includes('')
+      && !object.path.includes('\\')
       && !object.path.includes('\0'),
       'unsafe Storage object path');
     requireCheck(!paths.has(object.path), 'duplicate Storage object path');
@@ -57,17 +58,22 @@ function inside(root, pathname) {
   const rel = relative(root, pathname);
   return rel === '' || (rel !== '..' && !rel.startsWith('..' + sep) && !isAbsolute(rel));
 }
-async function hashRegularFile(file) {
+async function hashRegularFile(file, independent = false) {
   // O_NOFOLLOW rejects a final-component symlink; fstat verifies opened inode.
-  const fd = await open(file, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+  const entry = await lstat(file, { bigint: true });
+  requireCheck(entry.isFile(), 'evidence input must be a regular file');
+  const fd = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   try {
-    const before = await fd.stat();
-    requireCheck(before.isFile(), 'evidence input must be a regular file');
+    const before = await fd.stat({ bigint: true });
+    requireCheck(before.isFile() && before.dev === entry.dev && before.ino === entry.ino,
+      'evidence input must be a regular file with unchanged identity');
+    if (independent) requireCheck(before.nlink === 1n, 'hard-linked Storage evidence is not independent');
     const h = createHash('sha256');
     for await (const bytes of fd.createReadStream({ autoClose: false })) h.update(bytes);
-    const after = await fd.stat();
+    const after = await fd.stat({ bigint: true });
     requireCheck(before.ino === after.ino && before.size === after.size
-      && before.mtimeMs === after.mtimeMs, 'evidence file changed during hashing');
+      && before.mtimeNs === after.mtimeNs && before.ctimeNs === after.ctimeNs
+      && before.nlink === after.nlink, 'evidence file changed during hashing');
     return h.digest('hex');
   } finally {
     await fd.close();
@@ -83,7 +89,8 @@ export async function verifyLocalEvidence(manifest, downloadedBlob, storageRoot)
     requireCheck(inside(realRoot, candidate), 'Storage path leaves configured root');
     const actualPath = await realpath(candidate);
     requireCheck(inside(realRoot, actualPath), 'Storage path resolves outside configured root');
-    const digest = await hashRegularFile(candidate);
+    requireCheck(candidate === actualPath, 'Storage path contains symlink');
+    const digest = await hashRegularFile(candidate, true);
     requireCheck(digest === object.sha256, 'Storage byte hash mismatch');
   }
   return { status: 'LOCAL_BYTES_VERIFIED_NOT_PROVIDER', storageObjects: manifest.storage.objects.length };

@@ -356,3 +356,41 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     return true;
   } };
 }
+
+/** Offline release inspection only. No URL, path, bytes or entitlement is issued.
+ * The production candidate always uses SMARTCLIP_PINNED_SHA256; the explicit
+ * expected digest is useful solely for independently testing the byte verifier.
+ */
+export function inspectSmartclipReleaseBytes(bytes, expectedSha256 = SMARTCLIP_PINNED_SHA256) {
+  if (typeof expectedSha256 !== 'string' || !SHA.test(expectedSha256) ||
+      !Buffer.isBuffer(bytes) || bytes.length < 4 || bytes.length > 8 * 1024 * 1024)
+    throw Error('release_invalid');
+  if (bytes.readUInt32LE(0) !== 0x04034b50) throw Error('release_invalid');
+  const actual = createHash('sha256').update(bytes).digest('hex');
+  if (actual !== expectedSha256) throw Error('release_digest_mismatch');
+  return Object.freeze({sha256:actual, byteLength:bytes.length, mime:'application/zip'});
+}
+
+/** Internal TEST-only candidate; deliberately not wired to an HTTP route.
+ * Caller must supply an already authenticated user and trusted private readers.
+ * Re-read entitlement after byte validation to detect an intervening revocation.
+ * Only metadata is returned; even successful preflight cannot deliver a file.
+ */
+export async function preflightSmartclipSandboxDelivery({
+  enabled = false, userId, readEntitlement, readPrivateRelease,
+} = {}) {
+  if (enabled !== true || typeof userId !== 'string' || !UUID.test(userId) ||
+      typeof readEntitlement !== 'function' || typeof readPrivateRelease !== 'function')
+    return {status:'BLOCKED', deliveryAllowed:false};
+  try {
+    const entitled = async () => {
+      const result = await readEntitlement(userId, SMARTCLIP_PINNED_SHA256);
+      return result?.entitled === true && result.releaseSha256 === SMARTCLIP_PINNED_SHA256;
+    };
+    if (!(await entitled())) return {status:'BLOCKED',deliveryAllowed:false};
+    const bytes = await readPrivateRelease(SMARTCLIP_PINNED_SHA256);
+    const manifest = inspectSmartclipReleaseBytes(bytes);
+    if (!(await entitled())) return {status:'BLOCKED',deliveryAllowed:false};
+    return {status:'INTEGRITY_PREFLIGHT_ONLY',manifest,deliveryAllowed:false};
+  } catch { return {status:'BLOCKED',deliveryAllowed:false}; }
+}
