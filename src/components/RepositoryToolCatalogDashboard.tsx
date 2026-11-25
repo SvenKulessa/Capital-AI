@@ -2,6 +2,7 @@ import React from 'react';
 import { isRepositoryReadback, isSourceSha, type RepositoryFreshness } from '../data/controlCenterRepositoryReadback';
 import { ROADMAP_SNAPSHOT } from '../data/roadmapData';
 import { RoadmapSkillOrchestrationPanel } from './RoadmapSkillOrchestrationPanel';
+import {ownerToolDiscovery,type DiscoveryResult,type DiscoveryDomain} from '../shared/privateToolDiscoveryClient';
 
 type Domain = 'PRODUCT' | 'MARKET' | 'PLATFORM' | 'TRUST' | 'GROWTH';
 type Freshness = RepositoryFreshness;
@@ -104,6 +105,14 @@ function repoLink(snapshot: CatalogSnapshot, path: string) {
 }
 
 export function RepositoryToolCatalogDashboard() {
+  const [discoveryDomain,setDiscoveryDomain]=React.useState<DiscoveryDomain>('GROWTH');
+  const [discovery,setDiscovery]=React.useState<DiscoveryResult|null>(null);
+  const [discoveryBusy,setDiscoveryBusy]=React.useState(false);
+  const [discoveryError,setDiscoveryError]=React.useState(false);
+  async function runDiscovery(loadOnly=false){
+    if(discoveryBusy)return;setDiscoveryBusy(true);setDiscoveryError(false);
+    try{setDiscovery(await ownerToolDiscovery(loadOnly?undefined:discoveryDomain));}catch{setDiscoveryError(true);setDiscovery(null);}finally{setDiscoveryBusy(false);}
+  }
   const [snapshot, setSnapshot] = React.useState<CatalogSnapshot | null>(null);
   const [updates, setUpdates] = React.useState<Updates | null>(null);
   const [updatesError, setUpdatesError] = React.useState(false);
@@ -258,6 +267,20 @@ export function RepositoryToolCatalogDashboard() {
       </p>
     </header>
 
+    <section aria-label="Private Werkzeugrecherche" className="space-y-3 rounded-xl border border-slate-700 bg-slate-950/70 p-4">
+      <h3 className="text-base font-semibold">Private Tool- und MCP-Recherche</h3>
+      <p className="text-xs text-slate-300">Nur öffentliche Domain-Suchbegriffe, keine Prompt- oder Kontodaten. Kandidaten sind keine Lizenz- oder Installationsfreigabe.</p>
+      <div className="flex flex-wrap gap-2">
+        <select aria-label="Recherche-Domain" value={discoveryDomain} disabled={discoveryBusy} onChange={e=>setDiscoveryDomain(e.target.value as DiscoveryDomain)} className="min-h-11 rounded border border-slate-600 bg-slate-900 px-2 text-sm">{DOMAINS.filter(d=>d!=='ALL').map(d=><option key={d}>{d}</option>)}</select>
+        <button type="button" disabled={discoveryBusy} onClick={()=>void runDiscovery()} className="min-h-11 rounded border border-cyan-400/40 px-3 text-sm disabled:opacity-50">Werkzeuge suchen</button>
+        <button type="button" disabled={discoveryBusy} onClick={()=>void runDiscovery(true)} className="min-h-11 rounded border border-cyan-400/40 px-3 text-sm disabled:opacity-50">Gespeicherten Katalog lesen</button>
+      </div>
+      <p role="status" className="text-xs text-slate-300">{discoveryBusy?'Recherche läuft':discoveryError?'Recherche NOT_PROVEN':discovery?'Speicher: '+discovery.storage+' · Kandidaten: '+discovery.rows.length+(discovery.mcpRegistry?' · MCP: '+discovery.mcpRegistry:''):'Noch kein privater Readback'}</p>
+      {discovery?.rows.map(r=><article key={r.id} className="min-w-0 break-words rounded-lg border border-slate-800 p-3 text-xs">
+        <a href={r.endpoint} target="_blank" rel="noopener noreferrer" className="font-semibold text-cyan-300 underline">{r.name}</a>
+        <p>{r.domain} · {r.operation}</p><p>{r.approvals}</p><p>{r.dependencies}</p><p>{r.evidence} · {r.status}</p>
+      </article>)}
+    </section>
     {snapshot && <RoadmapSkillOrchestrationPanel sourceSha={snapshot.sourceSha} freshness={snapshot.freshness} entryPaths={snapshot.entries.map(item => item.path)} />}
     {error && <div role="alert" className="rounded-xl border border-amber-500/30 p-4 text-sm text-amber-200">
       GitHub-Katalog momentan nicht abrufbar. Es werden keine unbestätigten Live-Daten erzeugt.
