@@ -68,3 +68,7 @@ bestehenden Main-Deployment-Pfad samt Live-Wirkung. Bei realen
 Freigabe- oder Sicherheitsblockern die konkrete gesperrte Aktion
 abgrenzen und andere autorisierte Arbeiten fortsetzen.
 ```
+
+## Aufgabenbezogene Werkzeugrecherche (GROWTH_TOOL_DISCOVERY@1)
+
+Jeder generierte Folgeprompt enthält eine konkrete, aktiv auszuführende Suche nach passenden Tools, Plugins und kommerziell nutzbaren Lösungen. Zuerst bestehende Integrationen prüfen; dann tatsächlich verfügbare autorisierte Plugin-Verzeichnisse und offizielle Anbieter-/Lizenzquellen mit datensparsamen öffentlichen Suchbegriffen abgleichen. Quelle, Zeitpunkt, Zweck, Version, Kosten, Datenschutz, kommerzielle Nutzungs-/Weitergabe-/Outputrechte und Verbindungs-/Runtime-Status getrennt im bestehenden Owner-Anwendungskatalog dokumentieren. Bei fehlendem Suchzugang oder Nachweis NOT_PROVEN ausgeben und unabhängige Arbeit fortsetzen. Ein Suchtreffer erzeugt keine Installations-, Kosten-, Rechte- oder Produktionsfreigabe und keinen neuen Required Check.
