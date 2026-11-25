@@ -69,3 +69,17 @@ export async function collectPrivateGrowthProviderStatus({env=process.env,fetchI
   }
   return {schema:'CAPITAL_AI_PRIVATE_GROWTH_PROVIDER_STATUS@1',observedAt:new Date(now()).toISOString(),private:true,readOnly:true,publicPublishAllowed:false,sources};
 }
+
+const PATH='/api/profile/growth-intelligence/private-provider-status';
+export function createPrivateGrowthProviderStatusApi({authorized,env=process.env,fetchImpl=fetch,now=Date.now}={}){
+  let pending=null;
+  return {async handle(req,res,url,json){
+    if(url.pathname!==PATH)return false;
+    res.setHeader('Cache-Control','private, no-store, max-age=0');res.setHeader('Vary','Cookie');
+    if(!await authorized?.(req,res)){json(res,404,{error:'not_found'});return true;}
+    if(req.method!=='GET'){res.setHeader('Allow','GET');json(res,405,{error:'method_not_allowed'});return true;}
+    if(!pending)pending=collectPrivateGrowthProviderStatus({env,fetchImpl,now}).finally(()=>{pending=null;});
+    try{json(res,200,await pending);}catch{json(res,503,{status:'NOT_PROVEN'});}
+    return true;
+  }};
+}
