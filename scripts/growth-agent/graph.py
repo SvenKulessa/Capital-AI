@@ -157,6 +157,7 @@ def marketing_agent(state: GrowthState) -> dict:
 
 
 def plan_agent(state: GrowthState) -> dict:
+    from acode_failure_event import review_summary
     findings = sorted(state.get("findings", []), key=lambda item: (item["agent"], item["detail"]))
     return {"plan": {
         "schema": "CAPITAL_AI_LOCAL_GROWTH_GRAPH@1",
@@ -166,7 +167,7 @@ def plan_agent(state: GrowthState) -> dict:
         "execution": {"mode": "audit-and-plan", "automaticWrites": False, "publication": False},
         "findings": findings,
         "toolRadar": review_tool_radar(state.get("tool_radar")),
-        "acopyDiagnostics": state.get("acopy_summary") or {"status":"NOT_PROVEN","patterns":[],"verifiedSolutions":0,"automaticWrites":False,"providerCalls":0},
+        "acopyDiagnostics": review_summary(state.get("acopy_summary")),
         "nextActions": [
             "Verify intended Google identity and exact property/domain associations.",
             "Measure 28-day and preceding-period organic performance; unavailable values remain NOT_PROVEN.",

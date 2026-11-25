@@ -4,7 +4,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from acode_failure_event import research_task, summarize, read_private_batch, SCHEMA
+from acode_failure_event import research_task, summarize, read_private_batch, review_summary, SCHEMA
 
 def event(n=1, provider="drive", category="OAUTH_ACCESS", rc=3):
     ident=f"{n:032x}"
@@ -69,3 +69,12 @@ class AcodeFailureEventTest(unittest.TestCase):
 
     def test_batch_limit(self):
         with self.assertRaises(ValueError): summarize([event(n) for n in range(129)])
+
+    def test_growth_projection_rejects_untrusted_summary(self):
+        s=summarize([event(1),event(2)])
+        self.assertEqual(review_summary(s),s)
+        for bad in ({**s,"raw_log":"secret"}, {**s,"automaticWrites":True}, {**s,"verifiedSolutions":1},
+                    {**s,"patterns":[{**s["patterns"][0],"provider":"secret raw text"}]},
+                    {**s,"patterns":[{**s["patterns"][0],"count":99}]}):
+            self.assertEqual(review_summary(bad)["status"],"BLOCKED")
+            self.assertNotIn("secret",json.dumps(review_summary(bad)))

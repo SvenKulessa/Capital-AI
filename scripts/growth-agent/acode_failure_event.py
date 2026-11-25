@@ -104,3 +104,41 @@ def read_private_batch(path):
     if len(raw)>MAX_BYTES:
         raise ValueError("ACOPY_BATCH_OVERSIZE")
     return summarize(json.loads(raw))
+
+def review_summary(value):
+    """Only bounded metadata may cross the existing Growth plan boundary."""
+    empty={"status":"NOT_PROVEN","patterns":[],"verifiedSolutions":0,"automaticWrites":False,"providerCalls":0}
+    blocked={**empty,"status":"BLOCKED"}
+    if value is None:
+        return empty
+    if value == blocked:
+        return blocked
+    if (not isinstance(value,dict) or set(value)!={"status","uniqueEvents","healthNotProven","patterns","verifiedSolutions","automaticWrites","providerCalls"}
+            or value["status"] not in ("OBSERVATIONS_ONLY","NOT_PROVEN")
+            or type(value["uniqueEvents"]) is not int or not 0 <= value["uniqueEvents"] <= MAX_EVENTS
+            or type(value["healthNotProven"]) is not int or not 0 <= value["healthNotProven"] <= value["uniqueEvents"]
+            or value["verifiedSolutions"] != 0 or value["providerCalls"] != 0 or value["automaticWrites"] is not False
+            or not isinstance(value["patterns"],list) or len(value["patterns"])>MAX_EVENTS
+            or (value["status"]=="OBSERVATIONS_ONLY") != (value["uniqueEvents"]>0)):
+        return blocked
+    patterns=[]
+    seen=set()
+    total=value["healthNotProven"]
+    for row in value["patterns"]:
+        if not isinstance(row,dict) or set(row)!={"provider","category","exitCode","fingerprint","count","recurring"}:
+            return blocked
+        p,c,rc,n=row["provider"],row["category"],row["exitCode"],row["count"]
+        if (not isinstance(p,str) or p not in PROVIDERS or not isinstance(c,str) or c not in CATEGORIES or c=="HEALTH_NOT_PROVEN"
+                or type(rc) is not int or not 1<=rc<=255 or type(n) is not int or not 1<=n<=MAX_EVENTS
+                or row["recurring"] is not (n>1)):
+            return blocked
+        digest=hashlib.sha256(json.dumps([SCHEMA,p,c,rc],separators=(",",":")).encode()).hexdigest()
+        if row["fingerprint"]!=digest or digest in seen:
+            return blocked
+        seen.add(digest)
+        total+=n
+        patterns.append({"provider":p,"category":c,"exitCode":rc,"fingerprint":digest,"count":n,"recurring":n>1})
+    if total>value["uniqueEvents"]:
+        return blocked
+    return {"status":value["status"],"uniqueEvents":value["uniqueEvents"],"healthNotProven":value["healthNotProven"],
+            "patterns":patterns,"verifiedSolutions":0,"automaticWrites":False,"providerCalls":0}
