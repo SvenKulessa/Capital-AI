@@ -21,6 +21,7 @@ class GrowthState(TypedDict, total=False):
     repo_root: str
     google_reads: bool
     tool_radar: dict
+    acopy_summary: dict
     findings: Annotated[list[dict], operator.add]
     plan: dict
 
@@ -165,6 +166,7 @@ def plan_agent(state: GrowthState) -> dict:
         "execution": {"mode": "audit-and-plan", "automaticWrites": False, "publication": False},
         "findings": findings,
         "toolRadar": review_tool_radar(state.get("tool_radar")),
+        "acopyDiagnostics": state.get("acopy_summary") or {"status":"NOT_PROVEN","patterns":[],"verifiedSolutions":0,"automaticWrites":False,"providerCalls":0},
         "nextActions": [
             "Verify intended Google identity and exact property/domain associations.",
             "Measure 28-day and preceding-period organic performance; unavailable values remain NOT_PROVEN.",
@@ -193,7 +195,15 @@ def main():
     parser.add_argument("--repo-root", default=str(Path(__file__).resolve().parents[2]))
     parser.add_argument("--google-reads", action="store_true")
     parser.add_argument("--tool-radar", type=Path, help="Bounded local daily metadata evidence file")
+    parser.add_argument("--acopy-events", type=Path, help="Owner-local 0600 JSON observation batch; no provider calls")
     args = parser.parse_args()
+    acopy_summary = None
+    if args.acopy_events:
+        from acode_failure_event import read_private_batch
+        try:
+            acopy_summary = read_private_batch(args.acopy_events)
+        except (OSError, ValueError, RecursionError):
+            acopy_summary = {"status":"BLOCKED","patterns":[],"verifiedSolutions":0,"automaticWrites":False,"providerCalls":0}
     radar = None
     if args.tool_radar:
         try:
@@ -203,7 +213,7 @@ def main():
                 radar = json.loads(raw)
         except (OSError, ValueError, RecursionError):
             radar = None
-    result = build_graph().invoke({"repo_root": args.repo_root, "google_reads": args.google_reads, "findings": [], "tool_radar": radar}, {"recursion_limit": 8})
+    result = build_graph().invoke({"repo_root": args.repo_root, "google_reads": args.google_reads, "findings": [], "tool_radar": radar, "acopy_summary": acopy_summary}, {"recursion_limit": 8})
     print(json.dumps(result["plan"], ensure_ascii=False, indent=2))
 
 
