@@ -191,6 +191,8 @@
 !scripts/growth/growth-intelligence-drafts.test.mjs
 !scripts/growth/product-channel-intelligence.mjs
 !scripts/growth/product-channel-intelligence.test.mjs
+!scripts/growth/product-market-research.mjs
+!scripts/growth/product-market-research.test.mjs
 !docs/product/
 !docs/product/MONETIZABLE-PRODUCT-REGISTRY.md
 !scripts/growth/growth-intelligence-image-drafts.mjs
