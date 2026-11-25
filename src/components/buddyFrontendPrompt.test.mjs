@@ -9,6 +9,7 @@ test('selected saved notes become domain-accurate private frontend brief',()=>{
   assert.match(prompt,/Daten-Provenienz/);
   assert.match(prompt,/Hub Navigation kompakter/);
   assert.match(prompt,/Screenshot-01\.png/);
+  assert.match(prompt,/GROWTH_TOOL_DISCOVERY@1/);
   assert.doesNotMatch(prompt,/Sieben kanonische Akzentfarben/);
 });
 test('reject unknown and empty notes/features rather than generate unverifiable content',()=>{
