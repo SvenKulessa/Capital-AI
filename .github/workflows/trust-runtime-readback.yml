@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.event_name, 'pull_request') }}
 jobs:
   runtime-http:
-    name: Anonymous health identity (read-only)
+    name: TRUST offline regressions and explicit post-deploy readback
     runs-on: ubuntu-26.04
     timeout-minutes: 4
     steps:
@@ -32,16 +32,23 @@ jobs:
           persist-credentials: false
       - name: Offline readback, isolation and negative regressions
         run: node --test scripts/trust-runtime-readback.test.mjs
+      # Render checksPass waits for every check. A live probe on push/PR creates
+      # a pre-deploy dependency cycle. Dispatch this existing workflow only after
+      # Render reports the expected main SHA live; do not relax identity checks.
       - name: Public /healthz – only sanitized identity fields
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         env:
           CAPITAL_RUNTIME_ORIGIN: https://capital-ai-uvsl.onrender.com
           CAPITAL_EXPECTED_MAIN_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
         run: node scripts/trust-runtime-readback.mjs --health
+      - name: Record pending independent production evidence
+        if: github.event_name != 'workflow_dispatch' || github.ref != 'refs/heads/main'
+        run: echo 'Production Healthz and BuildIdentity: NOT_PROVEN; dispatch TRUST Runtime Readback after Render reports expected main live.' >> "$GITHUB_STEP_SUMMARY"
 
   tinyfish-render-config:
     name: Targeted TinyFish Render boolean (read-only)
     # Never supply provider credentials to unmerged PR code.
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-26.04
     timeout-minutes: 3
     steps:

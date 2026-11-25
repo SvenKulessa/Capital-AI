@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { projectHealth, readHealth, readTinyFishConfig, healthReadbackSummary } from './trust-runtime-readback.mjs';
+import { projectHealth, readHealth, readTinyFishConfig, healthReadbackSummary, safeHealthFailure } from './trust-runtime-readback.mjs';
 
 const SHA = 'a'.repeat(40);
 const BUILDER = 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml';
@@ -179,4 +179,14 @@ test('coerced SHA values are rejected and baked/runtime drift is explicit', () =
   const drift = projectHealth(200, { ...health(), buildIdentity: { bound: true, sourceSha: 'b'.repeat(40), builder: BUILDER } }, SHA);
   assert.match(healthReadbackSummary(drift), /NOT_PROVEN_BAKED_RUNTIME_SHA_DRIFT/);
   assert.match(healthReadbackSummary(drift), /OCI \/ Sigstore attestation: NOT_PROVEN/);
+});
+
+test('health CLI diagnostics allow only bounded fixed reason codes, never exception content',()=>{
+  assert.equal(safeHealthFailure(new Error('HEALTH_HTTP_503')),'HEALTH_HTTP_503');
+  assert.equal(safeHealthFailure(new Error('RENDER_BUILD_PROVENANCE_CONFLICT')),'RENDER_BUILD_PROVENANCE_CONFLICT');
+  assert.equal(safeHealthFailure(new Error('INVALID_JSON')),'INVALID_JSON');
+  assert.equal(safeHealthFailure(new Error('HEALTH_HTTP_503 token=secret')),'HEALTH_FETCH_OR_IO_FAILED');
+  assert.equal(safeHealthFailure(new Error('network secret')),'HEALTH_FETCH_OR_IO_FAILED');
+  assert.equal(safeHealthFailure({message:'HEALTH_HTTP_503'}),'HEALTH_FETCH_OR_IO_FAILED');
+  assert.equal(safeHealthFailure(Object.assign(new Error('secret'),{name:'TimeoutError'})),'HEALTH_FETCH_TIMEOUT');
 });
