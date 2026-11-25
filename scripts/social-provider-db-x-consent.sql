@@ -279,6 +279,10 @@ begin
  if not terminal and (p_delivery is null or not exists(select 1 from auth.users where id=p_user and email_confirmed_at is not null and email_confirmed_at<=p_paid_at)
  or not exists(select 1 from capital_growth_private.smartcopy_delivery_fixture d where d.user_id=p_user and d.campaign_id=p_campaign and d.release_sha256=p_release and d.intent_id=p_intent and d.receipt_sha256=p_delivery and d.accepted_at<=p_paid_at)) then return 'DENIED'; end if;
  if not exists(select 1 from auth.users where id=p_user) then return 'DENIED'; end if;
+ -- Serialize the same PaymentIntent before touching both independent unique indexes.
+ -- This avoids a concurrent same-intent insert being rejected by the non-arbiter
+ -- charge uniqueness check. Different intents still compete on charge uniqueness.
+ perform pg_advisory_xact_lock(hashtextextended('smartcopy-fixture:'||p_intent,0));
  insert into capital_growth_private.smartcopy_entitlement_fixture as e
  (user_id,campaign_id,release_sha256,intent_id,charge_id,paid_cents,refunded_cents,disputed,paid_at,source_observed_at,delivery_sha256,state)
  values(p_user,p_campaign,p_release,p_intent,p_charge,p_paid,p_refunded,p_disputed,p_paid_at,p_observed,p_delivery,case when terminal then 'REVOKED' else 'GRANTED' end)

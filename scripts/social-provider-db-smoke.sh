@@ -125,11 +125,19 @@ smartcopy_race 0 "repeat('3',64)" > "$one" 2>&1 &
 sc_grant=$!
 smartcopy_race 499 "null" > "$two" 2>&1 &
 sc_refund=$!
-wait "$sc_grant"
-wait "$sc_refund"
-grep -Eq '^(GRANTED|REVOKED)$' "$one"
-grep -qx 'REVOKED' "$two"
-[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecyclerace' AND state='REVOKED' AND refunded_cents=499")" == 1 ]]
+sc_grant_rc=0; sc_refund_rc=0
+wait "$sc_grant" || sc_grant_rc=$?
+wait "$sc_refund" || sc_refund_rc=$?
+if [[ "$sc_grant_rc" != 0 || "$sc_refund_rc" != 0 ]] || ! grep -Eq '^(GRANTED|REVOKED)$' "$one" || ! grep -qx 'REVOKED' "$two"; then
+ echo 'SMARTCOPY_RACE_RESULT_INVALID'
+ printf 'synthetic grant output:\n'; cat "$one"
+ printf 'synthetic refund output:\n'; cat "$two"
+ exit 1
+fi
+race_count="$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecyclerace' AND state='REVOKED' AND refunded_cents=499")"
+if [[ "$race_count" != 1 ]]; then
+ echo "SMARTCOPY_RACE_TERMINAL_COUNT_INVALID=$race_count"; exit 1
+fi
 echo 'PASS: independent PG connections converge on one terminal Smartcopy refund'
 
 # Restart only the exact ephemeral CI service, never a user-supplied remote DB.
