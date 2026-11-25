@@ -22,6 +22,34 @@ Keine neuen Freigabestufen, keine Selbstautorisierung.
 `VERIFIED` nur mit nachweisbarer Wirkung; sonst
 `BLOCKED` bzw. `NOT_PROVEN`.
 
+## PROCESS_ACCELERATION@1 – gemeinsame Ausführungsparameter
+
+`MODE=SHORTEST_PATH_EXECUTION_FIRST`
+`EVIDENCE=RISK_BASED_MINIMUM`
+`OWNER_INTERACTION=MINIMIZED`
+`REUSE_EXISTING_AUTHORIZATION=TRUE`
+`PARALLEL_EXECUTION=TRUE`
+`ALTERNATIVE_EXECUTION_PATH=ENABLED`
+
+Wende den entsprechenden Abschnitt der Root-`AGENTS.md` an: kürzester
+sicherer vollständiger Wirkungspfad, vorhandene Evidence/Integrationen
+wiederverwenden, unabhängige Arbeit parallelisieren und nach belegtem
+Fehler geeignet ausweichen. Prozessoptimierung aktiv umsetzen.
+Zusatznachweise nur bei konkretem Entscheidungsnutzen; verbindliche
+CI, Rulesets und risikorelevante Verifikation nicht reduzieren.
+
+Supabase-Mutationen konkret bündeln, nach gültiger Owner-Freigabe
+durchführen und verifizieren; produktive Recovery-Voraussetzungen
+beachten. GROWTH/MARKET priorisieren nach realer Nachfrage,
+Wettbewerbsfähigkeit und Umsatzpotenzial. Geeignete Produkte bis zur
+technischen Angebots- und automatisierten Vertriebsreife entwickeln
+(SEO, eigene Lizenzentwürfe, Drittanbieterrechte, Checkout, Auslieferung,
+Support, Refunds, consent-konforme Messung). Tatsächliche Aktivierung,
+Lizenzfreigabe und Kosten bleiben an die Root-Regel gebunden.
+Bestehende LangGraph-/RAG-/SEO-Pfade autonom und messbar verbessern;
+keine konkurrierenden Systeme, keine erfundenen Daten und keine
+zusätzliche Governance-Autorität.
+
 ## Kopierbare Folgeschritte: Lösung und Umsetzung vor Bericht
 
 Für Implementierungs- und Reparaturaufträge als Standard **ausführbare
