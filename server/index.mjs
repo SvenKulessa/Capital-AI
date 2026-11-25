@@ -38,6 +38,7 @@ import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGrowthEvidenceApi } from './growth-owner-evidence-api.mjs';
 import { createGrowthEngineReadback } from './growth-owner-engine-readback.mjs';
 import { createPrivateGrowthProviderStatusApi } from './growth-private-provider-read.mjs';
+import { createPrivateToolCatalogApi } from './growth-private-tool-catalog.mjs';
 import { createGrowthGscReadback } from './growth-gsc-readback.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
@@ -511,6 +512,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const runtimeEnv = options.env || process.env;
   const apiRateGate = options.apiRateGate || createApiRateGate();
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
+  const privateToolCatalog = createPrivateToolCatalogApi({authorized:(req,res)=>auth.authorizeIamRole(req,res,'owner'),auth,env:runtimeEnv,fetchImpl:options.fetchImpl||fetch});
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const privateBlueprintCloud = options.privateBlueprintCloud || createBlueprintDiskVault({ keyHex: runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY });
@@ -626,6 +628,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname === '/api/profile/skill-routing') {
     return skillRoutingCatalog(req, res, json);
   }
+  if (await privateToolCatalog.handle(req,res,url,json)) return;
   if (url.pathname === '/api/internal/repository-tools' || url.pathname === '/api/internal/repository-tool-updates') {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
