@@ -253,6 +253,19 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
                 <dd>Health {snapshot.acodex.healthExit} · Guard {snapshot.acodex.guardAuditExit} · {snapshot.acodex.lockClear ? 'LOCK_CLEAR' : 'NOT_PROVEN'}</dd></div>
             </dl>
             <p className="text-xs text-slate-400">Keine neuen OAuth- oder Pull-Fehler im archivierten Logfenster. Dies bestätigt keine spätere Geräteverfügbarkeit.</p>
+            {snapshot.acodex.recovery && <div className="rounded-lg border border-white/10 p-3 space-y-2">
+              <h4 className="font-semibold">Recovery · 25.11.2026</h4>
+              <p>Recovery-Nachweis <strong className="text-emerald-300">{snapshot.acodex.recovery.status}</strong> · historische Incidents dokumentiert · kein Live-Gerätenachweis.</p>
+              <dl className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+                <div><dt>Recovery-Baseline (UTC)</dt><dd>{snapshot.acodex.recovery.baselineUtc}</dd></div>
+                <div><dt>Neustart (UTC)</dt><dd>{snapshot.acodex.recovery.expectedStartUtc}</dd></div>
+                <div><dt>Startup-Pull (UTC)</dt><dd>{snapshot.acodex.recovery.latestSuccessUtc}</dd></div>
+                <div><dt>Abnahme (UTC)</dt><dd>{snapshot.acodex.recovery.checkedUtc}</dd></div>
+                <div><dt>Health / Outer / Guard / acopy</dt><dd>{snapshot.acodex.recovery.healthExit} / {snapshot.acodex.recovery.outerExit} / {snapshot.acodex.recovery.guardAuditExit} / {snapshot.acodex.recovery.acopyCommandExit}</dd></div>
+                <div><dt>Neue OAuth- / Pull-Fehler</dt><dd>{snapshot.acodex.recovery.newOAuthFailures} / {snapshot.acodex.recovery.newPullFailures}</dd></div>
+              </dl>
+              <p className="text-xs text-slate-400">Owner-Terminalnachweis. Bridge-ACK und aktueller Gerätestatus: NOT_PROVEN.</p>
+            </div>}
             <ul className="space-y-2 text-xs">
               {([
                 ['Abschluss v1.1', snapshot.acodex.evidence.v11],

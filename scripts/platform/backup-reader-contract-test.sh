@@ -249,6 +249,12 @@ expect_denied 'temporary DDL' 'CREATE TEMP TABLE probe (id integer)'
 expect_denied 'database schema creation' 'CREATE SCHEMA probe'
 expect_denied 'role creation' 'CREATE ROLE probe'
 expect_denied 'role escalation' "SET ROLE $admin"
+# The authorized extension worker remains separate even when it can enqueue requests.
+expect_denied 'net worker role assumption' 'SET ROLE fixture_net_worker'
+expect_denied 'net worker session impersonation' 'SET SESSION AUTHORIZATION fixture_net_worker'
+expect_denied 'admin session impersonation' "SET SESSION AUTHORIZATION $admin"
+expect_denied 'self elevation to superuser' "ALTER ROLE $reader SUPERUSER"
+expect_denied 'disable application RLS' 'ALTER TABLE app.notes DISABLE ROW LEVEL SECURITY'
 assert_query f "$reader" "SELECT has_table_privilege(current_user,'app.notes','SELECT WITH GRANT OPTION')"
 printf 'PASS reader has no SELECT grant option\n'
 expect_denied 'security definer application function' 'SELECT app.write_note()'

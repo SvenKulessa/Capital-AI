@@ -326,3 +326,14 @@ test('unknown GA4 error strings remain opaque in owner evidence', async () => {
   assert.deepEqual(body.ga4, { status: 'NOT_PROVEN', reason: 'GA4_READBACK_FAILED' });
   assert.doesNotMatch(JSON.stringify(body), /DO_NOT_EXPOSE/);
 });
+
+test('AcodeX recovery is a separate owner snapshot, not a live probe', async () => {
+  const {body} = await setup().request();
+  const r = body.acodex.recovery;
+  assert.deepEqual(r, {"classification":"OWNER_TERMINAL_RECOVERY_SNAPSHOT","provenance":"OWNER_TERMINAL_OUTPUT","status":"VERIFIED","historicalIncidentStatus":"BLOCKED_OBSERVED","currentDeviceStatus":"NOT_PROVEN","baselineUtc":"2026-11-25T17:03:15Z","expectedStartUtc":"2026-11-25T17:08:56Z","latestSuccessUtc":"2026-11-25T17:09:01Z","checkedUtc":"2026-11-25T17:10:23Z","healthExit":0,"outerExit":0,"guardAuditExit":0,"acopyCommandExit":0,"lockClear":true,"newOAuthFailures":0,"newPullFailures":0,"postBaselineSuccessCount":1,"pullShaMatch":true,"guardShaMatch":true,"filtersPresent":true,"bridgeAckStatus":"NOT_PROVEN"});
+  assert.equal(body.acodex.evidenceVersion, '1.1.0');
+  assert.equal(body.acodex.currentDeviceStatus, 'NOT_PROVEN');
+  const denied = await setup({allowed:false}).request();
+  assert.equal(denied.status,404);
+  assert.equal(denied.body.acodex,undefined);
+});
