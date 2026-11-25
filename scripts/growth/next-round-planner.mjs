@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { readFileSync, readSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { discoverGrowthTools } from '../../server/tool-update-discovery.mjs';
 const DISCOVERY_CLAUSE = "GROWTH_TOOL_DISCOVERY@1: Suche bei der Ausführung aktiv nach aufgabenrelevanten externen Tools, Plugins und kommerziell nutzbaren Alternativen über tatsächlich verfügbare autorisierte Verzeichnisse und offizielle Quellen; vergleiche zuerst vorhandene Integrationen. Verwende ausschließlich nicht vertrauliche Suchbegriffe. Dokumentiere Quelle, Zeitpunkt, Zweck, Version, Kosten, Datenschutz, kommerzielle Nutzungs-, Weitergabe- und Outputrechte sowie Verbindungs-/Runtime-Status getrennt im vorhandenen Owner-Anwendungskatalog. Fehlt eine Suchquelle oder belastbare Rechte-Evidence, kennzeichne dies NOT_PROVEN; keine automatische Installation, Freigabe, Veröffentlichung oder Kostenaktivierung. ";
 
@@ -92,4 +94,14 @@ export async function buildPrivateNextRoundDrafts(sourceText, registry, {fetchIm
   const radar={};
   for(const domain of domains) radar[domain]=await discoverGrowthTools({topics:byDomain[domain],fetchImpl,now});
   return {...draft,toolDiscovery:{schema:'GROWTH_TOOL_DISCOVERY@1',scope:'PRIVATE_OPERATOR',metadataOnly:true,automaticInstall:false,commercialRights:'NOT_PROVEN',externalMetadataReads:domains.reduce((n,d)=>n+radar[d].topics.length,0),byDomain:radar},steps:draft.steps.map(step=>step.prompt===null?step:{...step,toolDiscoveryDomain:step.domain,toolDiscoveryState:radar[step.domain].topics.some(t=>t.status==='METADATA_OBSERVED')?'REVIEW_REQUIRED':'NOT_PROVEN'})};
+}
+
+if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
+  if(process.argv.length!==3||process.argv[2]!=='--private-tool-discovery')throw Error('PRIVATE_DISCOVERY_ARGUMENT_INVALID');
+  const bytes=Buffer.alloc(48001);let n=0;
+  while(n<bytes.length){const read=readSync(0,bytes,n,bytes.length-n,null);if(!read)break;n+=read;}
+  if(n===bytes.length)throw Error('SOURCE_INVALID');
+  const registry=JSON.parse(readFileSync(new URL('../../.agents/skills/registry.json',import.meta.url),'utf8'));
+  const output=await buildPrivateNextRoundDrafts(bytes.subarray(0,n).toString('utf8'),registry);
+  process.stdout.write(JSON.stringify(output)+'\n');
 }
