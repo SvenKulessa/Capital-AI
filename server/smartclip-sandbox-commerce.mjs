@@ -220,17 +220,31 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     if (invoice.id !== invoiceId || invoice.livemode !== false ||
         stripeObjectId(invoice.customer) !== stripeObjectId(session.customer) ||
         invoice.currency !== 'eur' || invoice.total !== FORM_PRICE_CENTS ||
-        invoice.amount_paid !== FORM_PRICE_CENTS || invoice.amount_remaining !== 0 ||
-        invoice.paid_out_of_band !== false ||
         invoice.metadata?.sku !== SMARTCLIP_SKU ||
         invoice.metadata?.release_sha256 !== digest ||
         invoice.metadata?.license_version !== SMARTCLIP_LICENSE) return false;
-    if (invoice.status !== 'paid' || invoice.paid !== true) {
-      if (invoice.status === 'draft' || invoice.status === 'open') {
-        throw Error('smartclip_invoice_pending');
-      }
-      return false;
+    if (invoice.status === 'draft' || invoice.status === 'open') {
+      throw Error('smartclip_invoice_pending');
     }
+    if (invoice.status !== 'paid' || invoice.amount_paid !== FORM_PRICE_CENTS ||
+        invoice.amount_remaining !== 0) return false;
+    // Since Basil, an invoice's paid amount includes off-Stripe payments.
+    // Require the complete allocation list for this single-payment test SKU.
+    const payments = await stripe('/invoice_payments?invoice=' + encodeURIComponent(invoiceId) + '&limit=2');
+    if (payments.object !== 'list' || payments.has_more !== false ||
+        !Array.isArray(payments.data)) return false;
+    if (payments.data.length === 0) throw Error('smartclip_invoice_payment_pending');
+    if (payments.data.length !== 1) return false;
+    const allocation = payments.data[0];
+    if (allocation?.object !== 'invoice_payment' ||
+        !/^inpay_[A-Za-z0-9_]{8,240}$/.test(allocation.id || '') ||
+        allocation.livemode !== false ||
+        stripeObjectId(allocation.invoice) !== invoiceId ||
+        allocation.currency !== 'eur' || allocation.amount_requested !== FORM_PRICE_CENTS ||
+        allocation.payment?.type !== 'payment_intent' ||
+        stripeObjectId(allocation.payment.payment_intent) !== intent.id) return false;
+    if (allocation.status === 'open') throw Error('smartclip_invoice_payment_pending');
+    if (allocation.status !== 'paid' || allocation.amount_paid !== FORM_PRICE_CENTS) return false;
     const result = await rpc('grant', { _user_id: session.client_reference_id,
       _session_id: session.id, _payment_intent_id: intent.id, _release_sha256: digest });
     return result?.granted === true;

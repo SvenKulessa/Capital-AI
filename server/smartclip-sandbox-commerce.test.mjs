@@ -53,8 +53,13 @@ function makeFixture(options = {}) {
   const charge = { id:chargeId, payment_intent:pid, livemode:false, paid:true,
     status:'succeeded', currency:'eur', refunded:false, disputed:false,
     amount_refunded:0, amount:249, ...(opt.charge||{}) };
-  const invoice = { id:invoiceId, livemode:false, status:'paid', paid:true,
-    paid_out_of_band:false, currency:'eur', total:249, amount_paid:249, amount_remaining:0,
+  const allocation = { id:'inpay_smartclip_fixture_0001', object:'invoice_payment',
+    invoice:invoiceId, livemode:false, status:'paid', currency:'eur',
+    amount_requested:249, amount_paid:249,
+    payment:{type:'payment_intent',payment_intent:pid}, ...(opt.allocation||{}) };
+  const payments = {object:'list',has_more:false,data:[allocation],...(opt.payments||{})};
+  const invoice = { id:invoiceId, livemode:false, status:'paid',
+    currency:'eur', total:249, amount_paid:249, amount_remaining:0,
     customer:customerId, metadata:{sku:SMARTCLIP_SKU,
       release_sha256:SMARTCLIP_PINNED_SHA256,license_version:'draft-v3'}, ...(opt.invoice||{}) };
   const price = { id:priceId, livemode:false, active:true, product:productId, currency:'eur',
@@ -98,9 +103,10 @@ function makeFixture(options = {}) {
     if (url.endsWith('/payment_intents/' + pid)) return reply(intent);
     if (url.endsWith('/charges/' + chargeId)) return reply(charge);
     if (url.endsWith('/invoices/' + invoiceId)) return reply(invoice);
+    if (url.endsWith('/invoice_payments?invoice=' + invoiceId + '&limit=2')) return reply(payments);
     return reply({error:'unexpected_fixture_route'},500);
   }
-  return {calls,ledger,session,intent,charge,invoice,fetchImpl};
+  return {calls,ledger,session,intent,charge,invoice,payments,allocation,fetchImpl};
 }
 function request(method, data, headers = {}) {
   const raw = data === undefined ? [] : [Buffer.from(typeof data==='string' ? data : JSON.stringify(data))];
@@ -240,12 +246,14 @@ test('paid Checkout requires independently paid invoice before any license grant
   assert.equal(pending.ledger.size,0);
   pending.session.invoice=invoiceId;
   pending.invoice.status='open';
-  pending.invoice.paid=false;
+  pending.invoice.amount_paid=0;
+  pending.invoice.amount_remaining=249;
   const waiting=await call('webhook','POST',webhook,{fixture:pending,headers});
   assert.equal(waiting.statusCode,503);
   assert.equal(pending.ledger.size,0);
   pending.invoice.status='paid';
-  pending.invoice.paid=true;
+  pending.invoice.amount_paid=249;
+  pending.invoice.amount_remaining=0;
   const completed=await call('webhook','POST',webhook,{fixture:pending,headers});
   assert.equal(completed.statusCode,200);
   assert.equal(completed.payload.granted,true);
@@ -259,8 +267,18 @@ test('foreign, unpaid, out-of-band or mismatched invoices never grant',async()=>
     makeFixture({session:{invoice:'in_foreign_paid_invoice_01'}}),
     makeFixture({invoice:{livemode:true}}),
     makeFixture({invoice:{customer:'cus_foreign_invoice_01'}}),
-    makeFixture({invoice:{status:'void',paid:false}}),
-    makeFixture({invoice:{paid_out_of_band:true}}),
+    makeFixture({invoice:{status:'void'}}),
+    makeFixture({allocation:{payment:{type:'payment_record',payment_record:'payrec_external'}}}),
+    makeFixture({allocation:{payment:{type:'payment_intent',payment_intent:'pi_foreign_smartclip_01'}}}),
+    makeFixture({allocation:{invoice:'in_foreign_smartclip_01'}}),
+    makeFixture({allocation:{livemode:true}}),
+    makeFixture({allocation:{amount_paid:100}}),
+    makeFixture({allocation:{amount_requested:100}}),
+    makeFixture({allocation:{currency:'usd'}}),
+    makeFixture({allocation:{status:'canceled'}}),
+    makeFixture({payments:{has_more:true}}),
+    makeFixture({payments:{data:[{},{}]}}),
+    makeFixture({payments:{data:null}}),
     makeFixture({invoice:{total:200}}),
     makeFixture({invoice:{currency:'usd'}}),
     makeFixture({invoice:{amount_paid:0}}),
@@ -279,6 +297,27 @@ test('foreign, unpaid, out-of-band or mismatched invoices never grant',async()=>
     assert.equal(fixture.calls.some(c=>c.url.endsWith('/rest/v1/rpc/capital_ai_smartclip_sandbox') &&
       JSON.parse(c.body)._action==='grant'),false);
   }
+});
+test('invoice payment allocation retries safely until exact payment is credited',async()=>{
+  const f=makeFixture({allocation:{status:'open',amount_paid:null}});
+  const raw=event('checkout.session.completed',{id:sid});
+  const headers={'stripe-signature':sign(raw)};
+  assert.equal((await call('webhook','POST',raw,{fixture:f,headers})).statusCode,503);
+  assert.equal(f.ledger.size,0);
+  f.allocation.status='paid';
+  f.allocation.amount_paid=249;
+  const result=await call('webhook','POST',raw,{fixture:f,headers});
+  assert.equal(result.statusCode,200);
+  assert.equal(result.payload.granted,true);
+  assert.equal(f.ledger.size,1);
+  assert.equal((await call('webhook','POST',raw,{fixture:f,headers})).payload.granted,true);
+  assert.equal(f.ledger.size,1);
+});
+test('missing invoice payment allocation is retryable without a grant',async()=>{
+  const f=makeFixture({payments:{data:[]}});
+  const raw=event('checkout.session.completed',{id:sid});
+  assert.equal((await call('webhook','POST',raw,{fixture:f,headers:{'stripe-signature':sign(raw)}})).statusCode,503);
+  assert.equal(f.ledger.size,0);
 });
 test('forged or expired webhook cannot reach provider or mutate ledger',async()=>{
   const f=makeFixture(),raw=event('checkout.session.completed',{id:sid});
