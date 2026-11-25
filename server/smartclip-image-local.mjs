@@ -101,9 +101,15 @@ export function ingestSmartclipPng(bytes, origin) {
   const stride = ihdr.width * ihdr.channels;
   const expectedLength = ihdr.height * (stride + 1);
   let decoded;
+  const compressedBytes = Buffer.concat(compressed);
+  let consumed;
   try {
-    decoded = inflateSync(Buffer.concat(compressed), { maxOutputLength: expectedLength + 1 });
+    const inflated = inflateSync(compressedBytes, { maxOutputLength: expectedLength + 1, info: true });
+    decoded = inflated.buffer;
+    consumed = inflated.engine.bytesWritten;
   } catch { throw Error('png_deflate'); }
+  // Never preserve bytes outside the single validated zlib stream in the sanitized IDAT.
+  if (consumed !== compressedBytes.length) throw Error('png_deflate_trailing');
   if (decoded.length !== expectedLength) throw Error('png_scanlines');
   for (let y = 0; y < ihdr.height; y++) {
     if (decoded[y * (stride + 1)] > 4) throw Error('png_filter');
