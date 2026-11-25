@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { BuddyCapturePanel, type BuddyPrivateImage } from './BuddyCapturePanel';
 import { buildFrontendDesignPrompt, FRONTEND_FEATURES } from './buddyFrontendPrompt.mjs';
+import {ownerToolDiscovery, discoveryPromptEvidence} from '../shared/privateToolDiscoveryClient';
 
 import { readNotes, saveNotes, NotesClientError, type NotesConflict, type NotesSnapshot } from '../features/account/privateNotesOcc';
 import { NotesConflictPanel } from '../features/account/NotesConflictPanel';
@@ -64,6 +65,9 @@ export function BuddyStickyNotes({ initialText = '', captureRequest = 0 }: { ini
   const confirmedNotesRef = useRef<string | null>(null);
   const [featureIds, setFeatureIds] = useState<string[]>(['responsive','universe','accessibility']);
   const [prompt, setPrompt] = useState('');
+  const [promptPending,setPromptPending]=useState(false);
+  const promptSequence=useRef(0);
+  const promptContext=useRef('');
   const [captureOpen, setCaptureOpen] = useState(false);
   const [images, setImages] = useState<BuddyPrivateImage[]>([]);
   const imageRef = useRef<BuddyPrivateImage[]>([]);
@@ -306,10 +310,17 @@ export function BuddyStickyNotes({ initialText = '', captureRequest = 0 }: { ini
   const selectedNotes=notes.filter(note=>selectedLines.includes(note.line));
   const toggleSelected=(line:number)=>{setSelectedLines(current=>current.includes(line)?current.filter(n=>n!==line):[...current,line]);setPrompt('');};
   const toggleFeature=(id:string)=>{setFeatureIds(current=>current.includes(id)?current.filter(n=>n!==id):[...current,id]);setPrompt('');};
-  const makePrompt=()=>{
-    if(!ownerPromptAllowed||!userId||!snapshot||conflict||busy)return;
-    try {setPrompt(buildFrontendDesignPrompt({notes:selectedNotes.map(note=>note.text),featureIds,images:images.map(image=>image.name)}));setError('');}
-    catch {setError('Wähle mindestens eine gespeicherte Notiz und ein Design-Feature aus.');}
+  promptContext.current=JSON.stringify([userId,ownerPromptAllowed,!!conflict,selectedNotes.map(n=>n.text),featureIds,images.map(i=>i.name)]);
+  const makePrompt=async()=>{
+    if(!ownerPromptAllowed||!userId||!snapshot||conflict||busy||promptPending)return;
+    const context=promptContext.current,seq=++promptSequence.current;
+    setPromptPending(true);setPrompt('');
+    try {
+      const local=buildFrontendDesignPrompt({notes:selectedNotes.map(note=>note.text),featureIds,images:images.map(image=>image.name)});
+      const evidence=await ownerToolDiscovery('PRODUCT').catch(()=>null);
+      if(seq===promptSequence.current&&context===promptContext.current){setPrompt(local+discoveryPromptEvidence(evidence));setError('');}
+    }catch{if(seq===promptSequence.current&&context===promptContext.current)setError('Wähle mindestens eine gespeicherte Notiz und ein Design-Feature aus.');}
+    finally{if(seq===promptSequence.current)setPromptPending(false);}
   };
   const copyToNotion=async()=>{
     if(!userId||!snapshot||conflict||busy||!selectedNotes.length)return;
@@ -417,8 +428,8 @@ export function BuddyStickyNotes({ initialText = '', captureRequest = 0 }: { ini
             <span>{feature.label}</span>
           </label>)}
         </fieldset>
-        <button type="button" disabled={selectedNotes.length===0||featureIds.length===0||busy||!!conflict}
-          onClick={makePrompt} className="min-h-11 rounded-lg bg-violet-500 px-3 font-bold text-white disabled:opacity-50">Frontend-Prompt erzeugen</button>
+        <button type="button" disabled={selectedNotes.length===0||featureIds.length===0||busy||promptPending||!!conflict}
+          onClick={()=>void makePrompt()} className="min-h-11 rounded-lg bg-violet-500 px-3 font-bold text-white disabled:opacity-50">{promptPending?'Werkzeuge werden geprüft …':'Frontend-Prompt erzeugen'}</button>
         {prompt&&<><label htmlFor="buddy-owner-design-prompt" className="block">Finaler Prompt-Entwurf</label>
           <textarea id="buddy-owner-design-prompt" readOnly rows={10} value={prompt}
             className="w-full rounded border border-violet-300/50 bg-slate-950 p-2 text-xs text-white"/>
