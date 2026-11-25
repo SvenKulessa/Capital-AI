@@ -13,7 +13,7 @@ const MAX_BODY_BYTES = 64 * 1024;
 
 function requireSha(value, nullable = false) {
   if (nullable && value == null) return null;
-  if (!SHA.test(value || '')) throw new Error('INVALID_SOURCE_SHA');
+  if (typeof value !== 'string' || !SHA.test(value)) throw new Error('INVALID_SOURCE_SHA');
   return value;
 }
 
@@ -93,7 +93,9 @@ export function healthReadbackSummary(report) {
     : report.runtimeMatchesExpectedMain === false
       ? 'NOT_PROVEN_RUNTIME_SHA_DRIFT' : 'NOT_PROVEN_EXPECTED_MAIN_MISSING';
   const buildState = report.buildIdentity?.bound === true
-    ? 'HTTP_BOUND_BUILDER_CLAIM_NOT_ATTESTED' : 'NOT_PROVEN_UNBOUND';
+    ? (report.runtimeIdentity?.sourceSha && report.buildIdentity.sourceSha !== report.runtimeIdentity.sourceSha
+      ? 'NOT_PROVEN_BAKED_RUNTIME_SHA_DRIFT'
+      : 'HTTP_BOUND_BUILDER_CLAIM_NOT_ATTESTED') : 'NOT_PROVEN_UNBOUND';
   const renderState = report.renderGitBuildIdentity?.matchesRuntime === true
     ? 'RENDER_GIT_SHA_CLAIM_MATCH_ONLY'
     : report.renderGitBuildIdentity?.matchesRuntime === false
