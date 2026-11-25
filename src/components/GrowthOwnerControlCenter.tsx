@@ -197,7 +197,7 @@ export function GrowthOwnerControlCenter() {
       <h3 className="font-semibold text-cyan-200">Growth 3D Content Studio</h3>
       <p className="mt-1 text-xs text-slate-300">{sceneIds.length} geplante Szenen · DRAFT_ONLY · keine exportierten Medien oder Publikationsfreigaben. Tool-Radar: täglicher Watch vorgesehen, Laufzeit nicht nachgewiesen.</p>
       <label className="mt-3 block text-sm">Content-Szene<select className={control} value={selectedScene} onChange={e=>setSelectedScene(e.target.value)}>{sceneIds.map(id=><option key={id} value={id}>{id}</option>)}</select></label>
-      {growthVisualScene(selectedScene)&&<InteractiveArticleScene key={selectedScene} newsScene={growthVisualScene(selectedScene)!}/>}
+      {growthVisualScene(selectedScene)&&<InteractiveArticleScene key={selectedScene} newsScene={growthVisualScene(selectedScene)!} draftPreview/>}
     </section>}
     <div className="grid grid-cols-3 gap-2" aria-label="Evidence-Matrix">
       {statuses.map(s => <button key={s} type="button" onClick={() => { setStatus(s); setView('matrix'); }} className="min-h-16 rounded-xl border border-white/10 bg-white/5 p-2">

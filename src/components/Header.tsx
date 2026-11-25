@@ -1,4 +1,4 @@
-import { BRAND_COLORS } from '../../shared/hub-branding.mjs';
+import { BRAND_COLORS, hubBrandForRoute } from '../../shared/hub-branding.mjs';
 import { accountDisplay, verifiedOwner } from '../../shared/account-display.mjs';
 /**
  * ============================================================================
@@ -191,9 +191,10 @@ export const Header: React.FC<HeaderProps> = ({
     es: ['Producto', 'Aprender', 'Análisis', 'Precios', 'Para empresas'],
   }[locale];
   const primaryRoutes = ['/', '/learning', '/marketscreener', '/pricing', '/governance-evidence-sprint'];
+  const activeHub = hubBrandForRoute(currentRoute);
   const isCurrent = (path: string) => currentRoute === path ||
-    (path === '/learning' && (currentRoute === '/vocabulary' || currentRoute?.startsWith('/vocabulary/'))) ||
-    (path === '/marketscreener' && currentRoute === '/screener');
+    (path === '/learning' && activeHub === 'learning') ||
+    (path === '/marketscreener' && activeHub === 'marketscreener');
   const follow = (event: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     setIsMenuOpen(false);

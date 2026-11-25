@@ -3,7 +3,7 @@ import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { learningArticleScene, type ArticleScene } from './articleSceneModel';
 
 type Renderer = ReturnType<typeof import('./ArticleSceneRenderer').createArticleSceneRenderer>;
-type Props = { articleId: string; newsScene?: never } | { articleId?: never; newsScene: ArticleScene };
+type Props = { articleId: string; newsScene?: never; draftPreview?: never } | { articleId?: never; newsScene: ArticleScene; draftPreview?: boolean };
 
 /** Opt-in WebGL, no autoplay or background animation. Text and the model controls remain usable without WebGL. */
 export function InteractiveArticleScene(props: Props) {
@@ -41,7 +41,7 @@ export function InteractiveArticleScene(props: Props) {
   const palette=Object.values(BRAND_COLORS);
   return <section data-article-scene={model.kind} data-scene-state={ready && enabled ? "3d" : failed ? "fallback" : enabled ? "loading" : "text"} aria-label="Interaktives Artikelmodell" className="mt-4 min-w-0 rounded-xl border border-slate-700 bg-[#071126] p-3">
     <div aria-hidden="true" className="mb-3 h-[3px] rounded-full" style={{background:'linear-gradient(90deg, '+palette.join(', ')+')'}}/>
-    <p className="text-xs font-semibold text-cyan-200">{props.newsScene?'Interaktives Quellenmodell':'Interaktive Lernsimulation'}</p>
+    <p className="text-xs font-semibold text-cyan-200">{props.draftPreview?'3D-Entwurfsmodell':props.newsScene?'Interaktives Quellenmodell':'Interaktive Lernsimulation'}</p>
     <p className="mt-1 text-xs leading-5 text-slate-300" aria-live="polite">{model.description}</p>
     {enabled&&<div className="relative mt-3 h-52 overflow-hidden rounded-lg border border-slate-700">
       <canvas ref={canvas} aria-hidden="true" className="block h-full w-full" />
