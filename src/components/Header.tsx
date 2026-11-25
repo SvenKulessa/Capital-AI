@@ -158,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
       }
       if (event.key !== 'Tab' || !dialog) return;
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        'a[href], summary, button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       )).filter(element => element.getClientRects().length > 0);
       if (!focusable.length) return;
       const first = focusable[0];
@@ -271,7 +271,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Capital-AI globe branding */}
         <BrandLogo
           variant="vendor"
-          size="md"
+          size="sm"
           onClick={() => { if (onNavigate) onNavigate('/'); else window.location.assign('/'); }}
         />
       </div>
@@ -282,7 +282,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
-        {/* Session errors are not evidence of a logout. */}
+        {/* Session errors are not evidence of a logout; the login route stays reachable. */}
+        {authStatus !== 'ready' && <a href="/login" onClick={event => follow(event, '/login')} className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">{nav.login}</a>}
         {authStatus === 'loading' ? (
           <span role="status" className="px-3 text-xs text-slate-300">{nav.loading}</span>
         ) : authStatus === 'error' ? (
@@ -417,6 +418,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
+                <nav aria-label={nav.main} className="mt-5 grid gap-1">{primaryLinks()}</nav>
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authStatus === 'loading' ? (
@@ -499,9 +501,9 @@ export const Header: React.FC<HeaderProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
                     </a>
                   )}
+                  {authStatus !== 'ready' && <a href="/login" onClick={event => follow(event, '/login')} className="mt-2 inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">{nav.login}</a>}
                 </div>
 
-                <nav aria-label={nav.main} className="mt-5 grid gap-1">{primaryLinks()}</nav>
                 <details className="mt-4 rounded-xl border border-slate-700 p-2">
                   <summary className="cursor-pointer rounded-lg px-3 py-3 text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-amber-300">{locale === 'de' ? 'Weitere Bereiche' : 'More areas'}</summary>
                   <div className="grid gap-1 px-1">
@@ -551,8 +553,9 @@ export const Header: React.FC<HeaderProps> = ({
                             <button
                               type="button"
                               aria-expanded={isExpanded}
+                              aria-controls={`drawer-assets-${cls.id}`}
                               onClick={() => setExpandedClass(isExpanded ? null : cls.id)}
-                              className="hub-asset-card focus-visible:outline-2 focus-visible:outline-amber-300 min-h-11 w-full flex items-center justify-between px-1.5 py-1 text-left hover:bg-white/5 transition-colors cursor-pointer"
+                              className="hub-asset-card min-h-11 focus-visible:outline-2 focus-visible:outline-amber-300 w-full flex items-center justify-between px-1.5 py-1 text-left hover:bg-white/5 transition-colors cursor-pointer"
                             >
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <div
@@ -595,6 +598,7 @@ export const Header: React.FC<HeaderProps> = ({
                             <AnimatePresence initial={false}>
                               {isExpanded && (
                                 <motion.div
+                                  id={`drawer-assets-${cls.id}`}
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}

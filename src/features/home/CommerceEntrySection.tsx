@@ -12,8 +12,18 @@ export const COMMERCE_ENTRY_COPY: Record<Locale, readonly [string, string, strin
   es: ['Aprende. Compara herramientas.', 'Explora recursos educativos y elige las herramientas de análisis adecuadas.', 'Descubrir recursos educativos', 'Explora términos financieros, métodos y guías.', 'Abrir el portal educativo', 'Comparar herramientas de análisis', 'Compara las comprobaciones por plan. Los datos de proveedores y modelos de IA se facturan por separado.', 'Ver planes'],
 };
 
+const offerCopy: Record<Locale, readonly [string, string, string, string, string, string, string]> = {
+  de: ['Kostenlos', 'Kostenpflichtiges Lernangebot. Details und Kaufbedingungen im Learning Hub.', 'Lernangebot ansehen', 'Für Unternehmen', 'Individuelle Anfrage zum vorhandenen B2B-Angebot.', 'B2B-Angebot ansehen', 'Preis nach Vereinbarung'],
+  en: ['Free', 'Paid learning offer. See the Learning Hub for details and purchase terms.', 'View learning offer', 'For businesses', 'Request details about the existing business offer.', 'View business offer', 'Price by agreement'],
+  it: ['Gratuito', 'Offerta formativa a pagamento. Dettagli e condizioni nel Learning Hub.', 'Vedi offerta formativa', 'Per aziende', 'Richiedi informazioni sull’offerta per aziende.', 'Vedi offerta per aziende', 'Prezzo da concordare'],
+  fr: ['Gratuit', 'Offre pédagogique payante. Détails et conditions dans le Learning Hub.', 'Voir l’offre pédagogique', 'Entreprises', 'Demandez les détails de l’offre pour entreprises.', 'Voir l’offre entreprises', 'Prix à convenir'],
+  pt: ['Gratuito', 'Oferta educativa paga. Detalhes e condições no Learning Hub.', 'Ver oferta educativa', 'Para empresas', 'Solicite informações sobre a oferta empresarial.', 'Ver oferta empresarial', 'Preço a acordar'],
+  es: ['Gratis', 'Oferta formativa de pago. Detalles y condiciones en el Learning Hub.', 'Ver oferta formativa', 'Para empresas', 'Solicita información sobre la oferta empresarial.', 'Ver oferta empresarial', 'Precio a convenir'],
+};
+
 export function CommerceEntryContent({ locale, onNavigate }: { locale: Locale; onNavigate: (path: string) => void }) {
   const copy = COMMERCE_ENTRY_COPY[locale];
+  const offer = offerCopy[locale];
   // Preserve real links for new tabs and assistive navigation; intercept ordinary app navigation only.
   const follow = (event: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
@@ -26,16 +36,16 @@ export function CommerceEntryContent({ locale, onNavigate }: { locale: Locale; o
       <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300">{copy[1]}</p>
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {([
-          { title: copy[2], description: copy[3], cta: copy[4], path: '/learning', price: locale === 'de' ? 'Kostenlos' : '' },
-          { title: VOCABULARY_OFFER.name, description: locale === 'de' ? 'Kostenpflichtiges Lernangebot. Details und Kaufbedingungen im Learning Hub.' : '', cta: copy[4], path: '/learning', price: displayPriceEur(VOCABULARY_OFFER.amountCents) + ' €' },
+          { title: copy[2], description: copy[3], cta: copy[4], path: '/learning', price: offer[0] },
+          { title: VOCABULARY_OFFER.name, description: offer[1], cta: offer[2], path: '/learning', price: displayPriceEur(VOCABULARY_OFFER.amountCents) + ' €' + (locale === 'de' && VOCABULARY_OFFER.taxBehavior === 'inclusive' ? ' inkl. MwSt.' : '') },
           { title: copy[5], description: copy[6], cta: copy[7], path: '/pricing', price: 'Starter · ' + displayPriceEur(PRICING_CATALOG.starter.monthly.amountCents) + ' € / ' + (locale === 'de' ? 'Monat' : locale === 'en' ? 'month' : locale === 'fr' ? 'mois' : locale === 'it' ? 'mese' : locale === 'pt' ? 'mês' : 'mes') },
-          { title: locale === 'de' ? 'Für Unternehmen' : 'Enterprise', description: locale === 'de' ? 'Individuelle Anfrage zum vorhandenen B2B-Angebot.' : '', cta: locale === 'de' ? 'B2B-Angebot ansehen' : 'Enterprise inquiry', path: '/governance-evidence-sprint', price: locale === 'de' ? 'Preis auf Anfrage' : '' },
+          { title: offer[3], description: offer[4], cta: offer[5], path: '/governance-evidence-sprint', price: offer[6] },
         ]).map(item => (
-          <article key={item.title} className="flex flex-col rounded-2xl border border-slate-700 bg-slate-950 p-5">
+          <article key={item.title} className="flex min-w-0 flex-col rounded-2xl border border-slate-700 bg-slate-950 p-5">
             <h3 className="text-lg font-semibold text-white">{item.title}</h3>
             {item.price && <p className="mt-3 text-lg font-semibold text-amber-200">{item.price}</p>}
             {item.description && <p className="mb-4 mt-2 flex-1 text-sm leading-relaxed text-slate-300">{item.description}</p>}
-            <a href={item.path} onClick={event => follow(event, item.path)} className={item.path === '/learning'
+            <a href={item.path} onClick={event => follow(event, item.path)} className={item.cta === copy[4]
               ? "self-start rounded-xl bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 hover:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"
               : "self-start rounded-xl px-4 py-3 text-sm font-semibold text-amber-200 underline underline-offset-4 hover:text-amber-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"}>{item.cta}</a>
           </article>

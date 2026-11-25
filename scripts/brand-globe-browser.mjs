@@ -82,7 +82,9 @@ try {
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
-    assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy button')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
+    assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy a')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
+    assert.equal(await evaluate("document.querySelectorAll('h1').length"), 1, 'Homepage must have one H1');
+    assert.equal(await evaluate("document.querySelectorAll('#public-entry-title + div article').length"), 3, 'Expected three public intent cards');
     const learningCta = await evaluate(`(() => {
       const action = document.getElementById('hero-open-learning-link');
       const bounds = action.getBoundingClientRect();
@@ -96,6 +98,7 @@ try {
     assert.equal(learningCta.primary, true, 'Learning Hub must be the emphasized action');
     assert.ok(learningCta.top >= 0 && learningCta.bottom <= viewport.height, 'Learning CTA below the initial viewport');
     assert.ok(learningCta.height >= 44 && learningCta.clickable, 'Learning CTA target is too small or obstructed');
+    assert.equal(await evaluate(`[...document.querySelectorAll('.hero-copy a')].some(a => a.getAttribute('href') === '/marketscreener/scorer')`), true, 'Methodology link missing');
     await evaluate("document.querySelector('.capital-ai-hero').scrollIntoView()");
     const layout = await evaluate(`(() => {
       const logo=document.querySelector('.hero-brand-logo'), copy=document.querySelector('.hero-copy'), globe=document.querySelector('.hero-globe-background');

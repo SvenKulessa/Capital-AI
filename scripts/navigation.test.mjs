@@ -486,10 +486,11 @@ test('compact navigation halves chrome spacing but keeps readable typography and
   assert.match(css, /\.hub-tab \{[\s\S]*?min-height: 28px;[\s\S]*?font-size: \.75rem;/);
   assert.match(css, /\.hub-tab-strip \.hub-tab svg \{ width: \.75rem; height: \.75rem;/);
   assert.match(css, /\.hub-sidebar-card, \.hub-asset-card, \.hub-subclass-card \{ min-height: 44px; \}/);
-  assert.match(header, /hub-sidebar-card min-h-14/);
+  assert.match(header, /primaryLinks = \(\) => primaryRoutes\.map/);
+  assert.match(header, /inline-flex min-h-11 items-center rounded-lg/);
   assert.match(header, /hub-asset-card min-h-11/);
   assert.match(header, /hub-subclass-card min-h-11/);
-  assert.match(home, /hub-directory-card hub-switch flex min-h-11/);
+  assert.match(home, /flex min-h-11 items-center gap-3/);
   assert.match(legal, /className="hub-tab-strip w-full max-w-4xl z-10 mt-4"/);
   assert.match(css, /\[data-legal-route\] > nav\.hub-tab-strip \{ margin-top: \.5rem; \}/);
   assert.match(css, /\[data-legal-route\] button\.legal-topic-card \{ padding: \.5rem; \}/);
@@ -605,24 +606,21 @@ test('mobile account drawer collapses by default and preserves authorized action
   assert.match(header, /onClick=\{\(\) => void logout\(\)\}/);
   assert.match(header, /authSession\?\.authenticated \? \(/);
   assert.match(header, /min-h-14 w-full items-center justify-between gap-2 rounded-xl px-2 py-2/);
-  assert.match(header, /aria-label=\{nav\.hubs\}|\{nav\.hubs\}/);
-  assert.match(header, /hub-sidebar-card min-h-14/);
+  assert.match(header, /<nav aria-label=\{nav\.main\}/);
+  assert.match(header, /primaryLinks = \(\) => primaryRoutes\.map/);
+  assert.match(header, /inline-flex min-h-11 items-center rounded-lg/);
 });
 
-test('homepage MARKET readiness stays below editorial news, uses real routes and avoids price claims', () => {
+test('homepage leads with public intent, trust, approved learning and pricing', () => {
   const homepage = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
-  const hero = homepage.indexOf('<Hero onExploreProduct={onStartProductTour} />');
-  const editorial = homepage.indexOf('<HomeEditorialNews />');
-  const readiness = homepage.indexOf('id="market-transparency-title"');
-  const search = homepage.indexOf('<HomeSearchFocus />');
-  assert.ok(hero >= 0 && editorial > hero && readiness > editorial && search > readiness);
-  const section = homepage.slice(readiness, search);
-  assert.match(section, /Finanzmärkte verstehen/);
-  assert.match(section, /keine verifizierten Live-Kurse oder Handlungssignale/);
-  assert.match(section, /href="\/learning"/);
-  assert.match(section, /href="\/screener"/);
-  assert.doesNotMatch(section, /href="\/marketscreener\/news-archiv"/);
-  assert.match(section, /grid gap-3 md:grid-cols-3/);
+  const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
+  const markers = ['<Hero />', '<HomeSearchFocus />', 'id="public-benefits-title"', '<HomeHubDirectory', 'id="public-trust-title"', '<HomeLatestLearning', '<HomeEditorialNews />', '<CommerceEntrySection', 'id="public-final-cta-title"'];
+  const offsets = markers.map(marker => homepage.indexOf(marker));
+  assert.ok(offsets.every((offset, index) => offset >= 0 && (index === 0 || offset > offsets[index - 1])), String(offsets));
+  assert.match(directory, /keine verifizierten Live-Kurse oder Handlungssignale/);
+  assert.match(homepage, /href="\/learning"/);
+  assert.match(homepage, /href="\/marketscreener\/scorer"/);
+  assert.doesNotMatch(homepage, /<CoreModules|<MarketOverview|<SectorAnalysis|<MarketSentiment|<ContentEngine/);
 });
 
 test('profile menu shares all five private routes on the right and authenticated drawer', () => {
@@ -636,10 +634,10 @@ test('profile menu shares all five private routes on the right and authenticated
   assert.match(menu, /onClick=\{\(\) => void logout\(\)\}/);
   assert.match(drawer, /onClick=\{\(\) => void logout\(\)\}/);
   assert.match(header, /const isOwner = verifiedOwner\(authSession\)/);
-  assert.match(header, /hub.id !== 'control-center' \|\| isOwner/);
+  assert.match(header, /isOwner \? \[\{path: '\/control-center'/);
   assert.match(header, /<ProfileAvatar url=\{authSession\.user\?\.avatarUrl\}/);
   assert.match(header, /referrerPolicy="no-referrer"/);
-  assert.match(header, /minHeight: '3.5rem'/);
-  assert.match(header, /hub-sidebar-card min-h-14/);
+  assert.match(header, /primaryLinks = \(\) => primaryRoutes\.map/);
+  assert.match(header, /inline-flex min-h-11 items-center rounded-lg/);
   assert.match(header, /drawer-account-toggle/);
 });
