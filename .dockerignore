@@ -75,6 +75,8 @@
 !server/subscription-checkout.test.mjs
 !server/purchase-receipt.mjs
 !server/purchase-receipt.test.mjs
+!server/smartcopy-sandbox-readback.mjs
+!server/smartcopy-sandbox-readback.test.mjs
 !server/subscription-checkout.mjs
 !server/enterprise-trial.mjs
 !server/enterprise-trial.test.mjs
