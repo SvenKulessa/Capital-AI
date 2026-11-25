@@ -219,6 +219,15 @@ try {
     await until(()=>evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState==='fallback'`),'ARTICLE_CONTEXT_LOSS');
     assert.match(await evaluate(`document.querySelector('[data-article-scene="portfolio"]').textContent`),/Textmodell bleibt nutzbar/);
     report.checks.push({viewport,article3d:'SOFTWARE_WEBGL_PASS',keyboardScenario:'PASS',articleFallback:'PASS'});
+    const growth=await evaluate(`(() => {const el=document.getElementById('growth-intelligence');const pipe=el.querySelector('[data-growth-pipeline]');return {label:!!el.querySelector('[data-growth-engine-label]'),steps:pipe.querySelectorAll('button').length,buttons:[...pipe.querySelectorAll('button')].every(b=>b.getBoundingClientRect().height>=44),overflow:el.scrollWidth>el.clientWidth+2,canvas:!!el.querySelector('canvas')};})()`);
+    assert.equal(growth.label,true);assert.equal(growth.steps,7);assert.equal(growth.buttons,true);assert.equal(growth.overflow,false);assert.equal(growth.canvas,false);
+    await evaluate(`document.querySelectorAll('#growth-intelligence [data-growth-pipeline] button')[3].click()`);
+    await until(()=>evaluate(`document.getElementById('growth-stage-title').textContent.includes('Content & 3D')`),'GROWTH_PIPELINE_SELECTION');
+    assert.equal(await evaluate(`document.querySelectorAll('#growth-intelligence [data-growth-pipeline] button[aria-pressed="true"]').length`),1);
+    await evaluate(`document.querySelector('#growth-intelligence').scrollIntoView({block:'start',behavior:'instant'})`);
+    await shot('growth-article-'+viewport.width);
+    report.checks.push({viewport,growthArticle:'PRESENT',pipeline:'INTERACTION_PASS',touchTargets:'PASS',initialWebgl:'OPT_IN'});
+
   }
   await navigate();
   await evaluate("document.getElementById('hero-open-learning-link').focus()");
