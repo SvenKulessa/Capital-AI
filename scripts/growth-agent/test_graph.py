@@ -42,6 +42,19 @@ class GrowthGraphTests(unittest.TestCase):
             result = graph.build_graph().invoke({"repo_root": root, "google_reads": False, "findings": [], "tool_radar": payload})
         self.assertEqual(result["plan"]["toolRadar"], report)
 
+    def test_mcp_registry_is_metadata_only_and_no_authority(self):
+        row = {"name": "io.example/analytics", "version": "1.2.3", "installAllowed": False,
+               "activationAllowed": False, "commercialRights": "NOT_PROVEN", "outputRights": "NOT_PROVEN"}
+        registry = {"source": "OFFICIAL_MCP_REGISTRY", "status": "METADATA_OBSERVED", "candidates": [row]}
+        report = graph.review_mcp_registry(registry)
+        self.assertEqual(report["candidates"][0]["declaredVersion"], "1.2.3")
+        self.assertEqual(graph.review_mcp_registry({**registry, "candidates": [{**row, "installAllowed": True}]})["state"], "NOT_PROVEN")
+        with tempfile.TemporaryDirectory() as root, patch.object(graph, "collect_private_tool_radar", return_value={"registry": registry}) as reader:
+            result = graph.build_graph().invoke({"repo_root": root, "google_reads": False, "findings": [], "private_tool_discovery": True})
+            reader.assert_called_once_with(root)
+            self.assertEqual(result["plan"]["mcpRegistry"], report)
+            self.assertFalse(result["plan"]["execution"]["automaticWrites"])
+
     def test_disabled_tracking_is_a_source_observation_not_a_live_google_claim(self):
         with tempfile.TemporaryDirectory() as root:
             path = Path(root) / "src/utils/analytics.ts"
