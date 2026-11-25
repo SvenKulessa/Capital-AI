@@ -26,20 +26,19 @@ export function GrowthIntelligenceArticle(){
       <p className="mt-4 rounded-xl border border-amber-300/40 p-3 text-sm leading-6 text-amber-100">{article.status}</p>
       <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
         <figure className="min-w-0 rounded-2xl border border-slate-700 bg-[#050916] p-3" aria-label="Holografisches Growth-Netzwerk">
-          <div className="relative mx-auto aspect-square w-full max-w-[420px]">
-            <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 400 400">
-              {article.stages.map((stage,i)=>{const t=i*2*Math.PI/7-Math.PI/2;const x=200+150*Math.cos(t),y=200+150*Math.sin(t);return <g key={stage.id}><ellipse cx="200" cy="200" rx="172" ry="75" transform={'rotate('+i*26+' 200 200)'} stroke={palette[stage.color]} opacity=".23" fill="none"/><path d={'M200 200 Q'+(200+95*Math.cos(t+.32))+' '+(200+95*Math.sin(t+.32))+' '+x+' '+y} stroke={palette[stage.color]} strokeWidth={selected===i?3:1.2} fill="none" opacity={selected===i?1:.45}/><circle cx={x} cy={y} r="22" fill={palette[stage.color]} opacity=".12"/></g>})}
+          <div data-growth-globe-core className="relative mx-auto aspect-square w-full max-w-[420px]">
+            <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 400 400">
+              {article.stages.map((stage,i)=>{const t=i*2*Math.PI/7-Math.PI/2;const x=200+164*Math.cos(t),y=200+164*Math.sin(t);return <g key={stage.id}><ellipse cx="200" cy="200" rx="184" ry="69" transform={'rotate('+i*26+' 200 200)'} stroke={palette[stage.color]} opacity={selected===i?".5":".17"} fill="none"/><path d={'M200 200 Q'+(200+95*Math.cos(t+.32))+' '+(200+95*Math.sin(t+.32))+' '+x+' '+y} stroke={palette[stage.color]} strokeDasharray="2 8" strokeWidth={selected===i?2:1} fill="none" opacity={selected===i?.8:.25}/><circle cx={x} cy={y} r="3" fill={palette[stage.color]} opacity=".65"/></g>})}
             </svg>
-            <div className="absolute inset-[26%]">
+            <div className="absolute inset-[7%]">
               {running && reduceMotion===false ? <BrandGlobe paused={paused} onReadyChange={setReady}/> : <img src={BRAND_GLOBE.asset} alt="" width="1254" height="1254" className="h-full w-full object-contain" loading="lazy" decoding="async"/>}
             </div>
-            {article.stages.map((stage,i)=>{const t=i*2*Math.PI/7-Math.PI/2;return <button key={stage.id} type="button" aria-label={stage.title} aria-pressed={selected===i} onClick={()=>setSelected(i)} className="absolute h-[17%] w-[17%] min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border bg-slate-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white" style={{left:(50+37.5*Math.cos(t))+'%',top:(50+37.5*Math.sin(t))+'%',borderColor:palette[stage.color],boxShadow:selected===i?'0 0 16px '+palette[stage.color]:undefined}}><img src={'/branding/learning-universe/'+stage.art+'.svg'} alt="" width="420" height="260" className="h-full w-full object-cover" loading="lazy"/></button>})}
           </div>
           <div className="flex flex-wrap justify-center gap-2">
             <button type="button" className={controls} disabled={reduceMotion!==false} onClick={()=>{setRunning(v=>!v);setPaused(false);setReady(false);}}>{running?'Globus schließen':'3D-Globus starten'}</button>
             {running&&ready&&reduceMotion===false&&<button type="button" className={controls} aria-pressed={paused} onClick={()=>setPaused(v=>!v)}>{paused?'Globus fortsetzen':'Globus pausieren'}</button>}
           </div>
-          <figcaption className="mt-3 text-sm leading-6 text-slate-300">Schematisches neuronales Netzwerk mit vorhandenen Universe-Motiven. Keine Live-Daten und kein trainiertes neuronales Modell. Bei reduzierter Bewegung oder fehlendem WebGL bleibt die statische Darstellung verfügbar.</figcaption>
+          <figcaption className="mt-3 text-sm leading-6 text-slate-300">Originaler CAPITAL-AI Hero-Globus mit schematischen neuronalen Verbindungen. Die sieben Universe-Badges befinden sich in der horizontalen Prozesspipeline. Keine Live-Daten und kein trainiertes neuronales Modell. Bei reduzierter Bewegung oder fehlendem WebGL bleibt die statische Darstellung verfügbar.</figcaption>
         </figure>
         <section aria-labelledby="growth-stage-title" className="min-w-0 rounded-2xl border border-slate-600 bg-slate-950 p-4" style={{borderTopColor:palette[item.color]}}>
           <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Komponente {item.id} von 07</p>
@@ -51,8 +50,8 @@ export function GrowthIntelligenceArticle(){
       <section className="mt-6" aria-labelledby="growth-pipeline-title">
         <h3 id="growth-pipeline-title" className="text-lg font-bold text-white">Horizontale Intelligence-Pipeline</h3>
         <p className="mt-1 text-sm text-slate-300">Schritt auswählen oder die Leiste horizontal verschieben. Die vollständige Beschreibung folgt im Artikel.</p>
-        <ol data-growth-pipeline aria-label="Sieben Prozessschritte" className="mt-3 flex gap-2 overflow-x-auto pb-3 snap-x">
-          {article.stages.map((stage,i)=><li key={stage.id} className="flex shrink-0 items-center gap-2 snap-start"><button type="button" aria-pressed={selected===i} onClick={()=>setSelected(i)} className={controls+' flex w-32 flex-col items-start gap-1 text-left'} style={{borderColor:palette[stage.color],background:selected===i?'#17263d':'#0b1428'}}><span className="text-xs" style={{color:palette[stage.color]}}>{stage.id}</span><span aria-hidden="true">{stage.emoji}</span><span>{stage.title}</span></button>{i<article.stages.length-1&&<span aria-hidden="true" className="text-cyan-200">→</span>}</li>)}
+        <ol data-growth-pipeline aria-label="Sieben Prozessschritte" className="mt-3 flex gap-2 overflow-x-auto pb-3 snap-x lg:gap-1">
+          {article.stages.map((stage,i)=><li key={stage.id} className="flex shrink-0 items-center gap-2 snap-start"><button type="button" aria-pressed={selected===i} onClick={()=>setSelected(i)} className={controls+' flex w-36 flex-col items-start gap-2 text-left lg:w-[8.5rem]'} style={{borderColor:palette[stage.color],background:selected===i?'#17263d':'#0b1428'}}><span className="text-xs" style={{color:palette[stage.color]}}>{stage.id}</span><img data-growth-pipeline-badge src={'/branding/learning-universe/'+stage.art+'.svg'} alt="" width="420" height="260" loading="lazy" decoding="async" className="aspect-[21/13] w-full rounded-md object-contain"/><span><span aria-hidden="true">{stage.emoji} </span>{stage.title}</span></button>{i<article.stages.length-1&&<span aria-hidden="true" className="text-cyan-200">→</span>}</li>)}
         </ol>
         <p className="text-sm text-emerald-200">Rückkopplung: Erkenntnisse aus der Optimierung unterstützen die nächste Analyse.</p>
       </section>

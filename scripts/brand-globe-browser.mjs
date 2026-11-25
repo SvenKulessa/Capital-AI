@@ -219,13 +219,21 @@ try {
     await until(()=>evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState==='fallback'`),'ARTICLE_CONTEXT_LOSS');
     assert.match(await evaluate(`document.querySelector('[data-article-scene="portfolio"]').textContent`),/Textmodell bleibt nutzbar/);
     report.checks.push({viewport,article3d:'SOFTWARE_WEBGL_PASS',keyboardScenario:'PASS',articleFallback:'PASS'});
-    const growth=await evaluate(`(() => {const el=document.getElementById('growth-intelligence');const pipe=el.querySelector('[data-growth-pipeline]');return {label:!!el.querySelector('[data-growth-engine-label]'),steps:pipe.querySelectorAll('button').length,buttons:[...pipe.querySelectorAll('button')].every(b=>b.getBoundingClientRect().height>=44),overflow:el.scrollWidth>el.clientWidth+2,canvas:!!el.querySelector('canvas')};})()`);
-    assert.equal(growth.label,true);assert.equal(growth.steps,7);assert.equal(growth.buttons,true);assert.equal(growth.overflow,false);assert.equal(growth.canvas,false);
+    const growth=await evaluate(`(() => {const el=document.getElementById('growth-intelligence');const pipe=el.querySelector('[data-growth-pipeline]');return {label:!!el.querySelector('[data-growth-engine-label]'),steps:pipe.querySelectorAll('button').length,badges:pipe.querySelectorAll('[data-growth-pipeline-badge]').length,orbitBadges:el.querySelector('[data-growth-globe-core]').querySelectorAll('button').length,original:el.querySelector('[data-growth-globe-core] img').getAttribute('src'),buttons:[...pipe.querySelectorAll('button')].every(b=>b.getBoundingClientRect().height>=44),overflow:el.scrollWidth>el.clientWidth+2,canvas:!!el.querySelector('canvas')};})()`);
+    assert.equal(growth.label,true);assert.equal(growth.steps,7);assert.equal(growth.badges,7);assert.equal(growth.orbitBadges,0);assert.equal(growth.original,'/branding/universe/hero-universe-globe.webp');assert.equal(growth.buttons,true);assert.equal(growth.overflow,false);assert.equal(growth.canvas,false);
     await evaluate(`document.querySelectorAll('#growth-intelligence [data-growth-pipeline] button')[3].click()`);
     await until(()=>evaluate(`document.getElementById('growth-stage-title').textContent.includes('Content & 3D')`),'GROWTH_PIPELINE_SELECTION');
     assert.equal(await evaluate(`document.querySelectorAll('#growth-intelligence [data-growth-pipeline] button[aria-pressed="true"]').length`),1);
     await evaluate(`document.querySelector('#growth-intelligence').scrollIntoView({block:'start',behavior:'instant'})`);
     await shot('growth-article-'+viewport.width);
+    await evaluate(`(() => {const el=document.getElementById('growth-intelligence');el.querySelector('[data-growth-globe-core]').scrollIntoView({block:'center',behavior:'instant'});[...el.querySelectorAll('button')].find(b=>b.textContent==='3D-Globus starten').click();})()`);
+    await until(()=>evaluate(`document.querySelector('[data-growth-globe-core] .brand-globe-art')?.dataset.globeState==='3d'`),'GROWTH_ORIGINAL_WEBGL_READY');
+    assert.equal(await evaluate(`document.querySelector('[data-growth-globe-core] .brand-globe-poster').getAttribute('src')`),'/branding/universe/hero-universe-globe.webp');
+    await evaluate(`[...document.querySelectorAll('#growth-intelligence button')].find(b=>b.textContent==='Globus pausieren').click()`);
+    await until(()=>evaluate(`[...document.querySelectorAll('#growth-intelligence button')].some(b=>b.textContent==='Globus fortsetzen'&&b.getAttribute('aria-pressed')==='true')`),'GROWTH_GLOBE_PAUSE');
+    await evaluate(`[...document.querySelectorAll('#growth-intelligence button')].find(b=>b.textContent==='Globus schließen').click()`);
+    await until(()=>evaluate(`!document.querySelector('[data-growth-globe-core] canvas')`),'GROWTH_GLOBE_CLOSE');
+    report.checks.push({viewport,growthGlobe:'ORIGINAL_COMPONENT_SOFTWARE_WEBGL',growthGlobePause:'PASS',pipelineBadges:7});
     report.checks.push({viewport,growthArticle:'PRESENT',pipeline:'INTERACTION_PASS',touchTargets:'PASS',initialWebgl:'OPT_IN'});
 
   }
