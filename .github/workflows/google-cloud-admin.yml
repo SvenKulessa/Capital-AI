@@ -7,7 +7,7 @@ on:
       operation:
         description: Read Cloud APIs or upload an approved OAuth demo
         type: choice
-        options: [readback, billing-readback, upload-youtube-demo]
+        options: [readback, billing-readback, billing-discovery, upload-youtube-demo]
         default: readback
       media_object_generation:
         description: Generation of youtube-verification/demo-key-rotation-01.mp4.enc in the private demo bucket
@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   service-usage-readback:
-    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (inputs.operation == 'readback' || inputs.operation == 'billing-readback')
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (inputs.operation == 'readback' || inputs.operation == 'billing-readback' || inputs.operation == 'billing-discovery')
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     permissions:
@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: '24.19.0'
       - name: Verify source-only API client and negative cases
-        run: node --test scripts/platform/google-cloud-admin-readback.test.mjs scripts/platform/google-billing-metadata.test.mjs
+        run: node --test scripts/platform/google-cloud-admin-readback.test.mjs scripts/platform/google-billing-metadata.test.mjs scripts/platform/google-billing-export-discovery.test.mjs
       - name: Verify exact repository and operator identity
         env:
           REPO_ID: ${{ github.repository_id }}
@@ -68,6 +68,11 @@ jobs:
         env:
           GOOGLE_CLOUD_ADMIN_ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
         run: node scripts/platform/google-billing-metadata.mjs
+      - name: Discover billing export visibility (sanitized)
+        if: inputs.operation == 'billing-discovery'
+        env:
+          GOOGLE_CLOUD_ADMIN_ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
+        run: node scripts/platform/google-billing-export-discovery.mjs
   youtube-verification-demo:
     if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.operation == 'upload-youtube-demo'
     runs-on: ubuntu-24.04

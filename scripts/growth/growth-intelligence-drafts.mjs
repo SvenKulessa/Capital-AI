@@ -3,6 +3,8 @@ import { readFileSync, readSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildGrowthIntelligenceContentDrafts, xAcquisitionDraftOverview, forecastXAcquisitionBudget, buildXAcquisitionCandidate } from '../../src/contracts/growthIntelligenceContent.ts';
 
+import { buildProductChannelIntelligence } from './product-channel-intelligence.mjs';
+
 export const GROWTH_INTELLIGENCE_PLAN_PATH =
   'CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json';
 const sourceUrl = new URL('../../' + GROWTH_INTELLIGENCE_PLAN_PATH, import.meta.url);
@@ -46,6 +48,7 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
     }],
     drafts,
     xAcquisition: xAcquisitionDraftOverview(drafts),
+    productToMarket: buildProductChannelIntelligence(),
     ...(dataInput === undefined ? {} : { growthDataLayer: projectGrowthDataLayer(dataInput) }),
   };
 }
