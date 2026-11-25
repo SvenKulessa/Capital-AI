@@ -1,5 +1,5 @@
+import { BRAND_COLORS, hubBrandForRoute } from '../../shared/hub-branding.mjs';
 import { accountDisplay, verifiedOwner } from '../../shared/account-display.mjs';
-import { hubBrandForRoute } from '../../shared/hub-branding.mjs';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: GLOBAL NAVIGATION & TERMINAL HEADER]
@@ -50,7 +50,6 @@ import { navigationCopy } from '../i18n/navigationCopy';
 import { ASSET_CLASSES } from '../data/mockData';
 import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
-import { MAIN_HUBS_CONFIG, type MainHubId } from './HubCatalog';
 
 
 
@@ -160,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
       }
       if (event.key !== 'Tab' || !dialog) return;
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        'a[href], summary, button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       )).filter(element => element.getClientRects().length > 0);
       if (!focusable.length) return;
       const first = focusable[0];
@@ -183,7 +182,27 @@ export const Header: React.FC<HeaderProps> = ({
 
   const accountTier = accountDisplay(authSession);
   const isOwner = verifiedOwner(authSession);
+  const primaryLabels = {
+    de: ['Produkt', 'Lernen', 'Analyse', 'Preise', 'Für Unternehmen'],
+    en: ['Product', 'Learn', 'Analysis', 'Pricing', 'For businesses'],
+    it: ['Prodotto', 'Impara', 'Analisi', 'Prezzi', 'Per aziende'],
+    fr: ['Produit', 'Apprendre', 'Analyse', 'Tarifs', 'Entreprises'],
+    pt: ['Produto', 'Aprender', 'Análise', 'Preços', 'Para empresas'],
+    es: ['Producto', 'Aprender', 'Análisis', 'Precios', 'Para empresas'],
+  }[locale];
+  const primaryRoutes = ['/', '/learning', '/marketscreener', '/pricing', '/governance-evidence-sprint'];
   const activeHub = hubBrandForRoute(currentRoute);
+  const isCurrent = (path: string) => currentRoute === path ||
+    (path === '/learning' && activeHub === 'learning') ||
+    (path === '/marketscreener' && activeHub === 'marketscreener');
+  const follow = (event: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    setIsMenuOpen(false);
+    if (onNavigate) { event.preventDefault(); onNavigate(path); }
+  };
+  const primaryLinks = () => primaryRoutes.map((path, index) => <a key={path} href={path}
+    aria-current={isCurrent(path) ? 'page' : undefined} onClick={event => follow(event, path)}
+    className={`inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${isCurrent(path) ? 'bg-amber-300/15 text-amber-200 underline underline-offset-4' : 'text-slate-200 hover:bg-white/10'}`}>{primaryLabels[index]}</a>);
 
   const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace' | '/profile/rights' | '/profile/subscription' | '/profile/dashboard') => {
     setIsAccountOpen(false);
@@ -213,12 +232,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const openHubSidebar = (hubId: MainHubId) => {
-    setIsMenuOpen(false);
-    const path = MAIN_HUBS_CONFIG[hubId].mainPath;
-    if (onNavigate) onNavigate(path); else window.location.assign(path);
-  };
-
   const renderClassIcon = (id: MainCategory) => {
     switch (id) {
       case 'KRYPTO':
@@ -237,9 +250,12 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="relative z-30 w-full px-3 sm:px-6 pt-3.5 pb-2.5 flex items-center justify-between select-none">
+    <header className="relative z-30 flex w-full flex-wrap items-center justify-between gap-2 border-b border-slate-800 px-3 py-3 sm:px-6">
+      <div aria-hidden="true" data-universe-spectrum="header" className="pointer-events-none absolute inset-x-0 bottom-0 flex h-[3px] overflow-hidden">
+        {Object.entries(BRAND_COLORS).map(([name, color]) => <span key={name} data-universe-color={name} className="flex-1" style={{ backgroundColor: color }} />)}
+      </div>
       {/* LEFT SIDE: Hamburger Navigation Button & Brand Logo */}
-      <div className="flex items-center space-x-3">
+      <div className="flex min-w-0 items-center gap-2">
         {/* Hamburger Menu Button on the Left */}
         <button
           id="mobile-menu-btn"
@@ -252,7 +268,7 @@ export const Header: React.FC<HeaderProps> = ({
             setIsDrawerAccountExpanded(false);
             setIsMenuOpen(true);
           }}
-          className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 active:bg-white/15 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition-all shadow-[0_0_12px_rgba(249,191,33,0.12)] cursor-pointer shrink-0"
+          className="w-11 h-11 rounded-xl flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 bg-white/5 hover:bg-white/10 active:bg-white/15 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition-all shadow-[0_0_12px_rgba(249,191,33,0.12)] cursor-pointer shrink-0"
         >
           <Menu className="w-5 h-5 stroke-[2]" />
         </button>
@@ -260,20 +276,19 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Capital-AI globe branding */}
         <BrandLogo
           variant="vendor"
-          size="md"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          size="sm"
+          onClick={() => { if (onNavigate) onNavigate('/'); else window.location.assign('/'); }}
         />
       </div>
 
-      <nav aria-label={nav.main} className="hidden xl:flex items-center gap-1 rounded-xl border border-slate-700 bg-black/40 p-1">
-        {Object.values(MAIN_HUBS_CONFIG).filter(hub => hub.id !== 'control-center' || isOwner).map(hub => <button key={hub.id} type="button" data-hub={hub.id} aria-current={activeHub === hub.id ? 'page' : undefined} className="hub-tab hub-switch !px-3 !text-xs" onClick={() => openHubSidebar(hub.id)}><span aria-hidden="true">{hub.icon}</span>{hub.name}</button>)}
-      </nav>
+      <nav aria-label={nav.main} className="hidden flex-wrap items-center gap-1 xl:flex">{primaryLinks()}</nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
-      <div className="flex items-center space-x-2">
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
-        {/* Session errors are not evidence of a logout. */}
+        {/* Session errors are not evidence of a logout; the login route stays reachable. */}
+        {authStatus !== 'ready' && <a href="/login" onClick={event => follow(event, '/login')} className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">{nav.login}</a>}
         {authStatus === 'loading' ? (
           <span role="status" className="px-3 text-xs text-slate-300">{nav.loading}</span>
         ) : authStatus === 'error' ? (
@@ -347,17 +362,18 @@ export const Header: React.FC<HeaderProps> = ({
             id="header-login-btn"
             href="/login"
             onClick={(e) => {
-              e.preventDefault();
+              if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
               trackLoginClick('header_top_right');
-              onNavigateLogin?.();
+              if (onNavigateLogin) { e.preventDefault(); onNavigateLogin(); }
             }}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 hover:from-amber-400/25 hover:via-[#FF2E93]/25 hover:to-[#8D26FF]/35 border border-amber-400/40 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-bold transition-all shadow-[0_0_14px_rgba(249,191,33,0.18)] hover:shadow-[0_0_20px_rgba(255,46,147,0.3)] active:scale-95 cursor-pointer group shrink-0"
+            className="flex min-h-11 items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 hover:from-amber-400/25 hover:via-[#FF2E93]/25 hover:to-[#8D26FF]/35 border border-amber-400/40 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-bold transition-all shadow-[0_0_14px_rgba(249,191,33,0.18)] hover:shadow-[0_0_20px_rgba(255,46,147,0.3)] active:scale-95 cursor-pointer group shrink-0"
             data-analytics="login-click"
             data-ga-category="authentication"
             data-ga-action="click_login"
             data-ga-label="header_top_right"
-            aria-label="Zum Capital-AI Login /login"
-            title="Terminal Anmeldung (/login)"
+            aria-label={nav.login}
+            aria-current={currentRoute === '/login' ? 'page' : undefined}
+            title={nav.login}
           >
             <LogIn className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-200 group-hover:scale-110 transition-all" />
             <span>{t('login')}</span>
@@ -407,6 +423,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
+                <nav aria-label={nav.main} className="mt-5 grid gap-1">{primaryLinks()}</nav>
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authStatus === 'loading' ? (
@@ -470,12 +487,13 @@ export const Header: React.FC<HeaderProps> = ({
                       id="drawer-login-btn"
                       href="/login"
                       onClick={(e) => {
-                        e.preventDefault();
+                        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
                         setIsMenuOpen(false);
                         trackLoginClick('drawer');
-                        onNavigateLogin?.();
+                        if (onNavigateLogin) { e.preventDefault(); onNavigateLogin(); }
                       }}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 border border-amber-400/40 text-amber-200 hover:text-white font-bold text-xs transition-all shadow-[0_0_12px_rgba(249,191,33,0.15)] group"
+                      aria-current={currentRoute === '/login' ? 'page' : undefined}
+                      className="w-full min-h-11 flex items-center justify-between px-3.5 py-2.5 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 border border-amber-400/40 text-amber-200 hover:text-white font-bold text-xs transition-all shadow-[0_0_12px_rgba(249,191,33,0.15)] group"
                       data-analytics="drawer-login-click"
                       data-ga-category="authentication"
                       data-ga-action="click_login"
@@ -488,99 +506,24 @@ export const Header: React.FC<HeaderProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
                     </a>
                   )}
+                  {authStatus !== 'ready' && <a href="/login" onClick={event => follow(event, '/login')} className="mt-2 inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">{nav.login}</a>}
                 </div>
 
-                {/* Navigation Sections: DIE 4 HAUPTHUBS (RUNDE LEUCHTENDE ACTION BUTTONS MIT AUFKLAPPBARER SIDEBAR) */}
-                <div className="mt-2.5 space-y-1.5">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/90 px-1 mb-1">
-                    {nav.hubs}
+                <details className="mt-4 rounded-xl border border-slate-700 p-2">
+                  <summary className="cursor-pointer rounded-lg px-3 py-3 text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-amber-300">{locale === 'de' ? 'Weitere Bereiche' : 'More areas'}</summary>
+                  <div className="grid gap-1 px-1">
+                    {[
+                      {path: '/studio', label: 'Studio'},
+                      {path: '/blueprints', label: 'Blueprints'},
+                      {path: '/dokumentation', label: t('docs')},
+                      ...(isOwner ? [{path: '/control-center', label: 'Control Center'}] : []),
+                    ].map(item => <a key={item.path} href={item.path} onClick={event => follow(event, item.path)}
+                      aria-current={currentRoute === item.path ? 'page' : undefined}
+                      className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm text-slate-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-amber-300">{item.label}</a>)}
                   </div>
-
-                  <div className="grid grid-cols-1 gap-1.25">
-                    {Object.values(MAIN_HUBS_CONFIG).map(hub => ({...hub, glow:hub.glowColor, tagline:hub.description})).filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
-                      <button
-                        key={hub.id}
-                        data-hub={hub.id}
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          openHubSidebar(hub.id);
-                        }}
-                        className="hub-switch hub-sidebar-card min-h-14 w-full flex items-center justify-between gap-1.5 px-1.5 py-1.5 border transition-all cursor-pointer group text-left shadow-sm"
-                        style={{
-                          minHeight: '3.5rem',
-                          backgroundColor: `${hub.color}14`,
-                          borderColor: `${hub.color}45`,
-                          boxShadow: `0 0 8px ${hub.glow}`,
-                        }}
-                      >
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <div
-                            className="hub-card-symbol w-6 h-6 rounded-full flex items-center justify-center shrink-0 border shadow-sm group-hover:scale-105 transition-transform"
-                            style={{
-                              backgroundColor: `${hub.color}25`,
-                              borderColor: `${hub.color}60`,
-                              boxShadow: `0 0 6px ${hub.glow}`,
-                            }}
-                          >
-                            {hub.icon}
-                          </div>
-                          <div className="min-w-0">
-                            <span className="text-[11px] font-bold text-white block truncate group-hover:text-amber-300 transition-colors">
-                              {hub.name}
-                            </span>
-                            <span className="text-[9px] text-slate-400 block truncate">
-                              {hub.tagline}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1 shrink-0 pl-1">
-                          <span
-                            className="text-[9px] font-mono font-bold px-1 py-0.5 rounded border"
-                            style={{
-                              color: hub.color,
-                              backgroundColor: `${hub.color}15`,
-                              borderColor: `${hub.color}35`,
-                            }}
-                          >
-                            {hub.badge}
-                          </span>
-                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                  {/* SECTION 5: SYSTEM & MEHR */}
-                  <div className="pt-2 border-t border-slate-800/80">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-1 mb-2">
-                      System &amp; Mehr
-                    </div>
-
-                    <div className="space-y-1">
-                      {/* MONETARISIERUNGSKONZEPT & TARIFE */}
-                      {onOpenMonetization && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsMenuOpen(false);
-                            onOpenMonetization();
-                          }}
-                          className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
-                        >
-                          <span className="flex items-center gap-2">
-                            <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Preiskatalog</span>
-                          </span>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-                        </button>
-                      )}
-
-                    </div>
-                  </div>
-
+                </details>
+                <details className="mt-4 rounded-xl border border-slate-700 p-2">
+                  <summary className="cursor-pointer rounded-lg px-3 py-3 text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-amber-300">{nav.assets}</summary>
                   {/* ASSETKLASSEN & UNTERKLASSEN (KRYPTO, AKTIEN, INDIZIES, FOREX, ROHSTOFFE) */}
                   <div className="pt-2 border-t border-slate-800/80 space-y-1">
                     <div className="flex items-center justify-between px-1">
@@ -614,8 +557,10 @@ export const Header: React.FC<HeaderProps> = ({
                             {/* Asset Class Header Button */}
                             <button
                               type="button"
+                              aria-expanded={isExpanded}
+                              aria-controls={`drawer-assets-${cls.id}`}
                               onClick={() => setExpandedClass(isExpanded ? null : cls.id)}
-                              className="hub-asset-card min-h-11 w-full flex items-center justify-between px-1.5 py-1 text-left hover:bg-white/5 transition-colors cursor-pointer"
+                              className="hub-asset-card min-h-11 focus-visible:outline-2 focus-visible:outline-amber-300 w-full flex items-center justify-between px-1.5 py-1 text-left hover:bg-white/5 transition-colors cursor-pointer"
                             >
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <div
@@ -658,6 +603,7 @@ export const Header: React.FC<HeaderProps> = ({
                             <AnimatePresence initial={false}>
                               {isExpanded && (
                                 <motion.div
+                                  id={`drawer-assets-${cls.id}`}
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
@@ -704,6 +650,7 @@ export const Header: React.FC<HeaderProps> = ({
                       })}
                     </div>
                   </div>
+                </details>
                 </div>
 
               {/* Drawer Bottom */}
