@@ -30,6 +30,24 @@ class OSSReadbackTests(unittest.TestCase):
     def test_head_drift_never_green(self):
         out = quality_readback(916, HEAD, self.reader([], True))
         self.assertEqual(out["reason"], "HEAD_OR_REPO_MISMATCH")
+    def test_malformed_pr_nested_shapes_fail_closed(self):
+        for malformed in ("invalid", ["invalid"], {"sha": HEAD, "repo": ["invalid"]},
+                          {"sha": HEAD, "repo": "invalid"}):
+            with self.subTest(head=malformed):
+                out = quality_readback(916, HEAD, lambda _: {"number": 916, "head": malformed})
+                self.assertEqual(out["reason"], "HEAD_OR_REPO_MISMATCH")
+                self.assertEqual(out["prQuality"], "NOT_PROVEN")
+    def test_malformed_final_readback_fails_closed(self):
+        read = self.reader([])
+        calls = []
+        def changed(path):
+            calls.append(path)
+            if len(calls) == 3:
+                return {"number": 916, "head": ["invalid"]}
+            return read(path)
+        out = quality_readback(916, HEAD, changed)
+        self.assertEqual(out["reason"], "HEAD_OR_REPO_MISMATCH")
+        self.assertNotIn("counts", out)
     def test_malformed_or_duplicate_finding(self):
         row = {"number": 1, "state": "open", "rule": {"severity": "warning"}}
         self.assertEqual(quality_readback(916, HEAD, self.reader([row,row]))["reason"], "INVALID_FINDINGS")

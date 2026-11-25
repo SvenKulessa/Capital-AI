@@ -54,11 +54,14 @@ def quality_readback(pr, head, read):
         "status": "NOT_PROVEN"}
     def current():
         data = read("/pulls/" + str(pr))
-        if not isinstance(data, dict):
+        if not isinstance(data, dict) or type(data.get("number")) is not int or data["number"] != pr:
             return False
-        h = data.get("head") or {}
-        return (data.get("number") == pr and h.get("sha") == head
-                and (h.get("repo") or {}).get("full_name") == REPO)
+        h = data.get("head")
+        if not isinstance(h, dict):
+            return False
+        repo = h.get("repo")
+        return (isinstance(repo, dict) and h.get("sha") == head
+                and repo.get("full_name") == REPO)
     try:
         if not current():
             result["reason"] = "HEAD_OR_REPO_MISMATCH"
