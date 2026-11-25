@@ -142,6 +142,23 @@ function flagValue(json) {
   return variable.value === 'true';
 }
 
+const RENDER_FAILURE_CODES = new Set([
+  'FLAG_SHAPE_INVALID', 'GROUP_LIST_INVALID', 'GROUP_ID_INVALID', 'GROUP_OWNER_MISMATCH',
+  'GROUP_PAGING_INCOMPLETE', 'GROUP_PAGING_EXCEEDED', 'SERVICE_IDENTITY_MISMATCH',
+  'BODY_MISSING', 'BODY_TOO_LARGE', 'INVALID_JSON', 'RENDER_HOST_INVALID',
+]);
+
+function safeRenderFailure(error) {
+  const message = error instanceof Error ? error.message : '';
+  if (RENDER_FAILURE_CODES.has(message) || /^RENDER_HTTP_[1-5][0-9]{2}$/.test(message)) return message;
+  if (error instanceof Error && error.name === 'TimeoutError') return 'RENDER_FETCH_TIMEOUT';
+  return 'RENDER_FETCH_OR_IO_FAILED';
+}
+
+function unproven(reason, stage) {
+  return { status: 'NOT_PROVEN', enabled: null, reason, stage };
+}
+
 async function renderGet(fetchImpl, path, token) {
   const url = new URL(path, 'https://api.render.com');
   if (url.origin !== 'https://api.render.com') throw new Error('RENDER_HOST_INVALID');
@@ -155,42 +172,61 @@ async function renderGet(fetchImpl, path, token) {
     await response.body?.cancel().catch(() => {});
     throw new Error('RENDER_HTTP_' + response.status);
   }
-  return limitedJson(response);
+  const json = await limitedJson(response);
+  if (json === null) throw new Error('INVALID_JSON');
+  return json;
 }
 
 // Only call this from a trusted main-branch workflow (never from pull_request).
 export async function readTinyFishConfig({ token, fetchImpl = fetch } = {}) {
   if (!token) return { status: 'NOT_PROVEN', enabled: null, reason: 'READ_TOKEN_NOT_AVAILABLE' };
+  if (typeof token !== 'string' || /\s/.test(token)) return unproven('READ_TOKEN_FORMAT_INVALID', 'TOKEN');
+  let stage = 'SERVICE_FLAG';
   try {
     const direct = await renderGet(fetchImpl, `/v1/services/${SERVICE_ID}/env-vars/${FLAG}`, token);
     if (direct) return { status: 'VERIFIED_CONFIG', enabled: flagValue(direct), source: 'SERVICE_DIRECT',
       runtimeValidated: false };
 
+    // A 404 can mean an inaccessible service, not only an absent key.
+    stage = 'SERVICE_METADATA';
+    const service = await renderGet(fetchImpl, `/v1/services/${SERVICE_ID}`, token);
+    if (!service) return unproven('SERVICE_NOT_FOUND_OR_HIDDEN', stage);
+    if (service.id !== SERVICE_ID || service.ownerId !== OWNER_ID) throw new Error('SERVICE_IDENTITY_MISMATCH');
+
     // Only group metadata and the one requested key are read. Never enumerate group values.
+    stage = 'GROUP_METADATA';
     const candidates = [];
     const seen = new Set();
+    const cursors = new Set();
     let cursor = null;
     for (let page = 0; page < 10; page++) {
       const url = new URL('/v1/env-groups', 'https://api.render.com');
-      url.searchParams.append('ownerId[]', OWNER_ID);
+      url.searchParams.append('ownerId', OWNER_ID);
       url.searchParams.set('limit', '100');
       if (cursor) url.searchParams.set('cursor', cursor);
       const groups = await renderGet(fetchImpl, url.pathname + url.search, token);
-      if (!Array.isArray(groups)) throw new Error('GROUP_LIST_INVALID');
+      if (!Array.isArray(groups) || groups.length > 100) throw new Error('GROUP_LIST_INVALID');
       for (const item of groups) {
         const group = item?.envGroup || item;
-        if (group?.id && Array.isArray(group.serviceLinks) &&
-            group.serviceLinks.some(link => link.id === SERVICE_ID) && !seen.has(group.id)) {
+        if (!group || typeof group.id !== 'string' || !Array.isArray(group.serviceLinks) ||
+            group.serviceLinks.some(link => !link || typeof link.id !== 'string')) throw new Error('GROUP_LIST_INVALID');
+        if (!group.serviceLinks.some(link => link.id === SERVICE_ID)) continue;
+        if (group.ownerId !== OWNER_ID) throw new Error('GROUP_OWNER_MISMATCH');
+        if (!/^evg-[a-z0-9]+$/.test(group.id)) throw new Error('GROUP_ID_INVALID');
+        if (!seen.has(group.id)) {
           seen.add(group.id);
           candidates.push(group.id);
         }
       }
-      if (groups.length < 100) break;
+      // Cursor wrappers may have short pages; do not truncate a supplied cursor.
       const next = groups.at(-1)?.cursor;
-      if (typeof next !== 'string' || !next || next === cursor) throw new Error('GROUP_PAGING_INCOMPLETE');
-      cursor = next;
+      if (!groups.length || (next == null && groups.length < 100)) break;
+      if (typeof next !== 'string' || !next || cursors.has(next)) throw new Error('GROUP_PAGING_INCOMPLETE');
       if (page === 9) throw new Error('GROUP_PAGING_EXCEEDED');
+      cursors.add(next);
+      cursor = next;
     }
+    stage = 'GROUP_FLAG';
     const values = [];
     for (const id of candidates) {
       if (!/^evg-[a-z0-9]+$/.test(id)) throw new Error('GROUP_ID_INVALID');
@@ -202,9 +238,9 @@ export async function readTinyFishConfig({ token, fetchImpl = fetch } = {}) {
         runtimeValidated: false };
     }
     return { status: 'NOT_PROVEN', enabled: null, reason: values.length ? 'GROUP_COLLISION' : 'KEY_NOT_FOUND' };
-  } catch {
-    // Do not emit provider response bodies, variable values, or exception text.
-    return { status: 'NOT_PROVEN', enabled: null, reason: 'RENDER_READ_FAILED' };
+  } catch (error) {
+    // Fixed stage and reason only: no response bodies, raw values or exception text.
+    return unproven(safeRenderFailure(error), stage);
   }
 }
 
@@ -237,6 +273,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   } else if (process.argv.includes('--flag')) {
     const report = await readTinyFishConfig({ token: process.env.RENDER_API_KEY_TEST });
     console.log('TINYFISH_FLAG_CONFIG_EVIDENCE ' + JSON.stringify(report));
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### TRUST Render flag – configuration only\n```json\n' + JSON.stringify(report) + '\n```\n');
+    }
   } else {
     console.error('USAGE: --health or --flag');
     process.exitCode = 2;

@@ -78,10 +78,11 @@ test('linked groups are considered only after direct key 404; collisions fail cl
   const fake = (values) => async (url, options) => {
     const path = new URL(url).pathname;
     assert.equal(options.method, 'GET');
+    if (path === '/v1/services/srv-dau1rp893c1s73cdhm1g') return toResponse({ id: 'srv-dau1rp893c1s73cdhm1g', ownerId: 'tea-d90o4rj7uimc739i86ug' });
     if (path.startsWith('/v1/services/')) return toResponse({ error: 'not found' }, 404);
     if (path === '/v1/env-groups') return toResponse([
-      { id: 'evg-aaa', serviceLinks: [{ id: 'srv-dau1rp893c1s73cdhm1g' }] },
-      { id: 'evg-bbb', serviceLinks: [{ id: 'srv-dau1rp893c1s73cdhm1g' }] },
+      { id: 'evg-aaa', ownerId: 'tea-d90o4rj7uimc739i86ug', serviceLinks: [{ id: 'srv-dau1rp893c1s73cdhm1g' }] },
+      { id: 'evg-bbb', ownerId: 'tea-d90o4rj7uimc739i86ug', serviceLinks: [{ id: 'srv-dau1rp893c1s73cdhm1g' }] },
       { id: 'evg-foreign', serviceLinks: [{ id: 'srv-other' }] },
     ]);
     if (path.includes('evg-aaa')) return toResponse({ key: 'CAPITAL_AI_TINYFISH_READBACK_ENABLED', value: values[0] });
@@ -97,14 +98,15 @@ test('linked groups are considered only after direct key 404; collisions fail cl
 test('missing flag, unreadable API, and arbitrary provider responses never claim verified state', async () => {
   const missing = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async (url) => {
     const path = new URL(url).pathname;
+    if (path === '/v1/services/srv-dau1rp893c1s73cdhm1g') return toResponse({ id: 'srv-dau1rp893c1s73cdhm1g', ownerId: 'tea-d90o4rj7uimc739i86ug' });
     if (path.startsWith('/v1/services/')) return toResponse({}, 404);
     return toResponse([]);
   } });
   assert.deepEqual(missing, { status: 'NOT_PROVEN', enabled: null, reason: 'KEY_NOT_FOUND' });
   const failed = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => toResponse({ error: 'denied' }, 403) });
-  assert.deepEqual(failed, { status: 'NOT_PROVEN', enabled: null, reason: 'RENDER_READ_FAILED' });
+  assert.deepEqual(failed, { status: 'NOT_PROVEN', enabled: null, reason: 'RENDER_HTTP_403', stage: 'SERVICE_FLAG' });
   const malformed = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => toResponse({ secret: 'other' }) });
-  assert.deepEqual(malformed, { status: 'NOT_PROVEN', enabled: null, reason: 'RENDER_READ_FAILED' });
+  assert.deepEqual(malformed, { status: 'NOT_PROVEN', enabled: null, reason: 'FLAG_SHAPE_INVALID', stage: 'SERVICE_FLAG' });
 });
 
 test('Render source SHA is reported separately and never promoted to attestation', () => {
@@ -189,4 +191,71 @@ test('health CLI diagnostics allow only bounded fixed reason codes, never except
   assert.equal(safeHealthFailure(new Error('network secret')),'HEALTH_FETCH_OR_IO_FAILED');
   assert.equal(safeHealthFailure({message:'HEALTH_HTTP_503'}),'HEALTH_FETCH_OR_IO_FAILED');
   assert.equal(safeHealthFailure(Object.assign(new Error('secret'),{name:'TimeoutError'})),'HEALTH_FETCH_TIMEOUT');
+});
+
+test('Render auth, rate-limit and server errors are distinct and sanitized, with no fallback', async () => {
+  for (const status of [401, 403, 429, 500, 503]) {
+    let calls = 0;
+    const result = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => {
+      calls++; return toResponse({ error: 'private-provider-body' }, status);
+    } });
+    assert.deepEqual(result, { status: 'NOT_PROVEN', enabled: null, reason: 'RENDER_HTTP_' + status, stage: 'SERVICE_FLAG' });
+    assert.equal(calls, 1);
+    assert.ok(!JSON.stringify(result).includes('private-provider-body'));
+  }
+  const timeout = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => {
+    throw Object.assign(new Error('private URL or token'), { name: 'TimeoutError' });
+  } });
+  assert.equal(timeout.reason, 'RENDER_FETCH_TIMEOUT');
+  const invalid = await readTinyFishConfig({ token: 'synthetic\n', fetchImpl: async () => { throw new Error('unexpected'); } });
+  assert.equal(invalid.reason, 'READ_TOKEN_FORMAT_INVALID');
+});
+
+test('direct 404 does not imply key absence for a hidden or foreign service', async () => {
+  for (const [metadata, code] of [[null, 'SERVICE_NOT_FOUND_OR_HIDDEN'], [{ id: 'srv-dau1rp893c1s73cdhm1g', ownerId: 'foreign' }, 'SERVICE_IDENTITY_MISMATCH']]) {
+    let calls = 0;
+    const result = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => {
+      calls++; return calls === 1 || metadata === null ? toResponse({}, 404) : toResponse(metadata);
+    } });
+    assert.equal(result.reason, code);
+    assert.equal(result.stage, 'SERVICE_METADATA');
+    assert.equal(calls, 2);
+  }
+});
+
+test('group metadata filter uses ownerId and follows a short cursor page', async () => {
+  const group = { id: 'evg-aaa', ownerId: 'tea-d90o4rj7uimc739i86ug', serviceLinks: [{ id: 'srv-dau1rp893c1s73cdhm1g' }] };
+  const paths = [];
+  const result = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async (url) => {
+    const u = new URL(url); paths.push(u.pathname);
+    if (u.pathname === '/v1/services/srv-dau1rp893c1s73cdhm1g') return toResponse({ id: 'srv-dau1rp893c1s73cdhm1g', ownerId: 'tea-d90o4rj7uimc739i86ug' });
+    if (u.pathname.startsWith('/v1/services/')) return toResponse({}, 404);
+    if (u.pathname === '/v1/env-groups') {
+      assert.equal(u.searchParams.get('ownerId'), 'tea-d90o4rj7uimc739i86ug');
+      assert.equal(u.searchParams.has('ownerId[]'), false);
+      return toResponse(u.searchParams.has('cursor') ? [] : [{ envGroup: group, cursor: 'next' }]);
+    }
+    return toResponse({ key: 'CAPITAL_AI_TINYFISH_READBACK_ENABLED', value: 'true' });
+  } });
+  assert.equal(result.status, 'VERIFIED_CONFIG');
+  assert.equal(result.enabled, true);
+  assert.equal(paths.filter(p => p === '/v1/env-groups').length, 2);
+});
+
+test('foreign linked group and malformed metadata stop before any group value read', async () => {
+  for (const [metadata, code] of [
+    [[{ id: 'evg-aaa', ownerId: 'foreign', serviceLinks: [{ id: 'srv-dau1rp893c1s73cdhm1g' }] }], 'GROUP_OWNER_MISMATCH'],
+    [[{ id: 'evg-aaa' }], 'GROUP_LIST_INVALID'],
+  ]) {
+    let calls = 0;
+    const result = await readTinyFishConfig({ token: 'synthetic', fetchImpl: async () => {
+      calls++;
+      if (calls === 1) return toResponse({}, 404);
+      if (calls === 2) return toResponse({ id: 'srv-dau1rp893c1s73cdhm1g', ownerId: 'tea-d90o4rj7uimc739i86ug' });
+      return toResponse(metadata);
+    } });
+    assert.equal(result.reason, code);
+    assert.equal(result.stage, 'GROUP_METADATA');
+    assert.equal(calls, 3);
+  }
 });
