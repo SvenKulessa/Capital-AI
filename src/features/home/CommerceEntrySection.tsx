@@ -1,3 +1,4 @@
+import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { useLocale } from '../../i18n/LocaleProvider';
 import type { Locale } from '../../i18n/messages';
 import { PRICING_CATALOG, displayPriceEur } from '../../data/pricingCatalog';
@@ -40,8 +41,8 @@ export function CommerceEntryContent({ locale, onNavigate }: { locale: Locale; o
           { title: VOCABULARY_OFFER.name, description: offer[1], cta: offer[2], path: '/learning', price: displayPriceEur(VOCABULARY_OFFER.amountCents) + ' €' + (locale === 'de' && VOCABULARY_OFFER.taxBehavior === 'inclusive' ? ' inkl. MwSt.' : '') },
           { title: copy[5], description: copy[6], cta: copy[7], path: '/pricing', price: 'Starter · ' + displayPriceEur(PRICING_CATALOG.starter.monthly.amountCents) + ' € / ' + (locale === 'de' ? 'Monat' : locale === 'en' ? 'month' : locale === 'fr' ? 'mois' : locale === 'it' ? 'mese' : locale === 'pt' ? 'mês' : 'mes') },
           { title: offer[3], description: offer[4], cta: offer[5], path: '/governance-evidence-sprint', price: offer[6] },
-        ]).map(item => (
-          <article key={item.title} className="flex min-w-0 flex-col rounded-2xl border border-slate-700 bg-slate-950 p-5">
+        ]).map((item, index) => (
+          <article key={item.title} style={{ borderTopColor: [BRAND_COLORS.gold, BRAND_COLORS.pink, BRAND_COLORS.violet, BRAND_COLORS.green][index] }} className="flex min-w-0 flex-col rounded-2xl border border-t-[3px] border-slate-700 bg-slate-950 p-5">
             <h3 className="text-lg font-semibold text-white">{item.title}</h3>
             {item.price && <p className="mt-3 text-lg font-semibold text-amber-200">{item.price}</p>}
             {item.description && <p className="mb-4 mt-2 flex-1 text-sm leading-relaxed text-slate-300">{item.description}</p>}

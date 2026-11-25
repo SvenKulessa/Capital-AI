@@ -1,3 +1,4 @@
+import { BRAND_COLORS } from '../../shared/hub-branding.mjs';
 import { accountDisplay, verifiedOwner } from '../../shared/account-display.mjs';
 /**
  * ============================================================================
@@ -249,6 +250,9 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative z-30 flex w-full flex-wrap items-center justify-between gap-2 border-b border-slate-800 px-3 py-3 sm:px-6">
+      <div aria-hidden="true" data-universe-spectrum="header" className="pointer-events-none absolute inset-x-0 bottom-0 flex h-[3px] overflow-hidden">
+        {Object.entries(BRAND_COLORS).map(([name, color]) => <span key={name} data-universe-color={name} className="flex-1" style={{ backgroundColor: color }} />)}
+      </div>
       {/* LEFT SIDE: Hamburger Navigation Button & Brand Logo */}
       <div className="flex min-w-0 items-center gap-2">
         {/* Hamburger Menu Button on the Left */}

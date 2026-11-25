@@ -42,3 +42,9 @@ test('learning teaser renders at most three articles with dates and descriptive 
   assert.match(html, /Lesen:/);
   assert.doesNotMatch(html, /Mehr erfahren|DRAFT|REVIEW_REQUIRED/);
 });
+
+ test('learning cards use decorative Universe accents with text categories', () => {
+  const html = renderToStaticMarkup(<HomeLatestLearning onNavigate={() => {}} />);
+  for (const color of ['#60A5FA', '#4ADE80', '#F9A8D4']) assert.ok(html.includes(color), color);
+  assert.match(html, /Finanzwissen/);
+});

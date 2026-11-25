@@ -1,3 +1,4 @@
+import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { LEARNING_ARTICLES, latestLearningArticles } from '../../data/learningArticles';
 
 const teasers: Record<string, { title: string; summary: string }> = {
@@ -34,7 +35,7 @@ export function HomeLatestLearning({ onNavigate }: { onNavigate: (path: string) 
       </a>
     </div>
     <div className="grid gap-4 md:grid-cols-3">
-      {articles.map(article => <article key={article.id} className="flex min-w-0 flex-col rounded-2xl border border-slate-700 bg-slate-950 p-5">
+      {articles.map((article, index) => <article key={article.id} style={{ borderTopColor: [BRAND_COLORS.blue, BRAND_COLORS.green, BRAND_COLORS.pink][index] }} className="flex min-w-0 flex-col rounded-2xl border border-t-[3px] border-slate-700 bg-slate-950 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
           <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-200">{{ learning: "Finanzwissen", marketscreener: "Marktanalyse", studio: "Methoden und Werkzeuge" }[article.hub]}</span>
           <time dateTime={article.publishedAt}>{new Intl.DateTimeFormat('de-DE').format(new Date(article.publishedAt+'T12:00:00Z'))}</time>

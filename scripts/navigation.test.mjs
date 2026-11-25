@@ -641,3 +641,12 @@ test('profile menu shares all five private routes on the right and authenticated
   assert.match(header, /inline-flex min-h-11 items-center rounded-lg/);
   assert.match(header, /drawer-account-toggle/);
 });
+
+ test('public site chrome uses the canonical seven Universe colours, not status colours', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
+  assert.equal(Object.keys(BRAND_COLORS).length, 7);
+  assert.match(header, /Object\.entries\(BRAND_COLORS\)/);
+  assert.match(header, /data-universe-spectrum="header"/);
+  assert.match(footer, /Object\.values\(BRAND_COLORS\)/);
+});

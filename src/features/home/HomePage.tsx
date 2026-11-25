@@ -1,3 +1,4 @@
+import { BRAND_COLORS } from '../../../shared/hub-branding.mjs';
 import { lazy, Suspense } from 'react';
 import { Hero } from '../../components/Hero';
 import { openHeroBuddy } from '../../components/heroBuddyEvents';
@@ -72,7 +73,7 @@ export function HomePage({ onNavigate, onOpenModule, onOpenSectorAnalysis, onOpe
         <div className="rounded-3xl border border-slate-700 bg-slate-950 p-5 sm:p-8">
           <h2 id="public-trust-title" className="text-2xl font-bold text-white sm:text-3xl">Warum CAPITAL-AI?</h2>
           <ul className="mt-6 grid gap-5 sm:grid-cols-2">
-            {trustPoints.map(([title, description]) => <li key={title} className="border-l-2 border-amber-300/60 pl-4">
+            {trustPoints.map(([title, description], index) => <li key={title} style={{ borderLeftColor: [BRAND_COLORS.cyan, BRAND_COLORS.blue, BRAND_COLORS.green, BRAND_COLORS.rose][index] }} className="border-l-[3px] pl-4">
               <h3 className="font-semibold text-white">{title}</h3>
               <p className="mt-2 text-sm leading-6 text-slate-300">{description}</p>
             </li>)}

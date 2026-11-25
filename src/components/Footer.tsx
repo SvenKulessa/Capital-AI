@@ -1,3 +1,4 @@
+import { BRAND_COLORS } from '../../shared/hub-branding.mjs';
 import React from 'react';
 import { cookieSettingsLabel } from '../i18n/cookieSettingsLabel';
 import { useLocale } from '../i18n/LocaleProvider';
@@ -31,7 +32,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
     <footer className="mx-auto mt-8 max-w-6xl border-t border-slate-800 px-4 pb-8 pt-8 text-center sm:px-6">
       {/* Thin elegant separator with golden center glow */}
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-6" />
+      <div aria-hidden="true" data-universe-spectrum="footer" className="mb-6 h-[3px] w-full rounded-full" style={{ background: 'linear-gradient(90deg, ' + Object.values(BRAND_COLORS).join(', ') + ')' }} />
 
       {/* Central brand artwork */}
       <div className="flex justify-center mb-4">
