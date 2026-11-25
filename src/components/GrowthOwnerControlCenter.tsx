@@ -74,6 +74,19 @@ export function GrowthOwnerControlCenter() {
     }catch{setMessage('Analytics-Arbeitsstand nicht übernommen; Historie unverändert.');}
     finally{setPending(false);}
   }
+  async function readPrivateProviders(){
+    if(pending)return;setPending(true);
+    try{
+      const response=await fetch('/api/profile/growth-intelligence/private-provider-status',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(65000)});
+      if(!response.ok)throw Error('provider readback unavailable');
+      const data=await response.json();
+      const statuses=['DISABLED','AUTH_REQUIRED','IDENTITY_MISMATCH','NOT_PROVEN','CAPABILITY_NOT_PROVEN','READ_RESPONSE_RECEIVED'];
+      if(data?.schema!=='CAPITAL_AI_PRIVATE_GROWTH_PROVIDER_STATUS@1'||data.private!==true||data.readOnly!==true||data.publicPublishAllowed!==false||typeof data.observedAt!=='string'||!Number.isFinite(Date.parse(data.observedAt))||!Array.isArray(data.sources)||data.sources.length!==2||new Set(data.sources.map((s:{source:string})=>s.source)).size!==2||!data.sources.every((s:{source:string;status:string})=>['HYPD_MCP','OPENAI_ADS'].includes(s.source)&&statuses.includes(s.status)))throw Error('invalid provider readback');
+      const updates:GrowthRow[]=data.sources.map((s:{source:string;status:string})=>({...makeRow(s.source==='HYPD_MCP'?'hypd-mcp':'openai-ads',s.source==='HYPD_MCP'?'HYPD MCP':'OpenAI Advertiser API','GROWTH','Kontobindung, Anbieterrechte und Kosten separat prüfen'),priority:'P0',endpoint:'/api/profile/growth-intelligence/private-provider-status',auth:s.status,operation:'Privater Read-only Readback · '+s.status,evidence:'Serverstatus '+data.observedAt,status:'NOT_PROVEN'}));
+      setHistory(h=>{const last=h.at(-1)!;const ids=new Set(updates.map(r=>r.id));return appendSnapshot(h,[...last.rows.filter(r=>!ids.has(r.id)),...updates],new Date().toISOString());});
+      setMessage('HYPD und Ads getrennt gelesen; keine Kampagnen-, Tracking- oder Lizenzfreigabe.');
+    }catch{setMessage('Privater HYPD-/Ads-Readback NOT_PROVEN.');}finally{setPending(false);}
+  }
   async function archiveRequest(mode: 'list' | 'save' | 'load' | 'restore', id?: string, file?: File) {
     if (pending) return;
     setPending(true);
@@ -211,6 +224,7 @@ export function GrowthOwnerControlCenter() {
     </nav>
     <div className="flex flex-wrap gap-2">
       <button type="button" className={button} disabled={pending} onClick={() => void readAnalytics()}>GA4, X-Kampagne und GSC Read-only prüfen</button>
+      <button type="button" className={button} disabled={pending} onClick={()=>void readPrivateProviders()}>HYPD und Ads Read-only prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
       <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>
