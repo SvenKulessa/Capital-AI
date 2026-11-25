@@ -17,3 +17,35 @@ test('pilot uses existing contract interfaces and separates human-only channel',
 test('no content handoff without research and authority boundaries',()=>{assert.throws(()=>buildSmartcopyPilot(plan,input([a]),deps));assert.throws(()=>buildSmartcopyPilot(plan,input(),{...deps,planContentCampaign:()=>({publication:{publicPublishAllowed:true}})}));assert.throws(()=>buildSmartcopyPilot(plan,input(),{...deps,buildDraftContentSocialPackage:()=>({approvals:[{}],deliveries:[]})}));});
 
 test('forged projected research cannot replace original input',()=>{assert.throws(()=>buildSmartcopyPilot(plan,round(),deps));assert.throws(()=>researchDigest({...a,productId:['ai-smartcopy']}));});
+
+import {reconcileSmartcopyConversionCandidates} from './product-market-research.mjs';
+const cd=x=>x.repeat(64), scope={campaignId:'smartcopy-'+'a'.repeat(24),releaseSha256:cd('b')};
+function conversionFixture(){
+ const common={productId:'ai-smartcopy',...scope,subjectKey:cd('c')};
+ return {asOf:'2026-11-25T12:00:00.000Z',start:'2026-11-24T00:00:00.000Z',end:'2026-11-25T00:00:00.000Z',
+ consents:[{...common,receiptSha256:cd('d'),source:'SERVER_CONSENT_LEDGER',purpose:'PRODUCT_CONVERSION',grantedAt:'2026-11-24T01:00:00.000Z',expiresAt:'2026-12-24T01:00:00.000Z',revokedAt:null}],
+ payments:[{...common,receiptSha256:cd('e'),source:'STRIPE_ONE_TIME_RECEIPT',consentSha256:cd('d'),chargeKey:cd('f'),billing:'one_time',live:true,currency:'EUR',paidAt:'2026-11-24T10:00:00.000Z',observedAt:'2026-11-25T11:00:00.000Z',paidCents:499,refundedCents:0,disputed:false,licenseState:'GRANTED'}]};
+}
+test('one-time consent-bound candidates never become verified metrics or leak pseudonyms',()=>{
+ const r=reconcileSmartcopyConversionCandidates(conversionFixture(),scope);
+ assert.equal(r.candidatePayments,1);assert.equal(r.candidateActiveLicenses,1);assert.equal(r.candidateNetPaidCents,499);
+ assert.deepEqual(r.verifiedMetrics,{paidLicenses:null,revenueCents:null,refunds:null});
+ assert.doesNotMatch(JSON.stringify(r),new RegExp(cd('c')));assert.equal(r.automaticChanges,false);
+});
+test('partial refund, terminal full refund and dispute produce distinct candidates',()=>{
+ for(const [refund,disputed,state,active,net] of [[100,false,'GRANTED',1,399],[499,false,'REVOKED',0,0],[0,true,'REVOKED',0,0]]){
+ const v=conversionFixture();Object.assign(v.payments[0],{refundedCents:refund,disputed,licenseState:state});
+ const r=reconcileSmartcopyConversionCandidates(v,scope);assert.equal(r.candidateActiveLicenses,active);assert.equal(r.candidateNetPaidCents,net);
+ }
+});
+test('withdrawal and empty candidate cohort remain null, never zero actual sales',()=>{
+ const v=conversionFixture();v.consents[0].revokedAt='2026-11-25T01:00:00.000Z';
+ assert.equal(reconcileSmartcopyConversionCandidates(v,scope).candidatePayments,null);
+ const empty=conversionFixture();empty.payments=[];assert.equal(reconcileSmartcopyConversionCandidates(empty,scope).candidateNetPaidCents,null);
+});
+test('subscription, duplicate, cross-campaign, wrong release, stale readback and unreversed refund denied',()=>{
+ for(const patch of [{billing:'subscription'},{campaignId:'smartcopy-'+'b'.repeat(24)},{releaseSha256:cd('a')},{observedAt:'2026-11-24T11:00:00.000Z'},{refundedCents:499},{live:false},{clipboard:'secret'}]){
+ const v=conversionFixture();Object.assign(v.payments[0],patch);assert.throws(()=>reconcileSmartcopyConversionCandidates(v,scope));
+ }
+ const v=conversionFixture();v.payments.push({...v.payments[0]});assert.throws(()=>reconcileSmartcopyConversionCandidates(v,scope));
+});

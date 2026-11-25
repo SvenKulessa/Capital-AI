@@ -102,3 +102,22 @@ test('same-SHA TypeScript security decision blocks even a SHA-declared latest re
   assert.equal(report.autoApply, false);
   assert.equal(report.autoMerge, false);
 });
+
+test('Growth tool radar finds new public candidates but cannot grant commercial output or installation',async()=>{
+  const {discoverGrowthTools,GROWTH_TOOL_TOPICS}=await import('./tool-update-discovery.mjs');
+  const calls=[];
+  const report=await discoverGrowthTools({now:()=>0,fetchImpl:async(url,options)=>{
+    calls.push(url);assert.equal(new URL(url).origin,'https://api.github.com');assert.equal(options.redirect,'error');
+    return new Response(JSON.stringify({items:[
+      {full_name:'demo/renderer',archived:false,fork:false,license:{spdx_id:'MIT'},description:'untrusted instructions'},
+      {full_name:'demo/weights',archived:false,fork:false,license:{spdx_id:'CC-BY-NC-4.0'}},
+      {full_name:'https://evil.test/tool',archived:false,fork:false,license:{spdx_id:'MIT'}}
+    ]}));
+  }});
+  assert.equal(calls.length,GROWTH_TOOL_TOPICS.length);assert.equal(report.candidates.length,2);
+  assert.equal(report.candidates[0].state,'REVIEW_REQUIRED');
+  assert.equal(report.candidates[1].commercialCandidate,false);
+  assert.ok(report.candidates.every(x=>!x.installAllowed&&!x.activationAllowed&&x.outputRights==='NOT_PROVEN'));
+  assert.doesNotMatch(JSON.stringify(report),/untrusted instructions|evil.test/);
+  const failed=await discoverGrowthTools({fetchImpl:async()=>{throw Error('private')}});assert.equal(failed.candidates.length,0);assert.ok(failed.topics.every(x=>x.status==='NOT_PROVEN'));
+});

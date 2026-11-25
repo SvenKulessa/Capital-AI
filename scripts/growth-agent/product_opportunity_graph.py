@@ -427,9 +427,47 @@ class ConversionReadState(TypedDict, total=False):
     report: dict
 
 
+
+def smartcopy_conversion_valid(p):
+    # Same offline candidate contract as existing CLI. No verified metrics admitted.
+    from datetime import datetime
+    keys = {"contractVersion", "productId", "campaignId", "asOf", "status",
+            "candidatePayments", "candidateActiveLicenses", "candidateFullRefunds",
+            "candidatePartialRefunds", "candidateDisputes", "candidateNetPaidCents",
+            "verifiedMetrics", "providerAuthentication", "publicPublishAllowed",
+            "liveSalesAllowed", "automaticChanges", "providerCalls", "campaignSpend"}
+    if (not isinstance(p, dict) or set(p) != keys
+            or p["contractVersion"] != "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1"
+            or p["productId"] != "ai-smartcopy" or not isinstance(p["campaignId"], str)
+            or not re.fullmatch(r"smartcopy-[a-f0-9]{24}", p["campaignId"])
+            or p["status"] != "SOURCE_RECORDED_NOT_AUTHENTICATED"
+            or p["providerAuthentication"] != "NOT_PROVEN"
+            or p["verifiedMetrics"] != {"paidLicenses": None, "revenueCents": None, "refunds": None}
+            or any(p[k] is not False for k in ("publicPublishAllowed", "liveSalesAllowed", "automaticChanges"))
+            or any(type(p[k]) is not int or p[k] != 0 for k in ("providerCalls", "campaignSpend"))):
+        return False
+    try:
+        if not isinstance(p["asOf"], str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", p["asOf"]):
+            return False
+        datetime.fromisoformat(p["asOf"].replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return False
+    n = p["candidatePayments"]
+    values = [p[k] for k in ("candidateActiveLicenses", "candidateFullRefunds", "candidatePartialRefunds", "candidateDisputes", "candidateNetPaidCents")]
+    if n is None:
+        return all(v is None for v in values)
+    if type(n) is not int or not 1 <= n <= 1000:
+        return False
+    if any(type(v) is not int or not 0 <= v <= n for v in values[:4]) or type(values[4]) is not int or not 0 <= values[4] <= n * 100000000:
+        return False
+    return values[1] + values[2] <= n and values[0] + max(values[1], values[3]) <= n
+
+
 def conversion_source_review(state: ConversionReadState) -> dict:
     from datetime import datetime, timedelta
     p = state.get("payload")
+    if isinstance(p, dict) and p.get("contractVersion") == "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1":
+        return {"conversion_valid": smartcopy_conversion_valid(p)}
     keys = {"contractVersion", "campaignId", "contentId", "start", "end", "asOf",
             "status", "candidateRegistrations", "candidatePaidSubscribers",
             "candidateInitialInvoiceCents", "registrations", "paidSubscriptions",
@@ -472,6 +510,13 @@ def conversion_quality(state: ConversionReadState) -> dict:
     ok = state.get("conversion_valid") is True and all(
         any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in state.get("findings", []))
         for domain in ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH"))
+    p = state.get("payload")
+    if isinstance(p, dict) and p.get("contractVersion") == "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1":
+        return {"report": {"contractVersion": "CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1",
+            "engine": "langgraph", "productId": "ai-smartcopy", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+            "nextAction": "VERIFY_SOURCE_AND_COHORT" if ok else "REPAIR_INPUT",
+            "providerAuthentication": "NOT_PROVEN_BY_GRAPH", "verifiedMetrics": {"paidLicenses": None, "revenueCents": None, "refunds": None},
+            "publicationAllowed": False, "costActivationAllowed": False, "automaticChanges": False}}
     return {"report": {"contractVersion": "CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1",
         "engine": "langgraph", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
         "nextAction": "VERIFY_SOURCE_AND_COHORT" if ok else "REPAIR_INPUT",

@@ -364,5 +364,38 @@ class ProductChannelReviewTests(unittest.TestCase):
         self.assertEqual(report["attributionEvents"], [])
 
 
+
+class SmartcopyConversionReviewTests(unittest.TestCase):
+    def fixture(self):
+        return {"contractVersion": "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1",
+                "productId": "ai-smartcopy", "campaignId": "smartcopy-" + "a" * 24,
+                "asOf": "2026-11-25T12:00:00.000Z", "status": "SOURCE_RECORDED_NOT_AUTHENTICATED",
+                "candidatePayments": 2, "candidateActiveLicenses": 1, "candidateFullRefunds": 1,
+                "candidatePartialRefunds": 0, "candidateDisputes": 0, "candidateNetPaidCents": 499,
+                "verifiedMetrics": {"paidLicenses": None, "revenueCents": None, "refunds": None},
+                "providerAuthentication": "NOT_PROVEN", "publicPublishAllowed": False, "liveSalesAllowed": False,
+                "automaticChanges": False, "providerCalls": 0, "campaignSpend": 0}
+
+    def test_valid_and_forged_source(self):
+        p = self.fixture()
+        self.assertTrue(graph.smartcopy_conversion_valid(p))
+        for change in ({"productId": "smartclip"}, {"candidatePayments": True}, {"candidateActiveLicenses": 2},
+                       {"candidateNetPaidCents": -1}, {"verifiedMetrics": {"paidLicenses": 1}},
+                       {"liveSalesAllowed": True}, {"providerAuthentication": "VERIFIED"}, {"campaignSpend": 1}):
+            self.assertFalse(graph.smartcopy_conversion_valid({**p, **change}))
+
+    def test_existing_graph_never_promotes_candidate_aggregates(self):
+        compiled = graph.build_conversion_read_graph()
+        report = compiled.invoke({"payload": self.fixture(), "findings": []}, {"recursion_limit": 8})["report"]
+        self.assertEqual(report["contractVersion"], "CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1")
+        self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(report["verifiedMetrics"], {"paidLicenses": None, "revenueCents": None, "refunds": None})
+        self.assertFalse(report["publicationAllowed"])
+        self.assertNotIn("candidatePayments", report)
+        p = self.fixture()
+        p["liveSalesAllowed"] = True
+        self.assertEqual(compiled.invoke({"payload": p, "findings": []}, {"recursion_limit": 8})["report"]["quality"], "BLOCKED")
+
+
 if __name__ == "__main__":
     unittest.main()
