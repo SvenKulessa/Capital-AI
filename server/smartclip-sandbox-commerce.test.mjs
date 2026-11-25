@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash, createHmac } from 'node:crypto';
+import { createHash, createHmac, generateKeyPairSync, sign as signDevice } from 'node:crypto';
 import { Readable } from 'node:stream';
 import { createSmartclipSandboxCommerce, SMARTCLIP_PINNED_SHA256, SMARTCLIP_SKU, inspectSmartclipReleaseBytes, preflightSmartclipSandboxDelivery, prepareSmartclipPrivateDownload } from './smartclip-sandbox-commerce.mjs';
 
@@ -41,7 +41,7 @@ const reply = (value, status = 200) => new Response(JSON.stringify(value), {
   status, headers: { 'content-type': 'application/json' },
 });
 function makeFixture(options = {}) {
-  const calls = [], ledger = new Map();
+  const calls = [], ledger = new Map(), devices = new Map();
   const opt = { registered: true, ...options };
   const session = { id:sid, mode:'payment', livemode:false, status:'complete',
     payment_status:'paid', currency:'eur', amount_subtotal:249, amount_total:249,
@@ -73,6 +73,25 @@ function makeFixture(options = {}) {
     const url = String(endpoint);
     calls.push({ url, body:init.body, headers:init.headers, method:init.method || 'GET' });
     if (opt.failProvider && url.includes(opt.failProvider)) return reply({error:'bad'}, 503);
+    if (url.endsWith('/rest/v1/rpc/capital_ai_smartclip_sandbox_device')) {
+      const d=JSON.parse(init.body);
+      const paid=(id)=>ledger.get(id)?.status==='paid' && ledger.get(id)?.userId===d._user_id;
+      const own=x=>x.user===d._user_id && x.fingerprint===d._fingerprint;
+      if(d._action==='challenge'){
+        const payment=[...ledger.keys()].find(paid);
+        if(!payment||[...devices.values()].some(x=>own(x)&&x.payment===payment&&['active','revoked'].includes(x.state)))return reply({issued:false});
+        devices.set(d._challenge,{user:d._user_id,fingerprint:d._fingerprint,payment,state:'pending'});
+        return reply({issued:true});
+      }
+      if(d._action==='activate'){
+        const x=devices.get(d._challenge);
+        if(!x||!own(x)||!paid(x.payment)||x.state!=='pending')return reply({activated:false});
+        x.state='active'; return reply({activated:true});
+      }
+      if(d._action==='status')return reply({active:[...devices.values()].some(x=>own(x)&&paid(x.payment)&&x.state==='active')});
+      if(d._action==='revoke'){for(const x of devices.values())if(own(x))x.state='revoked';return reply({revoked:true});}
+      return reply({},400);
+    }
     if (url.includes('/rest/v1/rpc/capital_ai_smartclip_sandbox')) {
       const data = JSON.parse(init.body);
       if (data._action === 'grant') {
@@ -569,4 +588,47 @@ test('private delivery contract rejects unapproved, foreign or tampered release 
   const result=await call('download','GET',undefined,{fixture,readAdmittedPrivateRelease:async()=>artifact});
   assert.equal(result.statusCode,503);
   assert.deepEqual(result.payload,{error:'delivery_unavailable'});
+});
+
+// The JS fixture checks HTTP and crypto; the existing isolated PG CI tests the atomic ledger.
+test('device pairing is opt-in, authenticated, exact-shape, signed and replay-safe',async()=>{
+  const fixture=makeFixture(), cfg={...env,SMARTCLIP_SANDBOX_DEVICE_ENABLED:'true'};
+  const opts={fixture,cfg};
+  const pair=generateKeyPairSync('ed25519');
+  const publicKey=pair.publicKey.export({type:'spki',format:'der'}).subarray(-32).toString('hex');
+  const request={publicKey};
+  assert.equal((await call('device-challenge','POST',request,{fixture})).statusCode,404);
+  assert.equal((await call('device-challenge','GET',undefined,opts)).statusCode,405);
+  assert.equal((await call('device-challenge','POST',request,{...opts,user:null})).statusCode,401);
+  assert.equal((await call('device-challenge','POST',request,{...opts,origin:false})).statusCode,403);
+  assert.equal((await call('device-challenge','POST',{...request,userId:otherUserId},opts)).statusCode,400);
+  assert.equal((await call('device-challenge','POST',request,opts)).statusCode,403);
+  const raw=event('checkout.session.completed',{id:sid});
+  assert.equal((await call('webhook','POST',raw,{fixture,headers:{'stripe-signature':sign(raw)}})).payload.granted,true);
+  const issued=await call('device-challenge','POST',request,opts);
+  assert.equal(issued.statusCode,200);assert.equal(issued.payload.expiresInSeconds,120);
+  assert.match(issued.payload.message,new RegExp(SMARTCLIP_PINNED_SHA256));
+  const activation={publicKey,challenge:issued.payload.challenge,signature:signDevice(null,Buffer.from(issued.payload.message),pair.privateKey).toString('hex')};
+  assert.equal((await call('device-activate','POST',{...activation,signature:'0'.repeat(128)},opts)).statusCode,403);
+  assert.equal((await call('device-activate','POST',activation,{...opts,user:otherUserId})).statusCode,403);
+  assert.equal((await call('device-activate','POST',activation,opts)).payload.active,true);
+  assert.equal((await call('device-activate','POST',activation,opts)).statusCode,403);
+  assert.equal((await call('device-status','POST',request,{...opts,user:otherUserId})).payload.active,false);
+  assert.equal((await call('device-status','POST',request,opts)).payload.active,true);
+  assert.equal((await call('device-challenge','POST',request,opts)).statusCode,403);
+  assert.equal((await call('device-revoke','POST',request,opts)).payload.revoked,true);
+  assert.equal((await call('device-status','POST',request,opts)).payload.active,false);
+  assert.equal((await call('device-challenge','POST',request,opts)).statusCode,403);
+  const pair2=generateKeyPairSync('ed25519');
+  const publicKey2=pair2.publicKey.export({type:'spki',format:'der'}).subarray(-32).toString('hex');
+  const third=await call('device-challenge','POST',{publicKey:publicKey2},opts);
+  const thirdProof={publicKey:publicKey2,challenge:third.payload.challenge,signature:signDevice(null,Buffer.from(third.payload.message),pair2.privateKey).toString('hex')};
+  assert.equal((await call('device-activate','POST',thirdProof,opts)).payload.active,true);
+  assert.equal((await call('device-status','POST',{publicKey:publicKey2},opts)).payload.active,true);
+  fixture.charge.refunded=true;fixture.charge.amount_refunded=249;
+  const refund=event('charge.refunded',{id:chargeId});
+  assert.equal((await call('webhook','POST',refund,{fixture,headers:{'stripe-signature':sign(refund)}})).payload.revoked,true);
+  assert.equal((await call('device-status','POST',request,opts)).payload.active,false);
+  assert.equal((await call('device-status','POST',{publicKey:publicKey2},opts)).payload.active,false);
+  assert.equal((await call('device-activate','POST',thirdProof,opts)).statusCode,403);
 });

@@ -1,6 +1,6 @@
 // CAPITAL-AI SmartClip: sandbox-only, fail-closed extension of existing commerce contracts.
 // No live key can activate this handler; no success-page fulfillment or synthetic receipts.
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual, createPublicKey, randomBytes, verify as verifySignature } from 'node:crypto';
 import { boundedJson, readJson, secureUrl } from './http-security.mjs';
 
 // Same Stripe v1 timestamp/HMAC contract as Blueprint Commerce. Keep this leaf module
@@ -36,6 +36,9 @@ const PRODUCT = /^prod_[A-Za-z0-9_]{6,240}$/;
 const REQ_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const IS_TEST_KEY = /^(rk|sk)_test_[A-Za-z0-9_]{10,}$/;
 const FORM_PRICE_CENTS = 249;
+function smartclipDeviceMessage(userId, fingerprint, challenge) {
+  return Buffer.from(['CAPITAL_AI_SMARTCLIP_DEVICE_TEST@1',userId,SMARTCLIP_SKU,SMARTCLIP_RELEASE,SMARTCLIP_PINNED_SHA256,SMARTCLIP_LICENSE,fingerprint,challenge].join('|'),'utf8');
+}
 // TEST-ONLY owner-approved downloadable non-recreational personal-use software.
 // Scope: technical Stripe TEST catalog classification, NOT commercial tax approval.
 // Enforce this exact tax code even if the provider catalog offers alternatives.
@@ -111,11 +114,11 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     return boundedJson(reply, 65536);
   }
 
-  async function rpc(action, params = {}) {
+  async function rpc(action, params = {}, functionName = 'capital_ai_smartclip_sandbox') {
     if (!db) throw Error('store_unavailable');
     const headers = { apikey: db.key, 'Content-Type': 'application/json' };
     if (db.key.startsWith('eyJ')) headers.Authorization = 'Bearer ' + db.key;
-    const reply = await fetchImpl(db.origin + '/rest/v1/rpc/capital_ai_smartclip_sandbox', {
+    const reply = await fetchImpl(db.origin + '/rest/v1/rpc/' + functionName, {
       method: 'POST', headers, body: JSON.stringify({ _action: action, ...params }),
       redirect: 'error', signal: AbortSignal.timeout(7000),
     });
@@ -270,6 +273,59 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     return result?.revoked === true;
   }
 
+  // TEST-only pairing via the existing verified website session. No mobile bearer
+  // authentication, owner device authority, provider activation or offline license.
+  async function handleDevice(action, req, res, json) {
+    if (env.SMARTCLIP_SANDBOX_DEVICE_ENABLED !== 'true') {
+      json(res, 404, {error:'not_found'}); return true;
+    }
+    if (req.method !== 'POST') {
+      res.setHeader('Allow','POST'); json(res,405,{error:'method_not_allowed'}); return true;
+    }
+    if (!auth?.sameOrigin?.(req)) { json(res,403,{error:'forbidden_origin'}); return true; }
+    const user = await authenticated(req,res,json);
+    if (!user) return true;
+    let body;
+    try { body = await readJson(req,1024); } catch { json(res,400,{error:'invalid_request'}); return true; }
+    const expected = action === 'device-activate' ? 'challenge,publicKey,signature' : 'publicKey';
+    if (!body || Array.isArray(body) || Object.keys(body).sort().join(',') !== expected ||
+        typeof body.publicKey !== 'string' || !SHA.test(body.publicKey)) {
+      json(res,400,{error:'invalid_device_request'}); return true;
+    }
+    const fingerprint = createHash('sha256').update(Buffer.from(body.publicKey,'hex')).digest('hex');
+    const operation = action.slice('device-'.length);
+    let challenge = null;
+    if (operation === 'challenge') challenge = randomBytes(32).toString('hex');
+    if (operation === 'activate') {
+      if (typeof body.challenge !== 'string' || !SHA.test(body.challenge) ||
+          typeof body.signature !== 'string' || !/^[a-f0-9]{128}$/.test(body.signature)) {
+        json(res,400,{error:'invalid_device_request'}); return true;
+      }
+      challenge = body.challenge;
+      try {
+        const key = createPublicKey({key:Buffer.concat([Buffer.from('302a300506032b6570032100','hex'),Buffer.from(body.publicKey,'hex')]),format:'der',type:'spki'});
+        if (!verifySignature(null,smartclipDeviceMessage(user.userId,fingerprint,challenge),key,Buffer.from(body.signature,'hex'))) {
+          json(res,403,{error:'device_denied'}); return true;
+        }
+      } catch { json(res,403,{error:'device_denied'}); return true; }
+    }
+    try {
+      const result = await rpc(operation,{_user_id:user.userId,_fingerprint:fingerprint,_challenge:challenge},'capital_ai_smartclip_sandbox_device');
+      if (operation === 'challenge') {
+        if (result?.issued !== true) { json(res,403,{error:'device_denied'}); return true; }
+        json(res,200,{challenge,message:smartclipDeviceMessage(user.userId,fingerprint,challenge).toString('utf8'),expiresInSeconds:120,testOnly:true});
+      } else if (operation === 'activate') {
+        if (result?.activated !== true) { json(res,403,{error:'device_denied'}); return true; }
+        json(res,200,{active:true,testOnly:true});
+      } else if (operation === 'status' && typeof result?.active === 'boolean') {
+        json(res,200,{active:result.active,testOnly:true});
+      } else if (operation === 'revoke' && result?.revoked === true) {
+        json(res,200,{revoked:true,testOnly:true});
+      } else { json(res,503,{error:'device_unavailable'}); }
+    } catch { json(res,503,{error:'device_unavailable'}); }
+    return true;
+  }
+
   return { async handle(req, res, url, json) {
     if (!url.pathname.startsWith('/api/billing/smartclip-sandbox/')) return false;
     res.setHeader('Cache-Control', 'private, no-store');
@@ -277,6 +333,7 @@ export function createSmartclipSandboxCommerce({ env = process.env, fetchImpl = 
     if (!configured) { json(res, 503, { error: 'smartclip_sandbox_unavailable' }); return true; }
     const action = url.pathname.slice('/api/billing/smartclip-sandbox/'.length);
     if (url.search) { json(res, 400, { error: 'invalid_request' }); return true; }
+    if (['device-challenge','device-activate','device-status','device-revoke'].includes(action)) return handleDevice(action,req,res,json);
     if (action === 'webhook' && req.method === 'POST') {
       let event;
       try {
@@ -439,7 +496,8 @@ export async function preflightSmartclipSandboxDelivery({
 
 /** Internal private delivery contract, not a public release admission mechanism.
  * The trusted reader must return the exact admitted release, never a client path.
- * No reader is injected by production server composition; the HTTP path stays 404.
+ * Only an explicitly injected, trusted server-side reader can enable delivery;
+ * the default server composition has no reader and the HTTP path stays 404.
  * Copy the bytes before validation so a reader cannot mutate the verified buffer
  * during the second entitlement read. A refund after HTTP transmission starts
  * cannot recall already delivered bytes; device checks must separately revalidate.

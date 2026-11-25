@@ -129,6 +129,40 @@ ROLLBACK;
 SELECT count(*) FROM private.smartclip_sandbox_entitlements WHERE stripe_payment_intent_id='pi_p0_rollback000001';
 SQL
 [ "$(tail -n 1 "$tmp/rollback")" = 0 ] || { echo 'BLOCKED: explicit_rollback'; exit 1; }
+# Device RPC: privilege boundaries, real atomic one-use consume, cross-user, expiry,
+# refund binding and explicit revocation, using only this disposable PG container.
+[ "$(q "SELECT NOT has_function_privilege('anon','public.capital_ai_smartclip_sandbox_device(text,uuid,text,text)','EXECUTE') AND NOT has_function_privilege('authenticated','public.capital_ai_smartclip_sandbox_device(text,uuid,text,text)','EXECUTE') AND has_function_privilege('service_role','public.capital_ai_smartclip_sandbox_device(text,uuid,text,text)','EXECUTE') AND NOT has_table_privilege('authenticated','private.smartclip_sandbox_devices','SELECT');")" = t ]
+other='00000000-0000-4000-8000-000000000002'
+finger="$(printf '%064d' 1)"
+nonce="$(printf '%064d' 2)"
+nonce2="$(printf '%064d' 3)"
+device() { q "SELECT public.capital_ai_smartclip_sandbox_device('$1','$2'::uuid,'$3',$4);"; }
+[ "$(device challenge "$buyer" "$finger" "'$nonce'" )" = '{"issued": false}' ]
+q "SELECT public.capital_ai_smartclip_sandbox('grant','$buyer'::uuid,'cs_test_p0_device000001','pi_p0_device000001','$sha',NULL);" >/dev/null
+[ "$(device challenge "$buyer" "$finger" "'$nonce'")" = '{"issued": true}' ]
+[ "$(device activate "$other" "$finger" "'$nonce'")" = '{"activated": false}' ]
+[ "$(device activate "$buyer" "$nonce2" "'$nonce'")" = '{"activated": false}' ]
+device activate "$buyer" "$finger" "'$nonce'" > "$tmp/device-a" &
+device_a=$!
+device activate "$buyer" "$finger" "'$nonce'" > "$tmp/device-b" &
+device_b=$!
+wait "$device_a"; wait "$device_b"
+[ "$(grep -h -c '"activated": true' "$tmp/device-a" "$tmp/device-b" | awk '{s+=$1} END {print s}')" = 1 ]
+[ "$(grep -h -c '"activated": false' "$tmp/device-a" "$tmp/device-b" | awk '{s+=$1} END {print s}')" = 1 ]
+[ "$(device status "$buyer" "$finger" NULL)" = '{"active": true}' ]
+[ "$(device status "$other" "$finger" NULL)" = '{"active": false}' ]
+[ "$(device challenge "$buyer" "$nonce2" "'$nonce2'")" = '{"issued": true}' ]
+q "UPDATE private.smartclip_sandbox_devices SET expires_at=clock_timestamp()-interval '1 second' WHERE challenge='$nonce2';" >/dev/null
+[ "$(device activate "$buyer" "$nonce2" "'$nonce2'")" = '{"activated": false}' ]
+q "SELECT public.capital_ai_smartclip_sandbox('revoke',NULL,NULL,'pi_p0_device000001','$sha','refunded');" >/dev/null
+[ "$(device status "$buyer" "$finger" NULL)" = '{"active": false}' ]
+q "SELECT public.capital_ai_smartclip_sandbox('grant','$buyer'::uuid,'cs_test_p0_device000002','pi_p0_device000002','$sha',NULL);" >/dev/null
+[ "$(device status "$buyer" "$finger" NULL)" = '{"active": false}' ]
+[ "$(device challenge "$buyer" "$nonce2" "'$nonce2'")" = '{"issued": true}' ]
+[ "$(device activate "$buyer" "$nonce2" "'$nonce2'")" = '{"activated": true}' ]
+[ "$(device revoke "$buyer" "$nonce2" NULL)" = '{"revoked": true}' ]
+[ "$(device status "$buyer" "$nonce2" NULL)" = '{"active": false}' ]
+echo 'SMARTCLIP_DEVICE=VERIFIED isolated_sql_replay_cross_user_expiry_refund_repurchase_revocation'
 # Container teardown is a separate readback, not implied by test success.
 docker rm -f "$container" >/dev/null
 if docker inspect "$container" >/dev/null 2>&1; then

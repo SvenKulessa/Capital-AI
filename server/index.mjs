@@ -515,7 +515,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const privateBlueprintCloud = options.privateBlueprintCloud || createBlueprintDiskVault({ keyHex: runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY });
   const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, privateCloud: privateBlueprintCloud });
-  const smartclipSandboxCommerce = createSmartclipSandboxCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
+  const smartclipSandboxCommerce = createSmartclipSandboxCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, readAdmittedPrivateRelease: options.smartclipReadAdmittedPrivateRelease });
   const knowledgeVault = options.knowledgeVault || createPrivateKnowledgeVault({keyHex:runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY});
   const privateKnowledgeApi = createPrivateKnowledgeApi({auth,vault:knowledgeVault});
   const founderAccess = createFounderAccess({auth,env:runtimeEnv});

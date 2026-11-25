@@ -83,3 +83,84 @@ revoke all on function public.capital_ai_smartclip_sandbox(text,uuid,text,text,t
   from public,anon,authenticated;
 grant execute on function public.capital_ai_smartclip_sandbox(text,uuid,text,text,text,text)
   to service_role;
+
+-- TEST-only device pairing candidate; no production migration or mobile bearer auth.
+-- A device grant is bound to one immutable payment row, never a mutable user-only flag.
+create table if not exists private.smartclip_sandbox_devices (
+  challenge text primary key check (challenge ~ '^[a-f0-9]{64}$'),
+  user_id uuid not null,
+  fingerprint text not null check (fingerprint ~ '^[a-f0-9]{64}$'),
+  payment_id text not null references private.smartclip_sandbox_entitlements(stripe_payment_intent_id),
+  expires_at timestamptz not null,
+  state text not null check (state in ('pending','active','revoked'))
+);
+alter table private.smartclip_sandbox_devices enable row level security;
+revoke all on private.smartclip_sandbox_devices from public, anon, authenticated;
+grant select, insert, update, delete on private.smartclip_sandbox_devices to service_role;
+
+create or replace function public.capital_ai_smartclip_sandbox_device(
+  _action text, _user_id uuid, _fingerprint text, _challenge text default null
+) returns jsonb
+language plpgsql security invoker set search_path = '' as $$
+declare
+  chosen_payment text;
+  canonical_digest constant text := '8c2683d641f28bf466026dff1f4adb0c073bc81564bc0afd4b758a33d7b76512';
+  now_at timestamptz := pg_catalog.clock_timestamp();
+begin
+  if _user_id is null or _fingerprint is null or _fingerprint !~ '^[a-f0-9]{64}$' or
+     _action is null or _action not in ('challenge','activate','status','revoke') or
+     (_action in ('challenge','activate') and (_challenge is null or _challenge !~ '^[a-f0-9]{64}$')) or
+     (_action in ('status','revoke') and _challenge is not null) then
+    raise exception 'invalid_device_request';
+  end if;
+  -- Serialize per-user challenge issuance, activation and explicit revocation.
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(_user_id::text, 916));
+  if _action='revoke' then
+    update private.smartclip_sandbox_devices set state='revoked'
+      where user_id=_user_id and fingerprint=_fingerprint and state<>'revoked';
+    return pg_catalog.jsonb_build_object('revoked',true);
+  elsif _action='status' then
+    return pg_catalog.jsonb_build_object('active', exists(
+      select 1 from private.smartclip_sandbox_devices d
+      join private.smartclip_sandbox_entitlements p on p.stripe_payment_intent_id=d.payment_id
+      where d.user_id=_user_id and d.fingerprint=_fingerprint and d.state='active'
+        and p.user_id=_user_id and p.release_sha256=canonical_digest and p.status='paid'));
+  elsif _action='challenge' then
+    -- Expired unconsumed challenges can be discarded without a scheduler.
+    delete from private.smartclip_sandbox_devices where user_id=_user_id and state='pending' and expires_at<=now_at;
+    if (select count(*) from private.smartclip_sandbox_devices where user_id=_user_id) >= 32 then
+      return pg_catalog.jsonb_build_object('issued',false);
+    end if;
+    select p.stripe_payment_intent_id into chosen_payment from private.smartclip_sandbox_entitlements p
+      where p.user_id=_user_id and p.release_sha256=canonical_digest and p.status='paid'
+      order by p.created_at,p.stripe_payment_intent_id limit 1 for share;
+    if not found or exists(select 1 from private.smartclip_sandbox_devices d
+      where d.user_id=_user_id and d.fingerprint=_fingerprint and d.payment_id=chosen_payment and d.state in ('active','revoked')) then
+      return pg_catalog.jsonb_build_object('issued',false);
+    end if;
+    insert into private.smartclip_sandbox_devices(challenge,user_id,fingerprint,payment_id,expires_at,state)
+      values (_challenge,_user_id,_fingerprint,chosen_payment,now_at+interval '120 seconds','pending')
+      on conflict (challenge) do nothing;
+    return pg_catalog.jsonb_build_object('issued',found);
+  else
+    -- Cryptographic proof is verified by the trusted server before this RPC.
+    -- Lock the exact purchase row against concurrent refund/dispute before consuming.
+    select p.stripe_payment_intent_id into chosen_payment from private.smartclip_sandbox_devices d
+      join private.smartclip_sandbox_entitlements p on p.stripe_payment_intent_id=d.payment_id
+      where d.challenge=_challenge and d.user_id=_user_id and d.fingerprint=_fingerprint
+        and d.state='pending' and d.expires_at>pg_catalog.clock_timestamp()
+        and p.user_id=_user_id and p.release_sha256=canonical_digest and p.status='paid'
+      for share of p;
+    if not found or exists(select 1 from private.smartclip_sandbox_devices d
+      where d.user_id=_user_id and d.fingerprint=_fingerprint and d.payment_id=chosen_payment and d.state in ('active','revoked')) then
+      return pg_catalog.jsonb_build_object('activated',false);
+    end if;
+    update private.smartclip_sandbox_devices set state='active'
+      where challenge=_challenge and user_id=_user_id and fingerprint=_fingerprint and payment_id=chosen_payment
+        and state='pending' and expires_at>pg_catalog.clock_timestamp();
+    return pg_catalog.jsonb_build_object('activated',found);
+  end if;
+end
+$$;
+revoke all on function public.capital_ai_smartclip_sandbox_device(text,uuid,text,text) from public,anon,authenticated;
+grant execute on function public.capital_ai_smartclip_sandbox_device(text,uuid,text,text) to service_role;
