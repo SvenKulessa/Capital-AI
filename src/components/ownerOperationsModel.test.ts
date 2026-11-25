@@ -126,6 +126,21 @@ test('AcodeX archive is separately validated and never promoted to live provider
   assert.equal(snapshot.acodex?.currentDeviceStatus, 'NOT_PROVEN');
   assert.equal(evidenceState(snapshot, 'ci'), 'NOT_PROVEN');
   assert.equal(readDashboardSnapshot(base)?.acodex, undefined); // backwards-compatible, absent is not live
+  const recovery = {"classification":"OWNER_TERMINAL_RECOVERY_SNAPSHOT","provenance":"OWNER_TERMINAL_OUTPUT","status":"VERIFIED","historicalIncidentStatus":"BLOCKED_OBSERVED","currentDeviceStatus":"NOT_PROVEN","baselineUtc":"2026-11-25T17:03:15Z","expectedStartUtc":"2026-11-25T17:08:56Z","latestSuccessUtc":"2026-11-25T17:09:01Z","checkedUtc":"2026-11-25T17:10:23Z","healthExit":0,"outerExit":0,"guardAuditExit":0,"acopyCommandExit":0,"lockClear":true,"newOAuthFailures":0,"newPullFailures":0,"postBaselineSuccessCount":1,"pullShaMatch":true,"guardShaMatch":true,"filtersPresent":true,"bridgeAckStatus":"NOT_PROVEN"};
+  const recovered = readDashboardSnapshot({...base, acodex: {...archive, recovery}});
+  assert.equal(recovered?.acodex?.recovery?.status, 'VERIFIED');
+  assert.equal(recovered?.acodex?.currentDeviceStatus, 'NOT_PROVEN');
+  for (const invalid of [
+    {...recovery, currentDeviceStatus:'VERIFIED'},
+    {...recovery, bridgeAckStatus:'VERIFIED'},
+    {...recovery, expectedStartUtc:recovery.baselineUtc},
+    {...recovery, latestSuccessUtc:recovery.baselineUtc},
+    {...recovery, healthExit:3},
+    {...recovery, acopyCommandExit:2},
+    {...recovery, newOAuthFailures:1},
+    {...recovery, postBaselineSuccessCount:0},
+    {...recovery, guardShaMatch:false}
+  ]) assert.equal(readDashboardSnapshot({...base, acodex:{...archive,recovery:invalid}}),null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, currentDeviceStatus: 'VERIFIED' } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, archiveStatus: 'NOT_PROVEN' } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, healthExit: 1 } }), null);
