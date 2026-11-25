@@ -10,7 +10,10 @@ export function validateEngineSnapshot(v){
   if(m?.state!=='SOURCE_SNAPSHOT_ONLY'||typeof m.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(m.date)||!count(m.homepage,3)||!count(m.overview,3)||!count(m.archive,10000)||!sha(m.editionSha256)||!sha(m.indexSha256)||
     c?.state!=='DRAFT_ONLY'||!count(c.drafts,100)||!sha(c.sourceSha256)||!sha(c.bundleSha256)||
     g?.state!=='SOURCE_ONLY_RUNTIME_NOT_PROVEN'||!sha(g.sourceSha256))throw Error('INVALID_ENGINE_SNAPSHOT');
+  const p=v.productChannels;
+  if(p!==undefined&&(p?.state!=='DRAFT_ONLY'||!count(p.products,133)||!count(p.mapped,133)||!count(p.researchQueue,133)||p.mapped+p.researchQueue!==p.products||!sha(p.sourceSha256)||p.liveMetrics!==null))throw Error('INVALID_PRODUCT_CHANNEL_SNAPSHOT');
   return {schema:v.schema,scope:v.scope,private:true,readOnly:true,publicPublishAllowed:false,
+    ...(p===undefined?{}:{productChannels:{state:p.state,products:p.products,mapped:p.mapped,researchQueue:p.researchQueue,sourceSha256:p.sourceSha256,liveMetrics:null}}),
     market:{state:m.state,date:m.date,homepage:m.homepage,overview:m.overview,archive:m.archive,editionSha256:m.editionSha256,indexSha256:m.indexSha256},
     content:{state:c.state,drafts:c.drafts,sourceSha256:c.sourceSha256,bundleSha256:c.bundleSha256},
     langgraph:{state:g.state,sourceSha256:g.sourceSha256}};

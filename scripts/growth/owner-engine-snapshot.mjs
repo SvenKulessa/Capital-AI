@@ -17,12 +17,16 @@ export function projectOwnerEngineSnapshot({editionBytes,indexBytes,graphBytes,b
     !Array.isArray(bundle.drafts)||bundle.drafts.length>100||!bundle.drafts.every(d=>Array.isArray(d.socialPackage?.approvals)&&d.socialPackage.approvals.length===0&&Array.isArray(d.socialPackage?.deliveries)&&d.socialPackage.deliveries.length===0))
     throw Error('CONTENT_DRAFT_INVALID');
   if(!Buffer.isBuffer(graphBytes)||graphBytes.length<1||graphBytes.length>262144)throw Error('GRAPH_SOURCE_INVALID');
+  const p=bundle.productToMarket;
+  if(p?.contractVersion!=='CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1'||p.publicationState!=='DRAFT_ONLY'||p.publicPublishAllowed!==false||p.liveSalesAllowed!==false||p.providerCalls!==0||p.campaignSpend!==0||!isSha(p.sourceSha256)||!Array.isArray(p.products)||p.products.length>133||p.products.some(x=>!Array.isArray(x.channels)||!['CANDIDATES_REVIEW_REQUIRED','UNMAPPED_RESEARCH_REQUIRED'].includes(x.researchStatus)||Boolean(x.channels.length)!==(x.researchStatus==='CANDIDATES_REVIEW_REQUIRED')))throw Error('PRODUCT_CHANNEL_SNAPSHOT_INVALID');
+  const mapped=p.products.filter(x=>x.researchStatus==='CANDIDATES_REVIEW_REQUIRED').length;
   return {
     schema:'CAPITAL_AI_OWNER_ENGINE_SNAPSHOT@1',scope:'BUILD_ARTIFACT_ONLY',private:true,readOnly:true,publicPublishAllowed:false,
     market:{state:'SOURCE_SNAPSHOT_ONLY',date:edition.date,homepage:edition.stories.length,overview:index.overview.length,archive:index.archive.length,
       editionSha256:sha(editionBytes),indexSha256:sha(indexBytes)},
     content:{state:'DRAFT_ONLY',drafts:bundle.drafts.length,sourceSha256:bundle.sourceSha256,bundleSha256:sha(JSON.stringify(bundle))},
     langgraph:{state:'SOURCE_ONLY_RUNTIME_NOT_PROVEN',sourceSha256:sha(graphBytes)},
+    productChannels:{state:'DRAFT_ONLY',products:p.products.length,mapped,researchQueue:p.products.length-mapped,sourceSha256:p.sourceSha256,liveMetrics:null},
   };
 }
 export function buildOwnerEngineSnapshot(){
