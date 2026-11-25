@@ -43,7 +43,8 @@ jobs:
         run: node scripts/trust-runtime-readback.mjs --health
       - name: Record pending independent production evidence
         if: github.event_name != 'workflow_dispatch' || github.ref != 'refs/heads/main'
-        run: echo 'Production Healthz and BuildIdentity: NOT_PROVEN; dispatch TRUST Runtime Readback after Render reports expected main live.' >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo 'Production Healthz and BuildIdentity: NOT_PROVEN; dispatch TRUST Runtime Readback after Render reports expected main live.' >> "$GITHUB_STEP_SUMMARY"
 
   tinyfish-render-config:
     name: Targeted TinyFish Render boolean (read-only)
