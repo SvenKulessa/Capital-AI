@@ -224,6 +224,21 @@ export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow
       evidence:'Importdatei SHA-256 '+reportSha,auth:'NOT_PROVEN_BY_GRAPH'};
     return [...rows.filter(r=>r.id!==row.id),row];
   }
+  if(parsed?.contractVersion==='CAPITAL_AI_VISUAL_GRAPH_HANDOFF@1'){
+    const n=(max:number)=>z.number().int().nonnegative().max(max);
+    const result=z.object({contractVersion:z.literal('CAPITAL_AI_VISUAL_GRAPH_HANDOFF@1'),engine:z.literal('langgraph'),
+      quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),metrics:z.object({assetCount:z.number().int().min(6).max(8),inputBytes:n(33554432).positive(),selectedBytes:n(33554432).positive(),elapsedMs:n(7200000),repairCycles:z.literal(0)}).strict().nullable(),
+      sourceAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),manualTimeSavedMs:z.null(),publicationAllowed:z.literal(false),costActivationAllowed:z.literal(false),automaticChanges:z.literal(false)}).strict().parse(parsed);
+    const m=result.metrics;
+    if((result.quality==='BLOCKED')!==(m===null)||(m&&m.selectedBytes>m.inputBytes))throw Error('Invalid visual metrics');
+    const row={...makeRow('visual-production','Visual Intelligence · Export-Review','GROWTH','Lokale Artefakte und produktive Ausführung getrennt verifizieren'),
+      operation:m?'Importierter Lauf: '+m.assetCount+' Assets · '+m.elapsedMs+' ms (Encoder)':'BLOCKED · kein Messwert',
+      flow:'Resvg → Sharp → MediaKit → LangGraph → Owner-Dokumentation',
+      tests:'TRUST/QUALITY: '+result.quality,auth:'NOT_PROVEN_BY_GRAPH',
+      evidence:'Graph-Bericht SHA-256 '+reportSha+(m?'; PNG '+m.inputBytes+' B → Auswahl '+m.selectedBytes+' B; Reparaturen '+m.repairCycles:''),
+      error:'Produktive Laufzeit, Gesamtbetriebskosten und Zeitersparnis NOT_PROVEN'};
+    return [...rows.filter(r=>r.id!==row.id),row];
+  }
   const data=graphHandoff.parse(parsed);
   const recorded=data.sources.filter(s=>s.status==='SOURCE_RECORDED_NOT_AUTHENTICATED');
   if(data.quality==='BLOCKED'?(data.sources.length!==0||data.eligibleForDraftReview):
