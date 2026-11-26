@@ -90,6 +90,10 @@
 !server/benchmark-store.test.mjs
 !server/auth.mjs
 !server/skill-routing-catalog.mjs
+!server/profile-provider-avatar.mjs
+!server/profile-provider-avatar.test.mjs
+!server/buddy-gemini-byok.mjs
+!server/buddy-gemini-byok.test.mjs
 !server/account-avatar.mjs
 !server/account-avatar.test.mjs
 !server/profile-avatar-upload.mjs
@@ -295,6 +299,7 @@
 !scripts/validate-social-tool-license-evidence.mjs
 !scripts/validate-social-engine-completion-gate.mjs
 !scripts/social-engine-completion-gate.test.mjs
+!scripts/social-hub-navigation.test.mjs
 !scripts/social-provider-db-smoke.sh
 !contracts/
 !contracts/**

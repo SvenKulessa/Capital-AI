@@ -40,7 +40,7 @@ async function until(fn, label) {
 // falsely trigger JaJa's repeated-click assistance when consent and drawer
 // controls are activated in the same short interval.
 async function clickVisible(selector) {
-  let point;
+  let point, previous, stableSamples = 0;
   await until(async () => {
     point = await evaluate(`(() => {
       const target = document.querySelector(${JSON.stringify(selector)});
@@ -49,8 +49,13 @@ async function clickVisible(selector) {
       const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
       return target.contains(document.elementFromPoint(x, y)) ? {x,y} : null;
     })()`);
-    return Boolean(point);
-  }, 'VISIBLE_CLICK_' + selector);
+    // Wait for the target to finish its spring transition, not merely become
+    // visible at one moving coordinate. Preserve a real hit-tested pointer click.
+    stableSamples = point && previous && Math.abs(point.x - previous.x) <= 0.5 &&
+      Math.abs(point.y - previous.y) <= 0.5 ? stableSamples + 1 : 0;
+    previous = point;
+    return stableSamples >= 3;
+  }, 'VISIBLE_STABLE_CLICK_' + selector);
   await send('Input.dispatchMouseEvent', {type:'mousePressed', ...point, button:'left', clickCount:1});
   await send('Input.dispatchMouseEvent', {type:'mouseReleased', ...point, button:'left', clickCount:1});
 }
@@ -115,8 +120,19 @@ try {
     ]);
     assert.ok(hubLinks.every(link=>link.height>=44), 'Hub touch target below 44px');
     await clickVisible('#close-menu-btn');
-    await until(() => evaluate(`!document.getElementById('capital-ai-mobile-navigation') &&
-      !document.querySelector('[class*="z-[100]"][class*="backdrop-blur-sm"]')`), 'HUB_DRAWER_AND_BACKDROP_CLOSED');
+    try {
+      await until(() => evaluate(`document.getElementById('mobile-menu-btn')?.getAttribute('aria-expanded') === 'false' &&
+        !document.getElementById('capital-ai-mobile-navigation') &&
+        !document.querySelector('[class*="z-[100]"][class*="backdrop-blur-sm"]')`), 'HUB_DRAWER_AND_BACKDROP_CLOSED');
+    } catch (error) {
+      report.checks.push({viewport, drawerCloseDiagnostic: await evaluate(`(() => ({
+        expanded: document.getElementById('mobile-menu-btn')?.getAttribute('aria-expanded'),
+        drawer: !!document.getElementById('capital-ai-mobile-navigation'),
+        backdrops: [...document.querySelectorAll('[class*="z-[100]"][class*="backdrop-blur-sm"]')].map(e => ({className:e.className,opacity:getComputedStyle(e).opacity})),
+        bodyOverflow: document.body.style.overflow
+      }))()`)});
+      throw error;
+    }
     report.checks.push({viewport,canonicalHubOutlines:'PASS'});
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
     assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy a')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
