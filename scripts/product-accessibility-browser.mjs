@@ -41,7 +41,7 @@ async function navigate(path) {
   await send('Page.navigate', { url: url.href });
   for (let attempt = 0; attempt < 120; attempt++) {
     try {
-      const target = path === '/learning/simulator' ? '#sim-title'
+      const target = path === '/' ? '#hub-directory' : path === '/learning/simulator' ? '#sim-title'
         : path.startsWith('/learning') ? '.hub-navigation nav.hub-tab-strip' : 'main,nav,header';
       const ready = await evaluate("document.readyState === 'complete' && !!document.querySelector(" + JSON.stringify(target) + ")");
       if (ready) { await pause(800); return; }
@@ -77,10 +77,10 @@ async function checkPage(path, viewport) {
     width:viewport.width, height:viewport.height, deviceScaleFactor:2, mobile:viewport.mobile,
   });
   await navigate(path);
-  if (path.startsWith('/blog/')) {
+  if (path === '/' || path.startsWith('/blog/')) {
     await evaluate(`(() => {
       const panel = document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
-      const reject = [...(panel?.querySelectorAll('button') || [])].find(el => el.textContent.trim() === 'Nur notwendige');
+      const reject = panel?.querySelector('button[data-consent-choice="necessary"]');
       reject?.click();
     })()`);
     await pause(200);
@@ -109,6 +109,57 @@ async function checkPage(path, viewport) {
   }))()` ) : null;
   const record = { path, viewport, dom, simulator, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
   pages.push(record);
+  if (path === '/') {
+    // Explicit public hub contract; independent from other navigation landmarks.
+    const home = await evaluate(String.raw`(() => {
+      const directory = document.querySelector('#hub-directory');
+      const links = [...(directory?.querySelectorAll('a[data-hub][href]') || [])];
+      return {
+        heading: directory?.querySelector('#hub-directory-heading')?.textContent?.trim() || '',
+        links: links.map(el => ({ id: el.dataset.hub, path: new URL(el.href).pathname,
+          name: el.textContent.trim(), local: new URL(el.href).origin === location.origin,
+          height: el.getBoundingClientRect().height,
+          focusable: el.tabIndex >= 0 })),
+        ownerLink: !!directory?.querySelector('a[href^="/control-center"],a[href^="/profile"]'),
+        internalPanel: !!document.querySelector('#content-engine-heading'),
+      };
+    })()`);
+    record.publicHome = home;
+    const expected = { marketscreener:'/marketscreener', learning:'/learning',
+      studio:'/studio', documentation:'/dokumentation' };
+    if (!home.heading || home.ownerLink || home.internalPanel ||
+      !Object.entries(expected).every(([id, path]) => home.links.some(link => link.id === id && link.path === path)) ||
+      new Set(home.links.map(link => link.id)).size !== home.links.length ||
+      home.links.some(link => !link.local || !link.name || !link.focusable || link.height < 44)) {
+      failures.push('/: public hub destination, name, isolation or touch-target regression at ' + viewport.width);
+    }
+    const focused = await evaluate(`(() => {
+      const links = document.querySelectorAll('#hub-directory a[data-hub][href]');
+      links[0]?.focus();
+      return links.length > 1 && document.activeElement === links[0];
+    })()`);
+    if (focused) {
+      await send('Input.dispatchKeyEvent', {type:'rawKeyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,nativeVirtualKeyCode:9});
+      await send('Input.dispatchKeyEvent', {type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,nativeVirtualKeyCode:9});
+    }
+    home.keyboardNext = focused && await evaluate(`(() => {
+      const second = document.querySelectorAll('#hub-directory a[data-hub][href]')[1];
+      const style = second && getComputedStyle(second);
+      return !!second && document.activeElement === second && second.matches(':focus-visible') &&
+        parseFloat(style.outlineWidth) >= 2 && style.outlineStyle !== 'none';
+    })()`);
+    if (!home.keyboardNext) failures.push('/: public hub keyboard focus or indicator regression at ' + viewport.width);
+    // Lab measurements only. No claim about real-user p75, INP or WCAG.
+    record.homeLab = await evaluate(`(() => {
+      const m = window.__caiPublicHomeLab;
+      return m ? { lcpMs: m.lcpMs, cls: m.cls, scope: 'ISOLATED_LAB_NOT_FIELD', inpMs: null } : null;
+    })()`);
+    if (process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
+      await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+      const shot = await send('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
+      await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, 'public-home-' + viewport.width + '.png'), Buffer.from(shot.data,'base64'));
+    }
+  }
   if (path.startsWith('/blog/') && process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
     await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
     const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
@@ -276,6 +327,30 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Accessibility.enable');
+  await send('Page.addScriptToEvaluateOnNewDocument', {source: String.raw`(() => {
+    if (location.pathname !== '/') return;
+    const data = {lcpMs:null, cls:null};
+    Object.defineProperty(window, '__caiPublicHomeLab', {value:data});
+    try {
+      new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) data.lcpMs = entry.startTime;
+      }).observe({type:'largest-contentful-paint',buffered:true});
+    } catch { /* unsupported metrics remain null */ }
+    try {
+      let windowStart = null, previous = null, session = 0;
+      new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) {
+          if (entry.hadRecentInput) continue;
+          if (windowStart === null || entry.startTime - previous >= 1000 || entry.startTime - windowStart >= 5000) {
+            windowStart = entry.startTime; session = 0;
+          }
+          session += entry.value; previous = entry.startTime;
+          data.cls = Math.max(data.cls ?? 0, session);
+        }
+        if (data.cls === null) data.cls = 0;
+      }).observe({type:'layout-shift',buffered:true});
+    } catch { /* unsupported metrics remain null */ }
+  })()`});
   for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1440,height:900,mobile:false}]) {
     for (const path of ['/', '/learning', '/learning?tab=glossar', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
     // Same actual Chromium/CDP session: all ten original tab artworks, not a static CSS assertion.
