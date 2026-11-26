@@ -666,3 +666,17 @@ test('sideboard keeps Profile Hub first and canonical hub names and outline toke
   assert.equal(HUB_BRANDING.marketscreener.name, 'Analytics Hub');
   assert.equal(HUB_BRANDING.marketscreener.color, BRAND_COLORS.violet);
 });
+
+
+test('authenticated header and hub CTAs retain canonical identity and overview article', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
+  const right = header.slice(header.indexOf('data-header-account-controls'),header.indexOf('id="capital-ai-mobile-navigation"'));
+  assert.ok(right.indexOf('<LanguageSwitcher />')>=0 && right.indexOf('<LanguageSwitcher />')<right.indexOf('id="header-profile-btn"'));
+  assert.match(right, />Profile Hub<\/span>/);
+  const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url),'utf8');
+  assert.match(hero, /borderColor: HUB_BRANDING\.learning\.color/);
+  assert.match(hero, /borderColor: HUB_BRANDING\.marketscreener\.color/);
+  const market = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx',import.meta.url),'utf8');
+  assert.match(market, /active === 'overview' && <AnalyticsHubArticle \/>/);
+  assert.match(market, /active === 'overview' && <AnalyticsNewsOverview \/>/);
+});
