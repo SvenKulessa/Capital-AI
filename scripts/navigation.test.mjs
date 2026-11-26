@@ -666,3 +666,15 @@ test('sideboard keeps Profile Hub first and canonical hub names and outline toke
   assert.equal(HUB_BRANDING.marketscreener.name, 'Analytics Hub');
   assert.equal(HUB_BRANDING.marketscreener.color, BRAND_COLORS.violet);
 });
+
+
+test('analytics overview stays scoped to six analysis processes and labels static examples', () => {
+  const article = readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx', import.meta.url), 'utf8');
+  const hub = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx', import.meta.url), 'utf8');
+  assert.match(hub, /active === 'overview' && <AnalyticsHubArticle \/>/);
+  for (const label of ['Quellen','Datenqualität','Scoring','Risiko','Evidenz','Marktnews']) assert.ok(article.includes(label));
+  assert.doesNotMatch(article, /Learning Hub|Lernpfad|href="\/learning/);
+  assert.match(article, /DEMO · Statische Beispieldaten/);
+  assert.match(article, /data-analytics-orbit-star/);
+  assert.match(article, /AnalyticsProcessFlow key=\{selected\}/);
+});
