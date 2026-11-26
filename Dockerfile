@@ -6,16 +6,6 @@ LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
 RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
     && apk info -v zlib libcrypto3 libssl3 libxml2
 
-FROM crypto-base AS production-deps
-WORKDIR /runtime
-COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
-RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
-    && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
-    && rm -rf /root/.npm
-# Exercise the exact existing runtime pin, without a new dependency or required check.
-COPY scripts/growth/visual-export.mjs scripts/growth/visual-export.test.mjs ./scripts/growth/
-RUN node --test scripts/growth/visual-export.test.mjs
-
 FROM crypto-base AS build
 WORKDIR /app
 RUN npm install --global npm@12.2.0 --ignore-scripts --no-audit --no-fund \
@@ -225,8 +215,18 @@ RUN --network=none node --test server/buddy-gemini-byok.test.mjs server/profile-
     && node scripts/verify-browser-boundary.mjs \
     && CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node --import tsx scripts/benchmark-scoring-capacity.mjs > /app/scoring-capacity.json
 
-# Reuse runtime node_modules only during the isolated integration test; no duplicate dependency install or output in runtime.
-RUN --network=none --mount=from=production-deps,source=/runtime/node_modules,target=/app/deploy/runtime/node_modules,ro node --import tsx --test scripts/growth/visual-export-integration.test.mjs
+FROM crypto-base AS production-deps
+WORKDIR /runtime
+COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
+RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
+    && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
+    && rm -rf /root/.npm
+# Exercise the exact existing runtime pin, without a new dependency or required check.
+COPY scripts/growth/visual-export.mjs scripts/growth/visual-export.test.mjs ./scripts/growth/
+RUN node --test scripts/growth/visual-export.test.mjs
+
+# Reuse the existing build source and development dependencies read-only; the runtime Sharp pin remains local to this stage.
+RUN --network=none --mount=from=build,source=/app,target=/app,ro cd /app && NODE_PATH=/runtime/node_modules node --import tsx --test scripts/growth/visual-export-integration.test.mjs
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
