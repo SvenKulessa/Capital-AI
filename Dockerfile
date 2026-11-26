@@ -226,7 +226,9 @@ COPY scripts/growth/visual-export.mjs scripts/growth/visual-export.test.mjs ./sc
 RUN node --test scripts/growth/visual-export.test.mjs
 
 # Reuse the existing build source and development dependencies read-only; the runtime Sharp pin remains local to this stage.
-RUN --network=none --mount=from=build,source=/app,target=/app,ro cd /app && NODE_PATH=/runtime/node_modules node --import tsx --test scripts/growth/visual-export-integration.test.mjs
+WORKDIR /app
+RUN --network=none --mount=from=build,source=/app,target=/app,ro NODE_PATH=/runtime/node_modules node --import tsx --test scripts/growth/visual-export-integration.test.mjs
+WORKDIR /runtime
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
