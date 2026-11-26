@@ -6,6 +6,16 @@ LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
 RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
     && apk info -v zlib libcrypto3 libssl3 libxml2
 
+FROM crypto-base AS production-deps
+WORKDIR /runtime
+COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
+RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
+    && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
+    && rm -rf /root/.npm
+# Exercise the exact existing runtime pin, without a new dependency or required check.
+COPY scripts/growth/visual-export.mjs scripts/growth/visual-export.test.mjs ./scripts/growth/
+RUN node --test scripts/growth/visual-export.test.mjs
+
 FROM crypto-base AS build
 WORKDIR /app
 RUN npm install --global npm@12.2.0 --ignore-scripts --no-audit --no-fund \
@@ -140,6 +150,7 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
+COPY scripts/growth/visual-export.mjs scripts/growth/visual-export-integration.test.mjs ./scripts/growth/
 COPY scripts/growth/growth-intelligence-image-drafts.mjs scripts/growth/growth-intelligence-image-drafts.test.mjs scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs scripts/growth/next-round-planner.mjs scripts/growth/next-round-planner.test.mjs ./scripts/growth/
 COPY scripts/growth/product-channel-intelligence.mjs scripts/growth/product-channel-intelligence.test.mjs scripts/growth/product-market-research.mjs scripts/growth/product-market-research.test.mjs ./scripts/growth/
 COPY docs/product/MONETIZABLE-PRODUCT-REGISTRY.md ./docs/product/MONETIZABLE-PRODUCT-REGISTRY.md
@@ -214,15 +225,8 @@ RUN --network=none node --test server/buddy-gemini-byok.test.mjs server/profile-
     && node scripts/verify-browser-boundary.mjs \
     && CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node --import tsx scripts/benchmark-scoring-capacity.mjs > /app/scoring-capacity.json
 
-FROM crypto-base AS production-deps
-WORKDIR /runtime
-COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
-RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
-    && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
-    && rm -rf /root/.npm
-# Exercise the exact existing runtime pin, without a new dependency or required check.
-COPY scripts/growth/visual-export.mjs scripts/growth/visual-export.test.mjs ./scripts/growth/
-RUN node --test scripts/growth/visual-export.test.mjs
+# Reuse runtime node_modules only during the isolated integration test; no duplicate dependency install or output in runtime.
+RUN --network=none --mount=from=production-deps,source=/runtime/node_modules,target=/app/deploy/runtime/node_modules,ro node --import tsx --test scripts/growth/visual-export-integration.test.mjs
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
