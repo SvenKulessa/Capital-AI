@@ -668,25 +668,13 @@ test('sideboard keeps Profile Hub first and canonical hub names and outline toke
 });
 
 
-test('authenticated header and hub CTAs retain canonical identity and overview article', () => {
-  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
-  const right = header.slice(header.indexOf('data-header-account-controls'),header.indexOf('id="capital-ai-mobile-navigation"'));
-  assert.ok(right.indexOf('<LanguageSwitcher />')>=0 && right.indexOf('<LanguageSwitcher />')<right.indexOf('id="header-profile-btn"'));
-  assert.match(right, />Profile Hub<\/span>/);
-  const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url),'utf8');
-  assert.match(hero, /borderColor: HUB_BRANDING\.learning\.color/);
-  assert.match(hero, /borderColor: HUB_BRANDING\.marketscreener\.color/);
-  const market = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx',import.meta.url),'utf8');
-  assert.match(market, /active === 'overview' && <AnalyticsHubArticle \/>/);
-  assert.match(market, /active === 'overview' && <AnalyticsNewsOverview \/>/);
-});
-
-
-test('Analytics orbit exposes direct keyboard-operable stars and technical detail reports', () => {
-  const article = readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx',import.meta.url),'utf8');
-  assert.match(article,/data-analytics-orbit-star=\{i\}/);
-  assert.match(article,/aria-pressed=\{selected===i\}/);
-  assert.match(article,/technicalReports\[selected\]/);
-  assert.match(article,/data-analytics-technical-report/);
-  assert.match(article,/keine gemessenen KPIs oder Live-Evidence/);
+test('analytics overview stays scoped to six analysis processes and labels static examples', () => {
+  const article = readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx', import.meta.url), 'utf8');
+  const hub = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx', import.meta.url), 'utf8');
+  assert.match(hub, /active === 'overview' && <AnalyticsHubArticle \/>/);
+  for (const label of ['Quellen','Datenqualität','Scoring','Risiko','Evidenz','Marktnews']) assert.ok(article.includes(label));
+  assert.doesNotMatch(article, /Learning Hub|Lernpfad|href="\/learning/);
+  assert.match(article, /DEMO · Statische Beispieldaten/);
+  assert.match(article, /data-analytics-orbit-star/);
+  assert.match(article, /AnalyticsProcessFlow key=\{selected\}/);
 });

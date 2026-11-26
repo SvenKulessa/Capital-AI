@@ -281,7 +281,7 @@ export const Header: React.FC<HeaderProps> = ({
         {Object.entries(BRAND_COLORS).map(([name, color]) => <span key={name} data-universe-color={name} className="flex-1" style={{ backgroundColor: color }} />)}
       </div>
       {/* LEFT SIDE: Hamburger Navigation Button & Brand Logo */}
-      <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         {/* Hamburger Menu Button on the Left */}
         <button
           id="mobile-menu-btn"
@@ -310,7 +310,7 @@ export const Header: React.FC<HeaderProps> = ({
       <nav aria-label={nav.main} className="hidden flex-wrap items-center gap-1 xl:flex">{primaryLinks()}</nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
-      <div data-header-account-controls className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1 sm:gap-2">
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
         {/* Session errors are not evidence of a logout; the login route stays reachable. */}
@@ -329,21 +329,20 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
-              className={`flex min-h-11 items-center gap-1 px-1.5 sm:gap-2 sm:px-3.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
+              className={`flex min-h-11 items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
               aria-controls="header-account-navigation"
               aria-expanded={isAccountOpen}
-              aria-label={`Profile Hub – ${t('navAccount')}`}
-              title="Profile Hub"
+              aria-label={t('navAccount')}
+              title="Kontomenü"
             >
-              <ProfileAvatar url={authSession.user?.avatarUrl} privateUrl={privateAvatarUrl} owner={isOwner} size="sm" />
+              <ProfileAvatar url={authSession.user?.avatarUrl} privateUrl={privateAvatarUrl} owner={isOwner} size="md" />
               <span className="flex min-w-0 flex-col items-start leading-tight">
-                <span className="whitespace-nowrap">Profile Hub</span>
-                <span className="hidden max-w-28 truncate sm:block">{authSession.user?.name || 'Profil'}</span>
+                <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
-                  <span className={`hidden sm:inline font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
+                  <span className={`font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
                 )}
               </span>
-              <ChevronDown className={`hidden sm:block h-3.5 w-3.5 transition-transform ${isOwner ? "text-red-300" : "text-emerald-300"} ${isAccountOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOwner ? "text-red-300" : "text-emerald-300"} ${isAccountOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isAccountOpen && (

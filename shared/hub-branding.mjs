@@ -11,10 +11,10 @@ export const BRAND_COLORS = Object.freeze({
 });
 
 export const HUB_BRANDING = Object.freeze({
-  marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.violet, icon: '/branding/badges/analytics-hub.svg' },
+  marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.violet },
   studio: { name: 'Studio Hub', color: BRAND_COLORS.green },
   social: { name: 'Social Hub', color: BRAND_COLORS.pink },
-  learning: { name: 'Learning Hub', color: BRAND_COLORS.gold, icon: '/branding/badges/learning-hub.svg' },
+  learning: { name: 'Learning Hub', color: BRAND_COLORS.gold },
   documentation: { name: 'Dokumentation Hub', color: BRAND_COLORS.blue, glow: 'rgba(16, 51, 135, 0.75)' },
   'control-center': { name: 'Control Center', color: BRAND_COLORS.rose },
   legal: { name: 'Rechtliches', color: BRAND_COLORS.cyan },
