@@ -52,9 +52,16 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
         return None
 
+def tls_context():
+    # create_default_context reads SSLKEYLOGFILE from the parent environment.
+    # Use explicit client defaults and trust only the selected CA bundle.
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(cafile=str(CA))
+    return context
+
 def read_secdb(branch, repo):
     url = "https://secdb.alpinelinux.org/" + branch + "/" + repo + ".json"
-    context = ssl.create_default_context(cafile=str(CA))
+    context = tls_context()
     opener = urllib.request.build_opener(NoRedirect(),
         urllib.request.HTTPSHandler(context=context))
     with opener.open(url, timeout=25) as response:
@@ -129,7 +136,7 @@ def scan(branch):
 def session():
     if not CA.is_file():
         raise ValueError("CA_BUNDLE_MISSING")
-    ssl.create_default_context(cafile=str(CA))
+    tls_context()
     env = dict(CLEAN, SSL_CERT_FILE=str(CA), CURL_CA_BUNDLE=str(CA),
                REQUESTS_CA_BUNDLE=str(CA), GIT_SSL_CAINFO=str(CA),
                HISTFILE="/dev/null", HISTSIZE="0")
@@ -139,6 +146,17 @@ def session():
     os.execve("/bin/sh", ["sh", "-i"], env)
 
 def selftest():
+    from unittest.mock import patch
+    with tempfile.TemporaryDirectory(prefix="acodex-tls-test-") as tmp:
+        keylog = Path(tmp) / "keys.log"
+        with patch.dict(os.environ, {"SSLKEYLOGFILE": str(keylog)}), \
+                patch.object(ssl.SSLContext, "load_verify_locations") as load:
+            context = tls_context()
+            load.assert_called_once_with(cafile=str(CA))
+            if (context.keylog_filename is not None or keylog.exists()
+                    or not context.check_hostname
+                    or context.verify_mode != ssl.CERT_REQUIRED):
+                raise AssertionError("TLS_KEYLOG_OR_VERIFICATION_REGRESSION")
     fixes = index_fixes([{"pkg": {"name": "demo", "secfixes":
                          {"2": ["CVE-2026-1234"]}}}])
     inventory = [{"name": "demo-sub", "version": "1", "origin": "demo"}]
@@ -176,7 +194,7 @@ def main():
             session()
         if not CA.is_file():
             raise ValueError("CA_BUNDLE_MISSING")
-        ssl.create_default_context(cafile=str(CA))
+        tls_context()
         print("CA_BUNDLE=LOADABLE")
         audit = run(["apk", "audit", "--system"], 120)
         print("APK_AUDIT_EXIT=" + str(audit.returncode))
