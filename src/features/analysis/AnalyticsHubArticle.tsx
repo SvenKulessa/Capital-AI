@@ -116,8 +116,16 @@ export function AnalyticsHubArticle() {
   const [selected, setSelected] = useState(1);
   const stage = stages[selected];
   const report = technicalReports[selected];
-  const orbitRadius = 112;
-  const circumference = 2 * Math.PI * orbitRadius;
+  const orbitX = 133;
+  const orbitY = 79;
+  const orbitCenter = { x: 180, y: 158 };
+  const orbitPoint = (angle: number) => ({ x: orbitCenter.x + Math.cos(angle) * orbitX, y: orbitCenter.y + Math.sin(angle) * orbitY });
+  const arc = (index: number) => {
+    const middle = -Math.PI / 2 + index * Math.PI * 2 / stages.length;
+    const half = Math.PI / stages.length - 0.055;
+    const a = orbitPoint(middle - half), b = orbitPoint(middle + half);
+    return `M ${a.x} ${a.y} A ${orbitX} ${orbitY} 0 0 1 ${b.x} ${b.y}`;
+  };
   const star = (x: number, y: number, radius: number) => Array.from({ length: 10 }, (_, index) => {
     const angle = -Math.PI / 2 + index * Math.PI / 5;
     const distance = index % 2 === 0 ? radius : radius * 0.46;
@@ -125,7 +133,7 @@ export function AnalyticsHubArticle() {
   }).join(' ');
   const positions = stages.map((_, index) => {
     const angle = -Math.PI / 2 + index * Math.PI * 2 / stages.length;
-    return { x: 180 + Math.cos(angle) * orbitRadius, y: 148 + Math.sin(angle) * orbitRadius };
+    return orbitPoint(angle);
   });
   return (
     <article lang="de" id="analytics-hub-universe-article" aria-labelledby="analytics-article-title" className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-violet-300/40 bg-slate-950 p-3 sm:p-8" style={{ backgroundImage: 'radial-gradient(ellipse at 75% 18%, rgba(183,148,244,.15), transparent 65%)' }}>
@@ -141,21 +149,10 @@ export function AnalyticsHubArticle() {
           <p className="mt-1 text-xs text-slate-300">Konzeptionelle Darstellung · keine Live-Marktdaten</p>
           <div className="relative mx-auto w-full max-w-xl">
           <svg viewBox="0 0 360 296" className="block h-auto w-full" role="img" aria-label={`Analyse-Universum, ausgewählt: ${stage.title}. Sechs miteinander verknüpfte Themen.`}>
-            <defs>
-              <radialGradient id="analytics-orbit-halo"><stop stopColor="#67E8F9" stopOpacity=".22"/><stop offset="1" stopColor="#090D1C" stopOpacity="0"/></radialGradient>
-              <radialGradient id="analytics-universe-core"><stop stopColor="#B794F4" stopOpacity=".42"/><stop offset="1" stopColor="#11162C"/></radialGradient>
-              <clipPath id="analytics-core-clip"><circle cx="180" cy="148" r="71"/></clipPath>
-            </defs>
-            <ellipse cx="180" cy="148" rx="175" ry="130" fill="url(#analytics-orbit-halo)"/>
-            <g fill="none" stroke="#B794F4" strokeOpacity=".22"><ellipse cx="180" cy="148" rx="147" ry="89" transform="rotate(-25 180 148)"/><ellipse cx="180" cy="148" rx="147" ry="89" transform="rotate(25 180 148)"/><circle cx="180" cy="148" r="126" strokeDasharray="2 7"/></g>
-            {stages.map((item,i)=><circle key={item.title} cx="180" cy="148" r={orbitRadius} fill="none" stroke={item.color} strokeWidth={selected===i?8:4} strokeLinecap="round" strokeDasharray={`${circumference/stages.length-9} ${circumference-circumference/stages.length+9}`} transform={`rotate(${-90+(i-.5)*360/stages.length+2} 180 148)`} opacity={selected===i?1:.66}/>)}
-            {positions.map((point,i)=><line key={stages[i].title} x1="180" y1="148" x2={point.x} y2={point.y} stroke={stages[i].color} strokeWidth={i===selected?2:1} opacity={i===selected?.8:.2}/>)}
-            <circle cx="180" cy="148" r="72" fill="url(#analytics-universe-core)" stroke="#B794F4" strokeWidth="1.5"/>
-            {/* Existing admitted artwork only. Uploaded reference remains private until rights review. */}
-            <image href="/branding/universe/hero-universe-globe.webp" x="109" y="77" width="142" height="142" preserveAspectRatio="xMidYMid slice" clipPath="url(#analytics-core-clip)"/>
-            <rect x="129" y="183" width="102" height="21" rx="10" fill="#090D1C" opacity=".92"/>
-            <text x="180" y="197" textAnchor="middle" fontSize="10" fill="#F8FAFC" fontWeight="700">ANALYTICS HUB</text>
-            {positions.map((point,i)=><g key={stages[i].title}><circle cx={point.x} cy={point.y} r="21" fill="#101329" stroke={stages[i].color} strokeWidth={i===selected?2.5:1} opacity=".95"/><polygon points={star(point.x,point.y,i===selected?18:15)} fill={stages[i].color} stroke="#F8FAFC" strokeWidth={i===selected?1.25:.5}/><text x={point.x} y={point.y+3} textAnchor="middle" fontSize="10" fill="#090D1C" fontWeight="800">{i+1}</text></g>)}
+            {/* Owner-approved generated artwork; independent vector process controls. */}
+            <image href="/branding/universe/analytics-universe-orbit.webp" x="0" y="13" width="360" height="270" preserveAspectRatio="xMidYMid meet"/>
+            {stages.map((item,i)=><path key={item.title} d={arc(i)} fill="none" stroke={item.color} strokeWidth={selected===i?3:1.3} strokeLinecap="round" opacity={selected===i?1:.6}/>)}
+            {positions.map((point,i)=><g key={stages[i].title}><circle cx={point.x} cy={point.y} r="21" fill="#090D1C" stroke={stages[i].color} strokeWidth={i===selected?2.5:1} opacity=".94"/><polygon points={star(point.x,point.y,i===selected?18:15)} fill={stages[i].color} stroke="#F8FAFC" strokeWidth={i===selected?1.25:.5}/><text x={point.x} y={point.y+3} textAnchor="middle" fontSize="10" fill="#090D1C" fontWeight="800">{i+1}</text></g>)}
           </svg>
           {positions.map((point,i) => <button key={stages[i].title} type="button" data-analytics-orbit-star={i} aria-label={`Prozessstern ${i+1}: ${stages[i].title}`} aria-pressed={selected===i} onClick={()=>setSelected(i)} className="absolute h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{left:point.x/360*100+'%',top:point.y/296*100+'%'}} />)}
           </div>
