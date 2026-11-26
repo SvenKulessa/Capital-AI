@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { hasControlCenterAccess } from '../../../shared/control-center-access.mjs';
 import { LockKeyhole, GitBranch, RotateCcw } from 'lucide-react';
 import { SHADOW_SCORE_CONFIG_V1 } from '../../config/shadowScoreConfig';
 import { ProviderRegistryService } from '../../config/providers/providerRegistry';
@@ -66,7 +67,7 @@ export function PipelineConfiguratorConsole() {
       .then((s) => {
         if (!controller.signal.aborted)
           setAccess(
-            s?.authenticated === true && s?.account?.iamRole === 'owner'
+            hasControlCenterAccess(s)
               ? 'allowed'
               : 'denied',
           );

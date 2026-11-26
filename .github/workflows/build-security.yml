@@ -427,20 +427,25 @@ jobs:
             jq -e '(.Results | type == "array") and ([.Results[] | (.Vulnerabilities // [])[] | select(.VulnerabilityID == "CVE-2026-4738")] | length == 0)' "$report" >/dev/null
           done
       - name: SBOM des exportierten Images
-        if: always() && hashFiles('security-reports/image.tar') != ''
+        if: always() && steps.image_identity.outputs.image_id != ''
         run: |
-          test -f security-reports/image.tar
+          # Avoid the runner hashFiles timeout on large image archives; the export step already binds the config digest.
+          test -s security-reports/image.tar
+          test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
       - name: Runtime-Lizenzinventar am exportierten Image
-        if: always() && hashFiles('security-reports/image.tar') != ''
-        run: docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/image-licenses.json --exit-code 0
+        if: always() && steps.image_identity.outputs.image_id != ''
+        run: |
+          test -s security-reports/image.tar
+          test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/image-licenses.json --exit-code 0
       - name: Runtime SBOM, Lizenzscanner und Notice-Hashes am exportierten CI-Image korrelieren
-        if: always() && hashFiles('security-reports/image.tar') != ''
+        if: always() && steps.image_identity.outputs.image_id != ''
         run: |
           set -euo pipefail
           node scripts/platform/runtime-license-coverage.mjs security-reports > security-reports/runtime-license-coverage.json
       - name: ClamAV und Sharp Native-Dateien sowie ELF-Linkage am selben CI-Image prüfen
-        if: always() && hashFiles('security-reports/image.tar') != ''
+        if: always() && steps.image_identity.outputs.image_id != ''
         run: |
           set -euo pipefail
           image="capital-ai:${{ github.sha }}"

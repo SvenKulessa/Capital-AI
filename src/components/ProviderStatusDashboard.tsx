@@ -33,7 +33,7 @@ export const ProviderStatusDashboard: React.FC<ProviderStatusDashboardProps> = (
       }
     }
     void poll();
-    const timer = setInterval(() => void poll(), 10000);
+    const timer = setInterval(() => { if (!document.hidden) void poll(); }, 10000);
     return () => {
       stopped = true;
       controller.abort();
@@ -42,7 +42,7 @@ export const ProviderStatusDashboard: React.FC<ProviderStatusDashboardProps> = (
   }, []);
 
   return <section className="rounded-3xl bg-[#091129] border border-slate-800 p-5 text-white">
-    <button onClick={onBackToHome} className="text-amber-300 text-sm">Zurück</button>
+    {onBackToHome && <button type="button" onClick={onBackToHome} className="min-h-11 text-amber-300 text-sm">Zurück</button>}
     <h2 className="font-bold text-xl mt-2">Data &amp; Providers</h2>
 
     <dl className="grid grid-cols-2 gap-3 my-4">

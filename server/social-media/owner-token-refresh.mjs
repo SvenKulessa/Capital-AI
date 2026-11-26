@@ -121,6 +121,7 @@ async function providerRefresh(fetchImpl, env, channel, oldToken, accountId,
 export async function refreshOwnerXForWorkload({ env = process.env, userId,
   userAccessToken, fetchImpl = fetch, edgeFactory = createSocialXEdgeClient,
   channel = 'X' } = {}) {
+  must(env.SOCIAL_X_GROWTH_PILOT_ENABLED !== 'true', 'X_GROWTH_UNBUDGETED_LANE_DISABLED');
   must(USER_ID.test(userId || '') && typeof userAccessToken === 'string'
     && userAccessToken.length > 50 && socialXEdgeMode(env)
     && ['X', 'X_PUBLISH'].includes(channel)

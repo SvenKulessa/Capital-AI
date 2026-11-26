@@ -45,8 +45,10 @@ jobs:
           JOB_ID: ${{ steps.bind.outputs.job }}
         run: |
           set -euo pipefail
+          umask 077
           mkdir -p gate-diagnosis
-          gh api "repos/$GH_REPOSITORY/actions/jobs/$JOB_ID/logs" > gate-diagnosis/raw.log
+          # Allow terminal escapes only for the private redirected raw log; never print it.
+          gh api --allow-escape-sequences "repos/$GH_REPOSITORY/actions/jobs/$JOB_ID/logs" > gate-diagnosis/raw.log
           test -s gate-diagnosis/raw.log
       - name: Classify sanitize and fingerprint
         id: classify
@@ -57,12 +59,15 @@ jobs:
           JOB_ID: ${{ steps.bind.outputs.job }}
         run: |
           set -euo pipefail
+          trap 'rm -f gate-diagnosis/raw.log' EXIT
           result=$(node scripts/auto-loop/gate-diagnosis.mjs gate-diagnosis/raw.log gate-diagnosis/report.json "$RUN_ID" "$RUN_ATTEMPT" "$HEAD_SHA" "$JOB_ID")
           IFS=$'\t' read -r classification rerun fingerprint <<< "$result"
           echo "classification=$classification" >> "$GITHUB_OUTPUT"
           echo "rerun=$rerun" >> "$GITHUB_OUTPUT"
           echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
-          rm gate-diagnosis/raw.log
+      - name: Remove private raw log even after failed download or classifier
+        if: always()
+        run: rm -f gate-diagnosis/raw.log
       - name: Publish bounded diagnosis to PR
         env:
           GH_TOKEN: ${{ github.token }}
@@ -74,7 +79,7 @@ jobs:
           RERUN: ${{ steps.classify.outputs.rerun }}
         run: |
           set -euo pipefail
-          jq -r '.evidenceLines[] | "- `" + . + "`"' gate-diagnosis/report.json > gate-diagnosis/evidence.md
+          jq -r '.evidenceLines[] | "    " + .' gate-diagnosis/report.json > gate-diagnosis/evidence.md
           body=$(printf '### Auto-Loop Gate Diagnosis\n\n- Run: `%s`\n- Classification: `%s`\n- Fingerprint: `%s`\n- Bounded automatic rerun: `%s`\n- Security bypass: `false`\n\n#### Sanitized evidence\n' "$RUN_ID" "$CLASSIFICATION" "$FINGERPRINT" "$RERUN"; cat gate-diagnosis/evidence.md)
           gh pr comment "$PR_NUMBER" --repo "$GH_REPOSITORY" --body "$body"
       - name: Upload machine-readable diagnosis

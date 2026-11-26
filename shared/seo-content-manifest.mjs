@@ -61,10 +61,10 @@ function contentEntry({
     domain,
     language,
     author: DEFAULT_AUTHOR,
-    updatedAt: ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : path === '/' ? '2026-11-13' : SEO_CONTENT_MANIFEST_VERSION,
+    updatedAt: ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : path === '/' ? '2026-11-25' : SEO_CONTENT_MANIFEST_VERSION,
     // Explicit reviewed content change, never deployment/crawl time.
-    // Home publisher/logo structured data actually changed in PR #693 on 2026-11-13.
-    sitemapLastmod: path === '/' ? '2026-11-13' : ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : ['/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen'].includes(path) ? '2026-10-14' : null,
+    // Home editorial content expanded in PR #971 on 2026-11-25.
+    sitemapLastmod: path === '/' ? '2026-11-25' : ['/blog', '/blog/x-api-expansions-kosten'].includes(path) ? '2026-11-06' : ['/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen'].includes(path) ? '2026-10-14' : null,
     sourceSha: SEO_CONTENT_SOURCE_SHA,
     license: DEFAULT_LICENSE,
     robots: DEFAULT_ROBOTS,
@@ -104,7 +104,7 @@ const staticEntries = [
     structuredDataType: 'WebApplication',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['index.html', 'src/features/home/HomePage.tsx'],
+    sourceRefs: ["index.html","src/features/home/HomePage.tsx","shared/public-search-focus.mjs","src/features/home/GrowthIntelligenceArticle.tsx"],
   }),
   contentEntry({
     path: '/learning',

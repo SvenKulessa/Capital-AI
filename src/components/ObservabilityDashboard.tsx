@@ -55,42 +55,52 @@ export function ObservabilityDashboard() {
   const [snapshot, setSnapshot] = React.useState<ObservabilitySnapshot | null>(null);
   const [state, setState] = React.useState<'loading' | 'ready' | 'unavailable'>('loading');
 
-  const refresh = React.useCallback(async (signal?: AbortSignal) => {
+  const request = React.useRef<AbortController | null>(null);
+  const refresh = React.useCallback(async () => {
+    if (request.current) return;
+    const controller = new AbortController();
+    request.current = controller;
+    try {
     const response = await fetch('/api/internal/observability', {
       credentials: 'same-origin',
       cache: 'no-store',
       headers: { Accept: 'application/json' },
-      signal,
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
     });
     const body = await readJson(response);
-    if (!response.ok || body?.schema !== 'CAPITAL_AI_OPERATIONAL_SNAPSHOT@1') {
+    if (!response.ok || body?.schema !== 'CAPITAL_AI_OPERATIONAL_SNAPSHOT@1' || !Array.isArray(body.requests) || !Array.isArray(body.durations) || (body.cads !== undefined && !Array.isArray(body.cads))) {
       throw new Error('OBSERVABILITY_UNAVAILABLE');
     }
-    setSnapshot(body as ObservabilitySnapshot);
-    setState('ready');
+    if (!controller.signal.aborted) {
+      setSnapshot(body as ObservabilitySnapshot);
+      setState('ready');
+    }
+    } catch {
+      if (!controller.signal.aborted) { setSnapshot(null); setState('unavailable'); }
+    } finally {
+      if (request.current === controller) request.current = null;
+    }
   }, []);
 
   React.useEffect(() => {
-    const controller = new AbortController();
-    refresh(controller.signal).catch(() => {
-      if (!controller.signal.aborted) setState('unavailable');
-    });
+    void refresh();
     const timer = window.setInterval(() => {
-      refresh().catch(() => setState('unavailable'));
+      if (!document.hidden) void refresh();
     }, 15000);
     return () => {
-      controller.abort();
+      request.current?.abort();
+      request.current = null;
       window.clearInterval(timer);
     };
   }, [refresh]);
 
   if (state === 'loading') {
-    return <section className="rounded-2xl border border-slate-800 bg-[#070b19]/80 p-5 text-sm text-slate-400">Observability wird geladen …</section>;
+    return <section role="status" className="rounded-2xl border border-slate-800 bg-[#070b19]/80 p-5 text-sm text-slate-400">Observability wird geladen …</section>;
   }
 
   if (state === 'unavailable' || !snapshot) {
     return (
-      <section className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-5">
+      <section role="status" className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-5">
         <h2 className="text-base font-black text-amber-100">Observability nicht verfügbar</h2>
         <p className="mt-2 text-xs text-slate-300">
           Die Owner-Projektion ist fail-closed. Prometheus-Token, Secrets und Rohlogs werden nicht an den Browser ausgegeben.

@@ -3,8 +3,37 @@ import { createHmac } from 'node:crypto';
 import { boundedJson, readJson } from './http-security.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { BLUEPRINT_PRODUCTS } from './blueprint-commerce.mjs';
+import { createSmartcopySandboxReadback, createSmartcopyStripeReader, createSmartcopyConsentReader, createSmartcopyEntitlementReader } from './smartcopy-sandbox-readback.mjs';
 
-export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, auth } = {}) {
+// Trusted server composition only. No browser-supplied receipts, no provider call,
+// and no live wiring unless the separate consent/recovery integration is approved.
+export function createXInitialInvoiceObserver({key,record,now=Date.now}={}) {
+  if(typeof key!=='string'||Buffer.byteLength(key)<32||typeof record!=='function')throw Error('X_INVOICE_OBSERVER_NOT_CONFIGURED');
+  const digest=(scope,id)=>createHmac('sha256',key).update('CAI-X-GROWTH@1:'+scope+':'+id).digest('hex');
+  return async function observe({userId,invoiceId,subscriptionId,paidAtSeconds,amountPaidCents}) {
+    const observed=now();
+    if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId||'')||
+      !/^in_[A-Za-z0-9]{1,240}$/.test(invoiceId||'')||!/^sub_[A-Za-z0-9]{1,240}$/.test(subscriptionId||'')||
+      !Number.isSafeInteger(paidAtSeconds)||paidAtSeconds<=0||!Number.isSafeInteger(observed)||observed<=0||
+      paidAtSeconds>Math.floor(observed/1000)||!Number.isSafeInteger(amountPaidCents)||amountPaidCents<1||amountPaidCents>100000000)
+      throw Error('X_INITIAL_INVOICE_INVALID');
+    // The isolated RPC rejects missing/revoked/expired consent and foreign or duplicate receipts.
+    return record({p_user:userId,p_invoice:digest('invoice',invoiceId),p_subscription:digest('subscription',subscriptionId),
+      p_paid:new Date(paidAtSeconds*1000).toISOString(),p_observed:new Date(observed).toISOString(),p_cents:amountPaidCents});
+  };
+}
+
+export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, auth, initialInvoiceObserver, smartcopySandbox, smartcopyProviderSandbox } = {}) {
+  // Only an explicit server composition can supply this inactive test-only helper.
+  // Reuse the same auth authority; nested config cannot override it. No HTTP route.
+  if(smartcopySandbox!==undefined&&smartcopyProviderSandbox!==undefined)throw Error('SMARTCOPY_AMBIGUOUS_COMPOSITION');
+  const provider=smartcopyProviderSandbox;
+  if(provider!==undefined&&Object.hasOwn(provider,'readEntitlement'))throw Error('SMARTCOPY_PROVIDER_ENTITLEMENT_OVERRIDE');
+  const readSmartcopySandbox=provider!==undefined?createSmartcopySandboxReadback({
+    scope:provider.scope,auth,now:provider.now,readEntitlement:createSmartcopyEntitlementReader({projectRef:provider.consentProjectRef,secret:provider.consentTestSecret,fetchImpl}),
+    readVerifiedOneTimeReceipt:createSmartcopyStripeReader({scope:provider.scope,key:provider.stripeTestKey,fetchImpl,now:provider.now}),
+    readConsent:createSmartcopyConsentReader({projectRef:provider.consentProjectRef,secret:provider.consentTestSecret,fetchImpl}),
+  }):smartcopySandbox===undefined?null:createSmartcopySandboxReadback({...smartcopySandbox,auth});
   const secret = env.STRIPE_SECRET_KEY || '';
   async function stripe(path) {
     const response = await fetchImpl('https://api.stripe.com/v1' + path, {
@@ -14,7 +43,7 @@ export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, au
     if (!response.ok) throw Error('provider_unavailable');
     return value;
   }
-  return { async handle(req, res, url, json) {
+  return { ...(readSmartcopySandbox?{readSmartcopySandbox}:{}), async handle(req, res, url, json) {
     if (url.pathname !== '/api/billing/purchase-receipt') return false;
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Vary', 'Cookie');
@@ -83,6 +112,15 @@ export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, au
         const charge = intent?.latest_charge;
         if (intent?.status !== 'succeeded' || intent.livemode !== true || !charge || charge.paid !== true ||
             charge.refunded !== false || charge.amount_refunded !== 0 || charge.disputed !== false) throw Error('unverified_charge');
+      }
+      // Optional server-only handoff AFTER existing owner, catalog, live invoice,
+      // payment intent, charge, refund and dispute checks. No injection in production.
+      // Existing receipt delivery is independent of optional attribution.
+      if (typeof initialInvoiceObserver==='function' && session.mode==='subscription' && user.emailVerified===true) {
+        try {
+          await initialInvoiceObserver({userId:user.userId,invoiceId:session.invoice.id,subscriptionId:session.subscription,
+            paidAtSeconds:session.invoice.status_transitions?.paid_at,amountPaidCents:session.invoice.amount_paid});
+        } catch { /* Never expose optional attribution errors or provider/identity data. */ }
       }
       const value = (session.amount_subtotal - discount) / 100;
       json(res,200,{ transactionId: createHmac('sha256',secret).update((id === 'learning-portal' ? 'learning-analytics:' : 'commerce-analytics:') + session.id).digest('hex'),
