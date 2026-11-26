@@ -197,7 +197,7 @@ test('documentation hub catalog links to the existing content instead of reopeni
 });
 
 
-test('Control Center offers eleven dedicated, keyboard-accessible routes and legacy query links', () => {
+test('Control Center offers dedicated, keyboard-accessible routes and legacy query links', () => {
   const sidebar = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
   const page = readFileSync(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
   const appRoutes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
@@ -212,6 +212,8 @@ test('Control Center offers eleven dedicated, keyboard-accessible routes and leg
   assert.equal(resolveAppRoute('/control-center/unknown'), '/');
   assert.match(appRoutes, /currentRoute\.startsWith\('\/control-center\/'\)/);
   assert.match(page, /HubNavigationPanel/);
+  assert.ok(destinations.includes('/control-center/providers'));
+  assert.match(page, /activeTab === 'providers' && <OpenAiProviderStatus/);
   assert.doesNotMatch(page, /<select/);
   assert.match(page, /APP_NAVIGATION_EVENT/);
   assert.doesNotMatch(page, /role="tablist"/);
