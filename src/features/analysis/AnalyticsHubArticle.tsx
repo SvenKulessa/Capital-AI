@@ -15,9 +15,16 @@ const stages = [
 export function AnalyticsHubArticle() {
   const [selected, setSelected] = useState(2);
   const stage = stages[selected];
+  const orbitRadius = 112;
+  const circumference = 2 * Math.PI * orbitRadius;
+  const star = (x: number, y: number, radius: number) => Array.from({ length: 10 }, (_, index) => {
+    const angle = -Math.PI / 2 + index * Math.PI / 5;
+    const distance = index % 2 === 0 ? radius : radius * 0.46;
+    return `${x + Math.cos(angle) * distance},${y + Math.sin(angle) * distance}`;
+  }).join(' ');
   const positions = stages.map((_, index) => {
     const angle = -Math.PI / 2 + index * Math.PI * 2 / stages.length;
-    return { x: 180 + Math.cos(angle) * 116, y: 148 + Math.sin(angle) * 112 };
+    return { x: 180 + Math.cos(angle) * orbitRadius, y: 148 + Math.sin(angle) * orbitRadius };
   });
   return (
     <article lang="de" id="analytics-hub-universe-article" aria-labelledby="analytics-article-title" className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-violet-300/40 bg-slate-950 p-4 sm:p-8" style={{ backgroundImage: 'radial-gradient(ellipse at 75% 18%, rgba(183,148,244,.15), transparent 65%)' }}>
@@ -32,16 +39,22 @@ export function AnalyticsHubArticle() {
           <h3 id="analytics-orbit-title" className="text-base font-bold text-violet-200">Das Analyse-Universum</h3>
           <p className="mt-1 text-xs text-slate-300">Konzeptionelle Darstellung · keine Live-Marktdaten</p>
           <svg viewBox="0 0 360 296" className="mx-auto block h-auto w-full max-w-md" role="img" aria-label={`Analyse-Universum, ausgewählt: ${stage.title}. Sieben miteinander verknüpfte Themen.`}>
-            <defs><radialGradient id="analytics-universe-core"><stop stopColor="#B794F4" stopOpacity=".42"/><stop offset="1" stopColor="#11162C"/></radialGradient></defs>
-            <g fill="none" stroke="#B794F4" strokeOpacity=".3"><ellipse cx="180" cy="148" rx="130" ry="86" transform="rotate(-30 180 148)"/><ellipse cx="180" cy="148" rx="130" ry="86" transform="rotate(30 180 148)"/><circle cx="180" cy="148" r="116" strokeDasharray="2 7"/></g>
-            {positions.map((point, i) => <line key={stages[i].title} x1="180" y1="148" x2={point.x} y2={point.y} stroke={stages[i].color} strokeWidth={i===selected?3:1} opacity={i===selected?1:.35}/>)}
-            <circle cx="180" cy="148" r="53" fill="url(#analytics-universe-core)" stroke="#B794F4" strokeWidth="1.5"/>
-            <g fill="none" stroke="#B794F4" strokeOpacity=".55"><ellipse cx="180" cy="148" rx="22" ry="53"/><ellipse cx="180" cy="148" rx="53" ry="22"/><path d="M127 148h106M180 95v106"/></g>
-            <text x="180" y="145" textAnchor="middle" fontSize="12" fill="#F8FAFC" fontWeight="700">ANALYTICS</text><text x="180" y="160" textAnchor="middle" fontSize="10" fill="#F8FAFC">HUB</text>
-            {positions.map((point,i)=><g key={stages[i].title}><circle cx={point.x} cy={point.y} r={i===selected?17:12} fill="#101329" stroke={stages[i].color} strokeWidth={i===selected?3:1.5}/><text x={point.x} y={point.y+4} textAnchor="middle" fontSize="11" fill={stages[i].color} fontWeight="700">{i+1}</text></g>)}
+            <defs>
+              <radialGradient id="analytics-universe-core"><stop stopColor="#B794F4" stopOpacity=".42"/><stop offset="1" stopColor="#11162C"/></radialGradient>
+              <clipPath id="analytics-core-clip"><circle cx="180" cy="148" r="71"/></clipPath>
+            </defs>
+            <g fill="none" stroke="#B794F4" strokeOpacity=".22"><ellipse cx="180" cy="148" rx="147" ry="89" transform="rotate(-25 180 148)"/><ellipse cx="180" cy="148" rx="147" ry="89" transform="rotate(25 180 148)"/><circle cx="180" cy="148" r="126" strokeDasharray="2 7"/></g>
+            {stages.map((item,i)=><circle key={item.title} cx="180" cy="148" r={orbitRadius} fill="none" stroke={item.color} strokeWidth={selected===i?8:4} strokeLinecap="round" strokeDasharray={`${circumference/7-9} ${circumference-circumference/7+9}`} transform={`rotate(${-90+(i-.5)*360/7+2} 180 148)`} opacity={selected===i?1:.66}/>)}
+            {positions.map((point,i)=><line key={stages[i].title} x1="180" y1="148" x2={point.x} y2={point.y} stroke={stages[i].color} strokeWidth={i===selected?2:1} opacity={i===selected?.8:.2}/>)}
+            <circle cx="180" cy="148" r="72" fill="url(#analytics-universe-core)" stroke="#B794F4" strokeWidth="1.5"/>
+            {/* Existing admitted artwork only. Uploaded reference remains private until rights review. */}
+            <image href="/branding/universe/hero-universe-globe.webp" x="109" y="77" width="142" height="142" preserveAspectRatio="xMidYMid slice" clipPath="url(#analytics-core-clip)"/>
+            <rect x="129" y="183" width="102" height="21" rx="10" fill="#090D1C" opacity=".92"/>
+            <text x="180" y="197" textAnchor="middle" fontSize="10" fill="#F8FAFC" fontWeight="700">ANALYTICS HUB</text>
+            {positions.map((point,i)=><g key={stages[i].title}><circle cx={point.x} cy={point.y} r="21" fill="#101329" stroke={stages[i].color} strokeWidth={i===selected?2.5:1} opacity=".95"/><polygon points={star(point.x,point.y,i===selected?18:15)} fill={stages[i].color} stroke="#F8FAFC" strokeWidth={i===selected?1.25:.5}/><text x={point.x} y={point.y+3} textAnchor="middle" fontSize="10" fill="#090D1C" fontWeight="800">{i+1}</text></g>)}
           </svg>
           <div role="group" aria-label="Analyse-Thema auswählen" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {stages.map((item,i)=><button key={item.title} type="button" aria-pressed={i===selected} onClick={()=>setSelected(i)} className="min-h-11 rounded-lg border px-2 py-2 text-left text-xs font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{borderColor:item.color,color:item.color,backgroundColor:i===selected?item.color+'26':'#080d1b'}}>{i+1} · {item.title}</button>)}
+            {stages.map((item,i)=><button key={item.title} type="button" aria-pressed={i===selected} onClick={()=>setSelected(i)} className="min-h-11 rounded-lg border px-2 py-2 text-left text-xs font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{borderColor:item.color,color:item.color,backgroundColor:i===selected?item.color+'26':'#080d1b'}}><span aria-hidden="true">★ </span>{i+1} · {item.title}</button>)}
           </div>
         </div>
         <div className="min-w-0 rounded-2xl border border-slate-700 p-5" aria-live="polite">

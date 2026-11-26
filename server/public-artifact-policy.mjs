@@ -120,6 +120,10 @@ const STATIC_SOURCE_BASELINE = new Set([
   "branding/asset-pack/vendor/vendor-app-icon-512x512.webp",
   "branding/asset-pack/vendor/vendor-brand-banner-1200x300.jpg",
   "branding/asset-pack/vendor/vendor-brand-banner-1200x300.png",
+  // Exact first-party Hub identity assets; path admission is not publication approval.
+  "branding/badges/analytics-hub.svg",
+  "branding/badges/hub-branding-manifest.json",
+  "branding/badges/learning-hub.svg",
   "branding/badges/data-pipeline-blueprint.svg",
   "branding/badges/enterprise.svg",
   "branding/badges/free-user.svg",
