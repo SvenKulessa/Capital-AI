@@ -87,7 +87,6 @@ import { createBenchmarkStore } from './benchmark-store.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
 import {
   vocabularyMetadata,
-  VOCABULARY_SOURCE_PRS,
   vocabularyMetadataByPath,
   vocabularyTitle,
   vocabularyDescription,
@@ -322,7 +321,7 @@ function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
   const lesson = [['Erklärung',entry.detailedExplanation],['Regel / Formel',entry.formulaOrRule],['Synthetisches Praxisbeispiel',entry.practicalExample],['Merksatz',entry.keyTakeaway]].filter(([,text])=>text).map(([title,text])=>`<section><h2>${escapeHtml(title)}</h2><p>${escapeHtml(text)}</p></section>`).join('');
   const sources = entry.sources?.length ? `<section><h2>Fachquellen</h2><ul>${entry.sources.map(source=>`<li><a href="${escapeHtml(source.url)}" rel="noreferrer">${escapeHtml(source.title)}</a></li>`).join('')}</ul></section>` : '';
-  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul>${lesson}${sources}<details><summary>PR-Quellen des Katalogs</summary><ul>${VOCABULARY_SOURCE_PRS.map(pr=>`<li><a href="https://github.com/SvenKulessa/Capital-AI/pull/${pr.number}">PR #${pr.number} · ${escapeHtml(pr.title)}</a></li>`).join('')}</ul></details><nav aria-label="Weiterlernen"><a href="/learning#learning-methodology">Mathematische Lernbeispiele kostenlos lesen</a> · <a href="/learning?tab=glossar#learning-offer">Learning-Angebot und Voraussetzungen</a></nav></article></main>`;
+  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul>${lesson}${sources}<nav aria-label="Weiterlernen"><a href="/learning#learning-methodology">Mathematische Lernbeispiele kostenlos lesen</a> · <a href="/learning?tab=glossar#learning-offer">Learning-Angebot und Voraussetzungen</a></nav></article></main>`;
 }
 function vocabularyLandingFallback() {
   const links = publicVocabularyEntries

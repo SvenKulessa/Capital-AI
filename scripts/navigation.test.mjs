@@ -680,3 +680,21 @@ test('analytics overview stays scoped to six analysis processes and labels stati
   assert.match(article, /data-analytics-orbit-star/);
   assert.match(article, /AnalyticsProcessFlow key=\{selected\}/);
 });
+
+test('Universe view policy and public learning source isolation', async () => {
+  const { UNIVERSE_VIEW_BRANDING: policy } = await import('../shared/hub-branding.mjs');
+  assert.equal(policy.minimumActiveColors, 2);
+  assert.equal(policy.maximumActiveColors, 4);
+  assert.deepEqual(policy.pair, ['cyan','gold']);
+  assert.equal(policy.nebulaMaxViewportFraction, .2);
+  assert.equal(policy.studioNavigationTarget, '/');
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /primaryRoutes = \['\/marketscreener', '\/learning', '\/'/);
+  for (const path of ['../src/features/learning/LearningPortalPage.tsx','../shared/learning-journey.mjs','../server/index.mjs']) {
+    const source = readFileSync(new URL(path, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /VOCABULARY_SOURCE_PRS|github\.com\/SvenKulessa\/Capital-AI\/pull\//);
+  }
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  assert.match(css, /\.universe-nebula \{[^}]*width:30%; height:30%/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+});
