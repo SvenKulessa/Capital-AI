@@ -203,6 +203,26 @@ test('rejects unknown GitHub SHA, truncated PR listing, GA4 failure and incomple
   assert.equal(res.body.github.openPrCountStatus, 'NOT_PROVEN_TRUNCATED');
 });
 
+test('accepts a realistic GitHub PR payload and projects only dashboard fields', async () => {
+  const unusedBody = 'unused body '.repeat(20000);
+  const h = setup({ provider: url => String(url).includes('/pulls?')
+    ? [{ ...fixture(url)[0], body: unusedBody }] : fixture(url) });
+  const { body } = await h.request();
+  assert.equal(body.github.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.github.openPrCount, 1);
+  assert.equal(body.github.pullRequests[0].number, 7);
+  assert.equal(body.github.pullRequests[0].body, undefined);
+});
+
+test('bounds the larger GitHub PR response independently of other evidence', async () => {
+  const h = setup({ provider: url => String(url).includes('/pulls?')
+    ? [{ ...fixture(url)[0], body: 'x'.repeat(4 * 1024 * 1024) }] : fixture(url) });
+  const { body } = await h.request();
+  assert.equal(body.github.status, 'NOT_PROVEN');
+  assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+  assert.equal(body.ga4.status, 'VERIFIED_PROVIDER_READ');
+});
+
 test('rejects large responses even when content-length is missing', async () => {
   const h = setup({ provider: url => String(url).endsWith('/commits/main')
     ? new Response(JSON.stringify({ sha, huge: 'x'.repeat(150000) }), { status: 200 }) : fixture(url) });

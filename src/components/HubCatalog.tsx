@@ -397,6 +397,14 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         path: '/control-center/licenses',
       },
       {
+        id: 'providers',
+        name: 'Provider-Verbindungen',
+        icon: <Radio className="w-4 h-4 text-cyan-400" />,
+        shortDesc: 'OpenAI-Verbindung, Modellverfügbarkeit und Kostenkontrolle prüfen.',
+        tags: [],
+        path: '/control-center/providers',
+      },
+      {
         id: 'system',
         name: 'Webanwendung & System',
         icon: <Server className="w-4 h-4 text-purple-400" />,

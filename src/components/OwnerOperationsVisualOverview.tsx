@@ -1,5 +1,5 @@
 import { Activity, Bot, ChartColumnIncreasing, Cloud, Crown, GitPullRequest, Info, Layers3, LockKeyhole, ShieldCheck } from 'lucide-react';
-import { isVerified, isSnapshotStale, type DashboardReadback } from './ownerOperationsModel';
+import { ga4DiagnosticLabel, isVerified, isSnapshotStale, type DashboardReadback } from './ownerOperationsModel';
 import {
   ownerAgentRows, ownerEvidenceCounts, ownerEvidenceRows, ownerGa4Metrics,
   ownerPrTimeline, ownerSourceCounts,
@@ -172,7 +172,7 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
     <section className="ops-mock-card ops-mock-ga4" aria-labelledby="ops-ga4-analysis-title">
       <h4 id="ops-ga4-analysis-title"><ChartColumnIncreasing aria-hidden="true"/> GA4 · Website und Conversion</h4>
       <p className="ops-mock-subtitle">
-        {isVerified(ga4) ? ga4?.property : 'NOT_PROVEN · Serverseitiger Property-Readback fehlt'}
+        {isVerified(ga4) ? ga4?.property : `NOT_PROVEN · ${ga4DiagnosticLabel(ga4?.reason)}`}
         {' · '}7 Kalendertage einschließlich heute · Ereignisse sind keine Zahlungen.
       </p>
       <div className="ops-mock-ga4-grid">
