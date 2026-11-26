@@ -13,6 +13,7 @@ export const BRAND_COLORS = Object.freeze({
 export const HUB_BRANDING = Object.freeze({
   marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.violet },
   studio: { name: 'Studio Hub', color: BRAND_COLORS.green },
+  social: { name: 'Social Hub', color: BRAND_COLORS.pink },
   learning: { name: 'Learning Hub', color: BRAND_COLORS.gold },
   documentation: { name: 'Dokumentation Hub', color: BRAND_COLORS.blue, glow: 'rgba(16, 51, 135, 0.75)' },
   'control-center': { name: 'Control Center', color: BRAND_COLORS.rose },
@@ -30,7 +31,7 @@ export const ASSET_BRANDING = Object.freeze({
 
 const COLOR_WHEEL = Object.freeze(Object.values(BRAND_COLORS));
 const HUB_WHEEL_OFFSET = Object.freeze({
-  marketscreener: 1, studio: 6, learning: 2, documentation: 5, 'control-center': 4, legal: 0,
+  marketscreener: 1, studio: 6, social: 3, learning: 2, documentation: 5, 'control-center': 4, legal: 0,
 });
 /** Each tab keeps its compact dimensions but gets a stable, distinct accent. */
 export function hubTabAccent(hubId, index, pageId = '') {
@@ -57,6 +58,7 @@ export function hubBrandForRoute(route = '') {
   const path = route.split('?')[0];
   if (path === '/marketscreener/dokumentation') return 'documentation';
   if (/^\/(learning|vocabulary|glossar)(\/|$)/.test(path)) return 'learning';
+  if (/^\/(social)(\/|$)/.test(path)) return 'social';
   if (/^\/(dokumentation|architecture|architecture-hub|financial-intelligence|lizenz|datenprovider-lizenzen|opensource-lizenzen)(\/|$)/.test(path)) return 'documentation';
   if (/^\/(studio|pipeline-builder)(\/|$)/.test(path)) return 'studio';
   if (/^\/(marketscreener|screener)(\/|$)/.test(path)) return 'marketscreener';

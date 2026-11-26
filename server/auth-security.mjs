@@ -1,3 +1,5 @@
+import { createLimiter } from './http-security.mjs';
+
 const PASSKEY_ID_RE = /^[0-9a-fA-F-]{36}$/;
 const FACTOR_ID_RE = /^[0-9a-fA-F-]{36}$/;
 const TOKEN_HASH_RE = /^[A-Za-z0-9._~-]{16,1024}$/;
@@ -92,7 +94,11 @@ export function createAuthSecurity({
   readRequestJson,
   sameOrigin,
   audit = console.info,
+  now = Date.now,
 } = {}) {
+  // Bounded process-local protection for actual password updates, keyed only by verified user identity.
+  // Does not replace provider-side leaked-password protection or distributed throttling.
+  const allowPasswordReset = createLimiter(5, 60_000, 1024, now);
   async function requireSession(req, res, json) {
     const stored = await resolveSession(req, res);
     if (!stored?.accessToken || !stored?.user?.id) {
@@ -233,6 +239,11 @@ export function createAuthSecurity({
       const password = typeof body.password === 'string' ? body.password : '';
       if (password.length < 14 || password.length > 256) {
         json(res, 400, { error: 'invalid_new_password' });
+        return true;
+      }
+      if (!allowPasswordReset(String(stored.user.id))) {
+        res.setHeader('Retry-After', '60');
+        json(res, 429, { error: 'rate_limited' });
         return true;
       }
       const updated = await authRequest(config, '/user', {

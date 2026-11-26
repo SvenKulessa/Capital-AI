@@ -10,13 +10,14 @@ const SERVICE_ID = 'srv-dau1rp893c1s73cdhm1g';
 const WORKSPACE_ID = 'tea-d90o4rj7uimc739i86ug';
 const SHA = /^[a-f0-9]{40}$/;
 const MAX_BYTES = 128 * 1024;
+const MAX_GITHUB_PR_BYTES = 4 * 1024 * 1024;
 const CACHE_MS = 5 * 60 * 1000;
 const ERROR_CACHE_MS = 30_000;
 const TIMEOUT_MS = 7_000;
 const EVENTS = new Set(['page_view', 'session_start', 'first_visit', 'view_item', 'user_engagement', 'generate_lead', 'purchase']);
 const N = v => Number.isSafeInteger(v) && v >= 0 ? v : null;
 
-async function readJson(fetchImpl, address, token, signal) {
+async function readJson(fetchImpl, address, token, signal, maxBytes = MAX_BYTES) {
   const url = new URL(address);
   if (url.protocol !== 'https:' || !['api.github.com', 'api.render.com'].includes(url.hostname)) throw Error('INVALID_PROVIDER_HOST');
   const headers = { Accept: 'application/json' };
@@ -28,7 +29,7 @@ async function readJson(fetchImpl, address, token, signal) {
   const response = await fetchImpl(url, { method: 'GET', headers, redirect: 'error', cache: 'no-store', signal });
   if (!response?.ok) throw Error('PROVIDER_UNAVAILABLE');
   const declared = Number(response.headers?.get?.('content-length'));
-  if (Number.isFinite(declared) && declared > MAX_BYTES) throw Error('RESPONSE_OVERSIZED');
+  if (Number.isFinite(declared) && declared > maxBytes) throw Error('RESPONSE_OVERSIZED');
   let raw = '';
   if (response.body?.getReader) {
     const reader = response.body.getReader();
@@ -39,14 +40,17 @@ async function readJson(fetchImpl, address, token, signal) {
         const { done, value } = await reader.read();
         if (done) break;
         size += value.byteLength;
-        if (size > MAX_BYTES) throw Error('RESPONSE_OVERSIZED');
+        if (size > maxBytes) {
+          await reader.cancel().catch(() => {});
+          throw Error('RESPONSE_OVERSIZED');
+        }
         raw += decoder.decode(value, { stream: true });
       }
       raw += decoder.decode();
     } finally { reader.releaseLock(); }
   } else {
     raw = await response.text();
-    if (Buffer.byteLength(raw) > MAX_BYTES) throw Error('RESPONSE_OVERSIZED');
+    if (Buffer.byteLength(raw) > maxBytes) throw Error('RESPONSE_OVERSIZED');
   }
   return JSON.parse(raw);
 }
@@ -90,7 +94,7 @@ async function readGitHub(fetchImpl, env, signal, now) {
   const token = typeof env.GITHUB_TOKEN === 'string' ? env.GITHUB_TOKEN.trim() : '';
   const commit = await readJson(fetchImpl, `${origin}/commits/main`, token, signal);
   if (!SHA.test(commit?.sha)) throw Error('INVALID_GITHUB_SHA');
-  const prs = await readJson(fetchImpl, `${origin}/pulls?state=open&per_page=100`, token, signal);
+  const prs = await readJson(fetchImpl, `${origin}/pulls?state=open&per_page=100`, token, signal, MAX_GITHUB_PR_BYTES);
   if (!Array.isArray(prs)) throw Error('INVALID_PR_COLLECTION');
   const valid = prs.every(pr => Number.isSafeInteger(pr?.number) && pr.number > 0 && pr?.state === 'open');
   if (!valid) throw Error('INVALID_PR_ENTRY');

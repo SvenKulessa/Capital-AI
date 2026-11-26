@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { OpenAiProviderStatus } from './OpenAiProviderStatus';
 import { InteractiveArticleScene } from '../features/home/InteractiveArticleScene';
 import { growthVisualScene } from '../shared/growthVisualScenes';
 import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
@@ -193,6 +194,7 @@ export function GrowthOwnerControlCenter() {
       <p className="mt-2 text-sm text-slate-300">SOLO2 · Arbeitsstand v{current.version} · {new Date(current.at).toLocaleString('de-DE')}</p>
       <p className="mt-2 text-xs text-slate-400">Arbeitsstand in der aktuellen Sitzung; JSON-Export und freigegebenes verschlüsseltes Owner-Archiv zur Wiederverwendung. Bis zu 30 Versionen (4 MB Historie). Keine Tokens, Kundendaten oder Secrets eingeben. Dokumentierte Freigaben erteilen keine Berechtigungen.</p>
     </header>
+    <OpenAiProviderStatus />
     {sceneIds.length>0&&<section className="rounded-xl border border-cyan-300/30 p-3" aria-label="Growth 3D Content Studio">
       <h3 className="font-semibold text-cyan-200">Growth 3D Content Studio</h3>
       <p className="mt-1 text-xs text-slate-300">{sceneIds.length} geplante Szenen · DRAFT_ONLY · keine exportierten Medien oder Publikationsfreigaben. Tool-Radar: täglicher Watch vorgesehen, Laufzeit nicht nachgewiesen.</p>

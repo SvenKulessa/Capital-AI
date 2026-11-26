@@ -197,7 +197,7 @@ test('documentation hub catalog links to the existing content instead of reopeni
 });
 
 
-test('Control Center offers eleven dedicated, keyboard-accessible routes and legacy query links', () => {
+test('Control Center offers dedicated, keyboard-accessible routes and legacy query links', () => {
   const sidebar = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
   const page = readFileSync(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
   const appRoutes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
@@ -212,6 +212,8 @@ test('Control Center offers eleven dedicated, keyboard-accessible routes and leg
   assert.equal(resolveAppRoute('/control-center/unknown'), '/');
   assert.match(appRoutes, /currentRoute\.startsWith\('\/control-center\/'\)/);
   assert.match(page, /HubNavigationPanel/);
+  assert.ok(destinations.includes('/control-center/providers'));
+  assert.match(page, /activeTab === 'providers' && <OpenAiProviderStatus/);
   assert.doesNotMatch(page, /<select/);
   assert.match(page, /APP_NAVIGATION_EVENT/);
   assert.doesNotMatch(page, /role="tablist"/);
@@ -326,9 +328,10 @@ test('paused price alerts cannot render navigation or run background price check
 test('hero uses shared 3D brand scene and shared product disclaimer', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
   const globe = readFileSync(new URL('../src/components/BrandGlobe.tsx', import.meta.url), 'utf8');
-  assert.match(hero, /<BrandGlobe paused=\{globePaused\}/);
+  assert.match(hero, /<BrandGlobe paused=\{false\}/);
   assert.match(globe, /src=\{BRAND_GLOBE.asset\}/);
-  assert.match(hero, /aria-pressed=\{globePaused\}/);
+  assert.doesNotMatch(hero, /hero-globe-pause|globePaused|Globus pausieren/);
+  assert.doesNotMatch(hero, /style=\{\{ background:/);
   assert.doesNotMatch(hero, /hero-universe-orbit\.svg/);
   assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
   assert.match(hero, /ProductDisclaimer/);
@@ -649,4 +652,31 @@ test('profile menu shares all five private routes on the right and authenticated
   assert.match(header, /Object\.entries\(BRAND_COLORS\)/);
   assert.match(header, /data-universe-spectrum="header"/);
   assert.match(footer, /Object\.values\(BRAND_COLORS\)/);
+});
+
+test('sideboard keeps Profile Hub first and canonical hub names and outline tokens', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const drawer = header.slice(header.indexOf('id="capital-ai-mobile-navigation"'));
+  assert.ok(drawer.indexOf('id="drawer-account-toggle"') < drawer.indexOf('<nav aria-label={nav.main}'));
+  assert.match(drawer, />Profile Hub<\/span>/);
+  assert.match(header, /HUB_BRANDING\.learning/);
+  assert.match(header, /HUB_BRANDING\.marketscreener/);
+  assert.match(header, /borderColor: brand.color/);
+  assert.match(header, /brand\?\.name \?\? primaryLabels\[index\]/);
+  assert.equal(HUB_BRANDING.learning.name, 'Learning Hub');
+  assert.equal(HUB_BRANDING.learning.color, BRAND_COLORS.gold);
+  assert.equal(HUB_BRANDING.marketscreener.name, 'Analytics Hub');
+  assert.equal(HUB_BRANDING.marketscreener.color, BRAND_COLORS.violet);
+});
+
+
+test('analytics overview stays scoped to six analysis processes and labels static examples', () => {
+  const article = readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx', import.meta.url), 'utf8');
+  const hub = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx', import.meta.url), 'utf8');
+  assert.match(hub, /active === 'overview' && <AnalyticsHubArticle \/>/);
+  for (const label of ['Quellen','Datenqualität','Scoring','Risiko','Evidenz','Marktnews']) assert.ok(article.includes(label));
+  assert.doesNotMatch(article, /Learning Hub|Lernpfad|href="\/learning/);
+  assert.match(article, /DEMO · Statische Beispieldaten/);
+  assert.match(article, /data-analytics-orbit-star/);
+  assert.match(article, /AnalyticsProcessFlow key=\{selected\}/);
 });

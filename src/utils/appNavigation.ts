@@ -3,7 +3,7 @@ import { canonicalHubTarget, hubRouteForPath, DOCUMENT_ROUTES } from '../../shar
 /** Canonical protected Control Center subpages (kept in sync with the Hub catalog). */
 export const CONTROL_CENTER_SECTION_IDS = [
   'roadmap', 'components', 'tools', 'observability', 'news',
-  'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses',
+  'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses', 'providers',
 ] as const;
 
 /** Case-insensitive pathname normalization with existing German/English aliases. */
@@ -107,6 +107,7 @@ export function resolveAppRoute(rawPath: string): string {
   if (/^\/vocabulary\/[a-z0-9][a-z0-9_-]*$/.test(clean)) {
     return clean;
   }
+  if (clean === '/social' || clean === '/social-hub') return '/social';
   if (clean === '/blog' || /^\/blog\/[a-z0-9][a-z0-9-]*$/.test(clean)) return clean;
   if (clean.startsWith('/control-center/')) {
     const section = clean.slice('/control-center/'.length);

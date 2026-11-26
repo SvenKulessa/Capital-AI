@@ -36,6 +36,29 @@ async function until(fn, label) {
   for (let i = 0; i < 150; i++) { if (await fn()) return; await pause(100); }
   throw Error('TIMEOUT_' + label);
 }
+// Use real pointer coordinates. HTMLElement.click() emits (0,0), which can
+// falsely trigger JaJa's repeated-click assistance when consent and drawer
+// controls are activated in the same short interval.
+async function clickVisible(selector) {
+  let point, previous, stableSamples = 0;
+  await until(async () => {
+    point = await evaluate(`(() => {
+      const target = document.querySelector(${JSON.stringify(selector)});
+      if (!target) return null;
+      const rect = target.getBoundingClientRect();
+      const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
+      return target.contains(document.elementFromPoint(x, y)) ? {x,y} : null;
+    })()`);
+    // Wait for the target to finish its spring transition, not merely become
+    // visible at one moving coordinate. Preserve a real hit-tested pointer click.
+    stableSamples = point && previous && Math.abs(point.x - previous.x) <= 0.5 &&
+      Math.abs(point.y - previous.y) <= 0.5 ? stableSamples + 1 : 0;
+    previous = point;
+    return stableSamples >= 3;
+  }, 'VISIBLE_STABLE_CLICK_' + selector);
+  await send('Input.dispatchMouseEvent', {type:'mousePressed', ...point, button:'left', clickCount:1});
+  await send('Input.dispatchMouseEvent', {type:'mouseReleased', ...point, button:'left', clickCount:1});
+}
 async function navigate() {
   loaded = false;
   await send('Page.navigate', { url: origin + '/' });
@@ -81,6 +104,36 @@ try {
     await until(() => evaluate("document.querySelector('.brand-globe-poster').complete && document.querySelector('.brand-globe-poster').naturalWidth === 1254"), 'POSTER');
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
+    await clickVisible('#mobile-menu-btn');
+    await until(() => evaluate("!!document.querySelector('#capital-ai-mobile-navigation nav')"), 'HUB_DRAWER_OPEN');
+    const hubLinks = await evaluate(`(() => {
+      const drawer = document.getElementById('capital-ai-mobile-navigation');
+      return ['/learning', '/marketscreener'].map(path => {
+        const link = drawer.querySelector('nav a[href="' + path + '"]');
+        const style = getComputedStyle(link);
+        return {label:link.textContent.trim(),border:style.borderTopColor,style:style.borderTopStyle,height:link.getBoundingClientRect().height};
+      });
+    })()`);
+    assert.deepEqual(hubLinks.map(({label,border,style})=>({label,border,style})), [
+      {label:'Learning Hub',border:'rgb(249, 191, 33)',style:'solid'},
+      {label:'Analytics Hub',border:'rgb(183, 148, 244)',style:'solid'},
+    ]);
+    assert.ok(hubLinks.every(link=>link.height>=44), 'Hub touch target below 44px');
+    await clickVisible('#close-menu-btn');
+    try {
+      await until(() => evaluate(`document.getElementById('mobile-menu-btn')?.getAttribute('aria-expanded') === 'false' &&
+        !document.getElementById('capital-ai-mobile-navigation') &&
+        !document.querySelector('[class*="z-[100]"][class*="backdrop-blur-sm"]')`), 'HUB_DRAWER_AND_BACKDROP_CLOSED');
+    } catch (error) {
+      report.checks.push({viewport, drawerCloseDiagnostic: await evaluate(`(() => ({
+        expanded: document.getElementById('mobile-menu-btn')?.getAttribute('aria-expanded'),
+        drawer: !!document.getElementById('capital-ai-mobile-navigation'),
+        backdrops: [...document.querySelectorAll('[class*="z-[100]"][class*="backdrop-blur-sm"]')].map(e => ({className:e.className,opacity:getComputedStyle(e).opacity})),
+        bodyOverflow: document.body.style.overflow
+      }))()`)});
+      throw error;
+    }
+    report.checks.push({viewport,canonicalHubOutlines:'PASS'});
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
     assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy a')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
     assert.equal(await evaluate("document.querySelectorAll('h1').length"), 1, 'Homepage must have one H1');
@@ -90,7 +143,7 @@ try {
       const bounds = action.getBoundingClientRect();
       const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
       return { href: action.getAttribute('href'), top: bounds.top, bottom: bounds.bottom,
-        height: bounds.height, clickable: action.contains(hit), obstruction: hit?.id || hit?.tagName || null,
+        height: bounds.height, clickable: action.contains(hit), obstruction: hit ? {tag:hit.tagName,id:hit.id,classes:hit.getAttribute('class'),buddy:!!hit.closest('[data-hero-buddy]'),drawer:!!hit.closest('#capital-ai-mobile-navigation')} : null,
         primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-start-analysis-btn')).backgroundColor };
     })()`);
     report.checks.push({ viewport, learningCta });
@@ -126,6 +179,7 @@ try {
     assert.equal(decoration.studioShortcut, false, 'Redundant Studio Hub header action remains');
     assert.equal(decoration.outlinePresent, false, 'Removed silver outline remains in hero');
     assert.equal(decoration.copyVeil, 'none', 'Opaque hero-copy veil remains');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.hero-copy')).backgroundColor"), 'rgba(0, 0, 0, 0)', 'Hero copy covers the globe');
     if (viewport.width<=768) {
       assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile/tablet globe overshoots content width');
       assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile/tablet globe is not proportional');
@@ -177,27 +231,16 @@ try {
     await pause(900);
     const second = await shot(null, clip);
     assert.notEqual(first, second, '3D output is not changing');
-    // Exercise the real focusable button using keyboard input.
-    await evaluate("document.querySelector('.hero-globe-pause').focus({preventScroll:true})");
-    assert.equal(await evaluate("document.activeElement === document.querySelector('.hero-globe-pause')"), true, 'Pause button did not receive keyboard focus');
-    // Enter also needs its character event; keyDown without text does not
-    // reproduce Chromium's native button activation (unlike ArrowDown).
-    await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
-    await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    await until(() => evaluate("document.querySelector('.hero-globe-pause').getAttribute('aria-pressed')==='true'"), 'KEYBOARD_PAUSE');
-    await pause(100);
-    const paused = await shot(null, clip);
-    await pause(600);
-    assert.equal(await shot(null, clip), paused, 'Paused globe still changes');
-    await evaluate("document.querySelector('.hero-globe-pause').click()");
-    await pause(600);
-    assert.notEqual(await shot(null, clip), paused, 'Globe did not resume');
+    // Landing hero auto-rotates without a dedicated pause button. Check a third frame.
+    assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
+    await pause(900);
+    assert.notEqual(await shot(null, clip), second, 'Globe stopped rotating');
     const lost = await evaluate("(() => { const gl=document.querySelector('.brand-globe-canvas').getContext('webgl2'); const ext=gl?.getExtension('WEBGL_lose_context'); if(!ext)return false; ext.loseContext(); return true; })()");
     assert.equal(lost, true, 'Context-loss test unavailable');
     await until(() => evaluate("document.querySelector('.brand-globe-art').dataset.globeState==='poster'"), 'CONTEXT_LOSS_FALLBACK');
     await until(() => evaluate("!document.querySelector('.hero-globe-pause')"), 'FALLBACK_HAS_NO_PLAYBACK_CONTROL');
     await until(() => evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity === '1'"), 'FALLBACK_POSTER_FULLY_VISIBLE');
-    report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', keyboardPauseResume: 'PASS', contextLossFallback: 'PASS' });
+    report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', continuousVisibleRotation: 'PASS', contextLossFallback: 'PASS' });
     // Actual article scene, existing anonymous browser QA; no external sources.
     await evaluate(`document.querySelector('[data-article-scene="portfolio"] button').click()`);
     await until(() => evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState === '3d'`), 'ARTICLE_WEBGL_READY');
@@ -235,6 +278,52 @@ try {
     await until(()=>evaluate(`!document.querySelector('[data-growth-globe-core] canvas')`),'GROWTH_GLOBE_CLOSE');
     report.checks.push({viewport,growthGlobe:'ORIGINAL_COMPONENT_SOFTWARE_WEBGL',growthGlobePause:'PASS',pipelineBadges:7});
     report.checks.push({viewport,growthArticle:'PRESENT',pipeline:'INTERACTION_PASS',touchTargets:'PASS',initialWebgl:'OPT_IN'});
+
+    // Verify the isolated Analytics overview with the existing browser session.
+    loaded=false;
+    await send('Page.navigate',{url:origin+'/marketscreener?tab=overview'});
+    await until(()=>loaded,'ANALYTICS_PAGE_LOAD');
+    await until(()=>evaluate("!!document.getElementById('analytics-hub-universe-article')"),'ANALYTICS_ARTICLE');
+    await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    const articleSelector='#analytics-hub-universe-article';
+    const stages=['Quellen','Datenqualität','Scoring','Risiko','Evidenz','Marktnews'];
+    const layoutAnalytics=await evaluate("(()=>{const el=document.getElementById('analytics-hub-universe-article');const stars=[...el.querySelectorAll('[data-analytics-orbit-star]')];return {stars:stars.length,targets:stars.map(b=>{const r=b.getBoundingClientRect();return [r.width,r.height]}),overflow:el.scrollWidth>el.clientWidth+2,pageOverflow:document.documentElement.scrollWidth>innerWidth+2,demo:el.querySelector('[data-analytics-example-cards]').textContent.includes('Statische Beispieldaten'),learningLinks:el.querySelectorAll('a[href^=\"/learning\"]').length,history:!!document.querySelector('.historical-demo'),archiveVisible:[...document.querySelectorAll('.historical-demo button')].some(b=>b.textContent.includes('Historisches Archiv ansehen')),defaultStage:stars.findIndex(b=>b.getAttribute('aria-pressed')==='true')};})()");
+    assert.equal(layoutAnalytics.stars,6);
+    const imageResponse=await fetch(origin+'/branding/universe/analytics-universe-orbit.webp');
+    assert.equal(imageResponse.status,200);
+    assert.equal(createHash('sha256').update(Buffer.from(await imageResponse.arrayBuffer())).digest('hex'),'e691753fd5ffd8db1a9b0ad878c56f091409a55a8fcd8c06ecbe9ebef0b69c65');
+    assert.equal(await evaluate("document.querySelector('#analytics-hub-universe-article svg image').getAttribute('href')"),'/branding/universe/analytics-universe-orbit.webp');
+    assert.ok(layoutAnalytics.targets.every(([w,h])=>w>=44&&h>=44),'Analytics star touch target');
+    assert.equal(layoutAnalytics.overflow,false,'Analytics article overflow');
+    assert.equal(layoutAnalytics.pageOverflow,false,'Analytics overview page overflow');
+    assert.equal(layoutAnalytics.demo,true);
+    assert.equal(layoutAnalytics.learningLinks,0);
+    assert.equal(layoutAnalytics.history,true);
+    assert.equal(layoutAnalytics.archiveVisible,false,'Anonymous archive control visible');
+    assert.equal(layoutAnalytics.defaultStage,1);
+    for(let i=0;i<stages.length;i++){
+      const selector=articleSelector+' [data-analytics-orbit-star="'+i+'"]';
+      await evaluate('document.querySelector('+JSON.stringify(selector)+').scrollIntoView({block:"center",behavior:"instant"})');
+      await clickVisible(selector);
+      await until(()=>evaluate('document.querySelector('+JSON.stringify(selector)+').getAttribute("aria-pressed")==="true"'),'ANALYTICS_STAR_'+i);
+      assert.equal(await evaluate("document.querySelector('#analytics-hub-universe-article [aria-live=polite] h3').textContent"),stages[i]);
+      assert.equal(await evaluate("document.querySelector('#analytics-hub-universe-article [data-analytics-technical-report]')?.querySelectorAll('dt').length"),5);
+      const stepSelector=articleSelector+' section[aria-label="Technischer Prozessablauf"] button:nth-child(3)';
+      await evaluate('document.querySelector('+JSON.stringify(stepSelector)+').scrollIntoView({block:"center",behavior:"instant"})');
+      await clickVisible(stepSelector);
+      await until(()=>evaluate('document.querySelector('+JSON.stringify(stepSelector)+').getAttribute("aria-pressed")==="true"'),'ANALYTICS_PROCESS_'+i);
+    }
+    const keyboardSelector=articleSelector+' [data-analytics-orbit-star="1"]';
+    await evaluate('document.querySelector('+JSON.stringify(keyboardSelector)+').scrollIntoView({block:"center",behavior:"instant"})');
+    await evaluate('document.querySelector('+JSON.stringify(keyboardSelector)+').focus({preventScroll:true})');
+    assert.equal(await evaluate('document.activeElement===document.querySelector('+JSON.stringify(keyboardSelector)+')'),true,'Analytics keyboard focus');
+    await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',text:'\r',unmodifiedText:'\r',windowsVirtualKeyCode:13});
+    await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+    await until(()=>evaluate('document.querySelector('+JSON.stringify(keyboardSelector)+').getAttribute("aria-pressed")==="true"'),'ANALYTICS_KEYBOARD');
+    await evaluate("document.getElementById('analytics-hub-universe-article').scrollIntoView({block:'start',behavior:'instant'})");
+    await shot('analytics-overview-'+viewport.width);
+    report.checks.push({viewport,analyticsOverview:'PASS',sixStars:'POINTER_PASS',technicalReports:6,processSteps:'PASS',keyboard:'PASS',...layoutAnalytics});
+
 
   }
   await navigate();

@@ -5,6 +5,10 @@ on:
       - 'server/index.mjs'
       - 'server/seo-indexing-policy.test.mjs'
       - 'scripts/qa/blueprint-mobile-nojs.mjs'
+      - 'scripts/qa/buddy-mobile-touch-browser.mjs'
+      - 'src/components/BuddyCapturePanel.tsx'
+      - 'src/components/HeroBuddy.tsx'
+      - 'src/components/BuddyStickyNotes.tsx'
       - '.github/workflows/product-blueprint-mobile-nojs.yml'
   workflow_dispatch:
 permissions:
@@ -53,6 +57,14 @@ jobs:
           test -n "$CHROME_BIN"
           "$CHROME_BIN" --version
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/blueprint-mobile-nojs.mjs http://127.0.0.1:17871
+      - name: Verify JaJa CAM and pen at 320/390 px with native CDP touch
+        env:
+          CAPITAL_AI_BROWSER_EVIDENCE_DIR: artifacts/buddy-mobile
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/buddy-mobile-touch-browser.mjs http://127.0.0.1:17871
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -60,5 +72,7 @@ jobs:
           path: |
             artifacts/blueprint-mobile/*.png
             artifacts/blueprint-mobile/result.json
+            artifacts/buddy-mobile/*.png
+            artifacts/buddy-mobile/result.json
           if-no-files-found: warn
           retention-days: 7

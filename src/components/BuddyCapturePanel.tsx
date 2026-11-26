@@ -46,7 +46,7 @@ export function BuddyCapturePanel({onAttach,onClose}:Props){
   };
   const screen=async()=>{
     if(busy)return;
-    if(!navigator.mediaDevices?.getDisplayMedia){setMessage('Dieser Browser unterstützt keine Bildschirmaufnahme. Bitte ein Bild hochladen.');return;}
+    if(!navigator.mediaDevices?.getDisplayMedia){setMessage('Dieser Mobilbrowser erlaubt keine direkte Bildschirmaufnahme. Erstelle einen Screenshot mit den Gerätetasten und wähle ihn anschließend aus der Galerie. Es wird nichts automatisch hochgeladen.');return;}
     setBusy(true);
     let stream:MediaStream|null=null;
     try{
@@ -81,6 +81,7 @@ export function BuddyCapturePanel({onAttach,onClose}:Props){
   };
   const start=(event:PointerEvent<HTMLCanvasElement>)=>{
     if(!inking)return;
+    event.preventDefault();
     drawing.current=true;event.currentTarget.setPointerCapture(event.pointerId);
     const p=point(event),ctx=event.currentTarget.getContext('2d');
     if(!ctx)return;
@@ -109,17 +110,17 @@ export function BuddyCapturePanel({onAttach,onClose}:Props){
     <div className="flex items-center justify-between"><h3 className="font-bold text-cyan-100">JaJa CAM · Markierung</h3>
       <button type="button" onClick={onClose} aria-label="Bildwerkzeug schließen" className="min-h-11 rounded p-2"><X className="h-4 w-4"/></button>
     </div>
-    <p className="text-xs text-slate-300">Aufnahmen bleiben lokal im aktuellen Browser-Entwurf. Kein automatischer Upload zu Notion oder CAPITAL-AI.</p>
+    <p className="text-xs text-slate-300">Aufnahmen bleiben lokal im Browser-Entwurf. Kein automatischer Upload. Auf Android: Screenshot mit den Gerätetasten aufnehmen und anschließend „Screenshot / Bild wählen“.</p>
     <div className="flex flex-wrap items-center gap-2">
       <button type="button" onClick={()=>void screen()} disabled={busy} className="flex min-h-11 items-center gap-2 rounded bg-cyan-900 px-3 text-white disabled:opacity-50"><Camera className="h-4 w-4"/> Screenshot</button>
-      <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded border border-slate-500 px-3 py-2 text-white"><Upload className="h-4 w-4"/> Bild wählen
+      <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded border border-slate-500 px-3 py-2 text-white"><Upload className="h-4 w-4"/> Screenshot / Bild wählen
         <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={choose} />
       </label>
       {source&&<button type="button" aria-pressed={inking} onClick={()=>setInking(v=>!v)} className="flex min-h-11 items-center gap-2 rounded border border-rose-300 px-3"><PenLine className="h-4 w-4"/> Stift {inking?'an':'aus'}</button>}
       {source&&<button type="button" onClick={()=>setResetSerial(v=>v+1)} className="flex min-h-11 items-center gap-2 rounded border border-slate-500 px-3"><RotateCcw className="h-4 w-4"/> Zurücksetzen</button>}
     </div>
     {source&&<canvas ref={canvasRef} onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}
-      className={`max-h-64 max-w-full rounded border border-white/20 object-contain ${inking?'touch-none cursor-crosshair':''}`} aria-label="Screenshot mit Markierungen" />}
+      className={`block h-auto max-h-[50dvh] max-w-full rounded border border-white/20 ${inking?'touch-none cursor-crosshair':''}`} aria-label="Screenshot mit Markierungen" />}
     <p role="status" className="text-xs text-slate-300">{message}</p>
     {source&&<button type="button" onClick={attach} className="flex min-h-11 items-center gap-2 rounded bg-emerald-700 px-3 font-bold text-white"><Check className="h-4 w-4"/> Bild zum Prompt-Entwurf hinzufügen</button>}
   </section>;

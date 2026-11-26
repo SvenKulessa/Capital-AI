@@ -10,6 +10,7 @@ import { ProductDisclaimer } from '../../components/ProductDisclaimer';
 import type { AssetSubclass, MainCategory, MarketAsset } from '../../entities/market/model';
 import type { CoreModule } from '../../entities/module/model';
 
+const CompactSocialNews = lazy(() => import('./CompactSocialNews').then(module => ({ default: module.CompactSocialNews })));
 const HomeEditorialNews = lazy(() => import('./HomeEditorialNews').then(module => ({ default: module.HomeEditorialNews })));
 const HomeHubDirectory = lazy(() => import('../../components/HomeHubDirectory').then(module => ({ default: module.HomeHubDirectory })));
 
@@ -86,6 +87,7 @@ export function HomePage({ onNavigate, onOpenModule, onOpenSectorAnalysis, onOpe
       <GrowthIntelligenceArticle />
       <HomeLatestLearning onNavigate={onNavigate} />
       <Suspense fallback={null}><HomeEditorialNews /></Suspense>
+      <Suspense fallback={null}><CompactSocialNews onNavigate={onNavigate} /></Suspense>
       <CommerceEntrySection onNavigate={onNavigate} />
       <section lang="de" aria-labelledby="public-final-cta-title" className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="rounded-3xl border border-amber-300/30 bg-slate-950 p-6 sm:p-10">
