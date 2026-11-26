@@ -1,8 +1,6 @@
 import { ProductDisclaimer } from './ProductDisclaimer';
-import { useState } from 'react';
 import { BrandGlobe } from './BrandGlobe';
 import { ArrowRight, BarChart3, BookOpen } from 'lucide-react';
-import { useReducedMotion } from 'motion/react';
 import { useLocale } from '../i18n/LocaleProvider';
 
 const detailCopy = {
@@ -16,20 +14,12 @@ const detailCopy = {
 
 export function Hero() {
   const { t, locale } = useLocale();
-  const reduceMotion = useReducedMotion();
-  const [globePaused, setGlobePaused] = useState(false);
-  const [globeReady, setGlobeReady] = useState(false);
   return (
     <section aria-labelledby="public-hero-title" className="capital-ai-hero relative isolate overflow-hidden px-4 pt-4 pb-7 sm:px-8">
       <div className="hero-globe-background" aria-hidden="true">
-        <BrandGlobe paused={globePaused} onReadyChange={setGlobeReady} />
+        <BrandGlobe paused={false} />
       </div>
-      {globeReady && reduceMotion === false && <button type="button" className="hero-globe-pause"
-        aria-pressed={globePaused} onClick={() => setGlobePaused(value => !value)}>
-        {locale === 'de' ? (globePaused ? 'Globus fortsetzen' : 'Globus pausieren')
-          : (globePaused ? 'Resume globe' : 'Pause globe')}
-      </button>}
-      <div className="hero-copy relative z-10 max-w-2xl rounded-2xl p-4 sm:p-8" style={{ background: 'rgba(7, 17, 38, 0.94)' }}>
+      <div className="hero-copy relative z-10 max-w-2xl rounded-2xl p-4 sm:p-8">
         <div className="hero-brand-artwork relative mb-5 inline-flex max-w-full">
           <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI"
             width={320} height={180} loading="eager" decoding="async"
