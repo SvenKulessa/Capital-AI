@@ -1,7 +1,7 @@
 import { matchesVocabularySearch } from '../../../shared/vocabulary-lookup.mjs';
 import { useVerifiedSession } from '../../hooks/useVerifiedSession';
 import { APP_NAVIGATION_EVENT } from '../../utils/appNavigation';
-import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
+import { VOCABULARY_PUBLIC_COUNT } from '../../../shared/vocabulary-metadata.mjs';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { QuizzesTab } from './QuizzesTab';
 /**
@@ -304,7 +304,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 setActiveTab('overview');
                 onNavigateTab?.('/learning');
               }}
-              className="text-amber-400 font-semibold hover:text-amber-200 transition-colors"
+              className="min-h-11 rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 text-amber-200 font-semibold hover:bg-amber-400/20 transition-colors"
             >
               Learning Hub
             </button>
@@ -428,7 +428,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               ))}
             </div>
           </nav>
-          <details className="rounded-xl border border-slate-700 p-4 text-sm text-slate-300"><summary className="cursor-pointer min-h-11">Katalogstand und PR-Quellen</summary><p>Die Anzahl wird direkt aus dem aktuellen Katalog berechnet.</p><ul>{VOCABULARY_SOURCE_PRS.map(pr=><li key={pr.number}><a className="inline-flex min-h-11 items-center text-cyan-200 underline" href={`https://github.com/SvenKulessa/Capital-AI/pull/${pr.number}`} target="_blank" rel="noreferrer">PR #{pr.number} · {pr.title}</a></li>)}</ul></details>
+          <p className="text-sm text-slate-300">Die Anzahl der Lernbegriffe wird aus dem aktuellen Katalog berechnet.</p>
           {focusedTermId && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3">
               <div className="text-xs text-cyan-100">
