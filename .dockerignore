@@ -204,6 +204,7 @@
 !scripts/growth/growth-intelligence-image-drafts.mjs
 !scripts/growth/visual-export.mjs
 !scripts/growth/visual-export.test.mjs
+!scripts/growth/visual-export-integration.test.mjs
 !scripts/growth/growth-intelligence-image-drafts.test.mjs
 !scripts/growth/brand-kit-graph-drafts.mjs
 !scripts/growth/brand-kit-graph-drafts.test.mjs
