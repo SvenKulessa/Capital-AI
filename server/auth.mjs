@@ -458,6 +458,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     clearSessionCookies,
     readRequestJson,
     sameOrigin,
+    now,
     audit,
   });
 

@@ -53,6 +53,9 @@ test('HTTP security boundaries and static-file isolation', async () => {
     assert.equal((await fetch(base + '/escape.txt')).status, 404);
     assert.equal((await fetch(base + '/api/unknown')).status, 404);
     assert.equal((await fetch(base + '/%ZZ')).status, 400);
+    assert.equal((await fetch(base + '/assets/invalid%ZZ.js')).status, 400);
+    assert.equal((await fetch(base + '/assets/example.js.map')).status, 404);
+    assert.equal((await fetch(base + '/bundle-evidence.json')).status, 404);
     assert.equal((await fetch(base + '/healthz', {method: 'POST'})).status, 405);
     assert.equal((await fetch(base + '/profile')).status, 200);
   } finally {

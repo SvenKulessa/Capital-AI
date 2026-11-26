@@ -1,0 +1,9 @@
+# Social Trend Projection @1 — offline P0 slice
+
+Scope: Growth Intelligence, baseline 721d1dc02f7d4b8ada991ad8c7607cdf8bb6c5fc. Reuse existing Growth test entrypoint. No provider calls, scheduler, publication, API activation, storage or added dependency. This module is an importable first-stage projection, not a live collector or graph execution.
+
+Input: at most 1,000 normalized post records, with exactly platform, postId, sourceUrl, publishedAt, observedAt, views, metric, niche, format, accountBand. Canonical timestamps UTC ISO, source URL matches post identity, observation no more than 24h old, age 1–29 completed days. Only aggregate public/authorized measurements; no raw hooks, personal contact details or secrets. A trusted operator supplies independently reviewed analytics grants separately, digest-bound to each record. Imported records cannot self-grant, and the projection does not authenticate metrics.
+
+Cohorts separate platform, metric, niche, format, account size band, age day and observation date. At least 30 eligible peers other than the candidate; strict less-than percentile >=95 and median ratio >=2. Zero median or insufficient cohort yields no candidate. These are initial editorial heuristics, not a statistical guarantee or conversion evidence; cohort composition, measurement definitions and sampling remain operator evidence requirements. No source text copied. Phase 2 product fit, commercial paraphrase permissions and multi-format content draft handoff remain separate work.
+
+Tests: node --test scripts/growth/social-trend-projection.test.mjs (four test groups, synthetic only, locally executed under Node 22.16.0 before transfer); npm run test:growth-intelligence (existing CI entrypoint, not yet executed in local sandbox). Rollback: revert this scoped change. No runtime claim.

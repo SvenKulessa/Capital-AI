@@ -1,3 +1,4 @@
+import { BRAND_COLORS } from '../../shared/hub-branding.mjs';
 import React from 'react';
 import { cookieSettingsLabel } from '../i18n/cookieSettingsLabel';
 import { useLocale } from '../i18n/LocaleProvider';
@@ -29,9 +30,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   };
 
   return (
-    <footer className="mt-8 px-5 pb-8 pt-4 text-center">
+    <footer className="mx-auto mt-8 max-w-6xl border-t border-slate-800 px-4 pb-8 pt-8 text-center sm:px-6">
       {/* Thin elegant separator with golden center glow */}
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-6" />
+      <div aria-hidden="true" data-universe-spectrum="footer" className="mb-6 h-[3px] w-full rounded-full" style={{ background: 'linear-gradient(90deg, ' + Object.values(BRAND_COLORS).join(', ') + ')' }} />
 
       {/* Central brand artwork */}
       <div className="flex justify-center mb-4">
@@ -40,7 +41,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
       {/* Professional FinTech Slogan */}
       <p className="text-[10px] sm:text-[11px] font-semibold tracking-[0.22em] text-slate-400 uppercase select-none">
-        {locale === 'de' ? 'Finanzwissen und Werkzeuge zur Marktanalyse' : 'MARKET INTELLIGENCE • NEXT-GEN QUANT TERMINAL'}
+        {locale === 'de' ? 'Finanzwissen und Werkzeuge zur Marktanalyse' : 'Financial education and market analysis tools'}
       </p>
 
       <nav aria-label="Capital-AI Community" className="mt-5 flex flex-wrap justify-center gap-3">
@@ -56,8 +57,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </a>
         ))}
       </nav>
-      {/* Consolidated legal and documentation navigation */}
-      <div className="mt-3 text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+      {/* Product links remain secondary to the main navigation. */}
+      <nav aria-label={locale === 'de' ? 'Produkt und Lernen' : 'Product and learning'} className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-1">
+        {[{path:'/learning', label:locale === 'de' ? 'Learning Hub' : 'Learning Hub'}, {path:'/marketscreener/scorer',label:locale === 'de' ? 'Scoring-Methodik' : 'Scoring methodology'}, {path:'/studio',label:'Studio'}, {path:'/blueprints',label:'Blueprints'}, {path:'/dokumentation',label:t('docs')}, {path:'/governance-evidence-sprint',label:locale === 'de' ? 'Für Unternehmen' : 'For businesses'}].map(item => <a key={item.path} href={item.path} onClick={event => handleNavClick(event, item.path, item.label)} className="inline-flex min-h-11 items-center text-sm text-slate-200 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">{item.label}</a>)}
+      </nav>
+      {/* Consolidated legal and support navigation */}
+      <nav aria-label={locale === 'de' ? 'Rechtliches und Support' : 'Legal and support'} className="mt-3 text-xs text-slate-400 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         <span>© {new Date().getFullYear()} Capital-AI</span>
         <span className="text-slate-600">•</span>
         <a
@@ -115,8 +120,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         >
           {t('pricing')}
         </a>
-      </div>
-
+      </nav>
 
       <button type="button"
         onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT))}
@@ -125,8 +129,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         {cookieSettingsLabel[locale]}
       </button>
 
-      {/* Mobile iOS Home Indicator Bar */}
-      <div className="w-28 h-1 bg-white/40 rounded-full mx-auto mt-6" />
+
     </footer>
   );
 };

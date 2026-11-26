@@ -169,7 +169,8 @@ test('footer uses locally bundled provider logos and consolidates license naviga
   assert.match(footer, /\/branding\/social\/\$\{id\}\.svg/);
   // Localized footer retains the German legally meaningful destination label.
   const dictionary = await readFile(new URL('../src/i18n/messages.ts', import.meta.url), 'utf8');
-  assert.doesNotMatch(footer, /t\('docs'\)|href="\/blog"/);
+  assert.match(footer, /path:'\/dokumentation',label:t\('docs'\)/);
+  assert.doesNotMatch(footer, /href="\/blog"/);
   assert.match(dictionary, /'Dokumentation & Lizenzen'/);
   assert.doesNotMatch(footer, /footer-nav-forschung|footer-nav-oss-market-architecture|Schriftlizenz/);
   assert.match(docs, /OSS Market Architektur/);
@@ -355,4 +356,17 @@ test('AICapital workspace is selected by policy, while private Render infrastruc
   assert.match(ui, /Website-Identität: Capital-AI · interne Services getrennt/);
   assert.doesNotMatch(ui, /<dt className="text-slate-500">Web-App<\/dt>/);
   assert.match(ui, /Technische Anbindung/);
+});
+
+
+test('Control Center and standalone console share fail-closed owner presentation checks', async () => {
+  const { hasControlCenterAccess } = await import('../shared/control-center-access.mjs');
+  const owner = { authenticated: true, account: { available: true, iamRole: 'owner' }, mfaRequired: false };
+  assert.equal(hasControlCenterAccess(owner), true);
+  for (const session of [null, {}, { ...owner, authenticated: false }, { ...owner, mfaRequired: true }, { ...owner, account: { available: false, iamRole: 'owner' } }, { ...owner, account: { available: true, iamRole: 'user' } }]) {
+    assert.equal(hasControlCenterAccess(session), false);
+  }
+  for (const path of ['../src/components/ControlCenterPage.tsx', '../src/features/analysis/PipelineConfiguratorConsole.tsx']) {
+    assert.match(await readFile(new URL(path, import.meta.url), 'utf8'), /hasControlCenterAccess\(/);
+  }
 });

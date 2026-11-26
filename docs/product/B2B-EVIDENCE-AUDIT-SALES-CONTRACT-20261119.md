@@ -65,3 +65,40 @@ Pilot: five consenting prospects; record actual delivery costs and willingness t
 - [ ] Catalogue Center and website only show purchasable offer after all gates pass.
 
 Rollback: disable checkout offer flag; retain valid orders and refunds in auditable ledger; do not change existing CAPITAL-AI subscriptions.
+
+## Isolated B2B tenant/consent test slice (2026-11-23)
+
+Scope: `server/b2b-evidence-leads-offline.mjs`, an explicitly gated
+`ISOLATED_OFFLINE_TEST` facade around the existing source-only intake. The
+authenticator must be injected by the caller and supply a verified
+single-user UUID with identical `userId` and `subject`; the fixture never
+accepts an unverified browser tenant or creates a live auth session.
+Mocks in the tests are synthetic authentication **simulations**, not real
+Supabase/production auth evidence. Organization/multi-user tenant mapping
+remains NOT_PROVEN.
+
+- Persistence: volatile per-fixture Maps, deterministic teardown via `reset()`,
+  no database connection, customer records, HTTP route, Stripe calls,
+  environment-secret access, external providers or background scheduler.
+- Fixture data: only synthetic `@fixture.test` emails can be stored; real-looking
+  contact domains are rejected before insertion.
+- Consent receipt: synthetic, hash-bound
+  `CAPITAL_AI_B2B_CONSENT_FIXTURE@1` including tenant, lead ID, repository,
+  request ID, consent version/purpose and timestamp. A SHA-256 hash is an
+  integrity fingerprint, **not** a legal consent signature or proof that a
+  customer authorized an actual audit.
+- Replay: identical tenant/request IDs are denied, including concurrent
+  local attempts; other tenants have separate namespaces. Cross-tenant
+  evidence reads are denied and contact details never leave the fixture.
+- Existing `.github/workflows/b2b-evidence-leads.yml` runs the previous
+  B2B negative tests and the new isolated test suite. Local tests are
+  evidence for the exact tested files only; required GitHub CI must be
+  rechecked at the current PR head.
+
+Limits: this slice is **source-only and test-only**, not a deployable CRM,
+payment processor, service-order ledger, live lead/consent store or a claim
+of durable exactly-once semantics. All previous NOT_FOR_SALE, pricing,
+DPA, Privacy, data-retention and live-provider gates remain unchanged.
+Rollback: revert the added offline adapter/test and workflow extension;
+no database state, keys, customer records, subscriptions or billing will
+need cleanup.

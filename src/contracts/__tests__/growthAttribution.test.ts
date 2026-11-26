@@ -73,3 +73,45 @@ test('different canonical/campaign/content identities do not merge', () => {
 
   assert.equal(bundles.length, 2);
 });
+
+
+const campaign={subjectKey:'a'.repeat(64),campaignId:'capital-ai-growth-20261120',contentId:'CAP-GROW-005'};
+const fixture=()=>({
+  asOf:'2026-11-24T12:00:00.000Z',start:'2026-11-20T00:00:00.000Z',end:'2026-11-24T00:00:00.000Z',
+  consent:[{...campaign,source:'SERVER_CONSENT_LEDGER',receiptSha256:'b'.repeat(64),analytics:true,purpose:'CAMPAIGN_CONVERSION',
+    grantedAt:'2026-11-20T00:00:00.000Z',expiresAt:'2026-12-20T00:00:00.000Z',revokedAt:null}],
+  registrations:[{...campaign,source:'SUPABASE_AUTH',receiptSha256:'c'.repeat(64),consentSha256:'b'.repeat(64),
+    createdAt:'2026-11-21T00:00:00.000Z',confirmedAt:'2026-11-21T00:02:00.000Z'}],
+  payments:[{...campaign,source:'STRIPE_INITIAL_INVOICE',receiptSha256:'d'.repeat(64),registrationSha256:'c'.repeat(64),
+    subscriptionKey:'e'.repeat(64),invoiceKey:'f'.repeat(64),paidAt:'2026-11-22T00:00:00.000Z',
+    observedAt:'2026-11-24T10:00:00.000Z',live:true,paid:true,refunded:false,disputed:false,
+    billingReason:'subscription_create',currency:'EUR',amountPaidCents:2500}]
+});
+test('consent, registration and initial invoice candidates join without exposing identity or authenticating sources',async()=>{
+  const {reconcileXConversionCandidates}=await import('../growthAttribution.ts');
+  const r=reconcileXConversionCandidates(fixture());
+  assert.equal(r.candidateRegistrations,1);assert.equal(r.candidatePaidSubscribers,1);assert.equal(r.candidateInitialInvoiceCents,2500);
+  assert.equal(r.registrations,null);assert.equal(r.paidSubscriptions,null);assert.equal(r.revenueCents,null);
+  assert.equal(r.providerAuthentication,'NOT_PROVEN');assert.equal(r.publicPublishAllowed,false);
+  assert.doesNotMatch(JSON.stringify(r),/a{64}|b{64}|c{64}|d{64}|e{64}|f{64}/);
+  const empty=reconcileXConversionCandidates({...fixture(),consent:[],registrations:[],payments:[]});
+  assert.equal(empty.candidateRegistrations,null);assert.equal(empty.candidatePaidSubscribers,null);
+});
+test('conversion join rejects consent, cross-subject, duplicate, trial, refund and timing negatives',async()=>{
+  const {reconcileXConversionCandidates}=await import('../growthAttribution.ts');
+  const f=fixture();
+  for(const raw of [
+    {...f,consent:[]},{...f,consent:[{...f.consent[0],analytics:false}]},
+    {...f,consent:[{...f.consent[0],revokedAt:'2026-11-23T00:00:00.000Z'}]},
+    {...f,consent:[{...f.consent[0],expiresAt:'2026-11-23T00:00:00.000Z'}]},
+    {...f,registrations:[{...f.registrations[0],subjectKey:'0'.repeat(64)}]},
+    {...f,registrations:[{...f.registrations[0],confirmedAt:'2026-11-20T00:00:00.000Z'}]},
+    {...f,payments:[{...f.payments[0],registrationSha256:'0'.repeat(64)}]},
+    {...f,payments:[{...f.payments[0],subjectKey:'0'.repeat(64)}]},
+    {...f,payments:[{...f.payments[0],live:false}]},{...f,payments:[{...f.payments[0],amountPaidCents:0}]},
+    {...f,payments:[{...f.payments[0],refunded:true}]},{...f,payments:[{...f.payments[0],disputed:true}]},
+    {...f,payments:[{...f.payments[0],billingReason:'subscription_cycle'}]},
+    {...f,payments:[{...f.payments[0],observedAt:'2026-11-22T00:00:00.000Z'}]},
+    {...f,payments:[f.payments[0],f.payments[0]]},{...f,payments:[{...f.payments[0],email:'synthetic@example.invalid'}]}
+  ])assert.throws(()=>reconcileXConversionCandidates(raw));
+});

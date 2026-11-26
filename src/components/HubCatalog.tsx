@@ -217,7 +217,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
       },
       {
         id: 'videos',
-        name: 'Architektur Videos',
+        name: 'Lernvideos',
         icon: <BookOpen className="w-4 h-4 text-emerald-400" />,
         badge: 'Vorschau',
         shortDesc: 'Video-Vorschauen ohne behaupteten Renderer-Produktivstatus',
