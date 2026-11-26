@@ -43,6 +43,7 @@ export function ProfileAvatarUpload() {
       });
       if (!response.ok) throw new Error('UPLOAD_REJECTED');
       setUploaded(true); setRevision(x => x + 1);
+      window.dispatchEvent(new Event('capital-ai:profile-avatar-updated'));
       setMessage('Profilbild geprüft und gespeichert. Bei einem Seitenwechsel wird es auch im Profilkopf angezeigt.');
     } catch { setMessage('Upload nicht verfügbar oder durch die Sicherheitsprüfung abgelehnt.'); }
     finally { setBusy(false); if (picker.current) picker.current.value = ''; }
@@ -55,6 +56,7 @@ export function ProfileAvatarUpload() {
       });
       if (!result.ok) throw new Error('DELETE_FAILED');
       setUploaded(false); setRevision(x => x + 1);
+      window.dispatchEvent(new Event('capital-ai:profile-avatar-updated'));
       setMessage('Gespeichertes Profilbild entfernt. Das Anmeldeanbieter-Bild wird wieder verwendet.');
     } catch { setMessage('Profilbild konnte nicht gelöscht werden.'); }
     finally { setBusy(false); }
