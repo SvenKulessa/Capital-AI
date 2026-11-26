@@ -174,3 +174,18 @@ test('Smartcopy conversion graph import keeps candidate and live metrics separat
  assert.equal(projectGraphHandoff(JSON.stringify(r),reportSha,projected).length,projected.length);
  for(const patch of [{productId:'smartclip'},{verifiedMetrics:{paidLicenses:0,revenueCents:null,refunds:null}},{publicationAllowed:true},{nextAction:'REPAIR_INPUT'},{candidatePayments:1}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...r,...patch}),reportSha,live));
 });
+
+test('visual graph metrics are documentation only and roundtrip without promoting live claims',()=>{
+  const r={contractVersion:'CAPITAL_AI_VISUAL_GRAPH_HANDOFF@1',engine:'langgraph',quality:'PASS_WITH_GAPS',metrics:{assetCount:8,inputBytes:1000,selectedBytes:200,elapsedMs:50,repairCycles:0},sourceAuthentication:'NOT_PROVEN_BY_GRAPH',manualTimeSavedMs:null,publicationAllowed:false,costActivationAllowed:false,automaticChanges:false};
+  const live=[projectGa4(good,row),...initialRows().slice(1)];
+  const projected=projectGraphHandoff(JSON.stringify(r),reportSha,live);
+  const visual=projected.find(x=>x.id==='visual-production');
+  assert.equal(visual?.status,'NOT_PROVEN');
+  assert.match(visual?.operation??'',/8 Assets/);
+  assert.equal(projected[0].status,'VERIFIED');
+  const restored=importWorkspace(exportWorkspace(appendSnapshot([],projected,at)));
+  assert.equal(restored[0].rows.find(x=>x.id==='visual-production')?.status,'NOT_PROVEN');
+  for(const bad of [{...r,publicationAllowed:true},{...r,manualTimeSavedMs:100},{...r,metrics:{...r.metrics,selectedBytes:1001}},{...r,quality:'BLOCKED'}])assert.throws(()=>projectGraphHandoff(JSON.stringify(bad),reportSha,live));
+  const blocked=projectGraphHandoff(JSON.stringify({...r,quality:'BLOCKED',metrics:null}),reportSha,projected);
+  assert.match(blocked.find(x=>x.id==='visual-production')?.operation??'',/kein Messwert/);
+});
