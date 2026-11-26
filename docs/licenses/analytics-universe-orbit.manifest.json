@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "CAPITAL_AI_ANALYTICS_ORBIT@1",
+  "asset": "public/branding/universe/analytics-universe-orbit.webp",
+  "sha256": "e691753fd5ffd8db1a9b0ad878c56f091409a55a8fcd8c06ecbe9ebef0b69c65",
+  "bytes": 123526,
+  "width": 1200,
+  "height": 900,
+  "mime": "image/webp",
+  "source": {
+    "type": "AI_GENERATED",
+    "provider": "OpenAI ChatGPT image generation",
+    "generationId": "f370a2bc-d2f7-4319-938e-8f9e22224ad8",
+    "originalName": "neon_hologramm_der_erde_im_orbit.png",
+    "originalSha256": "28976d16305e9e53f78b71a8f6c4bfe3d29af8e6f16319ef0b1603942d0d66a4",
+    "reference": "Owner-provided Analytics mockup in chat",
+    "transformation": "Proportional resize 1448x1086 to 1200x900; WebP quality 82"
+  },
+  "rights": {
+    "basis": "https://openai.com/policies/eu-terms-of-use/",
+    "scope": "Owner-directed CAPITAL-AI Analytics overview website use, including commercial presentation and display, subject to applicable law and third-party rights",
+    "thirdPartyRedistribution": "NOT_GRANTED_BY_THIS_RECORD",
+    "exclusiveCopyright": "NOT_PROVEN",
+    "referenceRights": "Owner supplied reference; independent chain of title not verified",
+    "publication": "Technical CI and existing production gates still apply"
+  },
+  "brand": {
+    "analytics": "#B794F4",
+    "stages": [
+      "#67E8F9",
+      "#B794F4",
+      "#60A5FA",
+      "#F87171",
+      "#4ADE80",
+      "#F9A8D4"
+    ]
+  },
+  "scope": "Analytics overview only"
+}

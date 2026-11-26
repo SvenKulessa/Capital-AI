@@ -1,3 +1,4 @@
+import { createOpenAiStatus } from './openai-provider.mjs';
 import { createHistoricalAnalyticsDemo } from './historical-analytics-demo.mjs';
 import { canonicalHubTarget, DOCUMENT_ROUTES } from '../shared/hub-routes.mjs';
 import { renderLearningLandingFallback as learningLandingFallback } from '../shared/learning-journey.mjs';
@@ -464,6 +465,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
+  const openAiStatus = createOpenAiStatus({ env: options.env || process.env, authorized: renderOwnerDashboard.authorized });
   const growthEngineReadback = createGrowthEngineReadback({ authorized: renderOwnerDashboard.authorized });
   const growthConversionReadback = createGrowthConversionReadback({ env: options.env || process.env, authorized: renderOwnerDashboard.authorized, readCandidates: options.growthConversionCandidateRead });
   const growthGscReadback = createGrowthGscReadback({ authorized: renderOwnerDashboard.authorized, env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
@@ -582,6 +584,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
+  if (await openAiStatus.handle(req, res, url, json)) return;
   if (await growthEngineReadback.handle(req, res, url, json)) return;
   if (await growthConversionReadback.handle(req, res, url, json)) return;
   if (await growthGscReadback.handle(req, res, url, json)) return;

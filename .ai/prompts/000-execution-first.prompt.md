@@ -142,3 +142,7 @@ bestehenden Main-Deployment-Pfad samt Live-Wirkung. Bei realen
 Freigabe- oder Sicherheitsblockern die konkrete gesperrte Aktion
 abgrenzen und andere autorisierte Arbeiten fortsetzen.
 ```
+
+## AcodeX Chat-Delivery (CAPITAL_AI_ACODE_SHARED_DELIVERY@1 / ACODE_ACOPY_INTEGRATION@1)
+
+In allen Domain-Chats die Root-AGENTS.md-Abschnitte zur Acode-Shared-Delivery und ACOPY anwenden: versionierter Code in den bestehenden Shared Folder, autorisierter Create-only-Upload mit Parent-/SHA-Readback, vorhandener Startup-Guard, nichtinteraktiver `acopy`-Aufruf, keine Credentials oder interaktive Authentifizierung in Clipboard-Ausgaben. Bei Blockern lokale versionierte Datei und konkreten manuellen Transferweg statt behauptetem Upload liefern. Keine zweite Sync- oder Governance-Architektur.

@@ -368,6 +368,7 @@
 !public/branding/learning-universe/*.svg
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
+!public/branding/universe/analytics-universe-orbit.webp
 !public/branding/universe/hero-universe-desktop.webp
 !public/branding/universe/hero-universe-tablet.webp
 !public/branding/universe/hero-universe-mobile.webp
@@ -593,6 +594,8 @@
 !server/growth-owner-evidence-api.mjs
 !server/growth-owner-evidence-archive.mjs
 !server/growth-owner-evidence-archive.test.mjs
+!server/openai-provider.mjs
+!server/openai-provider.test.mjs
 !server/growth-owner-engine-readback.mjs
 !server/growth-provider-read.mjs
 !server/growth-gsc-readback.mjs

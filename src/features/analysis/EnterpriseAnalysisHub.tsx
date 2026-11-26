@@ -1,3 +1,4 @@
+import { AnalyticsHubArticle } from './AnalyticsHubArticle';
 import { HistoricalAnalyticsDemo } from './HistoricalAnalyticsDemo';
 import { AnalyticsNewsArchive, AnalyticsNewsOverview } from './AnalyticsNews';
 import { ProductDisclaimer } from '../../components/ProductDisclaimer';
@@ -54,6 +55,7 @@ export function EnterpriseAnalysisHub({
   return (
     <div className="space-y-6">
       <HubNavigationPanel hubId="marketscreener" onNavigate={navigateAppLocation} />
+      {active === 'overview' && <AnalyticsHubArticle />}
       {['overview', 'scorer', 'terminal'].includes(active) && <HistoricalAnalyticsDemo showMethodology={active !== 'scorer'} />}
       {active === 'overview' && <AnalyticsNewsOverview />}
       {active === 'newsArchive' && <AnalyticsNewsArchive />}

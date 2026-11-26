@@ -153,6 +153,7 @@ const STATIC_SOURCE_BASELINE = new Set([
   "branding/social/tiktok.svg",
   "branding/social/x.svg",
   "branding/social/youtube.svg",
+  "branding/universe/analytics-universe-orbit.webp",
   "branding/universe/hero-universe-desktop.webp",
   "branding/universe/hero-universe-globe.webp",
   "branding/universe/hero-universe-mobile.webp",

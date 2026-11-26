@@ -197,7 +197,7 @@ test('documentation hub catalog links to the existing content instead of reopeni
 });
 
 
-test('Control Center offers eleven dedicated, keyboard-accessible routes and legacy query links', () => {
+test('Control Center offers dedicated, keyboard-accessible routes and legacy query links', () => {
   const sidebar = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
   const page = readFileSync(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
   const appRoutes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
@@ -212,6 +212,8 @@ test('Control Center offers eleven dedicated, keyboard-accessible routes and leg
   assert.equal(resolveAppRoute('/control-center/unknown'), '/');
   assert.match(appRoutes, /currentRoute\.startsWith\('\/control-center\/'\)/);
   assert.match(page, /HubNavigationPanel/);
+  assert.ok(destinations.includes('/control-center/providers'));
+  assert.match(page, /activeTab === 'providers' && <OpenAiProviderStatus/);
   assert.doesNotMatch(page, /<select/);
   assert.match(page, /APP_NAVIGATION_EVENT/);
   assert.doesNotMatch(page, /role="tablist"/);
@@ -665,4 +667,16 @@ test('sideboard keeps Profile Hub first and canonical hub names and outline toke
   assert.equal(HUB_BRANDING.learning.color, BRAND_COLORS.gold);
   assert.equal(HUB_BRANDING.marketscreener.name, 'Analytics Hub');
   assert.equal(HUB_BRANDING.marketscreener.color, BRAND_COLORS.violet);
+});
+
+
+test('analytics overview stays scoped to six analysis processes and labels static examples', () => {
+  const article = readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx', import.meta.url), 'utf8');
+  const hub = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx', import.meta.url), 'utf8');
+  assert.match(hub, /active === 'overview' && <AnalyticsHubArticle \/>/);
+  for (const label of ['Quellen','Datenqualität','Scoring','Risiko','Evidenz','Marktnews']) assert.ok(article.includes(label));
+  assert.doesNotMatch(article, /Learning Hub|Lernpfad|href="\/learning/);
+  assert.match(article, /DEMO · Statische Beispieldaten/);
+  assert.match(article, /data-analytics-orbit-star/);
+  assert.match(article, /AnalyticsProcessFlow key=\{selected\}/);
 });

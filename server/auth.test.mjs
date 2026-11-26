@@ -815,6 +815,7 @@ test('all eleven Control Center subpages enforce owner identity on direct docume
     '/control-center/team',
     '/control-center/cost_center',
     '/control-center/system',
+    '/control-center/providers',
     '/control-center/licenses',
   ];
   try {
