@@ -43,6 +43,36 @@ jobs:
           mkdir -p security-reports
           node scripts/container-evidence-identity.mjs init security-reports/container-identity.json
           node scripts/write-runtime-identity.mjs "$GITHUB_SHA"
+      - name: Branding-/Lizenzarchiv nur bei Branding-Scope vorbereiten
+        id: branding_drive_pack
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api --paginate "repos/$GH_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > "$RUNNER_TEMP/branding-pr-files.txt"
+          test -s "$RUNNER_TEMP/branding-pr-files.txt"
+          if grep -Eq '^(public/branding/|public/documentation/badges/|CAPITAL-AI-[A-Z]+/badge\.svg$|docs/branding/|docs/licenses/.*(badge|BADGE|BRANDING)|shared/hub-branding\.mjs$|scripts/platform/export-branding-drive-pack\.mjs$)' "$RUNNER_TEMP/branding-pr-files.txt"; then
+            node scripts/platform/export-branding-drive-pack.mjs "$RUNNER_TEMP/branding-drive-pack"
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Branding Originaldateien als privates Review-Archiv vorbereiten
+        if: steps.branding_drive_pack.outputs.ready == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: branding-drive-pack-${{ github.sha }}
+          path: ${{ runner.temp }}/branding-drive-pack/branding/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Zugehörige Lizenznachweise als Review-Archiv vorbereiten
+        if: steps.branding_drive_pack.outputs.ready == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: branding-license-drive-pack-${{ github.sha }}
+          path: ${{ runner.temp }}/branding-drive-pack/licenses/
+          if-no-files-found: error
+          retention-days: 7
       - name: Lizenz- und Regressionstests direkt in GitHub ausführen
         run: |
           node --test \

@@ -367,11 +367,15 @@
 .universe-nebula { position:absolute; width:30%; height:30%; overflow:hidden; contain:paint; opacity:.65; }
 .universe-nebula--gold { top:0; left:0; background:radial-gradient(ellipse at 8% 12%, rgb(249 191 33 / .24), transparent 68%), radial-gradient(ellipse at 25% 12%, rgb(248 113 113 / .12), transparent 65%); }
 .universe-nebula--cyan { bottom:0; right:0; background:radial-gradient(ellipse at 90% 88%, rgb(103 232 249 / .23), transparent 68%), radial-gradient(ellipse at 74% 75%, rgb(183 148 244 / .10), transparent 65%); }
-.universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#F9BF21 54%,#F87171 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
+.universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#F87171 54%,#F9BF21 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
 .universe-hub-action { position:relative; isolation:isolate; border:1px solid var(--action-accent); font-weight:700; color:var(--action-accent); background:color-mix(in srgb,var(--action-accent) 12%,transparent); }
 .universe-hub-action--learning { --action-accent:#F9BF21; }
 .universe-hub-action--analytics { --action-accent:#B794F4; }
 .universe-hub-action::after { content:''; pointer-events:none; position:absolute; inset:0; border-radius:inherit; opacity:0; background:radial-gradient(circle at 12% 8%,currentColor 0 1px,transparent 3px),radial-gradient(circle at 83% 92%,currentColor 0 1px,transparent 3px),linear-gradient(118deg,transparent 12%,currentColor 12.4%,transparent 13%,transparent 83%,currentColor 83.4%,transparent 84%); }
+.universe-hub-action .universe-neuron-path { position:absolute; inset:-3px; width:calc(100% + 6px); height:calc(100% + 6px); pointer-events:none; color:var(--action-accent); opacity:0; transition:opacity 160ms ease; filter:drop-shadow(0 0 3px currentColor); }
+.universe-hub-action:is(:hover,:focus-visible,:active) .universe-neuron-path { opacity:.88; }
+@media(prefers-reduced-motion:reduce){.universe-hub-action .universe-neuron-path{transition:none}}
+@media(forced-colors:active){.universe-hub-action .universe-neuron-path{display:none}}
 .universe-hub-action:hover,.universe-hub-action:focus-visible,.universe-hub-action:active { box-shadow:0 0 18px color-mix(in srgb,var(--action-accent) 45%,transparent); background:color-mix(in srgb,var(--action-accent) 18%,transparent); }
 .universe-hub-action:is(:hover,:focus-visible,:active)::after { opacity:.75; transition:opacity 160ms ease; }
 @media(prefers-reduced-motion:reduce){.universe-space,.universe-hub-action::after{transition:none}}

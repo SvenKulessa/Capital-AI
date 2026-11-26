@@ -13,6 +13,9 @@ export const BRAND_COLORS = Object.freeze({
 /** Per-view design contract. Neutral surfaces, status semantics, immutable illustrations
  * and the seven-colour global identity stripe are not additional active UI accents. */
 export const UNIVERSE_VIEW_BRANDING = Object.freeze({
+  version: 'UNIVERSE_VIEW_BRANDING@2',
+  designReference: 'owner-approved-first-layout-20261126',
+  approvedWebColors: Object.freeze({ cyan: BRAND_COLORS.cyan, gold: BRAND_COLORS.gold, violet: BRAND_COLORS.violet, rose: BRAND_COLORS.rose }),
   minimumActiveColors: 2, maximumActiveColors: 4,
   pair: Object.freeze(['cyan', 'gold']),
   accent: Object.freeze(['violet', 'rose']),
