@@ -164,6 +164,11 @@ export async function writeGrowthVisualDrafts() {
   }
   const report={schema:'CAPITAL_AI_GROWTH_VISUAL_RUN@1',scope:'LOCAL_ON_DEMAND',state:'DRAFT_ONLY',publicPublishAllowed:false,sourceDigest:bundle.sourceDigest,assetCount:prepared.reduce((n,p)=>n+p.variants.length,0),providerCalls:0,providerCost:0,manualTimeSavedMs:null,productionMetrics:'NOT_PROVEN',drafts:prepared.map(p=>p.evidence)};
   await writeFile(resolve(dir,'visual-evidence.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
+  const graphInput={contractVersion:'CAPITAL_AI_VISUAL_GRAPH_INPUT@1',sourceDigest:bundle.sourceDigest,state:'DRAFT_ONLY',publicPublishAllowed:false,providerCalls:0,providerCost:0,manualTimeSavedMs:null,
+    drafts:report.drafts.map(d=>({contentId:d.contentId,channel:d.channel,width:d.width,height:d.height,sourceSha256:d.pngSha256,manifestSha256:d.manifestSha256,
+      elapsedMs:Math.round(d.elapsedMs),repairCycles:d.repairCycles,selectedSha256:d.selected.sha256,
+      assets:d.assets.map(a=>({sha256:a.sha256,mimeType:a.mimeType,byteLength:a.byteLength}))}))};
+  await writeFile(resolve(dir,'visual-graph-input.json'),JSON.stringify(graphInput,null,2)+'\n',{flag:'wx',mode:0o600});
   const preview=growthImagePreviewHtml(bundle.drafts).replace(/<img src="([^"]+)\.png"([^>]+)>/g,(tag,name,attrs)=>{
     const p=prepared.find(x=>x.base===name);
     return p?.evidence.selected.mimeType==='image/webp'?'<picture><source type="image/webp" srcset="'+name+'.webp"><img src="'+name+'.png"'+attrs+'></picture>':tag;
