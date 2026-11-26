@@ -36,6 +36,24 @@ async function until(fn, label) {
   for (let i = 0; i < 150; i++) { if (await fn()) return; await pause(100); }
   throw Error('TIMEOUT_' + label);
 }
+// Use real pointer coordinates. HTMLElement.click() emits (0,0), which can
+// falsely trigger JaJa's repeated-click assistance when consent and drawer
+// controls are activated in the same short interval.
+async function clickVisible(selector) {
+  let point;
+  await until(async () => {
+    point = await evaluate(`(() => {
+      const target = document.querySelector(${JSON.stringify(selector)});
+      if (!target) return null;
+      const rect = target.getBoundingClientRect();
+      const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
+      return target.contains(document.elementFromPoint(x, y)) ? {x,y} : null;
+    })()`);
+    return Boolean(point);
+  }, 'VISIBLE_CLICK_' + selector);
+  await send('Input.dispatchMouseEvent', {type:'mousePressed', ...point, button:'left', clickCount:1});
+  await send('Input.dispatchMouseEvent', {type:'mouseReleased', ...point, button:'left', clickCount:1});
+}
 async function navigate() {
   loaded = false;
   await send('Page.navigate', { url: origin + '/' });
@@ -81,7 +99,7 @@ try {
     await until(() => evaluate("document.querySelector('.brand-globe-poster').complete && document.querySelector('.brand-globe-poster').naturalWidth === 1254"), 'POSTER');
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
-    await evaluate("document.getElementById('mobile-menu-btn').click()");
+    await clickVisible('#mobile-menu-btn');
     await until(() => evaluate("!!document.querySelector('#capital-ai-mobile-navigation nav')"), 'HUB_DRAWER_OPEN');
     const hubLinks = await evaluate(`(() => {
       const drawer = document.getElementById('capital-ai-mobile-navigation');
@@ -96,8 +114,9 @@ try {
       {label:'Analytics Hub',border:'rgb(183, 148, 244)',style:'solid'},
     ]);
     assert.ok(hubLinks.every(link=>link.height>=44), 'Hub touch target below 44px');
-    await evaluate("document.getElementById('close-menu-btn').click()");
-    await until(() => evaluate("!document.getElementById('capital-ai-mobile-navigation')"), 'HUB_DRAWER_CLOSED');
+    await clickVisible('#close-menu-btn');
+    await until(() => evaluate(`!document.getElementById('capital-ai-mobile-navigation') &&
+      !document.querySelector('[class*="z-[100]"][class*="backdrop-blur-sm"]')`), 'HUB_DRAWER_AND_BACKDROP_CLOSED');
     report.checks.push({viewport,canonicalHubOutlines:'PASS'});
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
     assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy a')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
@@ -108,7 +127,7 @@ try {
       const bounds = action.getBoundingClientRect();
       const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
       return { href: action.getAttribute('href'), top: bounds.top, bottom: bounds.bottom,
-        height: bounds.height, clickable: action.contains(hit), obstruction: hit?.id || hit?.tagName || null,
+        height: bounds.height, clickable: action.contains(hit), obstruction: hit ? {tag:hit.tagName,id:hit.id,classes:hit.getAttribute('class'),buddy:!!hit.closest('[data-hero-buddy]'),drawer:!!hit.closest('#capital-ai-mobile-navigation')} : null,
         primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-start-analysis-btn')).backgroundColor };
     })()`);
     report.checks.push({ viewport, learningCta });
