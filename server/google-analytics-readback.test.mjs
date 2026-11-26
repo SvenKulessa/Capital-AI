@@ -451,3 +451,35 @@ test('growth GA4 and legacy readback never share a concurrent client session', a
   assert.equal(events.body.reason, 'GA4_READBACK_BUSY');
   assert.equal((await h.request()).status, 200);
 });
+
+const xCampaignRoute='/api/profile/growth-intelligence/x-campaign-readback';
+const xReport=()=>({dimensionHeaders:['sessionManualSource','sessionManualMedium','sessionManualCampaignName','sessionManualAdContent'].map(name=>({name})),
+  metricHeaders:[{name:'sessions'},{name:'engagedSessions'}],rowCount:2,rows:[
+    {dimensionValues:['x','social','capital-ai-growth-20261120','CAP-GROW-005'].map(value=>({value})),metricValues:[{value:'10'},{value:'3'}]},
+    {dimensionValues:['other','social','unrelated','other-content'].map(value=>({value})),metricValues:[{value:'200'},{value:'100'}]}]});
+test('X GA4 cohort readback is owner-only, bounded, exact and separately cached',async()=>{
+  const calls=[],h=harness({client:growthClient(calls,xReport())});
+  assert.equal((await harness({identity:null,client:growthClient(calls,xReport())}).request('GET',xCampaignRoute)).status,404);
+  assert.equal((await h.request('GET',xCampaignRoute+'?campaign=other')).status,400);
+  assert.equal((await h.request('POST',xCampaignRoute)).status,405);
+  assert.equal(calls.length,0);
+  const r=await h.request('GET',xCampaignRoute);
+  assert.equal(r.status,200);assert.deepEqual(r.body.metrics,{sessions:10,engagedSessions:3});
+  assert.equal(r.body.registrations,null);assert.equal(r.body.paidSubscriptions,null);
+  assert.equal(r.body.attributionAuthority,'SESSION_UTM_ONLY');assert.equal(r.body.publicPublishAllowed,false);
+  assert.doesNotMatch(JSON.stringify(r.body),/unrelated|other-content/);
+  assert.equal(calls[2].args.limit,100);
+  await h.request('GET',xCampaignRoute);assert.equal(calls.length,3);
+});
+test('X campaign GA4 readback rejects partial, duplicate, thresholded and malformed reports',async()=>{
+  const base=xReport();
+  for(const raw of [{...base,rowCount:101},{...base,rows:[base.rows[0],base.rows[0]]},
+    {...base,metadata:{subjectToThresholding:true}},
+    {...base,dimensionHeaders:base.dimensionHeaders.slice(1)},
+    {...base,rows:[{...base.rows[0],metricValues:[{value:'1'},{value:'2'}]},base.rows[1]]}]){
+    const r=await harness({client:growthClient([],raw)}).request('GET',xCampaignRoute);
+    assert.equal(r.status,503);assert.equal(r.body.reason,'GA4_GROWTH_INVALID_REPORT');
+  }
+  const r=await harness({client:growthClient([],{...base,rowCount:1,rows:[base.rows[1]]})}).request('GET',xCampaignRoute);
+  assert.equal(r.status,200);assert.equal(r.body.status,'NOT_PROVEN_NO_ROWS');assert.equal(r.body.metrics,null);
+});

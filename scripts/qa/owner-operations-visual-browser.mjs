@@ -99,8 +99,8 @@ async function growthUpload(raw,kind){
   assert.equal(result.result?.value,true,'Growth import input unavailable');
 }
 async function growthInteractionFixture(){
-  await growthClick('GA4 Read-only prüfen');
-  await awaitPage(`${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4')`);
+  await growthClick('GA4, X-Kampagne und GSC Read-only prüfen');
+  await awaitPage(`${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4') && ${growthRoot}.textContent.includes('Klicks 3, Impressionen 12') && ${growthRoot}.textContent.includes('5 Sessions, 2 Engaged Sessions')`);
   await growthClick('Vorher / Nachher');
   await awaitPage(`${growthRoot}.textContent.includes('Vorher') && ${growthRoot}.textContent.includes('Sessions 12, Engaged Sessions 4')`);
   await growthClick('Integrationen');
@@ -122,6 +122,8 @@ async function growthInteractionFixture(){
   const exported=await evaluate('window.__growthExport');
   const bundle=JSON.parse(exported);assert.equal(bundle.schema,'CAPITAL_AI_GROWTH_OWNER_WORKSPACE@1');
   assert.ok(bundle.snapshots.length>=4);assert.equal(bundle.snapshots.at(-1).rows.find(r=>r.id==='ga4').status,'VERIFIED');
+  assert.equal(bundle.snapshots.at(-1).rows.find(r=>r.id==='gsc').status,'VERIFIED');
+  assert.equal(bundle.snapshots.at(-1).rows.find(r=>r.id==='x-campaign').status,'VERIFIED');
   await growthUpload(exported,'JSON importieren (ersetzt Arbeitsstand)');
   await awaitPage(`${growthRoot}.textContent.includes('Import übernommen')`);
   assert.equal(await evaluate(`[...${growthRoot}.querySelectorAll('article')].some(a=>a.textContent.includes('VERIFIED ·'))`),false,'Imported VERIFIED must downgrade');
@@ -129,7 +131,7 @@ async function growthInteractionFixture(){
   await growthClick('Archiv prüfen');
   await awaitPage(`${growthRoot}.textContent.includes('Archiv nicht verfügbar')`);
   assert.equal(await evaluate(`[...${growthRoot}.querySelectorAll('button')].find(b=>b.textContent.trim()==='Aktuellen Stand archivieren')?.disabled`),true);
-  checks.push({scenario:'growth-control-center-interactions',viewport:390,mode:'ISOLATED_FIXTURE_NOT_PRODUCTION',ga4Fixture:true,domainFilter:true,comparison:true,engineReadbackFixture:true,graphImport:true,jsonRoundtrip:true,archiveFailClosed:true,inputMethod:'DOM fixture events; not native touch'});
+  checks.push({scenario:'growth-control-center-interactions',viewport:390,mode:'ISOLATED_FIXTURE_NOT_PRODUCTION',ga4Fixture:true,gscFixture:true,domainFilter:true,comparison:true,engineReadbackFixture:true,graphImport:true,jsonRoundtrip:true,archiveFailClosed:true,inputMethod:'DOM fixture events; not native touch'});
 }
 
 async function visit(role,width,tag,expected=true,route='/profile/render-dashboard') {
@@ -408,7 +410,18 @@ async function run() {
       }else if(path==='/api/profile/growth-intelligence/ga4-readback'&&mode==='owner'){
         status=200;data={schema:'CAPITAL_AI_GROWTH_GA4_READBACK@1',source:'GA4_DATA_API',private:true,readOnly:true,publicPublishAllowed:false,
           attributionAuthority:'SEPARATE_FROM_UMAMI_GSC_SOCIAL',observedAt:new Date().toISOString(),status:'PROVIDER_READ_VERIFIED',metrics:{sessions:12,engagedSessions:4}};
-      }else if(path==='/api/profile/growth-intelligence/engine-readback'&&mode==='owner'){
+      }else if(path==='/api/profile/growth-intelligence/x-campaign-readback'&&mode==='owner'){
+        status=200;data={schema:'CAPITAL_AI_X_CAMPAIGN_GA4_READBACK@1',source:'GA4_DATA_API',private:true,readOnly:true,publicPublishAllowed:false,
+          observedAt:new Date().toISOString(),period:{start:'7daysAgo',end:'yesterday',timeZone:'Europe/Berlin'},
+          campaignId:'capital-ai-growth-20261120',contentId:'CAP-GROW-005',utmSource:'x',utmMedium:'social',
+          attributionAuthority:'SESSION_UTM_ONLY',status:'PROVIDER_READ_VERIFIED',metrics:{sessions:5,engagedSessions:2},registrations:null,paidSubscriptions:null};
+      }else if(path==='/api/profile/growth-intelligence/gsc-readback'&&mode==='owner'){
+         status=200;data={schema:'CAPITAL_AI_GROWTH_GSC_READBACK@1',source:'GSC_SEARCH_ANALYTICS_API',
+           private:true,readOnly:true,publicPublishAllowed:false,attributionAuthority:'SEPARATE_FROM_GA4_UMAMI_SOCIAL',
+           property:'sc-domain:capital-ai.online',observedAt:'2026-11-24T12:00:00.000Z',status:'PROVIDER_READ_VERIFIED',
+           transport:'READ_RESPONSE_RECEIVED',period:{startDate:'2026-11-14',endDate:'2026-11-20'},
+           metrics:{clicks:3,impressions:12,ctr:0.25,position:7.5},evidenceSha256:'a'.repeat(64)};
+       }else if(path==='/api/profile/growth-intelligence/engine-readback'&&mode==='owner'){
         status=200;data={schema:'CAPITAL_AI_OWNER_ENGINE_SNAPSHOT@1',scope:'BUILD_ARTIFACT_ONLY',private:true,readOnly:true,publicPublishAllowed:false,
           market:{state:'SOURCE_SNAPSHOT_ONLY',date:'2026-11-24',homepage:3,overview:0,archive:0,editionSha256:'a'.repeat(64),indexSha256:'b'.repeat(64)},
           content:{state:'DRAFT_ONLY',drafts:7,sourceSha256:'c'.repeat(64),bundleSha256:'d'.repeat(64)},

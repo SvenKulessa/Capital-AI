@@ -24,3 +24,24 @@ node --import tsx scripts/growth/growth-intelligence-drafts.mjs --read-providers
 The existing file-based `--growth-data <path>` and full draft output remain supported. The graph fans out PRODUCT, MARKET, PLATFORM, TRUST and GROWTH, joins QUALITY, and returns source status/evidence references only; `NOT_PROVEN_BY_GRAPH` is not provider authentication. The graph cannot publish, spend, mutate or manufacture attribution events. The engineering `auto_loop.py` and private worker admission remain unchanged. Owner dashboard live ingestion, persistent evidence and production provider execution are separate, not established by this change.
 
 Tests: `npm run test:growth-intelligence` and `python3 -m unittest discover -s scripts/growth-agent -p 'test_product_opportunity_graph.py'` in existing CI. Earlier head `3c756c11eaeca9f666901a8f546b9c09ecd8884e`: Docker Security Gate 45409449631, Domain Governance 45409449314, Google Maintenance and Local Growth Graph 45409449336 returned success. These results do not certify the new head. Rollback: revert scoped commits. No real provider metrics or credentials committed.
+
+## Follow-up: dependency-free streaming and owner analytics readback
+The existing provider transport/projection is shared from `server/growth-provider-read.mjs`; the draft wrapper preserves its public exports. A direct zero-credential Node CLI can stream the exact provider envelope into the existing Python graph without installing additional Node libraries:
+
+```bash
+set -o pipefail
+node server/growth-provider-read.mjs --graph-handoff |
+  python3 scripts/growth-agent/product_opportunity_graph.py --growth-data -
+```
+
+Existing pinned Python CI discovers the two cross-process streaming tests (all disabled and synthetic partial GA4). The actual owner action fetches GA4 and GSC separately and appends a single version; GSC uses the existing explicit `GROWTH_GSC_READ_ENABLED` and `GROWTH_GSC_READ_TOKEN` configuration, default deny, fixed property, no new scope or secret activation. Owner-only endpoint rejects arbitrary queries and methods. The encrypted archive accepts the GSC origin as documentation; recovery flags remain unchanged. No periodic provider calls, production graph-worker activation, direct production readback or recovery claim follows from merging this change. Rollback: revert scoped PR, preserve archive contents (disable/archive export before reverting if new GSC-origin snapshots exist).
+
+Host-only cross-language tests reside in `test_growth_streaming_e2e.py`, discovered by the existing Google Maintenance workflow. The intentionally Python-only offline candidate executes `test_product_opportunity_graph.py` unchanged. No Node installation or skipped host tests. At prior head 1d9dd66bd653d02686556cef0217e96d9ea34d9e, host graph run 45455778666 and Owner Chromium run 45455778477 succeeded; candidate run 45455778593 failed with missing `node` in the two misplaced host tests. The synchronized head requires fresh CI.
+
+## Growth Visual Intelligence und kontinuierlicher Open-Source-Tool-Radar
+
+Die vorhandene Growth-Content-Draft-Bundle-Projektion bindet sieben Content-IDs an eigene, schematische 3D-Rezepte und deren SHA-256. Der Owner-Readback zeigt diese Szenen im vorhandenen Growth Control Center mit demselben interaktiven WebGL-Renderer wie die Homepage. Website-Szenen, Video- und Bildentwürfe sind getrennte Auslieferungsziele; ein Rezept ist kein exportiertes Medium. Keine Live-Marktwerte oder neue Publikationsrechte.
+
+Der bestehende tägliche Dependency/CVE-Watch (04:15 UTC) sucht zusätzlich über die öffentliche GitHub-Metadaten-API nach 3D-, WebGPU-, Video-, Content- und MCP-Tools. Ergebnisse werden als `growth-tool-radar.json` im vorhandenen CI-Evidence-Artefakt gespeichert. Lizenzangaben sind ausschließlich Kandidaten-Metadaten. Vor Integration: offizielle Lizenz am exakten Revision/Artifact-Pin, SHA-256, SBOM, Security, kommerzielle Nutzung, Redistribution, Modell-/Daten-/Outputrechte und isolierter Qualitätsvergleich gemäß vorhandener Social Tool Admission prüfen. Keine automatische Installation oder Provider-Aktivierung aus Suchergebnissen. LangGraph-Marketing prüft die Quellintegration; ein tatsächlicher wiederkehrender Produktionslauf und die automatische Übernahme der Radar-Evidence sind separat nachzuweisen.
+
+Lokale Weiterverarbeitung der täglichen Radar-Evidence mit dem bestehenden Growth-Graph: `python3 scripts/growth-agent/graph.py --tool-radar security-reports/growth-tool-radar.json`. Der Graph übernimmt nur streng begrenzte Repository-/Lizenzreferenzen als Review-Warteschlange. Er verwirft mutierende Autoritätsfelder, nichtkommerzielle Kandidaten und fehlgeschlagene Metadatenbeobachtungen. Dies ist noch kein automatischer Produktions-Import der CI-Artefakte.

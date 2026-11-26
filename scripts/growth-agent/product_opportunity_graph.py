@@ -322,20 +322,295 @@ def growth_quality(state: GrowthReadState) -> dict:
     }}
 
 
-def build_growth_read_graph():
-    """Real pinned StateGraph, reusing the existing offline worker boundary."""
+def build_offline_review_graph(state_type, source_review, domain_review, quality):
+    """Shared graph topology; no runtime authority or network side effects."""
     from langgraph.graph import END, START, StateGraph
     domains = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
-    graph = StateGraph(GrowthReadState)
-    graph.add_node("source_review", growth_source_review)
+    graph = StateGraph(state_type)
+    graph.add_node("source_review", source_review)
     graph.add_edge(START, "source_review")
     for domain in domains:
-        graph.add_node(domain.lower(), growth_domain_review(domain))
+        graph.add_node(domain.lower(), domain_review(domain))
         graph.add_edge("source_review", domain.lower())
-    graph.add_node("quality", growth_quality)
+    graph.add_node("quality", quality)
     graph.add_edge([domain.lower() for domain in domains], "quality")
     graph.add_edge("quality", END)
     return graph.compile()
+
+
+def build_growth_read_graph():
+    return build_offline_review_graph(GrowthReadState, growth_source_review, growth_domain_review, growth_quality)
+
+
+VIRAL_INPUT_CONTRACT = "CAPITAL_AI_VIRAL_GRAPH_INPUT@1"
+
+
+class ViralReadState(TypedDict, total=False):
+    payload: dict
+    viral_valid: bool
+    opportunity_refs: list[dict]
+    findings: Annotated[list[dict], operator.add]
+    report: dict
+
+
+def viral_source_review(state: ViralReadState) -> dict:
+    """Imported hashes and scores are documentation, never provider authentication."""
+    payload = state.get("payload")
+    denied = {"viral_valid": False, "opportunity_refs": []}
+    keys = {"contractVersion", "status", "analyzedTrendsCount", "opportunities",
+            "publicationState", "publicPublishAllowed", "providerCalls",
+            "additionalCostUsd", "providerAuthentication"}
+    if (not isinstance(payload, dict) or set(payload) != keys
+            or payload["contractVersion"] != VIRAL_INPUT_CONTRACT
+            or payload["status"] not in ("NOT_PROVEN", "SOURCE_RECORDED_NOT_AUTHENTICATED")
+            or payload["publicationState"] != "DRAFT_ONLY" or payload["publicPublishAllowed"] is not False
+            or payload["providerAuthentication"] != "NOT_PROVEN"
+            or type(payload["providerCalls"]) is not int or payload["providerCalls"] != 0
+            or type(payload["additionalCostUsd"]) is not int or payload["additionalCostUsd"] != 0
+            or type(payload["analyzedTrendsCount"]) is not int
+            or not 0 <= payload["analyzedTrendsCount"] <= 1000
+            or not isinstance(payload["opportunities"], list)
+            or len(payload["opportunities"]) > min(64, payload["analyzedTrendsCount"])
+            or (payload["status"] == "NOT_PROVEN" and payload["analyzedTrendsCount"] != 0)):
+        return denied
+    refs = []
+    seen = set()
+    row_keys = {"recordSha256", "productContextSha256", "productSourceSha", "draftSha256",
+                "sourcePlatform", "correlationScore", "review"}
+    for row in payload["opportunities"]:
+        if (not isinstance(row, dict) or set(row) != row_keys
+                or any(not isinstance(row[k], str) or re.fullmatch(r"[0-9a-f]{64}", row[k]) is None
+                       for k in ("recordSha256", "productContextSha256", "draftSha256"))
+                or not valid_sha(row["productSourceSha"])
+                or row["sourcePlatform"] not in ("TikTok", "Instagram", "X", "YouTube")
+                or type(row["correlationScore"]) is not int or not 70 <= row["correlationScore"] <= 100
+                or row["review"] != "REVIEW_REQUIRED" or row["recordSha256"] in seen):
+            return denied
+        seen.add(row["recordSha256"])
+        refs.append(dict(row))
+    return {"viral_valid": True, "opportunity_refs": refs}
+
+
+def viral_domain_review(domain: str):
+    def run(state: ViralReadState) -> dict:
+        details = {"PRODUCT": "Product source references only; runtime claims not authenticated.",
+                   "MARKET": "No market, demand or conversion proof.",
+                   "PLATFORM": "Bounded offline draft references; no provider calls.",
+                   "TRUST": "No imported rights, publish, spend or mutation authority.",
+                   "GROWTH": "Qualified draft references for editorial review only."}
+        return {"findings": [finding(domain, "PASS_WITH_GAPS" if state.get("viral_valid") is True else "BLOCKED", details[domain])]}
+    return run
+
+
+def viral_quality(state: ViralReadState) -> dict:
+    domains = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
+    findings = state.get("findings", [])
+    ok = state.get("viral_valid") is True and all(
+        any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in findings)
+        for domain in domains)
+    refs = state.get("opportunity_refs", []) if ok else []
+    return {"report": {"contractVersion": "CAPITAL_AI_VIRAL_GRAPH_HANDOFF@1",
+                       "engine": "langgraph", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+                       "opportunities": refs, "eligibleForDraftReview": bool(refs),
+                       "providerAuthentication": "NOT_PROVEN_BY_GRAPH", "publicationAllowed": False,
+                       "costActivationAllowed": False, "automaticChanges": False, "attributionEvents": []}}
+
+
+def build_viral_read_graph():
+    return build_offline_review_graph(ViralReadState, viral_source_review, viral_domain_review, viral_quality)
+
+
+class ConversionReadState(TypedDict, total=False):
+    payload: dict
+    conversion_valid: bool
+    findings: Annotated[list[dict], operator.add]
+    report: dict
+
+
+
+def smartcopy_conversion_valid(p):
+    # Same offline candidate contract as existing CLI. No verified metrics admitted.
+    from datetime import datetime
+    keys = {"contractVersion", "productId", "campaignId", "asOf", "status",
+            "candidatePayments", "candidateActiveLicenses", "candidateFullRefunds",
+            "candidatePartialRefunds", "candidateDisputes", "candidateNetPaidCents",
+            "verifiedMetrics", "providerAuthentication", "publicPublishAllowed",
+            "liveSalesAllowed", "automaticChanges", "providerCalls", "campaignSpend"}
+    if (not isinstance(p, dict) or set(p) != keys
+            or p["contractVersion"] != "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1"
+            or p["productId"] != "ai-smartcopy" or not isinstance(p["campaignId"], str)
+            or not re.fullmatch(r"smartcopy-[a-f0-9]{24}", p["campaignId"])
+            or p["status"] != "SOURCE_RECORDED_NOT_AUTHENTICATED"
+            or p["providerAuthentication"] != "NOT_PROVEN"
+            or p["verifiedMetrics"] != {"paidLicenses": None, "revenueCents": None, "refunds": None}
+            or any(p[k] is not False for k in ("publicPublishAllowed", "liveSalesAllowed", "automaticChanges"))
+            or any(type(p[k]) is not int or p[k] != 0 for k in ("providerCalls", "campaignSpend"))):
+        return False
+    try:
+        if not isinstance(p["asOf"], str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", p["asOf"]):
+            return False
+        datetime.fromisoformat(p["asOf"].replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return False
+    n = p["candidatePayments"]
+    values = [p[k] for k in ("candidateActiveLicenses", "candidateFullRefunds", "candidatePartialRefunds", "candidateDisputes", "candidateNetPaidCents")]
+    if n is None:
+        return all(v is None for v in values)
+    if type(n) is not int or not 1 <= n <= 1000:
+        return False
+    if any(type(v) is not int or not 0 <= v <= n for v in values[:4]) or type(values[4]) is not int or not 0 <= values[4] <= n * 100000000:
+        return False
+    return values[1] + values[2] <= n and values[0] + max(values[1], values[3]) <= n
+
+
+def conversion_source_review(state: ConversionReadState) -> dict:
+    from datetime import datetime, timedelta
+    p = state.get("payload")
+    if isinstance(p, dict) and p.get("contractVersion") == "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1":
+        return {"conversion_valid": smartcopy_conversion_valid(p)}
+    keys = {"contractVersion", "campaignId", "contentId", "start", "end", "asOf",
+            "status", "candidateRegistrations", "candidatePaidSubscribers",
+            "candidateInitialInvoiceCents", "registrations", "paidSubscriptions",
+            "revenueCents", "providerAuthentication", "publicPublishAllowed",
+            "costActivationAllowed", "providerCalls", "automaticChanges"}
+    denied = {"conversion_valid": False}
+    if (not isinstance(p, dict) or set(p) != keys
+            or p["contractVersion"] != "CAPITAL_AI_X_CONVERSION_CANDIDATES@1"
+            or p["campaignId"] != "capital-ai-growth-20261120"
+            or p["contentId"] != "CAP-GROW-005"
+            or p["status"] != "SOURCE_RECORDED_NOT_AUTHENTICATED"
+            or p["providerAuthentication"] != "NOT_PROVEN"
+            or any(p[k] is not None for k in ("registrations", "paidSubscriptions", "revenueCents"))
+            or any(p[k] is not False for k in ("publicPublishAllowed", "costActivationAllowed", "automaticChanges"))
+            or type(p["providerCalls"]) is not int or p["providerCalls"] != 0):
+        return denied
+    try:
+        start, end, as_of = (datetime.fromisoformat(p[k].replace("Z", "+00:00")) for k in ("start", "end", "asOf"))
+        if not (start < end <= as_of and end - start <= timedelta(days=30)):
+            return denied
+    except (TypeError, ValueError, AttributeError, OverflowError):
+        return denied
+    reg, paid, cents = (p[k] for k in ("candidateRegistrations", "candidatePaidSubscribers", "candidateInitialInvoiceCents"))
+    if any(v is not None and (type(v) is not int or not 1 <= v <= bound)
+           for v, bound in ((reg, 1000), (paid, 1000), (cents, 100000000000))):
+        return denied
+    if (paid is None) != (cents is None) or (paid is not None and (reg is None or paid > reg or cents < paid)):
+        return denied
+    return {"conversion_valid": True}
+
+
+def conversion_domain_review(domain: str):
+    def run(state: ConversionReadState) -> dict:
+        return {"findings": [finding(domain, "PASS_WITH_GAPS" if state.get("conversion_valid") is True else "BLOCKED",
+            "Consent-bound candidate review only; trusted source and complete cohort evidence required.")]}
+    return run
+
+
+def conversion_quality(state: ConversionReadState) -> dict:
+    ok = state.get("conversion_valid") is True and all(
+        any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in state.get("findings", []))
+        for domain in ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH"))
+    p = state.get("payload")
+    if isinstance(p, dict) and p.get("contractVersion") == "CAPITAL_AI_SMARTCOPY_CONVERSION_CANDIDATES@1":
+        return {"report": {"contractVersion": "CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1",
+            "engine": "langgraph", "productId": "ai-smartcopy", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+            "nextAction": "VERIFY_SOURCE_AND_COHORT" if ok else "REPAIR_INPUT",
+            "providerAuthentication": "NOT_PROVEN_BY_GRAPH", "verifiedMetrics": {"paidLicenses": None, "revenueCents": None, "refunds": None},
+            "publicationAllowed": False, "costActivationAllowed": False, "automaticChanges": False}}
+    return {"report": {"contractVersion": "CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1",
+        "engine": "langgraph", "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+        "nextAction": "VERIFY_SOURCE_AND_COHORT" if ok else "REPAIR_INPUT",
+        "providerAuthentication": "NOT_PROVEN_BY_GRAPH", "registrations": None,
+        "paidSubscriptions": None, "revenueCents": None, "publicationAllowed": False,
+        "costActivationAllowed": False, "automaticChanges": False}}
+
+
+def build_conversion_read_graph():
+    return build_offline_review_graph(ConversionReadState, conversion_source_review, conversion_domain_review, conversion_quality)
+
+
+
+class ProductChannelReadState(TypedDict, total=False):
+    payload: dict
+    channel_valid: bool
+    product_refs: list[dict]
+    findings: Annotated[list[dict], operator.add]
+    report: dict
+
+
+CHANNEL_RULES = {
+    "website": "REVIEW_REQUIRED", "acode": "LISTING_REVIEW_REQUIRED",
+    "acodeCommunity": "LOCAL_RULES_REVIEW_REQUIRED", "youtube": "REVIEW_REQUIRED",
+    "productHunt": "REVIEW_REQUIRED", "redditShowcase": "LOCAL_RULES_REVIEW_REQUIRED",
+    "alternativeTo": "LISTING_REVIEW_REQUIRED", "devto": "REVIEW_REQUIRED",
+    "showHN": "HUMAN_ONLY_NO_GENERATED_TEXT",
+    "githubMarketplace": "LISTING_REVIEW_REQUIRED", "linkedin": "REVIEW_REQUIRED",
+    "x": "REVIEW_REQUIRED", "tiktok": "COMMERCIAL_DISCLOSURE_REQUIRED",
+}
+
+
+def channel_source_review(state: ProductChannelReadState) -> dict:
+    p = state.get("payload")
+    denied = {"channel_valid": False, "product_refs": []}
+    keys = {"contractVersion", "sourceSha256", "publicationState", "publicPublishAllowed",
+            "liveSalesAllowed", "providerCalls", "campaignSpend", "products"}
+    if (not isinstance(p, dict) or set(p) != keys
+            or p["contractVersion"] != "CAPITAL_AI_PRODUCT_CHANNEL_GRAPH_INPUT@1"
+            or not isinstance(p["sourceSha256"], str)
+            or not re.fullmatch(r"[0-9a-f]{64}", p["sourceSha256"])
+            or p["publicationState"] != "DRAFT_ONLY"
+            or p["publicPublishAllowed"] is not False or p["liveSalesAllowed"] is not False
+            or any(type(p[k]) is not int or p[k] != 0 for k in ("providerCalls", "campaignSpend"))
+            or not isinstance(p["products"], list) or not 1 <= len(p["products"]) <= 133):
+        return denied
+    refs, seen = [], set()
+    for item in p["products"]:
+        if (not isinstance(item, dict) or set(item) != {"id", "researchStatus", "channels"}
+                or not isinstance(item["id"], str) or not re.fullmatch(r"[a-z0-9-]{1,80}", item["id"])
+                or item["id"] in seen or not isinstance(item["channels"], list)
+                or len(item["channels"]) > len(CHANNEL_RULES)
+                or item["researchStatus"] not in ("CANDIDATES_REVIEW_REQUIRED", "UNMAPPED_RESEARCH_REQUIRED")
+                or bool(item["channels"]) != (item["researchStatus"] == "CANDIDATES_REVIEW_REQUIRED")):
+            return denied
+        seen.add(item["id"])
+        channel_ids = set()
+        rows = []
+        for c in item["channels"]:
+            if (not isinstance(c, dict) or set(c) != {"id", "priority", "rule"}
+                    or not isinstance(c["id"], str) or c["id"] not in CHANNEL_RULES
+                    or c["id"] in channel_ids or c["rule"] != CHANNEL_RULES[c["id"]]
+                    or c["priority"] not in ("P0", "P1", "P2")):
+                return denied
+            channel_ids.add(c["id"])
+            rows.append(dict(c))
+        refs.append({"id": item["id"], "researchStatus": item["researchStatus"], "channels": rows})
+    return {"channel_valid": True, "product_refs": refs}
+
+
+def channel_domain_review(domain: str):
+    def run(state: ProductChannelReadState) -> dict:
+        return {"findings": [finding(domain, "PASS_WITH_GAPS" if state.get("channel_valid") is True else "BLOCKED",
+            "Editorial channel candidates only; independent source, platform rules, rights and demand review required.")]}
+    return run
+
+
+def channel_quality(state: ProductChannelReadState) -> dict:
+    ok = state.get("channel_valid") is True and all(
+        any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in state.get("findings", []))
+        for domain in ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH"))
+    refs = state.get("product_refs", []) if ok else []
+    return {"report": {
+        "contractVersion": "CAPITAL_AI_PRODUCT_CHANNEL_GRAPH_HANDOFF@1", "engine": "langgraph",
+        "quality": "PASS_WITH_GAPS" if ok else "BLOCKED",
+        "products": refs, "researchQueue": [r["id"] for r in refs if not r["channels"]],
+        "sourceAuthentication": "NOT_PROVEN_BY_GRAPH", "publicationAllowed": False,
+        "liveSalesAllowed": False, "costActivationAllowed": False, "automaticChanges": False,
+        "attributionEvents": [],
+    }}
+
+
+def build_channel_read_graph():
+    return build_offline_review_graph(ProductChannelReadState, channel_source_review, channel_domain_review, channel_quality)
 
 
 def read_growth_input(stream):
@@ -356,7 +631,37 @@ def main():
     inputs = parser.add_mutually_exclusive_group(required=True)
     inputs.add_argument("--input", type=Path)
     inputs.add_argument("--growth-data", type=Path, help="Bounded JSON file, or - for stdin")
+    inputs.add_argument("--viral-data", type=Path, help="Bounded draft-only reference JSON, or - for stdin")
+    inputs.add_argument("--conversion-data", type=Path, help="Bounded candidate JSON, or - for stdin")
+    inputs.add_argument("--product-channels", type=Path, help="Bounded draft-only channel JSON, or - for stdin")
     args = parser.parse_args()
+    if args.product_channels is not None:
+        if args.product_channels == Path("-"):
+            raw = read_growth_input(sys.stdin.buffer)
+        else:
+            with args.product_channels.open("rb") as stream:
+                raw = read_growth_input(stream)
+        result = build_channel_read_graph().invoke({"payload": raw, "findings": []}, {"recursion_limit": 8})
+        print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
+        return
+    if args.conversion_data is not None:
+        if args.conversion_data == Path("-"):
+            raw = read_growth_input(sys.stdin.buffer)
+        else:
+            with args.conversion_data.open("rb") as stream:
+                raw = read_growth_input(stream)
+        result = build_conversion_read_graph().invoke({"payload": raw, "findings": []}, {"recursion_limit": 8})
+        print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
+        return
+    if args.viral_data is not None:
+        if args.viral_data == Path("-"):
+            raw = read_growth_input(sys.stdin.buffer)
+        else:
+            with args.viral_data.open("rb") as stream:
+                raw = read_growth_input(stream)
+        result = build_viral_read_graph().invoke({"payload": raw, "findings": []}, {"recursion_limit": 8})
+        print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
+        return
     if args.growth_data is not None:
         if args.growth_data == Path("-"):
             raw = read_growth_input(sys.stdin.buffer)

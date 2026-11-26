@@ -207,6 +207,28 @@ async function execute(fetchImpl, keys, userId, input) {
       // Only a boolean crosses the owner workload boundary; no extra token material.
       mediaWriteApproved: Array.isArray(row.scopes) && row.scopes.includes('media.write') };
   }
+  // Pilot-only conservative reservation. No caller-provided price or reset.
+  // Existing owner and signed workload validation precedes this operation.
+  if (operation === 'growth_budget_claim') {
+    abortUnless(channel === 'X_PUBLISH' && XID.test(input.accountId || '')
+      && SHA256.test(input.contentKey || '')
+      && Object.keys(input).sort().join(',') === 'accountId,channel,contentKey,operation,userId');
+    const account = await execute(fetchImpl, keys, userId, {
+      operation: 'x_credentials', userId, channel,
+    });
+    abortUnless(account.accountId === input.accountId && account.handle === 'CapitalAIOnline');
+    const result = await jsonFetch(fetchImpl, keys.origin + '/rest/v1/rpc/capital_x_growth_reserve', {
+      method: 'POST', headers: adminHeaders(keys.admin),
+      body: JSON.stringify({ p_user_id: userId, p_account_id: input.accountId,
+        p_content_key: input.contentKey }),
+    }, 4096);
+    abortUnless(result?.accountId === input.accountId && result?.contentKey === input.contentKey
+      && typeof result.claimed === 'boolean' && (!result.claimed ||
+        (Number.isSafeInteger(result.reservedMicroEur) && result.reservedMicroEur > 0
+        && result.reservedMicroEur <= 20000000)));
+    return { claimed: result.claimed, accountId: result.accountId, contentKey: result.contentKey,
+      ...(result.claimed ? { reservedMicroEur: result.reservedMicroEur } : {}) };
+  }
   // One-shot owner-authenticated X milestone receipts; never exposed to browsers.
   if (['milestone_status', 'milestone_claim', 'milestone_record'].includes(operation)) {
     abortUnless(channel === 'X_PUBLISH' && SHA256.test(input.contentKey || '')
@@ -488,6 +510,9 @@ export function createHandler({ env = typeof Deno === 'undefined' ? null : Deno.
       const keys = serviceKeys(env);
       const userId = await verifyOwner(fetchImpl, keys, jwt);
       const input = JSON.parse(raw);
+      if (input?.operation === 'growth_budget_claim') {
+        abortUnless(env.get('SOCIAL_X_GROWTH_BUDGET_APPROVED') === 'true');
+      }
       const result = await execute(fetchImpl, keys, userId, input);
       return reply(200, result);
     } catch {

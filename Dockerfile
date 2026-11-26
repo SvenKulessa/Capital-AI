@@ -94,14 +94,14 @@ COPY public/impressum ./public/impressum
 COPY public/documentation/pipeline-architectures.html public/documentation/pricing-models.html public/documentation/domains.html ./public/documentation/
 COPY public/downloads/market-screener-hub-open-source.html ./public/downloads/market-screener-hub-open-source.html
 COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/learning-simulator.test.mjs server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
-COPY server/founder-access.mjs server/founder-access.test.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.mjs server/blueprint-commerce.test.mjs server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/purchase-receipt.mjs server/purchase-receipt.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
+COPY server/founder-access.mjs server/founder-access.test.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.mjs server/blueprint-commerce.test.mjs server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/purchase-receipt.mjs server/purchase-receipt.test.mjs server/smartcopy-sandbox-readback.mjs server/smartcopy-sandbox-readback.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/skill-routing-catalog.mjs ./server/
 COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.mjs server/tool-catalog-assessment.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs server/chat-buddy-learn.test.mjs ./server/
 COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/account-avatar.test.mjs server/profile-avatar-upload.test.mjs server/profile-avatar-clamav.test.mjs server/historical-analytics-demo.test.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
-COPY server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-evidence-archive.test.mjs server/growth-owner-engine-readback.mjs server/growth-owner-engine-readback.test.mjs ./server/
+COPY server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-evidence-archive.test.mjs server/growth-owner-engine-readback.mjs server/growth-owner-engine-readback.test.mjs server/growth-provider-read.mjs server/growth-gsc-readback.mjs ./server/
 COPY scripts/growth/owner-engine-snapshot.mjs ./scripts/growth/
 COPY scripts/growth-agent/auto_loop.py ./scripts/growth-agent/auto_loop.py
 COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
@@ -141,8 +141,13 @@ COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
 COPY scripts/growth/growth-intelligence-image-drafts.mjs scripts/growth/growth-intelligence-image-drafts.test.mjs scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs scripts/growth/next-round-planner.mjs scripts/growth/next-round-planner.test.mjs ./scripts/growth/
+COPY scripts/growth/product-channel-intelligence.mjs scripts/growth/product-channel-intelligence.test.mjs scripts/growth/product-market-research.mjs scripts/growth/product-market-research.test.mjs ./scripts/growth/
+COPY docs/product/MONETIZABLE-PRODUCT-REGISTRY.md ./docs/product/MONETIZABLE-PRODUCT-REGISTRY.md
 # Offline branded-context drafts and tests (alongside canonical Growth image drafts).
 COPY scripts/growth/brand-kit-graph-drafts.mjs scripts/growth/brand-kit-graph-drafts.test.mjs ./scripts/growth/
+COPY scripts/growth/social-trend-projection.mjs scripts/growth/social-trend-projection.test.mjs ./scripts/growth/
+COPY scripts/growth/viral-product-drafts.mjs scripts/growth/viral-product-drafts.test.mjs scripts/growth/viral-content-engine.mjs scripts/growth/viral-content-engine.test.mjs ./scripts/growth/
+COPY scripts/growth/viral-template-cache.mjs scripts/growth/viral-template-cache.test.mjs ./scripts/growth/
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs scripts/growth/social-pipeline-graphic.mjs scripts/growth/news-to-learning.mjs scripts/growth/news-to-learning.test.mjs scripts/growth/news-to-learning.integration.test.mjs scripts/growth/home-editorial-edition.mjs scripts/growth/home-editorial-edition.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
@@ -238,11 +243,11 @@ ARG RENDER_GIT_COMMIT
 COPY scripts/write-runtime-identity.mjs /tmp/write-runtime-identity.mjs
 RUN node /tmp/write-runtime-identity.mjs render-git "${RENDER_GIT_COMMIT:-}" \
     && rm /tmp/write-runtime-identity.mjs
-COPY server/purchase-receipt.mjs ./server/
+COPY server/purchase-receipt.mjs server/smartcopy-sandbox-readback.mjs ./server/
 COPY server/agent-operations-pilot.mjs server/agent-operations-pilot-store.mjs ./server/
 COPY .agents/skills/registry.json ./.agents/skills/registry.json
 COPY server/skill-routing-catalog.mjs ./server/
-COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-engine-readback.mjs ./server/
+COPY server/render-owner-dashboard.mjs server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/growth-owner-evidence-api.mjs server/growth-owner-evidence-archive.mjs server/growth-owner-engine-readback.mjs server/growth-provider-read.mjs server/growth-gsc-readback.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt

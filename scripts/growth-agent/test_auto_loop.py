@@ -51,7 +51,7 @@ class Adapter:
         self.calls.append("test")
         if self.failures:
             self.failures -= 1
-            return {"passed": False}
+            return {"passed": False, "failure_fingerprint": f"{self.failures:064x}"}
         return {"passed": True}
 
     def repair(self, state):
@@ -99,6 +99,42 @@ class AutoLoopTests(unittest.TestCase):
         state = self.run_graph(a, loop.Authority(allow_changes=True, allow_merge=True, max_repairs=2))
         self.assertEqual(state["status"], "TEST_FAILED")
         self.assertEqual(state["attempts"], 2)
+        self.assertNotIn("merge", a.calls)
+
+    def test_identical_failure_stops_without_repeating_repair(self):
+        a = Adapter()
+        a.test = lambda state: {"passed": False, "failure_fingerprint": "d" * 64}
+        state = self.run_graph(a, loop.Authority(allow_changes=True, allow_merge=True))
+        self.assertEqual(state["stop_reason"], "NO_PROGRESS")
+        self.assertEqual(state["attempts"], 1)
+        self.assertEqual(a.calls.count("repair"), 1)
+        self.assertNotIn("merge", a.calls)
+
+    def test_hard_stops_and_unknown_outcomes_never_repair(self):
+        for kind in loop.HARD_STOPS:
+            with self.subTest(kind=kind):
+                a = Adapter()
+                a.test = lambda state: {"passed": False, "failure_class": kind}
+                state = self.run_graph(a, loop.Authority(allow_changes=True, allow_merge=True))
+                self.assertEqual(state["status"], "BLOCKED")
+                self.assertEqual(state["stop_reason"], kind)
+                self.assertEqual(state["attempts"], 0)
+                self.assertNotIn("repair", a.calls)
+                self.assertNotIn("merge", a.calls)
+        a = Adapter()
+        a.test = lambda state: {"status": "UNKNOWN"}
+        state = self.run_graph(a, loop.Authority(allow_changes=True, allow_merge=True))
+        self.assertEqual(state["status"], "NOT_PROVEN")
+        self.assertNotIn("repair", a.calls)
+
+    def test_ci_wait_does_not_repair_or_merge(self):
+        a = Adapter()
+        a.test = lambda state: {"passed": False, "status": "WAIT", "failure_class": "CI_PENDING"}
+        state = self.run_graph(a, loop.Authority(allow_changes=True, allow_merge=True))
+        self.assertEqual(state["status"], "WAIT")
+        self.assertEqual(state["wait_phase"], "test")
+        self.assertEqual(state["attempts"], 0)
+        self.assertNotIn("repair", a.calls)
         self.assertNotIn("merge", a.calls)
 
     def test_readonly_cannot_write_even_if_changes_flag_set(self):

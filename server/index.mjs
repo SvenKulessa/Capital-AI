@@ -36,7 +36,8 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGrowthEvidenceApi } from './growth-owner-evidence-api.mjs';
-import { createGrowthEngineReadback } from './growth-owner-engine-readback.mjs';
+import { createGrowthEngineReadback, createGrowthConversionReadback } from './growth-owner-engine-readback.mjs';
+import { createGrowthGscReadback } from './growth-gsc-readback.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
 import { createTinyfishOwnerReadback } from './tinyfish-owner-readback.mjs';
@@ -55,7 +56,7 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
-import { PUBLIC_SEARCH_FOCUS } from '../shared/public-search-focus.mjs';
+import { PUBLIC_SEARCH_FOCUS, GROWTH_PUBLIC_ARTICLE } from '../shared/public-search-focus.mjs';
 import { seoContentForPath } from '../shared/seo-content-manifest.mjs';
 import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
 import { resolveLocale, localeFromLandingPath, localizedLandingPath, landingAlternatesForPath } from '../shared/locale-policy.mjs';
@@ -263,6 +264,7 @@ function injectPublicSeoSnapshot(html, pathname) {
     : '';
   const article = blogArticleForPath(pathname);
   const focus = pathname === '/' ? PUBLIC_SEARCH_FOCUS.map(item => `<section><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.body)}</p><a href="${item.path}">${escapeHtml(item.label)}</a></section>`).join('') : '';
+  const growth = pathname === '/' ? `<section id="growth-intelligence" lang="de"><h2>${escapeHtml(GROWTH_PUBLIC_ARTICLE.title)}</h2><p>${escapeHtml(GROWTH_PUBLIC_ARTICLE.intro)}</p><p>${escapeHtml(GROWTH_PUBLIC_ARTICLE.status)}</p><h3>Intelligence-Pipeline</h3><ol>${GROWTH_PUBLIC_ARTICLE.stages.map(s=>`<li><h4>${escapeHtml(s.title)}</h4><p>${escapeHtml(s.body)}</p><p>${escapeHtml(s.status)}</p></li>`).join('')}</ol>${GROWTH_PUBLIC_ARTICLE.sections.map(s=>`<section><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.body)}</p></section>`).join('')}<h3>Produkte und Entwicklungsperspektiven</h3>${GROWTH_PUBLIC_ARTICLE.products.map(p=>`<section><h4>${escapeHtml(p.title)}</h4><p>${escapeHtml(p.body)}</p>${p.href?`<a href="${escapeHtml(p.href)}">${escapeHtml(p.title)} erkunden</a>`:''}</section>`).join('')}<p>${escapeHtml(GROWTH_PUBLIC_ARTICLE.closing)}</p></section>` : '';
   const editorial = article
     ? `<p>Eigene Redaktion · <time datetime="${escapeHtml(article.date)}">${escapeHtml(article.date)}</time></p><p>${escapeHtml(article.intro)}</p><figure><img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.imageAlt)}" width="1200" height="630" style="max-width:100%;height:auto"><figcaption>Eigene Illustration; keine realen Kursdaten.</figcaption></figure>` + article.sections.map(section => `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.body)}</p></section>`).join('') + `<p>Technische und didaktische Information; keine Anlageberatung.</p><h2>Quellen</h2><ul>` + article.sources.map(source => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label)}</a></li>`).join('') + '</ul><p><a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a></p>'
     : pathname === '/blog' ? BLOG_ARTICLES.map(item => `<section><h2><a href="${escapeHtml(item.path)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description)}</p></section>`).join('') : '';
@@ -273,7 +275,7 @@ function injectPublicSeoSnapshot(html, pathname) {
     '<a href="#capital-ai-public-snapshot" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-amber-400 focus:text-black focus:font-bold focus:rounded-xl focus:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-500">Zum Hauptinhalt springen</a>' +
     `<main id="capital-ai-public-snapshot" lang="de"><article>` +
     hero +
-    `${focus}${editorial}${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
+    `${focus}${growth}${editorial}${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
     '</article></main>';
   return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);
 }
@@ -461,6 +463,8 @@ export function createApp(root = defaultRoot, options = {}) {
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const growthEngineReadback = createGrowthEngineReadback({ authorized: renderOwnerDashboard.authorized });
+  const growthConversionReadback = createGrowthConversionReadback({ env: options.env || process.env, authorized: renderOwnerDashboard.authorized, readCandidates: options.growthConversionCandidateRead });
+  const growthGscReadback = createGrowthGscReadback({ authorized: renderOwnerDashboard.authorized, env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const growthEvidenceApi = createGrowthEvidenceApi({ env: options.env || process.env, auth, authorized: renderOwnerDashboard.authorized });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
@@ -573,6 +577,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await growthEngineReadback.handle(req, res, url, json)) return;
+  if (await growthConversionReadback.handle(req, res, url, json)) return;
+  if (await growthGscReadback.handle(req, res, url, json)) return;
   if (await growthEvidenceApi.handle(req, res, url, json)) return;
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;

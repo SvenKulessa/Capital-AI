@@ -17,6 +17,7 @@ export interface TokenRefreshResult {
 }
 
 export async function refreshXAccessToken(): Promise<TokenRefreshResult> {
+  if (process.env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true') throw new Error('X_GROWTH_UNBUDGETED_LANE_DISABLED');
   if (process.env.X_DRAFT_API_ENABLED !== 'true') {
     throw new Error('X_DRAFT_API_DISABLED: token refresh is disabled by default.');
   }

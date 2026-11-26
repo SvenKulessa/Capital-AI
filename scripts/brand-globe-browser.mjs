@@ -82,20 +82,23 @@ try {
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
-    assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy button')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
+    assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy a')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
+    assert.equal(await evaluate("document.querySelectorAll('h1').length"), 1, 'Homepage must have one H1');
+    assert.equal(await evaluate("document.querySelectorAll('#public-entry-title + div article').length"), 3, 'Expected three public intent cards');
     const learningCta = await evaluate(`(() => {
       const action = document.getElementById('hero-open-learning-link');
       const bounds = action.getBoundingClientRect();
       const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
       return { href: action.getAttribute('href'), top: bounds.top, bottom: bounds.bottom,
         height: bounds.height, clickable: action.contains(hit), obstruction: hit?.id || hit?.tagName || null,
-        primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-explore-product-btn')).backgroundColor };
+        primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-start-analysis-btn')).backgroundColor };
     })()`);
     report.checks.push({ viewport, learningCta });
     assert.equal(learningCta.href, '/learning');
     assert.equal(learningCta.primary, true, 'Learning Hub must be the emphasized action');
     assert.ok(learningCta.top >= 0 && learningCta.bottom <= viewport.height, 'Learning CTA below the initial viewport');
     assert.ok(learningCta.height >= 44 && learningCta.clickable, 'Learning CTA target is too small or obstructed');
+    assert.equal(await evaluate(`[...document.querySelectorAll('.hero-copy a')].some(a => a.getAttribute('href') === '/marketscreener/scorer')`), true, 'Methodology link missing');
     await evaluate("document.querySelector('.capital-ai-hero').scrollIntoView()");
     const layout = await evaluate(`(() => {
       const logo=document.querySelector('.hero-brand-logo'), copy=document.querySelector('.hero-copy'), globe=document.querySelector('.hero-globe-background');
@@ -195,6 +198,44 @@ try {
     await until(() => evaluate("!document.querySelector('.hero-globe-pause')"), 'FALLBACK_HAS_NO_PLAYBACK_CONTROL');
     await until(() => evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity === '1'"), 'FALLBACK_POSTER_FULLY_VISIBLE');
     report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', keyboardPauseResume: 'PASS', contextLossFallback: 'PASS' });
+    // Actual article scene, existing anonymous browser QA; no external sources.
+    await evaluate(`document.querySelector('[data-article-scene="portfolio"] button').click()`);
+    await until(() => evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState === '3d'`), 'ARTICLE_WEBGL_READY');
+    await evaluate(`document.querySelector('[data-article-scene="portfolio"] canvas').scrollIntoView({block:'center',behavior:'instant'})`);
+    const articleClip=await evaluate(`(() => {const r=document.querySelector('[data-article-scene="portfolio"] canvas').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1};})()`);
+    assert.ok(articleClip.width>0 && articleClip.height>0 && articleClip.y>=0 && articleClip.y+articleClip.height<=viewport.height);
+    // CDP clipping uses document coordinates, not viewport-relative coordinates.
+    const articleDocumentClip=await evaluate(`(() => {const r=document.querySelector('[data-article-scene="portfolio"] canvas').getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1};})()`);
+    const articleShot=async(name)=>{const image=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:articleDocumentClip});const bytes=Buffer.from(image.data,'base64');if(name)await writeFile(join(output,name+'.png'),bytes);return createHash('sha256').update(bytes).digest('hex');};
+    const articleBefore=await articleShot('article-3d-'+viewport.width);
+    const modelBefore=await evaluate(`document.querySelector('[data-article-scene="portfolio"] [aria-live]').textContent`);
+    await evaluate(`document.querySelector('[data-article-scene="portfolio"] input[type="range"]').focus({preventScroll:true})`);
+    await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+    await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+    await until(async()=>await evaluate(`document.querySelector('[data-article-scene="portfolio"] [aria-live]').textContent`)!==modelBefore,'ARTICLE_MODEL_CHANGE');
+    await until(async()=>await articleShot(null)!==articleBefore,'ARTICLE_3D_GEOMETRY_CHANGE');
+    const articleLost=await evaluate(`(() => {const ext=document.querySelector('[data-article-scene="portfolio"] canvas').getContext('webgl2')?.getExtension('WEBGL_lose_context');if(!ext)return false;ext.loseContext();return true;})()`);
+    assert.equal(articleLost,true,'Article context-loss test unavailable');
+    await until(()=>evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState==='fallback'`),'ARTICLE_CONTEXT_LOSS');
+    assert.match(await evaluate(`document.querySelector('[data-article-scene="portfolio"]').textContent`),/Textmodell bleibt nutzbar/);
+    report.checks.push({viewport,article3d:'SOFTWARE_WEBGL_PASS',keyboardScenario:'PASS',articleFallback:'PASS'});
+    const growth=await evaluate(`(() => {const el=document.getElementById('growth-intelligence');const pipe=el.querySelector('[data-growth-pipeline]');return {label:!!el.querySelector('[data-growth-engine-label]'),steps:pipe.querySelectorAll('button').length,badges:pipe.querySelectorAll('[data-growth-pipeline-badge]').length,orbitBadges:el.querySelector('[data-growth-globe-core]').querySelectorAll('button').length,original:el.querySelector('[data-growth-globe-core] img').getAttribute('src'),buttons:[...pipe.querySelectorAll('button')].every(b=>b.getBoundingClientRect().height>=44),overflow:el.scrollWidth>el.clientWidth+2,canvas:!!el.querySelector('canvas')};})()`);
+    assert.equal(growth.label,true);assert.equal(growth.steps,7);assert.equal(growth.badges,7);assert.equal(growth.orbitBadges,0);assert.equal(growth.original,'/branding/universe/hero-universe-globe.webp');assert.equal(growth.buttons,true);assert.equal(growth.overflow,false);assert.equal(growth.canvas,false);
+    await evaluate(`document.querySelectorAll('#growth-intelligence [data-growth-pipeline] button')[3].click()`);
+    await until(()=>evaluate(`document.getElementById('growth-stage-title').textContent.includes('Content & 3D')`),'GROWTH_PIPELINE_SELECTION');
+    assert.equal(await evaluate(`document.querySelectorAll('#growth-intelligence [data-growth-pipeline] button[aria-pressed="true"]').length`),1);
+    await evaluate(`document.querySelector('#growth-intelligence').scrollIntoView({block:'start',behavior:'instant'})`);
+    await shot('growth-article-'+viewport.width);
+    await evaluate(`(() => {const el=document.getElementById('growth-intelligence');el.querySelector('[data-growth-globe-core]').scrollIntoView({block:'center',behavior:'instant'});[...el.querySelectorAll('button')].find(b=>b.textContent==='3D-Globus starten').click();})()`);
+    await until(()=>evaluate(`document.querySelector('[data-growth-globe-core] .brand-globe-art')?.dataset.globeState==='3d'`),'GROWTH_ORIGINAL_WEBGL_READY');
+    assert.equal(await evaluate(`document.querySelector('[data-growth-globe-core] .brand-globe-poster').getAttribute('src')`),'/branding/universe/hero-universe-globe.webp');
+    await evaluate(`[...document.querySelectorAll('#growth-intelligence button')].find(b=>b.textContent==='Globus pausieren').click()`);
+    await until(()=>evaluate(`[...document.querySelectorAll('#growth-intelligence button')].some(b=>b.textContent==='Globus fortsetzen'&&b.getAttribute('aria-pressed')==='true')`),'GROWTH_GLOBE_PAUSE');
+    await evaluate(`[...document.querySelectorAll('#growth-intelligence button')].find(b=>b.textContent==='Globus schließen').click()`);
+    await until(()=>evaluate(`!document.querySelector('[data-growth-globe-core] canvas')`),'GROWTH_GLOBE_CLOSE');
+    report.checks.push({viewport,growthGlobe:'ORIGINAL_COMPONENT_SOFTWARE_WEBGL',growthGlobePause:'PASS',pipelineBadges:7});
+    report.checks.push({viewport,growthArticle:'PRESENT',pipeline:'INTERACTION_PASS',touchTargets:'PASS',initialWebgl:'OPT_IN'});
+
   }
   await navigate();
   await evaluate("document.getElementById('hero-open-learning-link').focus()");

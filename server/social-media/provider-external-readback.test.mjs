@@ -124,3 +124,12 @@ test('Meta configuration and unavailable responses fail closed', async () => {
     }).instagram(args), pattern);
   }
 });
+
+test('growth pilot denies unbudgeted generic X readback',async()=>{
+  let calls=0;
+  const transport=createXReadbackTransport({env:{SOCIAL_PROVIDER_READBACK_ENABLED:'true',
+    SOCIAL_X_PAID_READBACK_APPROVED:'true',SOCIAL_X_GROWTH_PILOT_ENABLED:'true'},
+    fetchImpl:async()=>{calls++;throw Error('unexpected')}});
+  await assert.rejects(transport.lookup({...base,token:'MOCK_TOKEN'}),/X_GROWTH_UNBUDGETED_LANE_DISABLED/);
+  assert.equal(calls,0);
+});

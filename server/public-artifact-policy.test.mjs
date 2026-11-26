@@ -21,10 +21,12 @@ test('commercial Blueprint static downloads are fail-closed', () => {
 test('public homepage excludes the internal content-engine status panel while preserving the product entry points', () => {
   const source = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /ContentEngineConcept|SocialContentEngineStatus/);
-  assert.match(source, /<Hero onExploreProduct=/);
+  assert.match(source, /<Hero\s*\/>/);
+  assert.match(source, /onClick=\{onStartProductTour\}/);
+  const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
   assert.match(source, /<HomeHubDirectory/);
   assert.match(source, /<HomeEditorialNews/);
-  assert.match(source, /keine verifizierten Live-Kurse/);
+  assert.match(directory, /keine verifizierten Live-Kurse/);
 });
 
 test('classification is explicit and defaults to deny', () => {

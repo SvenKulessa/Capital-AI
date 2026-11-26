@@ -24,10 +24,10 @@ function response(){
     end(text){this.value=text;} };
 }
 function json(res,status,value) { res.status=status;res.value=value; }
-function fixture({owner=true, paidRead=true, crossOrigin=false, provider=POST}={}) {
+function fixture({owner=true, paidRead=true, crossOrigin=false, provider=POST, pilot=false}={}) {
   const seen={ calls:[],credentials:0 };
   const handler=createXUrlContext({
-    env: {SOCIAL_X_EDGE_STORE_ENABLED:'true', SOCIAL_X_PAID_READ_APPROVED:paidRead?'true':'false'},
+    env: {SOCIAL_X_GROWTH_PILOT_ENABLED:pilot?'true':'false',SOCIAL_X_EDGE_STORE_ENABLED:'true', SOCIAL_X_PAID_READ_APPROVED:paidRead?'true':'false'},
     auth: {sameOrigin:()=>!crossOrigin,verify:async()=>owner?
       {userId:'owner-uuid',emailVerified:true}:null,
       authorizeIamRole:async()=>owner,internalAccessToken:async()=> 'signed-private-jwt'},
@@ -124,4 +124,13 @@ test('invalid sources and spoofed provider responses fail without external mutat
   assert.equal(res.status,503);
   assert.equal(res.value.error,'x_url_context_unavailable');
   assert.equal(res.value.externalWrites,0);
+});
+
+test('growth pilot denies unbudgeted URL context before resolving credentials',async()=>{
+  const f=fixture({pilot:true}),r=response();
+  await f.handler.handle(req(),r,new globalThis.URL(PAGE),json);
+  assert.equal(r.status,403);
+  assert.equal(r.value.error,'x_growth_unbudgeted_lane_disabled');
+  assert.equal(f.seen.credentials,0);
+  assert.deepEqual(f.seen.calls,[]);
 });

@@ -20,6 +20,8 @@ os.environ["LANGCHAIN_TRACING_V2"] = "false"
 class GrowthState(TypedDict, total=False):
     repo_root: str
     google_reads: bool
+    tool_radar: dict
+    acopy_summary: dict
     findings: Annotated[list[dict], operator.add]
     plan: dict
 
@@ -109,14 +111,53 @@ def google_agent(state: GrowthState) -> dict:
     return {"findings": findings}
 
 
+def review_tool_radar(payload: object) -> dict:
+    # Untrusted metadata is a research queue, not a tool execution contract.
+    denied = {"state": "NOT_PROVEN", "candidates": [], "automaticInstall": False}
+    if not isinstance(payload, dict) or payload.get("schema") != "CAPITAL_AI_GROWTH_TOOL_RADAR@1":
+        return denied
+    if (payload.get("metadataOnly") is not True or payload.get("automaticInstall") is not False
+            or payload.get("publicPublishAllowed") is not False
+            or type(payload.get("paidProviderCalls")) is not int or payload["paidProviderCalls"] != 0):
+        return denied
+    candidates = payload.get("candidates")
+    if not isinstance(candidates, list) or len(candidates) > 40:
+        return denied
+    allowed = {"MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "MPL-2.0"}
+    result, seen = [], set()
+    for row in candidates:
+        if not isinstance(row, dict):
+            return denied
+        name = row.get("repository")
+        if (not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", name)
+                or len(name) > 200 or name.lower() in seen
+                or row.get("installAllowed") is not False or row.get("activationAllowed") is not False
+                or row.get("commercialRights") != "NOT_PROVEN" or row.get("outputRights") != "NOT_PROVEN"):
+            return denied
+        seen.add(name.lower())
+        license_id = row.get("declaredLicense")
+        if isinstance(license_id, str) and license_id in allowed and row.get("commercialCandidate") is True and row.get("state") == "REVIEW_REQUIRED":
+            result.append({"repository": name, "declaredLicense": license_id, "nextAction": "EXACT_ARTIFACT_AND_RIGHTS_REVIEW"})
+    topics = payload.get("topics")
+    if not isinstance(topics, list) or not topics or not all(isinstance(t, dict) for t in topics):
+        return denied
+    if not any(t.get("status") == "METADATA_OBSERVED" for t in topics):
+        return denied
+    return {"state": "METADATA_ONLY_REVIEW_REQUIRED", "candidates": result, "automaticInstall": False}
+
+
 def marketing_agent(state: GrowthState) -> dict:
+    visual = source(state["repo_root"], "src/shared/growthVisualScenes.ts")
+    radar = source(state["repo_root"], "server/tool-update-discovery.mjs")
     return {"findings": [
+        finding("marketing", "SOURCE_OBSERVED" if visual and radar else "NOT_PROVEN", "3D draft recipes and public tool discovery source; daily evidence, commercial output rights and renderer runtime require independent review."),
         finding("marketing", "PROPOSED", "Separate B2B fintech integration/data-rights content from learner vocabulary and trader tooling; validate demand using actual GSC reports."),
         finding("marketing", "PROPOSED", "Countries DE/IT/ES/PT/GB; language rollout de-DE, en-GB, it-IT, es-ES, pt-PT. Localized previews stay noindex until complete crawlable translations."),
     ]}
 
 
 def plan_agent(state: GrowthState) -> dict:
+    from acode_failure_event import review_summary
     findings = sorted(state.get("findings", []), key=lambda item: (item["agent"], item["detail"]))
     return {"plan": {
         "schema": "CAPITAL_AI_LOCAL_GROWTH_GRAPH@1",
@@ -125,6 +166,8 @@ def plan_agent(state: GrowthState) -> dict:
         "budget": {"paidProviderCalls": 0, "adSpend": 0, "hostedTracing": False},
         "execution": {"mode": "audit-and-plan", "automaticWrites": False, "publication": False},
         "findings": findings,
+        "toolRadar": review_tool_radar(state.get("tool_radar")),
+        "acopyDiagnostics": review_summary(state.get("acopy_summary")),
         "nextActions": [
             "Verify intended Google identity and exact property/domain associations.",
             "Measure 28-day and preceding-period organic performance; unavailable values remain NOT_PROVEN.",
@@ -152,8 +195,26 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=str(Path(__file__).resolve().parents[2]))
     parser.add_argument("--google-reads", action="store_true")
+    parser.add_argument("--tool-radar", type=Path, help="Bounded local daily metadata evidence file")
+    parser.add_argument("--acopy-events", type=Path, help="Owner-local 0600 JSON observation batch; no provider calls")
     args = parser.parse_args()
-    result = build_graph().invoke({"repo_root": args.repo_root, "google_reads": args.google_reads, "findings": []}, {"recursion_limit": 8})
+    acopy_summary = None
+    if args.acopy_events:
+        from acode_failure_event import read_private_batch
+        try:
+            acopy_summary = read_private_batch(args.acopy_events)
+        except (OSError, ValueError, RecursionError):
+            acopy_summary = {"status":"BLOCKED","patterns":[],"verifiedSolutions":0,"automaticWrites":False,"providerCalls":0}
+    radar = None
+    if args.tool_radar:
+        try:
+            with args.tool_radar.open("rb") as stream:
+                raw = stream.read(262145)
+            if len(raw) <= 262144:
+                radar = json.loads(raw)
+        except (OSError, ValueError, RecursionError):
+            radar = None
+    result = build_graph().invoke({"repo_root": args.repo_root, "google_reads": args.google_reads, "findings": [], "tool_radar": radar, "acopy_summary": acopy_summary}, {"recursion_limit": 8})
     print(json.dumps(result["plan"], ensure_ascii=False, indent=2))
 
 

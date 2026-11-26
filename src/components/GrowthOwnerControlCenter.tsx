@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
-import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { InteractiveArticleScene } from '../features/home/InteractiveArticleScene';
+import { growthVisualScene } from '../shared/growthVisualScenes';
+import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -16,6 +18,8 @@ type View = 'matrix' | 'edit' | 'compare' | 'handoff';
 
 export function GrowthOwnerControlCenter() {
   const [history, setHistory] = useState(() => appendSnapshot([], initialRows(), new Date().toISOString()));
+  const [sceneIds,setSceneIds]=useState<string[]>([]);
+  const [selectedScene,setSelectedScene]=useState('');
   const [view, setView] = useState<View>('matrix');
   const [domain, setDomain] = useState('ALL');
   const [status, setStatus] = useState('ALL');
@@ -42,23 +46,33 @@ export function GrowthOwnerControlCenter() {
     try { save(applyOwnerEdit(draft)); setDraft(null); setView('matrix'); setMessage('Arbeitsstand versioniert. Keine operative Änderung.'); }
     catch { setMessage('Eingaben ungültig oder Integrationslimit erreicht.'); }
   }
-  async function readGa4() {
-    const row = rows.find(r => r.id === 'ga4');
-    if (!row || pending) return;
-    setPending(true); setMessage('');
-    try {
-      const response = await fetch('/api/profile/growth-intelligence/ga4-readback', {
-        method: 'GET', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!response.ok) throw new Error('Readback unavailable');
-      save(projectGa4(await response.json(), row));
-      setMessage('GA4-Antwort geprüft und als neue Version erfasst.');
-    } catch {
-      save({ ...row, status: 'NOT_PROVEN', origin: 'OWNER_NOTE', evidence: '', operation: 'Aktueller Readback nicht nachgewiesen',
-        error: 'Readback nicht verfügbar, nicht berechtigt oder ungültig.' });
-      setMessage('GA4 aktuell NOT_PROVEN. Vorherige Version bleibt erhalten.');
-    } finally { setPending(false); }
+  async function readAnalytics() {
+    if(pending)return;
+    setPending(true);setMessage('');
+    try{
+      const readRow=async (id:'ga4'|'gsc'|'x-campaign')=>{
+        const row=rows.find(r=>r.id===id)??makeRow(id,id==='ga4'?'GA4 Acquisition':id==='x-campaign'?'X Growth · GA4 Kampagne':'Google Search Console','GROWTH');
+        try{
+          const response=await fetch('/api/profile/growth-intelligence/'+id+'-readback',{method:'GET',credentials:'same-origin',
+            cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(25000)});
+          if(!response.ok)throw Error('Readback unavailable');
+          const raw:unknown=await response.json();
+          return id==='ga4'?projectGa4(raw,row):id==='x-campaign'?projectXCampaignGa4(raw,row):projectGsc(raw,row);
+        }catch{
+          return {...row,status:'NOT_PROVEN' as const,origin:'OWNER_NOTE' as const,evidence:'',
+            operation:'Aktueller Readback nicht nachgewiesen',error:'Readback nicht verfügbar, nicht berechtigt oder ungültig.'};
+        }
+      };
+      // Existing GA4 client has a shared in-flight lock; never query both GA4 kinds concurrently.
+      const updates=await Promise.all([readRow('ga4'),readRow('gsc')]);
+      updates.push(await readRow('x-campaign'));
+      const byId=new Map(updates.map(r=>[r.id,r]));
+      const next=rows.map(r=>byId.get(r.id)??r);
+      for(const r of updates)if(!rows.some(existing=>existing.id===r.id))next.push(r);
+      setHistory(appendSnapshot(history,next,new Date().toISOString()));
+      setMessage('GA4, X-Kampagne und GSC getrennt erfasst. Fehlende Readbacks bleiben NOT_PROVEN; vorherige Version erhalten.');
+    }catch{setMessage('Analytics-Arbeitsstand nicht übernommen; Historie unverändert.');}
+    finally{setPending(false);}
   }
   async function archiveRequest(mode: 'list' | 'save' | 'load' | 'restore', id?: string, file?: File) {
     if (pending) return;
@@ -114,6 +128,10 @@ export function GrowthOwnerControlCenter() {
         m?.state!=='SOURCE_SNAPSHOT_ONLY'||typeof m.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(m.date)||!count(m.homepage,3)||!count(m.overview,3)||!count(m.archive,10000)||!digest(m.editionSha256)||!digest(m.indexSha256)||
         c?.state!=='DRAFT_ONLY'||!count(c.drafts,100)||!digest(c.sourceSha256)||!digest(c.bundleSha256)||
         g?.state!=='SOURCE_ONLY_RUNTIME_NOT_PROVEN'||!digest(g.sourceSha256))throw new Error('Invalid engine snapshot');
+      const p=data.productChannels;
+      if(p!==undefined&&(p?.state!=='DRAFT_ONLY'||!count(p.products,133)||!count(p.mapped,133)||!count(p.researchQueue,133)||p.mapped+p.researchQueue!==p.products||!digest(p.sourceSha256)||p.liveMetrics!==null))throw new Error('Invalid product channel snapshot');
+      const visual=data.visualIntelligence;
+      if(visual!==undefined&&(visual.state!=='DRAFT_ONLY'||visual.actualMediaAssets!==0||visual.publicPublishAllowed!==false||visual.toolRadar!=='SCHEDULED_SOURCE_ONLY'||!Array.isArray(visual.sceneIds)||visual.sceneIds.length>100||new Set(visual.sceneIds).size!==visual.sceneIds.length||visual.sceneIds.some((id:unknown)=>typeof id!=='string'||!growthVisualScene(id))))throw Error('Invalid visual snapshot');
       const updates:GrowthRow[]=[
         {...makeRow('marketnews','Marktnews-Pipeline','MARKET','Live-Scheduler und Rechte-Evidence separat prüfen'),operation:'Build-Snapshot '+m.date,
           evidence:'Homepage '+m.homepage+' / Überblick '+m.overview+' / Archiv '+m.archive+'; Edition SHA-256 '+m.editionSha256+'; Index '+m.indexSha256},
@@ -122,6 +140,7 @@ export function GrowthOwnerControlCenter() {
         {...makeRow('langgraph','LangGraph SOLO2','PLATFORM','Laufzeit-Checkpoint und Graph-Evidence separat prüfen'),operation:'Graph-Quelle vorhanden · Runtime NOT_PROVEN',
           evidence:'SOLO2 Graph-Quellcode SHA-256 '+g.sourceSha256}
       ];
+      if(p!==undefined)updates.push({...makeRow('product-channel-intelligence','Product-to-Market Intelligence','GROWTH','Unmapped products und autorisierte Research-Adapter prüfen'),operation:'DRAFT_ONLY · '+p.products+' Produktkandidaten',evidence:p.mapped+' mit Kanalprofil / '+p.researchQueue+' Recherche offen; Register SHA-256 '+p.sourceSha256+'; Live-Metriken NOT_PROVEN'});
       const byId=new Map(updates.map(x=>[x.id,x]));
       const next=rows.map(row=>{
         const update=byId.get(row.id);if(!update)return row;byId.delete(row.id);
@@ -130,6 +149,7 @@ export function GrowthOwnerControlCenter() {
       for(const row of byId.values())next.push(row);
       const nextHistory=appendSnapshot(history,next,new Date().toISOString());
       setHistory(nextHistory);setView('handoff');
+      setSceneIds(visual?.sceneIds??[]);setSelectedScene(visual?.sceneIds?.[0]??'');
       setMessage('Build-Artefakte gelesen. Keine laufende Engine, Live-Publikation oder Graph-Ausführung nachgewiesen.');
     }catch{setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
     finally{setPending(false);}
@@ -173,6 +193,12 @@ export function GrowthOwnerControlCenter() {
       <p className="mt-2 text-sm text-slate-300">SOLO2 · Arbeitsstand v{current.version} · {new Date(current.at).toLocaleString('de-DE')}</p>
       <p className="mt-2 text-xs text-slate-400">Arbeitsstand in der aktuellen Sitzung; JSON-Export und freigegebenes verschlüsseltes Owner-Archiv zur Wiederverwendung. Bis zu 30 Versionen (4 MB Historie). Keine Tokens, Kundendaten oder Secrets eingeben. Dokumentierte Freigaben erteilen keine Berechtigungen.</p>
     </header>
+    {sceneIds.length>0&&<section className="rounded-xl border border-cyan-300/30 p-3" aria-label="Growth 3D Content Studio">
+      <h3 className="font-semibold text-cyan-200">Growth 3D Content Studio</h3>
+      <p className="mt-1 text-xs text-slate-300">{sceneIds.length} geplante Szenen · DRAFT_ONLY · keine exportierten Medien oder Publikationsfreigaben. Tool-Radar: täglicher Watch vorgesehen, Laufzeit nicht nachgewiesen.</p>
+      <label className="mt-3 block text-sm">Content-Szene<select className={control} value={selectedScene} onChange={e=>setSelectedScene(e.target.value)}>{sceneIds.map(id=><option key={id} value={id}>{id}</option>)}</select></label>
+      {growthVisualScene(selectedScene)&&<InteractiveArticleScene key={selectedScene} newsScene={growthVisualScene(selectedScene)!} draftPreview/>}
+    </section>}
     <div className="grid grid-cols-3 gap-2" aria-label="Evidence-Matrix">
       {statuses.map(s => <button key={s} type="button" onClick={() => { setStatus(s); setView('matrix'); }} className="min-h-16 rounded-xl border border-white/10 bg-white/5 p-2">
         <span className={'block text-xl font-bold ' + colors[s]}>{rows.filter(r => r.status === s).length}</span><span className="block break-words text-[10px] sm:text-xs">{s}</span>
@@ -184,7 +210,7 @@ export function GrowthOwnerControlCenter() {
           onClick={() => { setView(key); if (key === 'edit' && !draft) setDraft(rows[0] ?? makeRow('new', 'Neue Integration', 'GROWTH')); }}>{label}</button>)}
     </nav>
     <div className="flex flex-wrap gap-2">
-      <button type="button" className={button} disabled={pending || !rows.some(r => r.id === 'ga4')} onClick={() => void readGa4()}> GA4 Read-only prüfen</button>
+      <button type="button" className={button} disabled={pending} onClick={() => void readAnalytics()}>GA4, X-Kampagne und GSC Read-only prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
       <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>
@@ -219,7 +245,7 @@ export function GrowthOwnerControlCenter() {
       <button type="button" disabled={pending || rows.length >= 100} className={button} onClick={() => { setDraft(makeRow('integration-' + crypto.randomUUID(), 'Neue Integration', 'GROWTH')); setView('edit'); }}>Integration hinzufügen</button>
       <div className="grid gap-2 sm:grid-cols-2">{filtered.map(r => <article key={r.id} className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-3">
         <p className="text-xs text-slate-400">{r.domain} · {r.priority}</p><h3 className="font-bold break-words">{r.name}</h3>
-        <p className={'text-xs font-semibold ' + colors[r.status]}>{r.status} · {r.origin === 'GA4_READBACK' ? 'GA4 Readback' : 'Dokumentation'}</p>
+        <p className={'text-xs font-semibold ' + colors[r.status]}>{r.status} · {r.origin === 'GA4_READBACK' ? 'GA4 Readback' : r.origin === 'GSC_READBACK' ? 'GSC Readback' : 'Dokumentation'}</p>
         <p className="break-words text-xs text-slate-300">{r.next || 'Nächster Schritt offen'}</p>
         {r.evidence && <p className="break-words text-xs text-slate-400">{r.evidence}</p>}
         <button type="button" disabled={pending} className={button} onClick={() => { setDraft({...r}); setView('edit'); }}>Details bearbeiten</button>
@@ -258,9 +284,9 @@ export function GrowthOwnerControlCenter() {
         }
       }}>Public-Surface-Audit ergänzen</button>
       <p className="text-xs text-slate-400">Audit-Aufgaben können als lokale Offline-Recherchedatei exportiert werden. Kein Worker-Start und keine Freigabe.</p>
-      {rows.filter(r => r.id.startsWith('audit-')).map(r => <button key={r.id} type="button" className={button} disabled={pending} onClick={() => {
+      {rows.filter(r => r.id.startsWith('audit-') || r.id === 'cai664-billing').map(r => <button key={r.id} type="button" className={button} disabled={pending} onClick={() => {
         try {
-          const task = publicSurfaceResearchTask(r.id);
+          const task = r.id === 'cai664-billing' ? billingRecoveryResearchTask() : publicSurfaceResearchTask(r.id);
           const url = URL.createObjectURL(new Blob([JSON.stringify(task,null,2)], {type:'application/json'}));
           const link = document.createElement('a'); link.href = url; link.download = r.id + '.json'; link.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
