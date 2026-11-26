@@ -130,6 +130,47 @@ export function growthImagePreviewHtml(drafts) {
     '</main></body></html>\n';
 }
 
+// Reuse the same first-party Resvg drafts, never a second content generator.
+export async function writeGrowthVisualDrafts() {
+  const {exportVisualDraft,loadPinnedSharp}=await import('./visual-export.mjs');
+  const {importMediaKitV5Draft,MEDIAKIT_V5_ID}=await import('../../src/platform/SocialMediaEngine/Editing/MediaKitV5Import.ts');
+  const sharp=loadPinnedSharp();
+  const bundle=await buildGrowthImageDrafts();
+  const output=OUTPUT+'-visual-v1';
+  const prepared=[];
+  for(const draft of bundle.drafts){
+    const result=await exportVisualDraft(draft,sharp);
+    const base=draft.assetPath.split('/').at(-1).replace(/\.png$/,'');
+    const variants=[
+      {ext:'svg',bytes:draft.svg,sha256:draft.svgSha256,mimeType:'image/svg+xml'},
+      {ext:'png',bytes:draft.png,sha256:draft.pngSha256,mimeType:'image/png'},
+      {ext:'jpg',bytes:result.jpeg.bytes,sha256:result.jpeg.sha256,mimeType:'image/jpeg'},
+      ...(result.webp?[{ext:'webp',bytes:result.webp.bytes,sha256:result.webp.sha256,mimeType:'image/webp'}]:[]),
+    ];
+    const assets=variants.map(v=>({assetId:draft.contentId+'-visual-'+v.ext,kind:'IMAGE',reference:output+'/'+base+'.'+v.ext,sha256:v.sha256,mimeType:v.mimeType,
+      provenance:{origin:'GENERATED',sourceRef:SOURCE,evidenceRef:'docs/licenses/SOCIAL-PIPELINE-RENDERER.md'},sourceRights:{status:'NOT_PROVEN'},mediaRights:{status:'NOT_PROVEN'},reviewStatus:'REVIEW_REQUIRED'}));
+    const manifest={kitId:MEDIAKIT_V5_ID,manifestRef:output+'/'+base+'-mediakit.json',contentId:draft.contentId,title:'Growth Visual Draft '+draft.contentId,slug:draft.contentId.toLowerCase(),assets};
+    const kit=importMediaKitV5Draft(manifest);
+    if(kit.publicPublishAllowed||kit.approvals.length||kit.deliveries.length)throw Error('VISUAL_MEDIAKIT_AUTHORITY_DENIED');
+    prepared.push({base,variants,manifest,evidence:{...result.evidence,contentId:draft.contentId,altText:draft.altText,sourceDigest:bundle.sourceDigest,originalGraphic:draft.originalGraphic,rights:'REVIEW_REQUIRED',mediaKitReview:kit.reviewStatus,manifestSha256:sha256(JSON.stringify(manifest)),assets:assets.map((a,i)=>({...a,byteLength:Buffer.byteLength(variants[i].bytes)}))}});
+  }
+  // Create-only, on-demand; no publishing or live archive writes. No partial report on failure.
+  const dir=resolve(output);
+  await mkdir(dir,{mode:0o700});
+  for(const p of prepared){
+    for(const v of p.variants)await writeFile(resolve(dir,p.base+'.'+v.ext),v.bytes,{flag:'wx',mode:0o600});
+    await writeFile(resolve(dir,p.base+'-mediakit.json'),JSON.stringify(p.manifest,null,2)+'\n',{flag:'wx',mode:0o600});
+  }
+  const report={schema:'CAPITAL_AI_GROWTH_VISUAL_RUN@1',scope:'LOCAL_ON_DEMAND',state:'DRAFT_ONLY',publicPublishAllowed:false,sourceDigest:bundle.sourceDigest,assetCount:prepared.reduce((n,p)=>n+p.variants.length,0),providerCalls:0,providerCost:0,manualTimeSavedMs:null,productionMetrics:'NOT_PROVEN',drafts:prepared.map(p=>p.evidence)};
+  await writeFile(resolve(dir,'visual-evidence.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
+  const preview=growthImagePreviewHtml(bundle.drafts).replace(/<img src="([^"]+)\.png"([^>]+)>/g,(tag,name,attrs)=>{
+    const p=prepared.find(x=>x.base===name);
+    return p?.evidence.selected.mimeType==='image/webp'?'<picture><source type="image/webp" srcset="'+name+'.webp"><img src="'+name+'.png"'+attrs+'></picture>':tag;
+  });
+  await writeFile(resolve(dir,'preview.html'),preview,{flag:'wx',mode:0o600});
+  return {output,...report};
+}
+
 export async function writeGrowthImageDrafts() {
   const bundle = await buildGrowthImageDrafts();
   const dir = resolve(OUTPUT);
@@ -145,9 +186,13 @@ export async function writeGrowthImageDrafts() {
   return report;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  if (process.argv.length===3 && process.argv[2]==='--write-visual') {
+    process.stdout.write(JSON.stringify(await writeGrowthVisualDrafts())+'\n');
+  } else {
   if (process.argv.length !== 3 || process.argv[2] !== '--write') throw Error('GROWTH_IMAGE_ON_DEMAND_ONLY');
   const result = await writeGrowthImageDrafts();
   process.stdout.write(JSON.stringify({ output: OUTPUT,
     images: result.drafts.map(d => ({ id: d.contentId, channel: d.channel, sha256: d.pngSha256 })),
     publicationState: 'DRAFT_ONLY', providerCalls: 0 }) + '\n');
+  }
 }
