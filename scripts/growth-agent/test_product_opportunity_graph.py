@@ -397,5 +397,46 @@ class SmartcopyConversionReviewTests(unittest.TestCase):
         self.assertEqual(compiled.invoke({"payload": p, "findings": []}, {"recursion_limit": 8})["report"]["quality"], "BLOCKED")
 
 
+class VisualReviewTests(unittest.TestCase):
+    def fixture(self):
+        drafts = []
+        for content, channel, w, h in (("CAP-GROW-005", "X", 1440, 960), ("CAP-GROW-007", "INSTAGRAM", 1080, 1350)):
+            drafts.append(dict(contentId=content, channel=channel, width=w, height=h,
+                sourceSha256="a"*64, manifestSha256="b"*64, elapsedMs=25, repairCycles=0,
+                selectedSha256="c"*64, assets=[
+                    dict(sha256="a"*64, mimeType="image/png", byteLength=500),
+                    dict(sha256="b"*64, mimeType="image/svg+xml", byteLength=600),
+                    dict(sha256="d"*64, mimeType="image/jpeg", byteLength=200),
+                    dict(sha256="c"*64, mimeType="image/webp", byteLength=100)]))
+        return dict(contractVersion="CAPITAL_AI_VISUAL_GRAPH_INPUT@1",
+            sourceDigest="d08aa8e7f831dea7cb15010f46374f8fbdecaee1408619af1a4fb857460c1234",
+            state="DRAFT_ONLY", publicPublishAllowed=False, providerCalls=0, providerCost=0,
+            manualTimeSavedMs=None, drafts=drafts)
+
+    def test_receipt_bounds_and_authority(self):
+        p = self.fixture()
+        self.assertEqual(graph.visual_source_review({"payload":p})["metrics"],
+            dict(assetCount=8,inputBytes=1000,selectedBytes=200,elapsedMs=50,repairCycles=0))
+        for change in ({"publicPublishAllowed": True}, {"providerCost":1}, {"manualTimeSavedMs":100}, {"sourceDigest":"a"*64}):
+            self.assertFalse(graph.visual_source_review({"payload":{**p,**change}})["visual_valid"])
+        for change in ({"selectedSha256":"0"*64},{"channel":"WEBSITE"},{"width":1080},{"elapsedMs":True}):
+            p = self.fixture()
+            p["drafts"][0].update(change)
+            self.assertFalse(graph.visual_source_review({"payload":p})["visual_valid"])
+
+    def test_actual_graph_join_keeps_metrics_unverified(self):
+        compiled=graph.build_visual_read_graph()
+        report=compiled.invoke({"payload":self.fixture(),"findings":[]},{"recursion_limit":8})["report"]
+        self.assertEqual(report["quality"],"PASS_WITH_GAPS")
+        self.assertEqual(report["sourceAuthentication"],"NOT_PROVEN_BY_GRAPH")
+        self.assertFalse(report["publicationAllowed"])
+        self.assertIsNone(report["manualTimeSavedMs"])
+        p=self.fixture()
+        p["drafts"][0]["assets"][3]["byteLength"]=501
+        blocked=compiled.invoke({"payload":p,"findings":[]},{"recursion_limit":8})["report"]
+        self.assertEqual(blocked["quality"],"BLOCKED")
+        self.assertIsNone(blocked["metrics"])
+
+
 if __name__ == "__main__":
     unittest.main()
