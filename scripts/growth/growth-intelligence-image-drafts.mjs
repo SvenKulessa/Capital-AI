@@ -152,14 +152,15 @@ export async function writeGrowthVisualDrafts() {
     const manifest={kitId:MEDIAKIT_V5_ID,manifestRef:output+'/'+base+'-mediakit.json',contentId:draft.contentId,title:'Growth Visual Draft '+draft.contentId,slug:draft.contentId.toLowerCase(),assets};
     const kit=importMediaKitV5Draft(manifest);
     if(kit.publicPublishAllowed||kit.approvals.length||kit.deliveries.length)throw Error('VISUAL_MEDIAKIT_AUTHORITY_DENIED');
-    prepared.push({base,variants,manifest,evidence:{...result.evidence,contentId:draft.contentId,altText:draft.altText,sourceDigest:bundle.sourceDigest,originalGraphic:draft.originalGraphic,rights:'REVIEW_REQUIRED',mediaKitReview:kit.reviewStatus,manifestSha256:sha256(JSON.stringify(manifest)),assets:assets.map((a,i)=>({...a,byteLength:Buffer.byteLength(variants[i].bytes)}))}});
+    const manifestBytes=JSON.stringify(manifest,null,2)+'\n';
+    prepared.push({base,variants,manifestBytes,evidence:{...result.evidence,contentId:draft.contentId,altText:draft.altText,sourceDigest:bundle.sourceDigest,originalGraphic:draft.originalGraphic,rights:'REVIEW_REQUIRED',mediaKitReview:kit.reviewStatus,manifestSha256:sha256(manifestBytes),assets:assets.map((a,i)=>({...a,byteLength:Buffer.byteLength(variants[i].bytes)}))}});
   }
   // Create-only, on-demand; no publishing or live archive writes. No partial report on failure.
   const dir=resolve(output);
   await mkdir(dir,{mode:0o700});
   for(const p of prepared){
     for(const v of p.variants)await writeFile(resolve(dir,p.base+'.'+v.ext),v.bytes,{flag:'wx',mode:0o600});
-    await writeFile(resolve(dir,p.base+'-mediakit.json'),JSON.stringify(p.manifest,null,2)+'\n',{flag:'wx',mode:0o600});
+    await writeFile(resolve(dir,p.base+'-mediakit.json'),p.manifestBytes,{flag:'wx',mode:0o600});
   }
   const report={schema:'CAPITAL_AI_GROWTH_VISUAL_RUN@1',scope:'LOCAL_ON_DEMAND',state:'DRAFT_ONLY',publicPublishAllowed:false,sourceDigest:bundle.sourceDigest,assetCount:prepared.reduce((n,p)=>n+p.variants.length,0),providerCalls:0,providerCost:0,manualTimeSavedMs:null,productionMetrics:'NOT_PROVEN',drafts:prepared.map(p=>p.evidence)};
   await writeFile(resolve(dir,'visual-evidence.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
