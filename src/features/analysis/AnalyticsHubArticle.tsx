@@ -63,6 +63,35 @@ const technicalReports = [
   }
 ] as const;
 
+
+// Imported numerical examples from owner-supplied analytics-main.zip,
+// src/data/analyticsData.ts MODULES_DE (CC BY 4.0, CAPITAL-AI).
+// These are static design fixtures, not actual operational measurements.
+const examples = [
+  {title:'Quellen-Abdeckung',score:97,label:'Verfügbar',volume:'318 Feeds',series:[298,302,305,308,311,315,318],metric:'Aktive Datenstreams',checks:[['Synchronisiert','312','98,1 %'],['Verzögert (>2s)','5','1,6 %'],['Offline / Failover','1','0,3 %']]},
+  {title:'Datenqualitäts-Score',score:94,label:'Qualität',volume:'142,8 Mio.',series:[112.4,118.9,115.2,124.8,129.6,135.4,142.8],metric:'Datenvolumen',checks:[['Erfolgreich','1.248.320','98,6 %'],['Auffälligkeiten','16.480','1,3 %'],['Fehler','1.260','0,1 %']]},
+  {title:'Modell-Kalibrierung',score:88,label:'Konfidenz',volume:'8.420 Titel',series:[7940,8050,8120,8210,8290,8360,8420],metric:'Bewertete Titel',checks:[['Vollständig berechnet','8.314','98,7 %'],['Eingeschränkte Historie','92','1,1 %'],['Gesperrt (Qualität <80%)','14','0,2 %']]},
+  {title:'Risiko-Modellgüte',score:92,label:'Kalibriert',volume:'24,6 Mio.',series:[19.2,20.1,21.4,22,22.9,23.7,24.6],metric:'Simulierte Szenarien',checks:[['Im Zielkorridor','7.910','93,9 %'],['Erhöhte Volatilität','442','5,3 %'],['Limit-Überschreitung','68','0,8 %']]},
+  {title:'Evidenz-Integrität',score:91,label:'Belegt',volume:'18.940',series:[17100,17420,17880,18150,18440,18710,18940],metric:'Geprüfte Hypothesen',checks:[['Bestätigt (A/A+)','15.890','83,9 %'],['In Überprüfung','2.540','13,4 %'],['Widerlegt / Abgelaufen','510','2,7 %']]},
+  {title:'Signal-Relevanz',score:89,label:'Präzision',volume:'412 Tsd.',series:[345,360,352,378,391,403,412],metric:'Verarbeitete Meldungen',checks:[['Relevant & verifiziert','14.210','71,4 %'],['Duplikate gefiltert','5.190','26,1 %'],['Unbestätigt / Verworfen','495','2,5 %']]},
+  {title:'Lernpfad-Reifegrad',score:86,label:'Praxisbezug',volume:'38.400',series:[29.5,31,32.4,34.1,35.8,37.2,38.4],metric:'Abgeschlossene Lektionen',checks:[['Bestanden (>80%)','1.840','87,6 %'],['Wiederholung empfohlen','215','10,2 %'],['Abgebrochen','46','2,2 %']]},
+] as const;
+function AnalyticsExampleCards({selected,color}:{selected:number;color:string}) {
+  const example=examples[selected];
+  const low=Math.min(...example.series),high=Math.max(...example.series);
+  const points=example.series.map((value,i)=>`${10+i*280/6},${78-(value-low)/Math.max(high-low,1)*62}`).join(' ');
+  return <section data-analytics-example-cards aria-label="Statische Demonstrationsdaten" className="mt-5 space-y-3 rounded-2xl border border-violet-300/30 bg-[#080d1b] p-4">
+    <p className="rounded-lg border border-amber-300/40 px-3 py-2 text-sm font-semibold text-amber-200">DEMO · Statische Beispieldaten aus dem bereitgestellten Analytics-Entwurf. Keine Betriebskennzahlen, Live-Kurse oder Backtest-Ergebnisse.</p>
+    <div className="grid min-w-0 gap-3 lg:grid-cols-3">
+      <div className="min-w-0 rounded-xl border border-slate-700 p-3"><h4 className="font-semibold text-slate-100">{example.title}</h4>
+        <svg viewBox="0 0 120 120" className="mx-auto h-32 w-32" role="img" aria-label={`Beispielwert ${example.score} Prozent`}><circle cx="60" cy="60" r="48" stroke="#253047" strokeWidth="10" fill="none"/><circle cx="60" cy="60" r="48" pathLength="100" stroke={color} strokeWidth="10" strokeDasharray={`${example.score} 100`} strokeLinecap="round" fill="none" transform="rotate(-90 60 60)"/><text x="60" y="59" textAnchor="middle" fill="#F8FAFC" fontSize="25" fontWeight="700">{example.score}%</text><text x="60" y="77" textAnchor="middle" fill="#CBD5E1" fontSize="10">{example.label}</text></svg>
+      </div>
+      <div className="min-w-0 rounded-xl border border-slate-700 p-3"><h4 className="font-semibold text-slate-100">{example.metric}</h4><strong className="mt-2 block text-2xl text-white">{example.volume}</strong><p className="text-xs text-slate-400">Beispielzeitraum · Tag 1–30</p><svg viewBox="0 0 300 90" className="mt-3 w-full" role="img" aria-label="Synthetische Beispielreihe"><path d="M10 78H290 M10 46H290 M10 16H290" stroke="#334155" fill="none"/><polygon points={`10,78 ${points} 290,78`} fill={color} opacity=".15"/><polyline points={points} fill="none" stroke={color} strokeWidth="3" strokeLinejoin="round"/></svg><details className="mt-2 text-xs text-slate-300"><summary className="min-h-11 cursor-pointer">Beispielwerte</summary><p>{example.series.join(' · ')}</p></details></div>
+      <div className="min-w-0 rounded-xl border border-slate-700 p-3"><h4 className="font-semibold text-slate-100">Beispiel-Prüfungen · 24 h</h4><dl className="mt-3 space-y-3 text-sm">{example.checks.map(([label,count,share])=><div key={label} className="border-b border-slate-800 pb-2"><dt className="text-slate-300">{label}</dt><dd className="mt-1 font-mono text-white">{count} · {share}</dd></div>)}</dl></div>
+    </div><p className="text-xs text-slate-400">Quelle: CAPITAL-AI, analytics-main.zip, MODULES_DE · CC BY 4.0 laut mitgeliefertem Lizenzdokument · gekürzte, neu visualisierte Beispiele.</p>
+  </section>;
+}
+
 /** Interactive conceptual map; never fetches market data or emits trading signals. */
 export function AnalyticsHubArticle() {
   const [selected, setSelected] = useState(2);
@@ -125,6 +154,7 @@ export function AnalyticsHubArticle() {
           <a href={stage.link} className="mt-5 inline-flex min-h-11 items-center rounded-xl border px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{borderColor:stage.color,color:stage.color}}>{stage.action} →</a>
         </div>
       </section>
+      <AnalyticsExampleCards selected={selected} color={stage.color} />
       <section className="mt-8 space-y-3">
         <h3 className="text-xl font-bold text-white">Von der Beobachtung zur nachvollziehbaren Bewertung</h3>
         <p className="leading-7 text-slate-300">Der Scorer macht die Idee einer mehrdimensionalen Bewertung verständlich: Einzelne Merkmale können unterschiedlich gewichtet werden. Ein Ergebnis ist nur so belastbar wie seine Eingaben, die dokumentierte Methode und die bekannten Modellgrenzen. Im Screener lassen sich die vorhandenen Analyseoberflächen erkunden; historische und synthetische Beispiele sind als solche zu behandeln.</p>

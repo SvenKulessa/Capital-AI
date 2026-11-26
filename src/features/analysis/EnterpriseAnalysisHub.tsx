@@ -56,7 +56,7 @@ export function EnterpriseAnalysisHub({
     <div className="space-y-6">
       <HubNavigationPanel hubId="marketscreener" onNavigate={navigateAppLocation} />
       {active === 'overview' && <AnalyticsHubArticle />}
-      {['scorer', 'terminal'].includes(active) && <HistoricalAnalyticsDemo showMethodology={active !== 'scorer'} />}
+      {['overview', 'scorer', 'terminal'].includes(active) && <HistoricalAnalyticsDemo showMethodology={active !== 'scorer'} />}
       {active === 'overview' && <AnalyticsNewsOverview />}
       {active === 'newsArchive' && <AnalyticsNewsArchive />}
       {active === 'scorer' && (
