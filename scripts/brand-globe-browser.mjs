@@ -81,6 +81,24 @@ try {
     await until(() => evaluate("document.querySelector('.brand-globe-poster').complete && document.querySelector('.brand-globe-poster').naturalWidth === 1254"), 'POSTER');
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
+    await evaluate("document.getElementById('mobile-menu-btn').click()");
+    await until(() => evaluate("!!document.querySelector('#capital-ai-mobile-navigation nav')"), 'HUB_DRAWER_OPEN');
+    const hubLinks = await evaluate(`(() => {
+      const drawer = document.getElementById('capital-ai-mobile-navigation');
+      return ['/learning', '/marketscreener'].map(path => {
+        const link = drawer.querySelector('nav a[href="' + path + '"]');
+        const style = getComputedStyle(link);
+        return {label:link.textContent.trim(),border:style.borderTopColor,style:style.borderTopStyle,height:link.getBoundingClientRect().height};
+      });
+    })()`);
+    assert.deepEqual(hubLinks.map(({label,border,style})=>({label,border,style})), [
+      {label:'Learning Hub',border:'rgb(249, 191, 33)',style:'solid'},
+      {label:'Analytics Hub',border:'rgb(183, 148, 244)',style:'solid'},
+    ]);
+    assert.ok(hubLinks.every(link=>link.height>=44), 'Hub touch target below 44px');
+    await evaluate("document.getElementById('close-menu-btn').click()");
+    await until(() => evaluate("!document.getElementById('capital-ai-mobile-navigation')"), 'HUB_DRAWER_CLOSED');
+    report.checks.push({viewport,canonicalHubOutlines:'PASS'});
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
     assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy a')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
     assert.equal(await evaluate("document.querySelectorAll('h1').length"), 1, 'Homepage must have one H1');
