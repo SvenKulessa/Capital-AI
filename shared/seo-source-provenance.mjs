@@ -2,7 +2,7 @@ export const SEO_PROVENANCE_GENERATED_AT_MAIN_SHA = '6add02eac321c8b4dfc40fca8f9
 
 export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'src/i18n/landingSectionCopy.ts': Object.freeze({ sourceBlobSha: '0b845b24a15f710b02bc5740ac5a00a53a8e112b', contentSha256: 'b3ae90f8714804da050cb8e62734b6fd0efc5eb3f0ba0b3050c7a2251407a904' }),
-  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: 'c97417631ea35350ae7dc2ce4a9ea4203539ff23', contentSha256: '54721cf17444f95ed0ea993280f69a1001ccf6bec824502f8fea7b612ce9dca7' }),
+  'src/i18n/messages.ts': Object.freeze({ sourceBlobSha: 'cfbcf2dbe00b3f094beccf0fa0f74e86ed82838b', contentSha256: '27c88047b5f3f0736c58b773a82a4c9ab19971d65d98306d10bc2fef6200458a' }),
   'shared/architecture-governance-vocabulary.mjs': Object.freeze({ sourceBlobSha: '086dce314dc661a0e169667e7ebc1bd8ec3a1631', contentSha256: 'f87c8d3f79133e4aa056ce7ffe1ee14e7f4283ac66a4b1f01e2744e2143ad646' }),
   'src/components/ContactForm.tsx': Object.freeze({ sourceBlobSha: 'a9253f4c2c8d775bbafa2977a7e62c4b2f8943db', contentSha256: '61ce8299bf918d853a14f054280395f232394a1071a5eae1e6d571adef47dde4' }),
   'shared/researched-vocabulary.json': Object.freeze({ sourceBlobSha: 'cf4e634f349481e2062e699d897fd5631249744c', contentSha256: '88a076f2f0e003ac0acfed62bfd6fd3cff50c8c64329054f402ec02abf7d5120' }),
@@ -65,7 +65,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': '956b156836b41ad84ca738a10d58cef7f7f9f8d5f1a8d3df3275feee0f235b56',
+  'src/i18n/landingSectionCopy.ts|src/i18n/messages.ts': 'f2244602e0007b97621718ac9b5a6f9134524a2d3c72916a8ad0df7b0adbbac2',
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '99d4c8d690867e44917152117eecf455da8964b71c414b96f19efb9e15e256dd',
   'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
   'index.html|shared/public-search-focus.mjs|src/features/home/GrowthIntelligenceArticle.tsx|src/features/home/HomePage.tsx': 'adaf044029fbf863cac252f1cca0f9ac0b1405f438ccfb8747ca9b7c38845da3',
