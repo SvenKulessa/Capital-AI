@@ -11,10 +11,63 @@ const stages = [
   { title: 'Lernen', color: BRAND_COLORS.gold, description: 'Offene Fragen im Learning Hub vertiefen: Begriffe, Methoden und Lernbeispiele helfen, den Analyseprozess zu verstehen.', link: '/learning', action: 'Learning Hub öffnen' },
 ] as const;
 
+const technicalReports = [
+  {
+    "input": "Quellen-ID, Asset-Klasse, Zeitstempel, Nutzungsstatus",
+    "process": "Allowlist und Datenschema prüfen, Rohdaten mit Herkunft und Zeitpunkt verknüpfen.",
+    "output": "Datensatz mit Quellenreferenz und Abdeckung.",
+    "guard": "Unbekannte Herkunft oder Rechte sperren; keine stillschweigende Substitution.",
+    "metrics": "Quellenabdeckung, Datenalter, Ablehnungsquote"
+  },
+  {
+    "input": "Zugelassene Daten, Einheiten, Währungen, Zeitfenster",
+    "process": "Datentypen, Zeitachsen, Duplikate und Ausreißer prüfen; fehlende Werte markieren.",
+    "output": "Vergleichbarer Datensatz mit dokumentierten Lücken.",
+    "guard": "Fehlende Werte nicht als Null interpretieren; fehlerhafte Einheiten ausschließen.",
+    "metrics": "Vollständigkeit, Duplikatrate, Aktualität"
+  },
+  {
+    "input": "Validierte Faktoren, Methodenversion und Gewichte",
+    "process": "Faktoren nach dokumentierter Methode normalisieren und gewichten; Sensitivität und Abdeckung betrachten.",
+    "output": "Erklärbare Bewertung mit Faktoren und Einschränkungen.",
+    "guard": "Keine Kursprognose oder Kaufempfehlung; unbekannte Methoden nicht als verifiziert ausweisen.",
+    "metrics": "Abdeckung, Reproduzierbarkeit, Sensitivität"
+  },
+  {
+    "input": "Historische oder synthetische Beispiele, Annahmen, Zeitfenster",
+    "process": "Schwankungen, Konzentration, Datenlücken und alternative Szenarien einordnen.",
+    "output": "Risikokontext und explizite Modellgrenzen.",
+    "guard": "Keine garantierte Verlustgrenze oder Rendite; Beispiele nicht als aktuelle Marktdaten darstellen.",
+    "metrics": "Szenarioabdeckung, dokumentierte Annahmen"
+  },
+  {
+    "input": "Quellenreferenzen, Methodenversion, Prüfresultate und Zeitstempel",
+    "process": "Beobachtung, Berechnung und Interpretation trennen; Nachweis und Prüfstatus zuordnen.",
+    "output": "Überprüfbare Ergebnisreferenz mit VERIFIED, NOT_PROVEN oder BLOCKED.",
+    "guard": "Fehlende Nachweise nicht hochstufen; private Daten nicht veröffentlichen.",
+    "metrics": "Provenienzabdeckung, reproduzierbare Ergebnisse"
+  },
+  {
+    "input": "Datierte Meldungen, Quellen, Rechte, Themen und Asset-Zuordnung",
+    "process": "Relevanz, Aktualität, Duplikate und Quellenqualität prüfen; Nachricht und Interpretation trennen.",
+    "output": "Datierter redaktioneller Kontext mit Quellenlink.",
+    "guard": "Unbestätigte oder unzulässige Meldungen nicht als Fakt oder Handelssignal veröffentlichen.",
+    "metrics": "Aktualität, Quellenabdeckung, redaktionelle Prüfquote"
+  },
+  {
+    "input": "Begriffsfragen, Lernziele, Methoden, Lernbeispiele",
+    "process": "Zur passenden Lernressource navigieren; Übungen, Beispiele und Marktbezug unterscheiden.",
+    "output": "Vertieftes Finanzwissen und Methodenverständnis.",
+    "guard": "Keine Lernfortschritte oder Entitlements ohne autorisierten Nachweis ableiten.",
+    "metrics": "Nutzbare Lernpfade, Verständlichkeit, consentgebundene Interaktion"
+  }
+] as const;
+
 /** Interactive conceptual map; never fetches market data or emits trading signals. */
 export function AnalyticsHubArticle() {
   const [selected, setSelected] = useState(2);
   const stage = stages[selected];
+  const report = technicalReports[selected];
   const orbitRadius = 112;
   const circumference = 2 * Math.PI * orbitRadius;
   const star = (x: number, y: number, radius: number) => Array.from({ length: 10 }, (_, index) => {
@@ -38,7 +91,8 @@ export function AnalyticsHubArticle() {
         <div className="min-w-0 rounded-2xl border border-slate-700 bg-[#080d1b] p-3">
           <h3 id="analytics-orbit-title" className="text-base font-bold text-violet-200">Das Analyse-Universum</h3>
           <p className="mt-1 text-xs text-slate-300">Konzeptionelle Darstellung · keine Live-Marktdaten</p>
-          <svg viewBox="0 0 360 296" className="mx-auto block h-auto w-full max-w-md" role="img" aria-label={`Analyse-Universum, ausgewählt: ${stage.title}. Sieben miteinander verknüpfte Themen.`}>
+          <div className="relative mx-auto w-full max-w-md">
+          <svg viewBox="0 0 360 296" className="block h-auto w-full" role="img" aria-label={`Analyse-Universum, ausgewählt: ${stage.title}. Sieben miteinander verknüpfte Themen.`}>
             <defs>
               <radialGradient id="analytics-universe-core"><stop stopColor="#B794F4" stopOpacity=".42"/><stop offset="1" stopColor="#11162C"/></radialGradient>
               <clipPath id="analytics-core-clip"><circle cx="180" cy="148" r="71"/></clipPath>
@@ -53,6 +107,8 @@ export function AnalyticsHubArticle() {
             <text x="180" y="197" textAnchor="middle" fontSize="10" fill="#F8FAFC" fontWeight="700">ANALYTICS HUB</text>
             {positions.map((point,i)=><g key={stages[i].title}><circle cx={point.x} cy={point.y} r="21" fill="#101329" stroke={stages[i].color} strokeWidth={i===selected?2.5:1} opacity=".95"/><polygon points={star(point.x,point.y,i===selected?18:15)} fill={stages[i].color} stroke="#F8FAFC" strokeWidth={i===selected?1.25:.5}/><text x={point.x} y={point.y+3} textAnchor="middle" fontSize="10" fill="#090D1C" fontWeight="800">{i+1}</text></g>)}
           </svg>
+          {positions.map((point,i) => <button key={stages[i].title} type="button" data-analytics-orbit-star={i} aria-label={`Prozessstern ${i+1}: ${stages[i].title}`} aria-pressed={selected===i} onClick={()=>setSelected(i)} className="absolute h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{left:point.x/360*100+'%',top:point.y/296*100+'%'}} />)}
+          </div>
           <div role="group" aria-label="Analyse-Thema auswählen" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {stages.map((item,i)=><button key={item.title} type="button" aria-pressed={i===selected} onClick={()=>setSelected(i)} className="min-h-11 rounded-lg border px-2 py-2 text-left text-xs font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{borderColor:item.color,color:item.color,backgroundColor:i===selected?item.color+'26':'#080d1b'}}><span aria-hidden="true">★ </span>{i+1} · {item.title}</button>)}
           </div>
@@ -61,6 +117,11 @@ export function AnalyticsHubArticle() {
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Analyseperspektive {selected+1} / 7</p>
           <h3 className="mt-3 text-xl font-bold" style={{color:stage.color}}>{stage.title}</h3>
           <p className="mt-3 text-sm leading-7 text-slate-200">{stage.description}</p>
+          <h4 className="mt-4 font-semibold text-slate-100">Technischer Prozessbericht</h4>
+          <dl data-analytics-technical-report className="mt-3 space-y-3 text-sm leading-relaxed text-slate-300">
+            {([['Eingaben',report.input],['Verarbeitung',report.process],['Ergebnis',report.output],['Prüfgrenze',report.guard],['Prüfindikatoren',report.metrics]] as const).map(([label,detail]) => <div key={label}><dt className="font-semibold" style={{color:stage.color}}>{label}</dt><dd>{detail}</dd></div>)}
+          </dl>
+          <p className="mt-3 text-xs text-slate-400">Technisches Zielmodell und Prüfindikatoren, keine gemessenen KPIs oder Live-Evidence.</p>
           <a href={stage.link} className="mt-5 inline-flex min-h-11 items-center rounded-xl border px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{borderColor:stage.color,color:stage.color}}>{stage.action} →</a>
         </div>
       </section>

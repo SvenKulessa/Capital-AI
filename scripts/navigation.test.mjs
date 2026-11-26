@@ -680,3 +680,13 @@ test('authenticated header and hub CTAs retain canonical identity and overview a
   assert.match(market, /active === 'overview' && <AnalyticsHubArticle \/>/);
   assert.match(market, /active === 'overview' && <AnalyticsNewsOverview \/>/);
 });
+
+
+test('Analytics orbit exposes direct keyboard-operable stars and technical detail reports', () => {
+  const article = readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx',import.meta.url),'utf8');
+  assert.match(article,/data-analytics-orbit-star=\{i\}/);
+  assert.match(article,/aria-pressed=\{selected===i\}/);
+  assert.match(article,/technicalReports\[selected\]/);
+  assert.match(article,/data-analytics-technical-report/);
+  assert.match(article,/keine gemessenen KPIs oder Live-Evidence/);
+});
