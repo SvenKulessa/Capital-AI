@@ -134,3 +134,79 @@ test('rejects missing identity, wrong media type, unknown rights and invalid kit
   const empty = { ...kit(), assets: [] };
   assert.throws(() => importMediaKitV5Draft(empty), /MEDIAKIT_V5_ASSET_COUNT_INVALID/);
 });
+
+function notebookReview(artifactKind = 'VIDEO_OVERVIEW', assetSha256 = HASH_B) {
+  return {
+    provider: 'GOOGLE_NOTEBOOKLM', artifactKind, assetSha256,
+    sourceSnapshotSha256: HASH_A, promptSha256: HASH_C,
+    generationEvidenceRef: 'evidence/notebooklm/generation-manifest',
+    providerTerms: { status: 'VERIFIED', evidenceRef: 'evidence/provider-terms' },
+    commercialUse: { status: 'VERIFIED', evidenceRef: 'evidence/commercial-use' },
+    channelReviews: [{
+      channel: 'YOUTUBE',
+      platformTerms: { status: 'VERIFIED' },
+      aiDisclosure: { decision: 'NOT_REQUIRED', status: 'VERIFIED' },
+      editorialReview: { status: 'VERIFIED' },
+      releaseReview: { status: 'VERIFIED' },
+    }],
+  };
+}
+
+test('NotebookLM video and infographic review is hash-bound, per-channel and never grants release', () => {
+  const fixture = kit();
+  Object.assign(fixture.assets[1], { notebookLmReview: notebookReview() });
+  fixture.assets[0].provenance.origin = 'GENERATED';
+  Object.assign(fixture.assets[0], { notebookLmReview: notebookReview('INFOGRAPHIC', HASH_A) });
+  const out = importMediaKitV5Draft(fixture);
+  assert.deepEqual(validateMediaProjectV2(out.project), { ok: true, errors: [] });
+  for (const asset of out.reviewAssets.slice(0, 2)) {
+    const review = asset.notebookLmReview!;
+    assert.equal(review.assetSha256, asset.sha256);
+    assert.equal(review.provenanceStatus, 'NOT_PROVEN');
+    assert.equal(review.providerTerms.assessed, 'NOT_PROVEN');
+    assert.equal(review.commercialUse.assessed, 'NOT_PROVEN');
+    assert.equal(review.channelReviews[0].aiDisclosure.reportedDecision, 'NOT_REQUIRED');
+    assert.equal(review.channelReviews[0].aiDisclosure.assessedDecision, 'UNDETERMINED');
+    assert.equal(review.channelReviews[0].releaseReview.assessed, 'NOT_PROVEN');
+    assert.equal(review.publicPublishAllowed, false);
+  }
+  assert.equal(out.publicPublishAllowed, false);
+  assert.deepEqual(out.approvals, []);
+  assert.deepEqual(out.deliveries, []);
+});
+
+test('NotebookLM review rejects mismatched bytes, type, duplicate channels, missing fields and release injection', () => {
+  const valid = notebookReview();
+  const cases: [unknown, RegExp][] = [
+    [{ ...valid, assetSha256: HASH_A }, /NOTEBOOKLM_ASSET_HASH_MISMATCH/],
+    [{ ...valid, artifactKind: 'INFOGRAPHIC' }, /NOTEBOOKLM_KIND_INVALID/],
+    [{ ...valid, promptSha256: '' }, /NOTEBOOKLM_PROMPT_HASH_INVALID/],
+    [{ ...valid, generationEvidenceRef: '../secret' }, /NOTEBOOKLM_GENERATION_REF_INVALID/],
+    [{ ...valid, channelReviews: [] }, /NOTEBOOKLM_CHANNELS_INVALID/],
+    [{ ...valid, channelReviews: [valid.channelReviews[0], valid.channelReviews[0]] }, /NOTEBOOKLM_CHANNEL_INVALID/],
+    [{ ...valid, publicPublishAllowed: true }, /NOTEBOOKLM_FIELDS_INVALID/],
+    [{ ...valid, channelReviews: [{ ...valid.channelReviews[0], approvalRef: 'injected' }] }, /NOTEBOOKLM_CHANNEL_FIELDS_INVALID/],
+    [{ ...valid, channelReviews: [{ ...valid.channelReviews[0], aiDisclosure: { decision: 'IGNORE', status: 'VERIFIED' } }] }, /NOTEBOOKLM_DISCLOSURE_INVALID/],
+  ];
+  for (const [review, error] of cases) {
+    const fixture = kit();
+    Object.assign(fixture.assets[1], { notebookLmReview: review });
+    assert.throws(() => importMediaKitV5Draft(fixture), error);
+  }
+  const fixture = kit();
+  Object.assign(fixture.assets[0], { notebookLmReview: notebookReview('INFOGRAPHIC', HASH_A) });
+  assert.throws(() => importMediaKitV5Draft(fixture), /NOTEBOOKLM_KIND_INVALID/);
+});
+
+test('NotebookLM explicit rights HOLD survives intake and legacy assets remain unchanged', () => {
+  const fixture = kit();
+  const review = notebookReview();
+  review.commercialUse.status = 'BLOCKED';
+  review.channelReviews[0].releaseReview.status = 'BLOCKED';
+  Object.assign(fixture.assets[1], { notebookLmReview: review });
+  const out = importMediaKitV5Draft(fixture);
+  assert.equal(out.reviewAssets[0].notebookLmReview, undefined);
+  assert.equal(out.reviewAssets[1].notebookLmReview?.commercialUse.assessed, 'BLOCKED');
+  assert.equal(out.reviewAssets[1].notebookLmReview?.channelReviews[0].releaseReview.assessed, 'BLOCKED');
+  assert.equal(out.publicationState, 'DRAFT_ONLY');
+});

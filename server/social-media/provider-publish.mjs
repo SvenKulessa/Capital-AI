@@ -79,7 +79,9 @@ function youtubeMultipart(metadata, bytes) {
   return { body: Buffer.concat([head, bytes, tail]), boundary };
 }
 
-export function createSocialProviderPublishTransport({ env = process.env, fetchImpl = fetch } = {}) {
+export function createSocialProviderPublishTransport({ env = process.env, fetchImpl = fetch, xReservedContentKey = null } = {}) {
+  // Server-only, per-transport one-shot handoff from the durable milestone claim.
+  let xReservationUsed = false;
   assert(typeof fetchImpl === 'function', 'SOCIAL_PROVIDER_FETCH_REQUIRED');
 
   async function youtube(input) {
@@ -257,6 +259,14 @@ export function createSocialProviderPublishTransport({ env = process.env, fetchI
     assert(enabled(env, 'SOCIAL_X_PAID_WRITE_APPROVED'), 'SOCIAL_X_PAID_WRITE_NOT_APPROVED');
     const accessToken = token(input?.accessToken);
     const text = boundedText(input?.metadata?.caption, 280, 'SOCIAL_X_TEXT_REQUIRED');
+    if (env.SOCIAL_X_GROWTH_PILOT_ENABLED === 'true') {
+      assert(env.SOCIAL_X_GROWTH_BUDGET_APPROVED === 'true'
+        && !xReservationUsed && input?.mediaBytes === undefined
+        && /^[a-f0-9]{64}$/.test(xReservedContentKey ?? '')
+        && createHash('sha256').update(text, 'utf8').digest('hex') === xReservedContentKey,
+        'X_GROWTH_UNBUDGETED_LANE_DISABLED');
+      xReservationUsed = true;
+    }
     // Media is optional for legacy text-only use. The owner-only milestone
     // performs its durable atomic claim BEFORE invoking this transport.
     let mediaIds;

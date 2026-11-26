@@ -1,6 +1,53 @@
-// Video SEO uses only approved public/free videos. Empty until a real licensed
-// video is present; it must never make private or draft lessons indexable.
-export const PUBLIC_LEARNING_VIDEO_INVENTORY = Object.freeze([]);
+// Video SEO uses only approved public/free videos; private or draft lessons stay excluded.
+// EP01: public channel readback + explicit owner Studio/status and rights confirmation.
+export const PUBLIC_LEARNING_VIDEO_INVENTORY = Object.freeze([
+  Object.freeze({
+    "id": "masterclass-01-chartanalyse",
+    "category": "Fintech Deepdive",
+    "title": "Masterclass Chartanalyse und Grundlagen",
+    "youtubeId": "msfyAwCkzOM",
+    "externalYouTubeId": "msfyAwCkzOM",
+    "publicationState": "PUBLISHED",
+    "visibility": "PUBLIC",
+    "licenseState": "VERIFIED",
+    "editorialApproval": "APPROVED",
+    "searchEligible": true,
+    "isFreePreview": true,
+    "providerReadbackVerified": true,
+    "providerChannelId": "UCqaBNJwcfu2cZL3GgG9TLgA",
+    "processingStatus": "SUCCEEDED",
+    "embeddable": true,
+    "assetSha256": "9824afd29439deb661c0bc502e5d10eaf7d8b6d075a7b768f115ab9dcdb3cff4",
+    "providerEvidenceRef": "docs/growth/MASTERCLASS-EP01-PUBLIC-PREVIEW-EVIDENCE-20261124.md#provider-readback",
+    "rightsEvidenceRef": "docs/growth/MASTERCLASS-EP01-PUBLIC-PREVIEW-EVIDENCE-20261124.md#owner-confirmation",
+    "description": "Folge 01 der CAPITAL-AI Masterclass: Grundlagen der Chartanalyse, Candlesticks, OHLC-Kursdaten und Chartstrukturen. Kostenloses Lernvideo (06:45). Ausschließlich zur Finanzbildung; keine Anlageberatung.",
+    "thumbnailUrl": "https://i.ytimg.com/vi_webp/msfyAwCkzOM/maxresdefault.webp",
+    "uploadDate": "2026-11-24T00:00:00.000Z"
+  }),
+  Object.freeze({
+    "id": "masterclass-02-realitaetscheck",
+    "category": "Fintech Deepdive",
+    "title": "Masterclass Realitätscheck",
+    "youtubeId": "AMeuY4P11Gw",
+    "externalYouTubeId": "AMeuY4P11Gw",
+    "publicationState": "PUBLISHED",
+    "visibility": "PUBLIC",
+    "licenseState": "VERIFIED",
+    "editorialApproval": "APPROVED",
+    "searchEligible": true,
+    "isFreePreview": true,
+    "providerReadbackVerified": true,
+    "providerChannelId": "UCqaBNJwcfu2cZL3GgG9TLgA",
+    "processingStatus": "SUCCEEDED",
+    "embeddable": true,
+    "assetSha256": "6d81780485a67cc2931b037c1d2fcb9832315c119ac6dc9210d79638c4696910",
+    "providerEvidenceRef": "docs/growth/MASTERCLASS-EP02-PUBLIC-PREVIEW-EVIDENCE-20261124.md#provider-readback",
+    "rightsEvidenceRef": "docs/growth/MASTERCLASS-EP02-PUBLIC-PREVIEW-EVIDENCE-20261124.md#owner-confirmation",
+    "description": "Folge 02 der CAPITAL-AI Masterclass: Marktpsychologie, Chancen und Grenzen der Chartanalyse, KI-gestützte Analysen und Risikomanagement. Kostenloses Lernvideo (07:31). Keine Anlageberatung.",
+    "thumbnailUrl": "https://i.ytimg.com/vi/AMeuY4P11Gw/maxresdefault.jpg",
+    "uploadDate": "2026-11-24T00:00:00.000Z"
+  }),
+]);
 export const PUBLIC_LEARNING_VIDEO_CATEGORIES = Object.freeze(['Architektur', 'Fintech Deepdive', 'Social']);
 export const EXPECTED_YOUTUBE_CHANNEL_ID = 'UCqaBNJwcfu2cZL3GgG9TLgA';
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
@@ -42,19 +89,24 @@ export function publicVideoSchema(video) {
   });
 }
 // Use one fail-closed admission set for browser embeds and SEO VideoObject.
-// Only one free PUBLIC preview per category; public YouTube cannot paywall lessons.
+// Default: one free PUBLIC preview per category. Owner-requested EP01 + EP02
+// are the sole two-video exception; every entry still passes publicVideoSchema.
+// Public YouTube cannot paywall lessons.
+const MASTERCLASS_PUBLIC_PAIR = new Set(['msfyAwCkzOM', 'AMeuY4P11Gw']);
 /** @param {readonly any[]} [videos] */
 export function admittedPublicLearningVideos(videos = PUBLIC_LEARNING_VIDEO_INVENTORY) {
   if (!Array.isArray(videos)) return [];
   const seenIds = new Set();
-  const seenCategories = new Set();
+  const firstByCategory = new Map();
   return videos.filter(video => {
     if (!video || typeof video.id !== 'string' || !video.id.trim() ||
       !PUBLIC_LEARNING_VIDEO_CATEGORIES.includes(video.category) ||
-      !publicVideoSchema(video) || seenIds.has(video.youtubeId) ||
-      seenCategories.has(video.category)) return false;
+      !publicVideoSchema(video) || seenIds.has(video.youtubeId)) return false;
+    const first = firstByCategory.get(video.category);
+    if (first && !(video.category === 'Fintech Deepdive' &&
+      MASTERCLASS_PUBLIC_PAIR.has(first) && MASTERCLASS_PUBLIC_PAIR.has(video.youtubeId))) return false;
     seenIds.add(video.youtubeId);
-    seenCategories.add(video.category);
+    if (!first) firstByCategory.set(video.category, video.youtubeId);
     return true;
   });
 }

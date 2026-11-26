@@ -9,11 +9,20 @@ const BUILDER_PLACEHOLDER = '__CAPITAL_AI_BUILDER_UNBOUND__';
 const RENDER_PLACEHOLDER = '__CAPITAL_AI_RENDER_GIT_SHA_UNBOUND__';
 
 export function runtimeIdentityDocument(sourceSha) {
-  if (!SHA.test(sourceSha || '')) throw new Error('Expected lowercase 40-character Git SHA');
+  if (typeof sourceSha !== 'string' || !SHA.test(sourceSha)) throw new Error('Expected lowercase 40-character Git SHA');
   return { schemaVersion: 1, bound: true, sourceSha, builder: BUILDER };
 }
 
+// Optional for historical minimal templates; a declared Render identity must be unbound.
+function assertRenderIdentityUnbound(source) {
+  const lines = source.split(/\r?\n/).filter(line => /^\s*const\s+embeddedRenderGitSha\b/.test(line));
+  if (lines.length > 0 && (lines.length !== 1 || lines[0] !== "const embeddedRenderGitSha = '" + RENDER_PLACEHOLDER + "';")) {
+    throw new Error('Mixing Render and GitHub build identities denied');
+  }
+}
+
 export function bindRuntimeIdentity(source, sourceSha) {
+  assertRenderIdentityUnbound(source);
   const identity = runtimeIdentityDocument(sourceSha);
   if (!source.includes(SOURCE_PLACEHOLDER) || !source.includes(BUILDER_PLACEHOLDER)) {
     throw new Error('Runtime identity placeholders missing or already bound');
@@ -31,7 +40,7 @@ export function bindRuntimeIdentity(source, sourceSha) {
 // GitHub Actions builder identity or an immutable OCI attestation.
 export function bindRenderGitIdentity(source, renderGitSha) {
   if (!renderGitSha) return source;
-  if (!SHA.test(renderGitSha)) throw new Error('Invalid Render Git build SHA');
+  if (typeof renderGitSha !== 'string' || !SHA.test(renderGitSha)) throw new Error('Invalid Render Git build SHA');
   if (!source.includes(SOURCE_PLACEHOLDER) || !source.includes(BUILDER_PLACEHOLDER)) {
     throw new Error('Mixing GitHub and Render Git build identities denied');
   }
@@ -44,6 +53,7 @@ export function bindRenderGitIdentity(source, renderGitSha) {
 // Verify the source actually shipped in the built runtime image, not the checkout copy.
 // In particular, an environment-supplied SHA or a second/ambiguous declaration is insufficient.
 export function verifyBakedRuntimeIdentity(source, sourceSha) {
+  assertRenderIdentityUnbound(source);
   const identity = runtimeIdentityDocument(sourceSha);
   const lines = String(source).split(/\r?\n/);
   for (const [name, value] of [

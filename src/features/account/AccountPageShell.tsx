@@ -58,6 +58,7 @@ async function readSession(signal?: AbortSignal): Promise<AccountSession> {
   }
   const session = body as AccountSession;
   if (session.authenticated && session.user?.id) {
+    if (session.user.avatarUrl?.startsWith('https://')) session.user.avatarUrl = '/api/profile/avatar/provider';
     try {
       const avatar = await fetch('/api/profile/logo', { credentials: 'same-origin', cache: 'no-store', signal });
       if (avatar.ok) session.user.avatarUrl = '/api/profile/avatar/current';

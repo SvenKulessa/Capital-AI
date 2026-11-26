@@ -84,4 +84,108 @@ pg -f /work/scripts/social-token-refresh-db.sql
 pg -f /work/scripts/youtube-private-receipt-recovery-db.sql
 pg -f /work/supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql
 pg -f /work/scripts/youtube-privacy-revocation-db.sql
+
+# CAI-X-GROWTH@1 — isolated account-wide budget contract, no real provider calls.
+pg -f /work/scripts/social-provider-db-x-budget.sql
+pg -f /work/scripts/social-provider-db-x-budget-data.sql
+budget_claim() {
+  pg -At -c "SET ROLE service_role; SELECT public.capital_x_growth_reserve('d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101','991',repeat('$1',64));"
+}
+# Distinct content digests compete for the final EUR of an account-wide budget.
+budget_claim c > "$one" 2>&1 &
+budget_pid_one=$!
+budget_claim d > "$two" 2>&1 &
+budget_pid_two=$!
+budget_ok_one=0; budget_ok_two=0
+if wait "$budget_pid_one"; then budget_ok_one=1; fi
+if wait "$budget_pid_two"; then budget_ok_two=1; fi
+if [[ "$((budget_ok_one + budget_ok_two))" -ne 1 ]]; then
+  echo 'X_BUDGET_PARALLEL_CAP_BROKEN' >&2
+  cat "$one" "$two" >&2; exit 1
+fi
+grep -q 'X_BUDGET_EXHAUSTED' "$one" "$two"
+# New independent connection, no receipt and no process state: a simulated
+# lost response retains the durable reservation; a duplicate cannot re-claim.
+if [[ "$budget_ok_one" -eq 1 ]]; then winner=c; else winner=d; fi
+budget_claim "$winner" > "$one"
+grep -q '"claimed": false' "$one"
+pg -f /work/scripts/social-provider-db-x-budget-after.sql
+
+# Isolated campaign consent fixture; no real provider or user records.
+pg -f /work/scripts/social-provider-db-x-consent.sql
+pg -f /work/scripts/social-provider-db-x-consent-test.sql
+
+# Race the same independently scoped payment in two real PG sessions.
+# Share exactly the same paid timestamp, even across a UTC day boundary.
+smartcopy_paid="$(pg -At -c "SELECT (email_confirmed_at+interval '1 second')::text FROM auth.users WHERE id='a0000000-0000-4000-8000-000000000001'")"
+smartcopy_race() {
+ pg -At -c "SELECT capital_growth_private.apply_smartcopy_sandbox_payment('a0000000-0000-4000-8000-000000000001','smartcopy-'||repeat('c',24),repeat('d',64),'pi_lifecyclerace','ch_lifecyclerace',499,$1,false,'$smartcopy_paid'::timestamptz,clock_timestamp(),$2);"
+}
+smartcopy_race 0 "repeat('3',64)" > "$one" 2>&1 &
+sc_grant=$!
+smartcopy_race 499 "null" > "$two" 2>&1 &
+sc_refund=$!
+sc_grant_rc=0; sc_refund_rc=0
+wait "$sc_grant" || sc_grant_rc=$?
+wait "$sc_refund" || sc_refund_rc=$?
+if [[ "$sc_grant_rc" != 0 || "$sc_refund_rc" != 0 ]] || ! grep -Eq '^(GRANTED|REVOKED)$' "$one" || ! grep -qx 'REVOKED' "$two"; then
+ echo 'SMARTCOPY_RACE_RESULT_INVALID'
+ printf 'synthetic grant output:\n'; cat "$one"
+ printf 'synthetic refund output:\n'; cat "$two"
+ exit 1
+fi
+race_count="$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecyclerace' AND state='REVOKED' AND refunded_cents=499")"
+if [[ "$race_count" != 1 ]]; then
+ echo "SMARTCOPY_RACE_TERMINAL_COUNT_INVALID=$race_count"; exit 1
+fi
+echo 'PASS: independent PG connections converge on one terminal Smartcopy refund'
+
+# Restart only the exact ephemeral CI service, never a user-supplied remote DB.
+container="${SOCIAL_DB_TEST_CONTAINER:-}"
+if [[ "${GITHUB_ACTIONS:-}" != "true" || ! "$container" =~ ^[a-f0-9]{64}$ ]]; then
+  echo 'X_BUDGET_RESTART_REQUIRES_CI_SERVICE' >&2; exit 1
+fi
+if [[ "$(docker inspect --format '{{.Config.Image}}' "$container")" != "$image" ]]; then
+  echo 'X_BUDGET_RESTART_WRONG_IMAGE' >&2; exit 1
+fi
+before="$(pg -At -c 'SELECT pg_postmaster_start_time()')"
+docker restart --time 10 "$container" >/dev/null
+ready=0
+for attempt in {1..30}; do
+  if pg -At -c 'SELECT 1' >/dev/null 2>&1; then ready=1; break; fi
+  sleep 1
+done
+[[ "$ready" -eq 1 ]]
+after="$(pg -At -c 'SELECT pg_postmaster_start_time()')"
+[[ "$before" != "$after" ]]
+# Same receipt-free content remains claimed after the real server restart;
+# a different digest cannot spend the exhausted budget.
+budget_claim "$winner" > "$one"
+grep -q '"claimed": false' "$one"
+if budget_claim e > "$two" 2>&1; then
+  echo 'X_BUDGET_RESTART_CAP_BROKEN' >&2; exit 1
+fi
+grep -q 'X_BUDGET_EXHAUSTED' "$two"
+pg -f /work/scripts/social-provider-db-x-budget-after.sql
+echo 'PASS: X budget persisted after real PostgreSQL service restart'
 echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
+
+# Verify durable consent withdrawal and terminal invoice reversal after the same real restart.
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.x_consent WHERE revoked_at IS NOT NULL")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.x_initial_payment WHERE reversed")" == 1 ]]
+echo 'PASS: isolated consent and invoice reversal persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c 'SELECT count(*) FROM capital_growth_private.smartcopy_consent WHERE revoked_at IS NOT NULL')" == 2 ]]
+echo 'PASS: isolated Smartcopy consent withdrawal persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='GRANTED' AND charge_id IS NULL")" == 1 ]]
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE state='REVOKED' AND charge_id IS NULL")" == 1 ]]
+echo 'PASS: independent synthetic entitlement states persisted; consent withdrawal did not alter licenses'
+
+# Same real PostgreSQL restart proves terminal lifecycle persistence.
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_entitlement_fixture WHERE charge_id IS NOT NULL AND state='REVOKED'")" == 3 ]]
+[[ "$(pg -At -c "SELECT refunded_cents FROM capital_growth_private.smartcopy_entitlement_fixture WHERE intent_id='pi_lifecycle001'")" == 499 ]]
+echo 'PASS: isolated Smartcopy refund and dispute tombstones persisted after PostgreSQL restart'
+
+[[ "$(pg -At -c "SELECT count(*) FROM capital_growth_private.smartcopy_delivery_fixture")" == 5 ]]
+echo 'PASS: independent contractual proof records persisted after PostgreSQL restart'
