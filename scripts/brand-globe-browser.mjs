@@ -36,6 +36,24 @@ async function until(fn, label) {
   for (let i = 0; i < 150; i++) { if (await fn()) return; await pause(100); }
   throw Error('TIMEOUT_' + label);
 }
+// Use real pointer coordinates. HTMLElement.click() emits (0,0), which can
+// falsely trigger JaJa's repeated-click assistance when consent and drawer
+// controls are activated in the same short interval.
+async function clickVisible(selector) {
+  let point;
+  await until(async () => {
+    point = await evaluate(`(() => {
+      const target = document.querySelector(${JSON.stringify(selector)});
+      if (!target) return null;
+      const rect = target.getBoundingClientRect();
+      const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
+      return target.contains(document.elementFromPoint(x, y)) ? {x,y} : null;
+    })()`);
+    return Boolean(point);
+  }, 'VISIBLE_CLICK_' + selector);
+  await send('Input.dispatchMouseEvent', {type:'mousePressed', ...point, button:'left', clickCount:1});
+  await send('Input.dispatchMouseEvent', {type:'mouseReleased', ...point, button:'left', clickCount:1});
+}
 async function navigate() {
   loaded = false;
   await send('Page.navigate', { url: origin + '/' });
@@ -81,6 +99,25 @@ try {
     await until(() => evaluate("document.querySelector('.brand-globe-poster').complete && document.querySelector('.brand-globe-poster').naturalWidth === 1254"), 'POSTER');
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
+    await clickVisible('#mobile-menu-btn');
+    await until(() => evaluate("!!document.querySelector('#capital-ai-mobile-navigation nav')"), 'HUB_DRAWER_OPEN');
+    const hubLinks = await evaluate(`(() => {
+      const drawer = document.getElementById('capital-ai-mobile-navigation');
+      return ['/learning', '/marketscreener'].map(path => {
+        const link = drawer.querySelector('nav a[href="' + path + '"]');
+        const style = getComputedStyle(link);
+        return {label:link.textContent.trim(),border:style.borderTopColor,style:style.borderTopStyle,height:link.getBoundingClientRect().height};
+      });
+    })()`);
+    assert.deepEqual(hubLinks.map(({label,border,style})=>({label,border,style})), [
+      {label:'Learning Hub',border:'rgb(249, 191, 33)',style:'solid'},
+      {label:'Analytics Hub',border:'rgb(183, 148, 244)',style:'solid'},
+    ]);
+    assert.ok(hubLinks.every(link=>link.height>=44), 'Hub touch target below 44px');
+    await clickVisible('#close-menu-btn');
+    await until(() => evaluate(`!document.getElementById('capital-ai-mobile-navigation') &&
+      !document.querySelector('[class*="z-[100]"][class*="backdrop-blur-sm"]')`), 'HUB_DRAWER_AND_BACKDROP_CLOSED');
+    report.checks.push({viewport,canonicalHubOutlines:'PASS'});
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
     assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy a')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
     assert.equal(await evaluate("document.querySelectorAll('h1').length"), 1, 'Homepage must have one H1');
@@ -90,7 +127,7 @@ try {
       const bounds = action.getBoundingClientRect();
       const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
       return { href: action.getAttribute('href'), top: bounds.top, bottom: bounds.bottom,
-        height: bounds.height, clickable: action.contains(hit), obstruction: hit?.id || hit?.tagName || null,
+        height: bounds.height, clickable: action.contains(hit), obstruction: hit ? {tag:hit.tagName,id:hit.id,classes:hit.getAttribute('class'),buddy:!!hit.closest('[data-hero-buddy]'),drawer:!!hit.closest('#capital-ai-mobile-navigation')} : null,
         primary: getComputedStyle(action).backgroundColor !== getComputedStyle(document.getElementById('hero-start-analysis-btn')).backgroundColor };
     })()`);
     report.checks.push({ viewport, learningCta });
@@ -126,6 +163,7 @@ try {
     assert.equal(decoration.studioShortcut, false, 'Redundant Studio Hub header action remains');
     assert.equal(decoration.outlinePresent, false, 'Removed silver outline remains in hero');
     assert.equal(decoration.copyVeil, 'none', 'Opaque hero-copy veil remains');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.hero-copy')).backgroundColor"), 'rgba(0, 0, 0, 0)', 'Hero copy covers the globe');
     if (viewport.width<=768) {
       assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile/tablet globe overshoots content width');
       assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile/tablet globe is not proportional');
@@ -177,27 +215,16 @@ try {
     await pause(900);
     const second = await shot(null, clip);
     assert.notEqual(first, second, '3D output is not changing');
-    // Exercise the real focusable button using keyboard input.
-    await evaluate("document.querySelector('.hero-globe-pause').focus({preventScroll:true})");
-    assert.equal(await evaluate("document.activeElement === document.querySelector('.hero-globe-pause')"), true, 'Pause button did not receive keyboard focus');
-    // Enter also needs its character event; keyDown without text does not
-    // reproduce Chromium's native button activation (unlike ArrowDown).
-    await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
-    await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    await until(() => evaluate("document.querySelector('.hero-globe-pause').getAttribute('aria-pressed')==='true'"), 'KEYBOARD_PAUSE');
-    await pause(100);
-    const paused = await shot(null, clip);
-    await pause(600);
-    assert.equal(await shot(null, clip), paused, 'Paused globe still changes');
-    await evaluate("document.querySelector('.hero-globe-pause').click()");
-    await pause(600);
-    assert.notEqual(await shot(null, clip), paused, 'Globe did not resume');
+    // Landing hero auto-rotates without a dedicated pause button. Check a third frame.
+    assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
+    await pause(900);
+    assert.notEqual(await shot(null, clip), second, 'Globe stopped rotating');
     const lost = await evaluate("(() => { const gl=document.querySelector('.brand-globe-canvas').getContext('webgl2'); const ext=gl?.getExtension('WEBGL_lose_context'); if(!ext)return false; ext.loseContext(); return true; })()");
     assert.equal(lost, true, 'Context-loss test unavailable');
     await until(() => evaluate("document.querySelector('.brand-globe-art').dataset.globeState==='poster'"), 'CONTEXT_LOSS_FALLBACK');
     await until(() => evaluate("!document.querySelector('.hero-globe-pause')"), 'FALLBACK_HAS_NO_PLAYBACK_CONTROL');
     await until(() => evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity === '1'"), 'FALLBACK_POSTER_FULLY_VISIBLE');
-    report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', keyboardPauseResume: 'PASS', contextLossFallback: 'PASS' });
+    report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', continuousVisibleRotation: 'PASS', contextLossFallback: 'PASS' });
     // Actual article scene, existing anonymous browser QA; no external sources.
     await evaluate(`document.querySelector('[data-article-scene="portfolio"] button').click()`);
     await until(() => evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState === '3d'`), 'ARTICLE_WEBGL_READY');
