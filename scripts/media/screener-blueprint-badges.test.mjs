@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { SCREENER_BADGE_VARIANTS, renderScreenerBlueprintBadge } from '../../src/platform/SocialMediaEngine/Branding/ScreenerBlueprintBadgeRenderer.mjs';
+import { SCREENER_BADGE_VARIANTS, renderScreenerBlueprintBadge, renderHubIdentityIcon } from '../../src/platform/SocialMediaEngine/Branding/ScreenerBlueprintBadgeRenderer.mjs';
 const tokens = JSON.parse(readFileSync('public/branding/asset-pack/meta/social-render-tokens.json','utf8'));
 const manifest = JSON.parse(readFileSync('docs/licenses/screener-blueprint-badges.manifest.json','utf8'));
 test('Three deterministic SVG badges using current offline SocialMediaEngine tokens', () => {
@@ -36,4 +36,28 @@ test('Seven-colour badge renderer fails closed on incomplete and duplicate palet
   const extra = structuredClone(tokens);
   extra.color.universe.unknown = { $value: '#010203' };
   assert.throws(() => renderScreenerBlueprintBadge('data', extra), /UNIVERSE_PALETTE_SEVEN_REQUIRED/);
+});
+
+import { HUB_BRANDING } from '../../shared/hub-branding.mjs';
+test('hub identity manifest fixes canonical colours and verifies generated icons', () => {
+  const pack = JSON.parse(readFileSync('public/branding/asset-pack/meta/asset-manifest.json','utf8'));
+  const hubs = JSON.parse(readFileSync(pack.hubIdentityManifest,'utf8'));
+  assert.equal(hubs.publicationAuthority,false);
+  for (const [id, brand] of Object.entries(HUB_BRANDING)) {
+    assert.equal(hubs.hubs[id].name, brand.name);
+    assert.equal(hubs.hubs[id].color, brand.color);
+  }
+  for (const id of ['learning','marketscreener']) {
+    const entry = hubs.hubs[id].icon;
+    const svg = renderHubIdentityIcon(id,tokens);
+    assert.equal(entry.publicUrl,HUB_BRANDING[id].icon);
+    assert.equal(svg,readFileSync(entry.repositoryPath,'utf8'));
+    assert.equal(entry.sha256,createHash('sha256').update(svg).digest('hex'));
+    assert.equal(entry.bytes,Buffer.byteLength(svg));
+    assert.equal(entry.publishApproval,false);
+    assert.doesNotMatch(svg, /<script|<image|foreignObject|(?:href|src)="https?:/i);
+  }
+  assert.throws(()=>renderHubIdentityIcon('unknown',tokens),/HUB_ICON_VARIANT_UNSUPPORTED/);
+  const invalid=structuredClone(tokens);delete invalid.color.universe.green;
+  assert.throws(()=>renderHubIdentityIcon('learning',invalid),/UNIVERSE_PALETTE_SEVEN_REQUIRED/);
 });

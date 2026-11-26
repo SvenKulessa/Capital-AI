@@ -2,6 +2,7 @@
   "schemaVersion": "1.0.0",
   "brand": "CAPITAL-AI.ONLINE",
   "publishReady": false,
+  "hubIdentityManifest": "public/branding/badges/hub-branding-manifest.json",
   "source": {
     "repositoryPath": "public/branding/capital-ai-logo.jpg",
     "width": 1536,

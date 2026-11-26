@@ -377,6 +377,7 @@ Generator:
                 "1920x1080", "1280x720", "1080x1080", "1080x1350", "1080x1920"
             ],
         },
+        "hubIdentityManifest": "public/branding/badges/hub-branding-manifest.json",
         "assets": records,
     }
     asset_manifest.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

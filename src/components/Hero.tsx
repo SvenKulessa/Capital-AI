@@ -1,7 +1,7 @@
 import { HUB_BRANDING } from '../../shared/hub-branding.mjs';
 import { ProductDisclaimer } from './ProductDisclaimer';
 import { BrandGlobe } from './BrandGlobe';
-import { ArrowRight, BarChart3, BookOpen } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useLocale } from '../i18n/LocaleProvider';
 
 const detailCopy = {
@@ -34,10 +34,10 @@ export function Hero() {
         <p className="mb-6 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg">{t('heroDescription')}</p>
         <div className="flex w-full max-w-sm flex-col gap-3">
           <a id="hero-open-learning-link" href="/learning" className="hero-action border bg-slate-950/90 font-bold hover:bg-slate-900" style={{ borderColor: HUB_BRANDING.learning.color, color: HUB_BRANDING.learning.color }}>
-            <BookOpen aria-hidden="true" /><span>{t('heroOpenLearning')}</span><ArrowRight aria-hidden="true" />
+            <img src={HUB_BRANDING.learning.icon} alt="" width={28} height={28} className="h-7 w-7 shrink-0" decoding="async" /><span>{t('heroOpenLearning')}</span><ArrowRight aria-hidden="true" />
           </a>
           <a id="hero-start-analysis-btn" href="/marketscreener" className="hero-action border bg-slate-950/90 font-bold hover:bg-slate-900" style={{ borderColor: HUB_BRANDING.marketscreener.color, color: HUB_BRANDING.marketscreener.color }}>
-            <BarChart3 aria-hidden="true" /><span>{t('heroAnalysisDemo')}</span><ArrowRight aria-hidden="true" />
+            <img src={HUB_BRANDING.marketscreener.icon} alt="" width={28} height={28} className="h-7 w-7 shrink-0" decoding="async" /><span>{t('heroAnalysisDemo')}</span><ArrowRight aria-hidden="true" />
           </a>
           <a href="/marketscreener/scorer" className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-amber-200 underline underline-offset-4">{detailCopy[locale][0]}</a>
         </div>

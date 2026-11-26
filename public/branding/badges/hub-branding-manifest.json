@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "CAPITAL_AI_HUB_IDENTITY@1",
+  "publicationAuthority": false,
+  "source": "shared/hub-branding.mjs",
+  "rendererTokens": "public/branding/asset-pack/meta/social-render-tokens.json",
+  "hubs": {
+    "marketscreener": {
+      "name": "Analytics Hub",
+      "family": "violet",
+      "color": "#B794F4",
+      "icon": {
+        "repositoryPath": "public/branding/badges/analytics-hub.svg",
+        "publicUrl": "/branding/badges/analytics-hub.svg",
+        "sha256": "732a4ae3d52a318df1b60b334f839cef66f45c592d7e96fe6d5298abd77233b9",
+        "bytes": 1638,
+        "mime": "image/svg+xml",
+        "dimensions": [
+          128,
+          128
+        ],
+        "renderer": "src/platform/SocialMediaEngine/Branding/ScreenerBlueprintBadgeRenderer.mjs",
+        "rightsReference": "docs/licenses/CAPITAL-AI-HUB-ICONS-20261126.md",
+        "origin": "FIRST_PARTY_DETERMINISTIC_RENDER",
+        "productUse": "OWNER_DIRECTED_DRAFT",
+        "thirdPartyRedistribution": "NOT_GRANTED",
+        "publishApproval": false
+      }
+    },
+    "learning": {
+      "name": "Learning Hub",
+      "family": "gold",
+      "color": "#F9BF21",
+      "icon": {
+        "repositoryPath": "public/branding/badges/learning-hub.svg",
+        "publicUrl": "/branding/badges/learning-hub.svg",
+        "sha256": "d5a3613e8f00f51797d200af508d6dfbce4de2d01758ddf329d5618445029efb",
+        "bytes": 1480,
+        "mime": "image/svg+xml",
+        "dimensions": [
+          128,
+          128
+        ],
+        "renderer": "src/platform/SocialMediaEngine/Branding/ScreenerBlueprintBadgeRenderer.mjs",
+        "rightsReference": "docs/licenses/CAPITAL-AI-HUB-ICONS-20261126.md",
+        "origin": "FIRST_PARTY_DETERMINISTIC_RENDER",
+        "productUse": "OWNER_DIRECTED_DRAFT",
+        "thirdPartyRedistribution": "NOT_GRANTED",
+        "publishApproval": false
+      }
+    },
+    "studio": {
+      "name": "Studio Hub",
+      "family": "green",
+      "color": "#4ADE80"
+    },
+    "social": {
+      "name": "Social Hub",
+      "family": "pink",
+      "color": "#F9A8D4"
+    },
+    "documentation": {
+      "name": "Dokumentation Hub",
+      "family": "blue",
+      "color": "#60A5FA"
+    },
+    "control-center": {
+      "name": "Control Center",
+      "family": "rose",
+      "color": "#F87171"
+    },
+    "legal": {
+      "name": "Rechtliches",
+      "family": "cyan",
+      "color": "#67E8F9"
+    }
+  }
+}
