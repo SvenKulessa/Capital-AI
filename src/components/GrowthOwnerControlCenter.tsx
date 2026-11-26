@@ -16,6 +16,56 @@ type ArchiveItem = { id: string; version: number; at: string };
 const colors = { VERIFIED: 'text-emerald-300', BLOCKED: 'text-rose-300', NOT_PROVEN: 'text-amber-200' };
 type View = 'matrix' | 'edit' | 'compare' | 'handoff';
 
+type OpenAiStatus = {
+  connection: string;
+  modelAvailable: boolean | null;
+  modelConfigured: boolean;
+  budget: {
+    permitsRequest: boolean;
+    inputTokens: number;
+    outputTokens: number;
+    capMicroUsd: number | null;
+  };
+};
+
+function OpenAiProviderStatus() {
+  const [status, setStatus] = useState<OpenAiStatus | null>(null);
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  async function readStatus() {
+    setPending(true);
+    setFailed(false);
+    try {
+      const response = await fetch('/api/profile/growth-intelligence/openai-status', {
+        credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(18000),
+      });
+      if (!response.ok) throw Error('OpenAI status unavailable');
+      setStatus(await response.json());
+    } catch {
+      setStatus(null);
+      setFailed(true);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return <section className="rounded-xl border border-indigo-400/30 p-3" aria-label="OpenAI-Provider">
+    <h3 className="font-semibold">OpenAI-Provider</h3>
+    <button type="button" className={button + ' mt-2'} disabled={pending} onClick={() => void readStatus()}>
+      {pending ? 'Verbindung wird geprüft …' : 'Verbindung und Modell prüfen'}
+    </button>
+    <div className="mt-2 text-sm text-slate-300" aria-live="polite">
+      {failed && <p>Provider-Status nicht verfügbar.</p>}
+      {status && <dl>
+        <div><dt className="inline font-semibold">Verbindung </dt><dd className="inline">{status.connection}</dd></div>
+        <div><dt className="inline font-semibold">Modell </dt><dd className="inline">{!status.modelConfigured ? 'Nicht konfiguriert' : status.modelAvailable === null ? 'Nicht nachgewiesen' : status.modelAvailable ? 'Verfügbar laut Modellmetadaten' : 'Kein Zugriff auf das konfigurierte Modell'}</dd></div>
+        <div><dt className="inline font-semibold">Kostenkontrolle </dt><dd className="inline">{status.budget.permitsRequest && status.budget.capMicroUsd !== null ? `Pro Entwurfsaufruf maximal ${status.budget.inputTokens} Eingabe- und ${status.budget.outputTokens} Ausgabetokens bei konfigurierter Obergrenze von ${status.budget.capMicroUsd / 1_000_000} USD` : 'Inferenz gesperrt durch Konfiguration'}</dd></div>
+      </dl>}
+    </div>
+  </section>;
+}
+
 export function GrowthOwnerControlCenter() {
   const [history, setHistory] = useState(() => appendSnapshot([], initialRows(), new Date().toISOString()));
   const [sceneIds,setSceneIds]=useState<string[]>([]);
@@ -193,6 +243,7 @@ export function GrowthOwnerControlCenter() {
       <p className="mt-2 text-sm text-slate-300">SOLO2 · Arbeitsstand v{current.version} · {new Date(current.at).toLocaleString('de-DE')}</p>
       <p className="mt-2 text-xs text-slate-400">Arbeitsstand in der aktuellen Sitzung; JSON-Export und freigegebenes verschlüsseltes Owner-Archiv zur Wiederverwendung. Bis zu 30 Versionen (4 MB Historie). Keine Tokens, Kundendaten oder Secrets eingeben. Dokumentierte Freigaben erteilen keine Berechtigungen.</p>
     </header>
+    <OpenAiProviderStatus />
     {sceneIds.length>0&&<section className="rounded-xl border border-cyan-300/30 p-3" aria-label="Growth 3D Content Studio">
       <h3 className="font-semibold text-cyan-200">Growth 3D Content Studio</h3>
       <p className="mt-1 text-xs text-slate-300">{sceneIds.length} geplante Szenen · DRAFT_ONLY · keine exportierten Medien oder Publikationsfreigaben. Tool-Radar: täglicher Watch vorgesehen, Laufzeit nicht nachgewiesen.</p>
