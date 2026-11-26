@@ -27,7 +27,7 @@ function json(res, status, payload) {
   res.ended = true;
 }
 
-function securityHarness({ factor = true, factorStatus = 'verified', factors, passkeyCount = 0, enrollmentTotp = null } = {}) {
+function securityHarness({ factor = true, factorStatus = 'verified', factors, passkeyCount = 0, enrollmentTotp = null, now = Date.now } = {}) {
   const writes = [];
   const calls = [];
   const user = {
@@ -101,6 +101,7 @@ function securityHarness({ factor = true, factorStatus = 'verified', factors, pa
     readRequestJson: async req => req.body || {},
     sameOrigin: req => req.headers?.origin === 'https://capital-ai.online',
     audit: () => {},
+    now,
   });
 
   return { security, writes, calls };
@@ -426,4 +427,27 @@ test('TOTP enrollment accepts valid padded and grouped Base32 provider secrets',
   assert.equal(res.status, 200);
   assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
   assert.equal(res.payload.qrCode, ''); // Manual setup remains possible without QR material.
+});
+
+
+test('password reset limits verified-user updates before provider mutation and recovers after window', async () => {
+  let clock = 1000;
+  const h = securityHarness({ now: () => clock });
+  const url = new URL('https://capital-ai.online/api/auth/password/reset');
+  const request = async (origin = 'https://capital-ai.online', password = 'synthetic-only-password') => {
+    const res = responseHarness();
+    await h.security.handle({ method: 'POST', headers: { origin }, body: { password } }, res, url, json);
+    return res;
+  };
+  for (let i = 0; i < 6; i++) assert.equal((await request('https://other.example')).status, 403);
+  for (let i = 0; i < 6; i++) assert.equal((await request('https://capital-ai.online', 'short')).status, 400);
+  for (let i = 0; i < 5; i++) assert.equal((await request()).status, 200);
+  const blocked = await request();
+  assert.equal(blocked.status, 429);
+  assert.equal(blocked.payload.error, 'rate_limited');
+  assert.equal(blocked.getHeader('Retry-After'), '60');
+  assert.equal(h.calls.filter(x => x.path === '/user' && x.options.method === 'PUT').length, 5);
+  clock += 60_000;
+  assert.equal((await request()).status, 200);
+  assert.equal(h.calls.filter(x => x.path === '/user' && x.options.method === 'PUT').length, 6);
 });
