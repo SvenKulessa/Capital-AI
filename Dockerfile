@@ -220,6 +220,9 @@ COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
 RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
     && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
     && rm -rf /root/.npm
+# Exercise the exact existing runtime pin, without a new dependency or required check.
+COPY scripts/growth/visual-export.mjs scripts/growth/visual-export.test.mjs ./scripts/growth/
+RUN node --test scripts/growth/visual-export.test.mjs
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
