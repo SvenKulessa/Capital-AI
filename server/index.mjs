@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createProfileAvatarUpload } from './profile-avatar-upload.mjs';
+import { createProfileProviderAvatar } from './profile-provider-avatar.mjs';
 import { startProfileAvatarClamav } from './profile-avatar-clamav.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
@@ -36,7 +37,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGrowthEvidenceApi } from './growth-owner-evidence-api.mjs';
-import { createGrowthEngineReadback } from './growth-owner-engine-readback.mjs';
+import { createGrowthEngineReadback, createGrowthConversionReadback } from './growth-owner-engine-readback.mjs';
 import { createGrowthGscReadback } from './growth-gsc-readback.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
@@ -95,6 +96,7 @@ import { cadsSnapshot } from './cads-observability.mjs';
 import { createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
 import { createSkillRoutingCatalog } from './skill-routing-catalog.mjs';
 import { inspectChatBuddyKeys } from './chat-buddy-keys.mjs';
+import { createBuddyGeminiByok } from './buddy-gemini-byok.mjs';
 import { learnStatus } from './chat-buddy-learn.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -463,6 +465,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const growthEngineReadback = createGrowthEngineReadback({ authorized: renderOwnerDashboard.authorized });
+  const growthConversionReadback = createGrowthConversionReadback({ env: options.env || process.env, authorized: renderOwnerDashboard.authorized, readCandidates: options.growthConversionCandidateRead });
   const growthGscReadback = createGrowthGscReadback({ authorized: renderOwnerDashboard.authorized, env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const growthEvidenceApi = createGrowthEvidenceApi({ env: options.env || process.env, auth, authorized: renderOwnerDashboard.authorized });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
@@ -529,6 +532,8 @@ export function createApp(root = defaultRoot, options = {}) {
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
   const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
   const agentOperationsPilot = createAgentOperationsPilot({ auth, env: runtimeEnv });
+  const profileProviderAvatar = createProfileProviderAvatar({auth,fetchImpl:options.fetchImpl||fetch});
+  const buddyGeminiByok = createBuddyGeminiByok({auth,env:runtimeEnv,fetchImpl:options.fetchImpl||fetch});
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -554,6 +559,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await profileAvatarUpload.handle(req, res, url, json)) return;
+  if (await profileProviderAvatar.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
   if (await socialXPublishOAuthStart.handle(req, res, url, json)) return;
@@ -572,10 +578,12 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await xUrlContext.handle(req, res, url, json)) return;
   if (await socialPublishOAuthCallback.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
+  if (await buddyGeminiByok.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await growthEngineReadback.handle(req, res, url, json)) return;
+  if (await growthConversionReadback.handle(req, res, url, json)) return;
   if (await growthGscReadback.handle(req, res, url, json)) return;
   if (await growthEvidenceApi.handle(req, res, url, json)) return;
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;

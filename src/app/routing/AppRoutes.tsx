@@ -23,6 +23,7 @@ const SubscriptionPage = lazy(() => import('../../features/account/SubscriptionP
 const PrivateDashboardPage = lazy(() => import('../../features/account/PrivateDashboardPage').then(module => ({default:module.PrivateDashboardPage})));
 
 const BlogPage = lazy(() => import('../../features/learning/BlogPage').then(module => ({ default: module.BlogPage })));
+const SocialHubPage = lazy(() => import('../../features/social/SocialHubPage').then(module => ({ default: module.SocialHubPage })));
 
 const LoginPage = lazy(() =>
   import('../../features/auth/LoginPage').then((module) => ({
@@ -148,6 +149,7 @@ export function AppRoutes({
   onSelectModule,
   onStartProductTour,
 }: AppRoutesProps) {
+  if (currentRoute === '/social') return <SocialHubPage onNavigate={navigateTo} />;
   if (currentRoute === '/blog' || currentRoute.startsWith('/blog/')) return <BlogPage path={currentRoute} />;
 
   if (currentRoute === '/login') {
