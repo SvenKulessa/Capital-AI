@@ -56,7 +56,11 @@ def tls_context():
     # create_default_context reads SSLKEYLOGFILE from the parent environment.
     # Use explicit client defaults and trust only the selected CA bundle.
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     context.load_verify_locations(cafile=str(CA))
+    if (context.keylog_filename is not None or not context.check_hostname
+            or context.verify_mode != ssl.CERT_REQUIRED):
+        raise ValueError("TLS_CONTEXT_POLICY_VIOLATION")
     return context
 
 def read_secdb(branch, repo):
@@ -155,7 +159,8 @@ def selftest():
             load.assert_called_once_with(cafile=str(CA))
             if (context.keylog_filename is not None or keylog.exists()
                     or not context.check_hostname
-                    or context.verify_mode != ssl.CERT_REQUIRED):
+                    or context.verify_mode != ssl.CERT_REQUIRED
+                    or context.minimum_version != ssl.TLSVersion.TLSv1_2):
                 raise AssertionError("TLS_KEYLOG_OR_VERIFICATION_REGRESSION")
     fixes = index_fixes([{"pkg": {"name": "demo", "secfixes":
                          {"2": ["CVE-2026-1234"]}}}])
