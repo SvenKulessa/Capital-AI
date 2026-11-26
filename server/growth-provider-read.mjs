@@ -1,5 +1,5 @@
 // Shared zero-dependency Growth read plane; no Content Engine import or publishing authority.
-import {createHash} from 'node:crypto';
+import {createHash,createHmac} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 
 export const GROWTH_DATA_LAYER_VERSION = 'CAPITAL_AI_GROWTH_DATA_LAYER@1';
@@ -124,7 +124,8 @@ async function providerJson(url, token, fetchImpl, body) {
     });
     if(response.status===401||response.status===403)throw readError('AUTH_REQUIRED');
     if(response.status===429)throw readError('RATE_LIMITED');
-    if(!response.ok)throw readError('PROVIDER_UNAVAILABLE');
+    const metaError = !response.ok && response.status===400 && new URL(url).origin==='https://graph.facebook.com';
+    if(!response.ok&&!metaError)throw readError('PROVIDER_UNAVAILABLE');
     // Bound before concatenation; never forward provider error text.
     const reader=response.body?.getReader();
     if(!reader)throw readError('INVALID_RESPONSE');
@@ -135,6 +136,12 @@ async function providerJson(url, token, fetchImpl, body) {
         chunks.push(Buffer.from(value));}
     }finally{reader.releaseLock();}
     const value=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    if(metaError){
+      const code=value?.error?.code;
+      if(Number.isInteger(code)&&(code===190||code===102||code===10||code===3||(code>=200&&code<=299)))throw readError('AUTH_REQUIRED');
+      if([4,17,32,341,613].includes(code))throw readError('RATE_LIMITED');
+      throw readError('PROVIDER_UNAVAILABLE');
+    }
     if(!value||typeof value!=='object'||Array.isArray(value)||value.error||value.errors)
       throw readError('INVALID_RESPONSE');
     return value;
@@ -182,17 +189,21 @@ export function createGrowthProviderReaders({fetchImpl=fetch}={}) {
       if(!Number.isFinite(position))throw readError('INVALID_RESPONSE');
       return {rows:[{clicks,impressions,ctr:clicks/impressions,position}]};
     },
-    async INSTAGRAM({identity,token,startDate,endDate,version}) {
+    async INSTAGRAM({identity,token,startDate,endDate,version,appSecret}) {
       requireReadPeriod(startDate,endDate);
       if((typeof identity!=='string'||!identityPatterns.INSTAGRAM.test(identity))||!/^v[1-9][0-9]\.0$/.test(version??''))
         throw readError('IDENTITY_MISMATCH');
       const base='https://graph.facebook.com/'+version+'/'+identity;
-      const account=await get(base+'?fields=id',token);
+      // First-party app proof; only the HMAC, never the secret or bearer token, goes in the URL.
+      if(!tokenOk(token))throw readError('AUTH_REQUIRED');
+      if(appSecret!==undefined&&!tokenOk(appSecret))throw readError('AUTH_REQUIRED');
+      const proof=appSecret===undefined?null:createHmac('sha256',appSecret).update(token).digest('hex');
+      const metaUrl=(target,params)=>{const url=new URL(target);url.search=new URLSearchParams(params).toString();if(proof)url.searchParams.set('appsecret_proof',proof);return url.toString();};
+      const account=await get(metaUrl(base,{fields:'id'}),token);
       if(account.id!==identity)throw readError('IDENTITY_MISMATCH');
-      const url=new URL(base+'/insights');
-      url.search=new URLSearchParams({metric:'reach,accounts_engaged',period:'day',metric_type:'total_value',
-        since:String(Date.parse(startDate)/1000),until:String(Date.parse(addDays(endDate,1))/1000)}).toString();
-      const report=await get(url.toString(),token);
+      const url=metaUrl(base+'/insights',{metric:'reach,accounts_engaged',period:'day',metric_type:'total_value',
+        since:String(Date.parse(startDate)/1000),until:String(Date.parse(addDays(endDate,1))/1000)});
+      const report=await get(url,token);
       if(!Array.isArray(report.data)||report.data.length!==2||report.paging?.next)
         throw readError('INCOMPLETE_PERIOD');
       const entries=SOURCE_METRICS.INSTAGRAM.map(name=>{
@@ -248,7 +259,7 @@ export async function collectGrowthProviderData({env=process.env,fetchImpl=fetch
   const config={
     GSC:{identity:expectedIdentities.GSC,token:env.GROWTH_GSC_READ_TOKEN},
     INSTAGRAM:{identity:env.GROWTH_INSTAGRAM_ACCOUNT_ID,token:env.GROWTH_INSTAGRAM_READ_TOKEN,
-      version:env.SOCIAL_META_GRAPH_API_VERSION},
+      version:env.SOCIAL_META_GRAPH_API_VERSION,appSecret:env.GROWTH_INSTAGRAM_READ_APP_SECRET},
     YOUTUBE:{identity:env.GROWTH_YOUTUBE_CHANNEL_ID,token:env.GROWTH_YOUTUBE_READ_TOKEN}
   };
   const readers=createGrowthProviderReaders({fetchImpl});
