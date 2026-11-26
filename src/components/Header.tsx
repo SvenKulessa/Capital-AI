@@ -1,4 +1,4 @@
-import { BRAND_COLORS, hubBrandForRoute } from '../../shared/hub-branding.mjs';
+import { BRAND_COLORS, HUB_BRANDING, hubBrandForRoute } from '../../shared/hub-branding.mjs';
 import { accountDisplay, verifiedOwner } from '../../shared/account-display.mjs';
 /**
  * ============================================================================
@@ -200,9 +200,15 @@ export const Header: React.FC<HeaderProps> = ({
     setIsMenuOpen(false);
     if (onNavigate) { event.preventDefault(); onNavigate(path); }
   };
-  const primaryLinks = () => primaryRoutes.map((path, index) => <a key={path} href={path}
-    aria-current={isCurrent(path) ? 'page' : undefined} onClick={event => follow(event, path)}
-    className={`inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${isCurrent(path) ? 'bg-amber-300/15 text-amber-200 underline underline-offset-4' : 'text-slate-200 hover:bg-white/10'}`}>{primaryLabels[index]}</a>);
+  const primaryLinks = () => primaryRoutes.map((path, index) => {
+    const brand = path === '/learning' ? HUB_BRANDING.learning
+      : path === '/marketscreener' ? HUB_BRANDING.marketscreener : undefined;
+    const current = isCurrent(path);
+    return <a key={path} href={path}
+      aria-current={current ? 'page' : undefined} onClick={event => follow(event, path)}
+      style={brand ? { borderColor: brand.color, color: brand.color, backgroundColor: current ? `${brand.color}20` : undefined } : undefined}
+      className={`inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${brand ? 'border hover:bg-white/10' : current ? 'bg-amber-300/15 text-amber-200' : 'text-slate-200 hover:bg-white/10'} ${current ? 'underline underline-offset-4' : ''}`}>{brand?.name ?? primaryLabels[index]}</a>;
+  });
 
   const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace' | '/profile/rights' | '/profile/subscription' | '/profile/dashboard') => {
     setIsAccountOpen(false);
@@ -423,7 +429,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
-                <nav aria-label={nav.main} className="mt-5 grid gap-1">{primaryLinks()}</nav>
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authStatus === 'loading' ? (
@@ -444,6 +449,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className="flex min-h-14 w-full items-center justify-between gap-2 rounded-xl px-2 py-2 text-left hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                       >
                         <span className="min-w-0 flex-1">
+                          <span className="mb-1 block text-xs font-semibold text-slate-200">Profile Hub</span>
                           <span className="flex items-center gap-2">
                             <ProfileAvatar url={authSession.user?.avatarUrl} owner={isOwner} />
                             <span className={`min-w-0 truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
@@ -508,6 +514,8 @@ export const Header: React.FC<HeaderProps> = ({
                   )}
                   {authStatus !== 'ready' && <a href="/login" onClick={event => follow(event, '/login')} className="mt-2 inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">{nav.login}</a>}
                 </div>
+
+                <nav aria-label={nav.main} className="mt-5 grid gap-1">{primaryLinks()}</nav>
 
                 <details className="mt-4 rounded-xl border border-slate-700 p-2">
                   <summary className="cursor-pointer rounded-lg px-3 py-3 text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-amber-300">{locale === 'de' ? 'Weitere Bereiche' : 'More areas'}</summary>
