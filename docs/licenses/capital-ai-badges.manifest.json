@@ -61,9 +61,9 @@
     },
     {
       "id": "capital-ai-badge-vocabulary",
-      "label": "VOCABULARY",
+      "label": "Learning Hub Paket",
       "path": "public/branding/badges/vocabulary.svg",
-      "sha256": "853f090eebba6ca849e53a0d6260eada68c8081f562463a3d890ecd0b097dc33",
+      "sha256": "648ab8a6e7aaa818c9adececd4fe8c8cf2f774b4823b1087f19077420888275f",
       "width": 256,
       "height": 256,
       "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
