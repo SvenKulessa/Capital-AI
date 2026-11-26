@@ -9,13 +9,23 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { readHealth } from './trust-runtime-readback.mjs';
+import { GROWTH_PUBLIC_ARTICLE } from '../shared/public-search-focus.mjs';
+
+const productionHome = process.argv[3] === '--production-home';
+const expectedSha = process.env.CAPITAL_EXPECTED_MAIN_SHA;
+const globeSha = 'd510ac752e79314d69475a7645c554625b86ed676b0b04aabbc2869599de8eb4';
+let healthBefore = null, healthAfter = null;
 
 let base;
 try {
   base = new URL(process.argv[2]);
   if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password || base.search || base.hash) throw Error();
+  if (process.argv.length > (productionHome ? 4 : 3)) throw Error();
+  if (productionHome && (base.href !== 'https://capital-ai.online/' || !/^[a-f0-9]{40}$/.test(expectedSha ?? ''))) throw Error();
 } catch {
-  console.error('Usage: node scripts/product-accessibility-browser.mjs https://staging-host');
+  console.error('Usage: node scripts/product-accessibility-browser.mjs https://staging-host [--production-home: canonical origin and CAPITAL_EXPECTED_MAIN_SHA required]');
   process.exit(2);
 }
 const startedAt = new Date().toISOString();
@@ -44,7 +54,7 @@ async function navigate(path) {
       const target = path === '/' ? '#hub-directory' : path === '/learning/simulator' ? '#sim-title'
         : path.startsWith('/learning') ? '.hub-navigation nav.hub-tab-strip' : 'main,nav,header';
       const ready = await evaluate("document.readyState === 'complete' && !!document.querySelector(" + JSON.stringify(target) + ")");
-      if (ready) { await pause(800); return; }
+      if (ready && await evaluate('location.origin') === base.origin) { await pause(800); return; }
     } catch { /* navigation in progress */ }
     await pause(100);
   }
@@ -77,6 +87,12 @@ async function checkPage(path, viewport) {
     width:viewport.width, height:viewport.height, deviceScaleFactor:2, mobile:viewport.mobile,
   });
   await navigate(path);
+  // Snapshot initial-navigation metrics before the first consent or scripted interaction.
+  let homeLab = null;
+  if (path === '/') {
+    await pause(1200);
+    homeLab = await evaluate("(() => {const m=window.__caiPublicHomeLab;const n=performance.getEntriesByType('navigation')[0];return m?{lcpMs:m.lcpMs,cls:m.cls,ttfbMs:n&&n.responseStart>0?n.responseStart:null,observationMs:performance.now(),inpMs:null}:null;})()");
+  }
   if (path === '/' || path.startsWith('/blog/')) {
     await evaluate(`(() => {
       const panel = document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
@@ -149,12 +165,12 @@ async function checkPage(path, viewport) {
         parseFloat(style.outlineWidth) >= 2 && style.outlineStyle !== 'none';
     })()`);
     if (!home.keyboardNext) failures.push('/: public hub keyboard focus or indicator regression at ' + viewport.width);
-    // Lab measurements only. No claim about real-user p75, INP or WCAG.
-    record.homeLab = await evaluate(`(() => {
-      const m = window.__caiPublicHomeLab;
-      return m ? { lcpMs: m.lcpMs, cls: m.cls, scope: 'ISOLATED_LAB_NOT_FIELD', inpMs: null } : null;
-    })()`);
-    if (process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
+    record.homeLab = homeLab && {...homeLab,scope:productionHome?'PRODUCTION_CHROMIUM_LAB_NOT_FIELD':'ISOLATED_LAB_NOT_FIELD',networkThrottling:'NONE',cpuThrottling:'NONE',cache:productionHome?'DISABLED':'DEFAULT',realUserP75:null};
+    record.growth = await checkGrowthHome(viewport);
+    if (!record.growth.domPass) failures.push('/: Growth article/pipeline contract at '+viewport.width);
+    if (productionHome && record.growth.domPass) await checkGrowthInteraction(record.growth);
+    if (productionHome && record.homeLab) record.homeLab.scriptedEventMaxMs=await evaluate('window.__caiPublicHomeLab?.eventMaxMs ?? null');
+    if (!productionHome && process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
       await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
       const shot = await send('Page.captureScreenshot', {format:'png',captureBeyondViewport:false});
       await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, 'public-home-' + viewport.width + '.png'), Buffer.from(shot.data,'base64'));
@@ -295,10 +311,72 @@ async function checkPage(path, viewport) {
     item.hub === 'learning' && item.wrap === 'nowrap' && item.scroll === 'auto' && item.linkNames.length >= 4
   )) failures.push(path + ': Learning Hub mobile scroll navigation missing');
 }
+
+async function checkGrowthHome(viewport) {
+  const article=GROWTH_PUBLIC_ARTICLE;
+  const expected=[article.title,article.intro,article.status,article.closing,
+    ...article.sections.flatMap(s=>[s.title,s.body]),...article.products.flatMap(p=>[p.title,p.body])];
+  const result=await evaluate('(() => {const a=document.querySelector("#growth-intelligence");const p=a?.querySelector("[data-growth-pipeline]");const c=a?.querySelector("[data-growth-globe-core]");const text=a?.textContent||"";return {completeArticle:'+JSON.stringify(expected)+'.every(t=>text.includes(t)),label:!!a?.querySelector("[data-growth-engine-label]"),badges:p?.querySelectorAll("[data-growth-pipeline-badge]").length||0,buttons:p?.querySelectorAll("button").length||0,orbitButtons:c?.querySelectorAll("button").length||0,original:c?.querySelector("img")?.getAttribute("src")||null,initialCanvas:!!c?.querySelector("canvas"),overflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth),touchTargets:[...(p?.querySelectorAll("button")||[])].every(b=>b.getBoundingClientRect().height>=44&&b.getBoundingClientRect().width>=44&&b.textContent.trim().length>0)};})()');
+  return {...result,domPass:result.completeArticle&&result.label&&result.badges===7&&result.buttons===7&&result.orbitButtons===0&&result.original==='/branding/universe/hero-universe-globe.webp'&&!result.initialCanvas&&result.overflow<=2&&result.touchTargets};
+}
+async function waitGrowth(expression, code) {
+  for(let i=0;i<120;i++){if(await evaluate(expression))return;await pause(100);}
+  throw Error(code);
+}
+async function activateGrowth(selector) {
+  const focused=await evaluate('(() => {const b=document.querySelector('+JSON.stringify(selector)+');if(!b||b.disabled)return false;b.scrollIntoView({block:"center",inline:"center",behavior:"instant"});b.focus({preventScroll:true});return document.activeElement===b;})()');
+  if(!focused)throw Error('GROWTH_BUTTON_FOCUS');
+  await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+  await send('Input.dispatchKeyEvent',{type:'char',key:'Enter',code:'Enter',text:'\r',unmodifiedText:'\r',windowsVirtualKeyCode:13});
+  await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+}
+async function growthFrame() {
+  const clip=await evaluate('(() => {const r=document.querySelector("[data-growth-globe-core] canvas")?.getBoundingClientRect();return r&&r.width>0&&r.height>0?{x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}:null;})()');
+  if(!clip)throw Error('GROWTH_CANVAS_MISSING');
+  const shot=await send('Page.captureScreenshot',{format:'png',clip,captureBeyondViewport:true});
+  return createHash('sha256').update(Buffer.from(shot.data,'base64')).digest('hex');
+}
+async function checkGrowthInteraction(result) {
+  for(let i=0;i<GROWTH_PUBLIC_ARTICLE.stages.length;i++){
+    const stage=GROWTH_PUBLIC_ARTICLE.stages[i];
+    await activateGrowth('#growth-intelligence [data-growth-pipeline] li:nth-child('+(i+1)+') button');
+    await waitGrowth('(() => {const a=document.querySelector("#growth-intelligence");return a?.querySelector("#growth-stage-title")?.textContent.includes('+JSON.stringify(stage.title)+')&&a.textContent.includes('+JSON.stringify(stage.body)+')&&a.textContent.includes('+JSON.stringify(stage.status)+')&&a.querySelectorAll("[data-growth-pipeline] button[aria-pressed=true]").length===1;})()','GROWTH_STAGE_SELECTION');
+  }
+  result.keyboardStages='PASS';
+  const start='#growth-intelligence [data-growth-globe-core] + div > button:first-child';
+  await activateGrowth(start);
+  await waitGrowth('document.querySelector("[data-growth-globe-core] .brand-globe-art")?.dataset.globeState==="3d"','GROWTH_WEBGL_NOT_READY');
+  await evaluate('document.querySelector("[data-growth-globe-core]").scrollIntoView({block:"center",behavior:"instant"})');
+  await pause(800);
+  const first=await growthFrame();await pause(1000);const second=await growthFrame();
+  if(first===second)throw Error('GROWTH_ROTATION_NOT_OBSERVED');
+  result.rotation='SOFTWARE_WEBGL_FRAME_CHANGE';
+  const stop='#growth-intelligence [data-growth-globe-core] + div > button:nth-child(2)';
+  await activateGrowth(stop);
+  await waitGrowth('document.querySelector('+JSON.stringify(stop)+')?.getAttribute("aria-pressed")==="true"','GROWTH_PAUSE_NOT_PROVEN');
+  await activateGrowth(start);
+  await waitGrowth('!document.querySelector("[data-growth-globe-core] canvas")','GROWTH_POSTER_NOT_PROVEN');
+  result.pauseAndPoster='PASS';
+}
+async function requireProductionIdentity(){
+  const h=await readHealth({origin:base.origin,expectedMainSha:expectedSha});
+  if(h.status!=='ok'||h.runtimeMatchesExpectedMain!==true)throw Error('PRODUCTION_RUNTIME_SHA_MISMATCH');
+  return h;
+}
+async function verifyGlobeAsset(){
+  const r=await fetch(base.origin+'/branding/universe/hero-universe-globe.webp',{redirect:'error',signal:AbortSignal.timeout(15000)});
+  if(!r.ok||!/^image\/webp(?:;|$)/i.test(r.headers.get('content-type')||'')||!r.body)throw Error('GLOBE_ASSET_RESPONSE');
+  const reader=r.body.getReader(),hash=createHash('sha256');let count=0;
+  try{for(;;){const {done,value}=await reader.read();if(done)break;count+=value.byteLength;if(count>4*1024*1024)throw Error('GLOBE_ASSET_TOO_LARGE');hash.update(value);}}
+  finally{await reader.cancel().catch(()=>{});}
+  if(hash.digest('hex')!==globeSha)throw Error('GLOBE_ASSET_HASH_MISMATCH');
+}
+
 try {
+  if (productionHome) { healthBefore=await requireProductionIdentity(); await verifyGlobeAsset(); }
   chrome = spawn(process.env.CAPITAL_AI_CHROME_BIN || 'chromium', [
     '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--no-first-run',
-    '--disable-extensions', '--remote-debugging-port=0', '--user-data-dir=' + profile, 'about:blank',
+    '--disable-extensions', ...(productionHome?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]), '--remote-debugging-port=0', '--user-data-dir=' + profile, 'about:blank',
   ], { stdio:'ignore' });
   chrome.on('error', () => {});
   let port;
@@ -327,9 +405,14 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Accessibility.enable');
+  if(productionHome){
+    await send('Network.enable');
+    await send('Network.setCacheDisabled',{cacheDisabled:true});
+    await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+  }
   await send('Page.addScriptToEvaluateOnNewDocument', {source: String.raw`(() => {
     if (location.pathname !== '/') return;
-    const data = {lcpMs:null, cls:null};
+    const data = {lcpMs:null, cls:null, eventMaxMs:null};
     Object.defineProperty(window, '__caiPublicHomeLab', {value:data});
     try {
       new PerformanceObserver(list => {
@@ -347,12 +430,14 @@ try {
           session += entry.value; previous = entry.startTime;
           data.cls = Math.max(data.cls ?? 0, session);
         }
-        if (data.cls === null) data.cls = 0;
       }).observe({type:'layout-shift',buffered:true});
+      if (PerformanceObserver.supportedEntryTypes.includes('layout-shift')) data.cls=0;
     } catch { /* unsupported metrics remain null */ }
+    try { new PerformanceObserver(list=>{for(const e of list.getEntries()) if(e.interactionId>0)data.eventMaxMs=Math.max(data.eventMaxMs??0,e.duration);}).observe({type:'event',buffered:true,durationThreshold:16}); } catch { /* unavailable */ }
   })()`});
   for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1440,height:900,mobile:false}]) {
-    for (const path of ['/', '/learning', '/learning?tab=glossar', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
+    for (const path of (productionHome?['/']:['/', '/learning', '/learning?tab=glossar', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen'])) await checkPage(path,viewport);
+    if(productionHome)continue;
     // Same actual Chromium/CDP session: all ten original tab artworks, not a static CSS assertion.
     for (const tab of ['glossar','flashcards','guides','patterns','videos','quiz','quizzes','news','kontakt','simulator']) {
       const path = '/learning?tab=' + tab;
@@ -381,12 +466,15 @@ try {
       }
     }
   }
+  if(productionHome)healthAfter=await requireProductionIdentity();
   console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
+    ...(productionHome?{healthBefore,healthAfter,originalGlobeSha256:globeSha,realUserMetrics:'NOT_PROVEN',nativeAndroid:'NOT_PROVEN'}:{}),
     pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',
     actualScreenReader:'NOT_PROVEN',liveTenantIsolation:'NOT_PROVEN',fullWCAGConformance:'NOT_PROVEN'},null,2));
   process.exitCode = failures.length ? 1 : 0;
 } catch (err) {
-  console.error('Browser audit NOT_PROVEN: ' + String(err?.message || err));
+  if(productionHome){console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,healthBefore,healthAfter,pages,failures,status:'NOT_PROVEN',realUserMetrics:'NOT_PROVEN',nativeAndroid:'NOT_PROVEN'},null,2));console.error('Production browser audit NOT_PROVEN: network, identity or browser check failed');}
+  else console.error('Browser audit NOT_PROVEN: ' + String(err?.message || err));
   process.exitCode = 2;
 } finally {
   try { socket?.close(); } catch {}
