@@ -594,6 +594,8 @@
 !server/growth-owner-evidence-api.mjs
 !server/growth-owner-evidence-archive.mjs
 !server/growth-owner-evidence-archive.test.mjs
+!server/openai-provider.mjs
+!server/openai-provider.test.mjs
 !server/growth-owner-engine-readback.mjs
 !server/growth-provider-read.mjs
 !server/growth-gsc-readback.mjs
