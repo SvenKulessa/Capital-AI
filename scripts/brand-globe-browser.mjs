@@ -126,6 +126,7 @@ try {
     assert.equal(decoration.studioShortcut, false, 'Redundant Studio Hub header action remains');
     assert.equal(decoration.outlinePresent, false, 'Removed silver outline remains in hero');
     assert.equal(decoration.copyVeil, 'none', 'Opaque hero-copy veil remains');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.hero-copy')).backgroundColor"), 'rgba(0, 0, 0, 0)', 'Hero copy covers the globe');
     if (viewport.width<=768) {
       assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile/tablet globe overshoots content width');
       assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile/tablet globe is not proportional');
@@ -177,27 +178,16 @@ try {
     await pause(900);
     const second = await shot(null, clip);
     assert.notEqual(first, second, '3D output is not changing');
-    // Exercise the real focusable button using keyboard input.
-    await evaluate("document.querySelector('.hero-globe-pause').focus({preventScroll:true})");
-    assert.equal(await evaluate("document.activeElement === document.querySelector('.hero-globe-pause')"), true, 'Pause button did not receive keyboard focus');
-    // Enter also needs its character event; keyDown without text does not
-    // reproduce Chromium's native button activation (unlike ArrowDown).
-    await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
-    await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    await until(() => evaluate("document.querySelector('.hero-globe-pause').getAttribute('aria-pressed')==='true'"), 'KEYBOARD_PAUSE');
-    await pause(100);
-    const paused = await shot(null, clip);
-    await pause(600);
-    assert.equal(await shot(null, clip), paused, 'Paused globe still changes');
-    await evaluate("document.querySelector('.hero-globe-pause').click()");
-    await pause(600);
-    assert.notEqual(await shot(null, clip), paused, 'Globe did not resume');
+    // Landing hero auto-rotates without a dedicated pause button. Check a third frame.
+    assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
+    await pause(900);
+    assert.notEqual(await shot(null, clip), second, 'Globe stopped rotating');
     const lost = await evaluate("(() => { const gl=document.querySelector('.brand-globe-canvas').getContext('webgl2'); const ext=gl?.getExtension('WEBGL_lose_context'); if(!ext)return false; ext.loseContext(); return true; })()");
     assert.equal(lost, true, 'Context-loss test unavailable');
     await until(() => evaluate("document.querySelector('.brand-globe-art').dataset.globeState==='poster'"), 'CONTEXT_LOSS_FALLBACK');
     await until(() => evaluate("!document.querySelector('.hero-globe-pause')"), 'FALLBACK_HAS_NO_PLAYBACK_CONTROL');
     await until(() => evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity === '1'"), 'FALLBACK_POSTER_FULLY_VISIBLE');
-    report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', keyboardPauseResume: 'PASS', contextLossFallback: 'PASS' });
+    report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', continuousVisibleRotation: 'PASS', contextLossFallback: 'PASS' });
     // Actual article scene, existing anonymous browser QA; no external sources.
     await evaluate(`document.querySelector('[data-article-scene="portfolio"] button').click()`);
     await until(() => evaluate(`document.querySelector('[data-article-scene="portfolio"]').dataset.sceneState === '3d'`), 'ARTICLE_WEBGL_READY');
