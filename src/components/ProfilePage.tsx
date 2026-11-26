@@ -1,6 +1,7 @@
 import React from 'react';
 import { LearningEntitlementBadge } from '../features/learning/LearningEntitlementBadge';
 import { ProfileAvatarUpload } from '../features/account/ProfileAvatarUpload';
+import { GeminiByokSettings } from '../features/account/GeminiByokSettings';
 import { VerifiedProfileAvatar } from '../features/account/VerifiedProfileAvatar';
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
@@ -93,6 +94,7 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
               <p className="mt-3 text-sm text-slate-400">Abo- und Rollenstatus konnte nicht sicher geladen werden.</p>
             )}
           </div>
+          <GeminiByokSettings />
         </section>
       )}
     </AccountPageShell>

@@ -1058,6 +1058,15 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     }
   }
 
+  // Private server-only avatar resolution. No arbitrary URL parameters accepted.
+  // The user identity is verified through the current signed session.
+  async function verifiedProviderAvatarUrl(req, res) {
+    const stored = await resolveSession(req, res);
+    if (!stored || !stored._authUser) return null;
+    const result = accountAvatarForVerifiedUser(stored._authUser);
+    return typeof result === 'string' && result.startsWith('https://') ? result : null;
+  }
+
   // Internal server-only bridge for the Supabase Edge X vault. Never expose
   // this JWT on a public route, browser response, event, log or error.
   async function internalAccessToken(req, res) {
@@ -1066,6 +1075,6 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     return stored.accessToken;
   }
 
-  return { handle, session, verify, resolvePaidTier, authorizeIamRole, sameOrigin,
+  return { handle, session, verify, resolvePaidTier, authorizeIamRole, sameOrigin, verifiedProviderAvatarUrl,
     internalAccessToken, skillRoutingPrincipal };
 }
