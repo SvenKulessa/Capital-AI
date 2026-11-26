@@ -27,16 +27,16 @@ export function Hero() {
         </div>
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-gold">{t('heroEyebrow')}</p>
         <h1 id="public-hero-title" className="mb-5 text-[30px] font-extrabold leading-[1.12] tracking-tight text-white sm:text-5xl">
-          <span className="block text-brand-gold">{t('hero1')}</span>
+          <span className="block universe-hero-heading">{t('hero1')}</span>
           {' '}<span className="block">{t('hero2')}</span>
         </h1>
         <p className="mb-6 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg">{t('heroDescription')}</p>
         <div className="flex w-full max-w-sm flex-col gap-3">
-          <a id="hero-open-learning-link" href="/learning" className="hero-action bg-brand-gold font-bold text-black">
+          <a id="hero-open-learning-link" href="/learning" className="hero-action universe-hub-action universe-hub-action--learning">
             <BookOpen aria-hidden="true" /><span>{t('heroOpenLearning')}</span><ArrowRight aria-hidden="true" />
           </a>
-          <a id="hero-start-analysis-btn" href="/marketscreener" className="hero-action hero-action-secondary">
-            <BarChart3 aria-hidden="true" /><span>{t('heroAnalysisDemo')}</span><ArrowRight aria-hidden="true" />
+          <a id="hero-start-analysis-btn" href="/marketscreener" className="hero-action hero-action-secondary universe-hub-action universe-hub-action--analytics">
+            <BarChart3 aria-hidden="true" /><span>{locale === 'de' ? 'Analyse entdecken durch Analytics Hub' : t('heroAnalysisDemo')}</span><ArrowRight aria-hidden="true" />
           </a>
           <a href="/marketscreener/scorer" className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-amber-200 underline underline-offset-4">{detailCopy[locale][0]}</a>
         </div>

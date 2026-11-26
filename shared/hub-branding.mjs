@@ -10,6 +10,20 @@ export const BRAND_COLORS = Object.freeze({
   green: '#4ADE80',
 });
 
+/** Per-view design contract. Neutral surfaces, status semantics, immutable illustrations
+ * and the seven-colour global identity stripe are not additional active UI accents. */
+export const UNIVERSE_VIEW_BRANDING = Object.freeze({
+  minimumActiveColors: 2, maximumActiveColors: 4,
+  pair: Object.freeze(['cyan', 'gold']),
+  accent: Object.freeze(['violet', 'rose']),
+  nebulaMaxViewportFraction: 0.20,
+  canvasRelativeRgbLift: 0.08,
+  canvas: '#081229',
+  hubOrder: Object.freeze(['marketscreener', 'learning', 'studio']),
+  studioNavigationTarget: '/',
+  reducedMotion: 'static',
+});
+
 export const HUB_BRANDING = Object.freeze({
   marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.violet },
   studio: { name: 'Studio Hub', color: BRAND_COLORS.green },
