@@ -143,6 +143,8 @@ Freigabe- oder Sicherheitsblockern die konkrete gesperrte Aktion
 abgrenzen und andere autorisierte Arbeiten fortsetzen.
 ```
 
-## AcodeX Chat-Delivery (CAPITAL_AI_ACODE_SHARED_DELIVERY@1 / ACODE_ACOPY_INTEGRATION@1)
+## AcodeX Chat-Delivery (CAPITAL_AI_ACODE_SHARED_DELIVERY@1 / ACODE_ACOPY_INTEGRATION@1 / ACODEX_ON_DEMAND_SYNC@1 / ACODEX_TERMINAL_STATUS_BRANDING@1)
 
 In allen Domain-Chats die Root-AGENTS.md-Abschnitte zur Acode-Shared-Delivery und ACOPY anwenden: versionierter Code in den bestehenden Shared Folder, autorisierter Create-only-Upload mit Parent-/SHA-Readback, vorhandener Startup-Guard, nichtinteraktiver `acopy`-Aufruf, keine Credentials oder interaktive Authentifizierung in Clipboard-Ausgaben. Bei Blockern lokale versionierte Datei und konkreten manuellen Transferweg statt behauptetem Upload liefern. Keine zweite Sync- oder Governance-Architektur.
+
+Für AcodeX-Terminalausgaben die Root-AGENTS.md-Regel ACODEX_TERMINAL_STATUS_BRANDING@1 anwenden: Grün bestätigter Erfolg, Rot Fehler/Blocker, Gelb Review/NOT_PROVEN, Cyan laufender Schritt; TTY-only, NO_COLOR, Plain-Evidence, konkrete Exit-Verträge und ursprüngliche ACOPY-/Heredoc-Semantik erhalten. Bestehenden SHA-geprüften On-Demand-Pull vor Ausführung neu ausgelieferter Skripte verwenden, kein Neustart oder zweiter Scheduler. Keine unbewiesene Farbhook-Installation behaupten.
