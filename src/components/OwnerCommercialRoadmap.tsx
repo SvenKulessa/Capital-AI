@@ -58,7 +58,7 @@ export function OwnerCommercialRoadmap({ userId }: { userId: string }) {
     };
   }, [refresh]);
   async function run(work: (signal: AbortSignal) => Promise<() => void>) {
-    if (busy || !confirmed || action.current) return;
+    if (busy || action.current) return;
     const controller = new AbortController();
     action.current = controller;
     const version = generation.current;
@@ -83,8 +83,7 @@ export function OwnerCommercialRoadmap({ userId }: { userId: string }) {
   return <section aria-labelledby="commercial-roadmap-title" className="space-y-4 rounded-2xl border border-cyan-300/30 bg-[#0b1428] p-4">
     <h3 id="commercial-roadmap-title" className="text-xl font-bold text-white">Zentrale Vermarktungsroadmap · Growth &amp; Commercial Readiness</h3>
     <p className="text-sm text-slate-300">Owner-only · interne Planung. Importierte Evidence ist Dokumentation und keine Verkaufs-, Kosten-, Merge- oder Produktionsfreigabe.</p>
-    {!confirmed ? <p role="status" className="text-amber-200">Owner-Sitzung nicht bestätigt oder Prüfung läuft.</p> : <>
-      <label className="block text-sm text-cyan-100">Private Roadmap-Datei (JSON)
+    <label className="block text-sm text-cyan-100">Private Roadmap-Datei (JSON)
         <input type="file" accept=".json,application/json" disabled={busy} className="mt-2 block w-full min-h-11 text-sm text-slate-200"
           onChange={event => {
             const file = event.currentTarget.files?.[0]; event.currentTarget.value = '';
@@ -96,6 +95,7 @@ export function OwnerCommercialRoadmap({ userId }: { userId: string }) {
             });
           }}/>
       </label>
+    {!confirmed ? <p role="status" className="text-amber-200">Owner-Sitzung nicht bestätigt oder Prüfung läuft.</p> : <>
       <div className="space-y-2 rounded-xl border border-white/10 p-3">
         <label className="block text-sm text-slate-200">Privates Evidence-Archiv · SHA-256
           <input value={archiveId} onChange={e=>setArchiveId(e.target.value)} maxLength={64} className="mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 text-white"/>
@@ -143,7 +143,7 @@ export function OwnerCommercialRoadmap({ userId }: { userId: string }) {
             <h4 className="mt-1 break-words text-base font-bold text-white">{row.name}</h4>
             <p className={row.status==='BLOCKED'?'text-sm font-semibold text-rose-300':'text-sm font-semibold text-amber-200'}>{row.status}</p>
             <dl className="mt-3 space-y-2 text-sm">
-              {([['Abhängigkeiten',row.dependencies],['Technik',row.flow],['Sicherheit',row.auth],['Tests',row.tests],['Evidence',row.evidence],['Betriebsstatus',row.operation],['Freigabe',row.approvals],['Blockade',row.error],['Nächster Schritt',row.next]] as const).filter(([,v])=>v).map(([label,value])=><div key={label}><dt className="text-xs font-semibold text-slate-400">{label}</dt><dd className="whitespace-pre-wrap break-words text-slate-200">{value}</dd></div>)}
+              {([['Abhängigkeiten',row.dependencies],['Quelle / Endpunkt',row.endpoint],['Technik',row.flow],['Sicherheit',row.auth],['Tests',row.tests],['Evidence',row.evidence],['Betriebsstatus',row.operation],['Freigabe',row.approvals],['Blockade',row.error],['Nächster Schritt',row.next]] as const).filter(([,v])=>v).map(([label,value])=><div key={label}><dt className="text-xs font-semibold text-slate-400">{label}</dt><dd className="whitespace-pre-wrap break-words text-slate-200">{value}</dd></div>)}
             </dl>
           </article>)}
         </div>
