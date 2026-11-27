@@ -48,6 +48,14 @@
     "neverModifyPinnedHistoricalScriptsAutomatically": true,
     "existingHookOptional": true,
     "onDemandSync": "ACODEX_ON_DEMAND_SYNC@1",
-    "reuseExistingPinnedPull": true
+    "reuseExistingPinnedPull": true,
+    "displaySurface": "ACODEX_TERMINAL_ONLY",
+    "plainClipboard": true,
+    "plainChatTransfer": true,
+    "plainExportedLogs": true,
+    "forbidAnsiOscInTransferredOutput": true,
+    "separatePresentationFromCapture": true,
+    "plainFallbackIfSeparationUnproven": true,
+    "preserveForegroundTty": true
   }
 }
