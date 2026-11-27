@@ -25,7 +25,7 @@ const RECIPES = Object.freeze([
   {id:'mvp-architecture',priority:2,pattern:/produktarchitektur|mvp|modulare[sr]? produkt|plugin.architektur|plugin.sdk/i,
    domain:'PLATFORM',skills:['platform-engineering','product-engineering','ai-engineering','trust-engineering'],
    title:'Eigenständige Produktarchitektur und MVP spezifizieren',
-   prompt:'SOLO2: Spezifiziere für AgentLoop Studio ein eigenständiges, lizenzrechtlich geprüftes MVP mit Tenant-Isolation, LangGraph-Checkpoints, einem stoppbaren 30-Sekunden-CI-Wait-Supervisor, sicherem Plugin-SDK, GitHub-App und getrennten Terminal-/Cloud-Adaptern. Prüfe Wiederverwendungsrechte und negative Trust-Boundary-Tests. Bestehende CAPITAL-AI-/DeviceCare-KI-Produktionssysteme und Secrets nicht übertragen; keine neuen kostenpflichtigen Dienste aktivieren.'},
+   prompt:'SOLO2: Spezifiziere für AgentLoop Studio ein eigenständiges, lizenzrechtlich geprüftes MVP mit Tenant-Isolation, LangGraph-Checkpoints, einem stoppbaren 30-Sekunden-CI-Wait-Supervisor, sicherem Plugin-SDK, GitHub-App und getrennten Terminal-/Cloud-Adaptern. Prüfe Wiederverwendungsrechte und negative Trust-Boundary-Tests. Bestehende CAPITAL-AI-/PocketDefend-Produktionssysteme und Secrets nicht übertragen; keine neuen kostenpflichtigen Dienste aktivieren.'},
   {id:'commerce-sandbox',priority:3,pattern:/stripe|tenant.isolation|checkout|e.commerce|zahlungs.webhook/i,
    domain:'TRUST',skills:['trust-engineering','platform-engineering','revenue-engineering','product-engineering'],
    title:'Stripe-Sandbox und Tenant-Isolation entwickeln',
