@@ -13,16 +13,58 @@ from pathlib import Path
 
 CA = Path("/etc/ssl/certs/ca-certificates.crt")
 SAFE_PATH = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
-CLEAN = dict(os.environ, PATH=SAFE_PATH)
-for key in ("PYTHONHTTPSVERIFY", "GIT_SSL_NO_VERIFY", "RCLONE_NO_CHECK_CERTIFICATE",
-            "SSL_CERT_FILE", "SSL_CERT_DIR", "CURL_CA_BUNDLE", "REQUESTS_CA_BUNDLE",
-            "GIT_SSL_CAINFO", "GIT_SSL_CAPATH", "RCLONE_CA_CERT",
-            "SSLKEYLOGFILE", "NODE_TLS_REJECT_UNAUTHORIZED"):
-    CLEAN.pop(key, None)
+UNSAFE_ENV = frozenset(("GIT_SSL_NO_VERIFY", "RCLONE_NO_CHECK_CERTIFICATE",
+                       "SSL_CERT_FILE", "SSL_CERT_DIR", "CURL_CA_BUNDLE",
+                       "REQUESTS_CA_BUNDLE", "GIT_SSL_CAINFO", "GIT_SSL_CAPATH",
+                       "RCLONE_CA_CERT", "SSLKEYLOGFILE", "NODE_TLS_REJECT_UNAUTHORIZED",
+                       "ENV", "BASH_ENV", "PROMPT_COMMAND", "PS4", "SHELLOPTS",
+                       "BASHOPTS", "GCONV_PATH", "LOCPATH"))
+UNSAFE_PREFIXES = ("LD_", "DYLD_", "PYTHON", "OPENSSL_", "BASH_FUNC_")
+PROXY_ENV = frozenset(("http_proxy", "https_proxy", "no_proxy", "all_proxy",
+                       "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "ALL_PROXY"))
+
+
+def clean_environment(source):
+    # The explicit interactive session keeps its normal user context, but
+    # never forwards the known interpreter/loader/TLS override variables.
+    env = {key: value for key, value in source.items()
+           if key not in UNSAFE_ENV and not key.startswith(UNSAFE_PREFIXES)}
+    env["PATH"] = SAFE_PATH
+    return env
+
+
+def package_environment(source):
+    # Package commands do not need GitHub, cloud, or shell credentials.
+    # Preserve configured proxies to avoid silently changing network routes.
+    env = {key: value for key, value in source.items() if key in PROXY_ENV}
+    env.update(PATH=SAFE_PATH, LC_ALL="C")
+    return env
+
+
+def environment_selftest():
+    sample = {key: "synthetic" for key in (*UNSAFE_ENV, "LD_PRELOAD",
+              "DYLD_INSERT_LIBRARIES", "PYTHONPATH", "PYTHONHTTPSVERIFY",
+              "OPENSSL_CONF", "BASH_FUNC_demo%%", "GH_TOKEN", "GITHUB_TOKEN",
+              "GOOGLE_APPLICATION_CREDENTIALS", "AWS_SECRET_ACCESS_KEY", "HOME")}
+    sample.update(PATH="/untrusted", https_proxy="http://example.invalid:8080")
+    clean = clean_environment(sample)
+    if any(key in clean for key in sample if key in UNSAFE_ENV
+           or key.startswith(UNSAFE_PREFIXES)) or clean.get("PATH") != SAFE_PATH:
+        raise AssertionError("SESSION_ENV_POLICY_REGRESSION")
+    package = package_environment(sample)
+    if package != {"PATH": SAFE_PATH, "LC_ALL": "C",
+                   "https_proxy": sample["https_proxy"]}:
+        raise AssertionError("PACKAGE_ENV_POLICY_REGRESSION")
+    if clean.get("HOME") != sample["HOME"]:
+        raise AssertionError("SESSION_HOME_REGRESSION")
+
+
+CLEAN = clean_environment(os.environ)
+APK_ENV = package_environment(os.environ)
 
 def run(args, timeout=60):
     return subprocess.run(args, capture_output=True, text=True, timeout=timeout,
-                          env=CLEAN, check=False)
+                          env=APK_ENV, check=False)
 
 def release_branch():
     release = Path("/etc/alpine-release").read_text().strip()
@@ -150,6 +192,8 @@ def session():
     os.execve("/bin/sh", ["sh", "-i"], env)
 
 def selftest():
+    environment_selftest()
+    print("ENVIRONMENT_SELFTEST=PASS")
     from unittest.mock import patch
     with tempfile.TemporaryDirectory(prefix="acodex-tls-test-") as tmp:
         keylog = Path(tmp) / "keys.log"
