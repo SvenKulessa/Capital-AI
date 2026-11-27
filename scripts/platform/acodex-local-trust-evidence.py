@@ -82,10 +82,29 @@ def credentials(home, env):
                               ('AWS_SHARED_CREDENTIALS_FILE', 'aws_override', 'file')]:
         if env.get(name):
             paths[label] = (env[name], kind)
+    # An override directory can be private while its credential file is not.
+    for name, label, filenames in (
+            ('GH_CONFIG_DIR', 'gh', ('hosts.yml',)),
+            ('CLOUDSDK_CONFIG', 'gcloud', ('application_default_credentials.json',
+                                        'credentials.db', 'access_tokens.db'))):
+        if env.get(name):
+            directory = absolute(env[name])
+            for i, filename in enumerate(filenames):
+                paths[f'{label}_override_file_{i}'] = (directory / filename, 'file')
+    paths.update(gcloud_credentials_db=(config / 'gcloud/credentials.db', 'file'),
+                 gcloud_access_tokens_db=(config / 'gcloud/access_tokens.db', 'file'),
+                 aws_config=(home / '.aws/config', 'file'),
+                 git_config=(config / 'git/credentials', 'file'))
+    overflow = False
     if env.get('KUBECONFIG'):
+        entries = [v for v in env['KUBECONFIG'].split(os.pathsep) if v]
+        overflow = len(entries) > 16
         paths.update({f'kube_override_{i}': (v, 'file') for i, v in
-                      enumerate(env['KUBECONFIG'].split(os.pathsep)[:16]) if v})
-    return {label: metadata(path, kind) for label, (path, kind) in paths.items()}
+                      enumerate(entries[:16])})
+    result = {label: metadata(path, kind) for label, (path, kind) in paths.items()}
+    if overflow:
+        result['kube_override_coverage'] = 'BLOCKED_PATH_LIMIT'
+    return result
 
 
 def ca_audit(path, expected=None):
@@ -201,6 +220,20 @@ def selftest():
         with patch(__name__ + '.metadata', return_value='VERIFIED_METADATA'):
             assert prepare_runner(base) == 'VERIFIED_PRIVATE_DIRS_AND_ENV_PROBE'
         assert stat.S_IMODE((base / '.acodex-runner/home').stat().st_mode) == 0o700
+    def fake_metadata(path, kind):
+        return ('BLOCKED_PERMISSIONS' if Path(path).name in
+                ('hosts.yml', 'credentials.db') and 'override' in Path(path).parts
+                else 'ABSENT')
+    with patch(__name__ + '.metadata', side_effect=fake_metadata):
+        findings = credentials(Path('/private/home'), {
+            'GH_CONFIG_DIR': '/private/override/gh',
+            'CLOUDSDK_CONFIG': '/private/override/gcloud',
+            'KUBECONFIG': os.pathsep.join('/private/kube' + str(i) for i in range(17))})
+        assert findings['gh_override_file_0'] == 'BLOCKED_PERMISSIONS'
+        assert findings['gcloud_override_file_1'] == 'BLOCKED_PERMISSIONS'
+        assert findings['kube_override_coverage'] == 'BLOCKED_PATH_LIMIT'
+        assert 'kube_override_15' in findings and 'kube_override_16' not in findings
+        assert 'gcloud_credentials_db' in findings and 'git_config' in findings
     print('SELFTEST=PASS')
 
 
