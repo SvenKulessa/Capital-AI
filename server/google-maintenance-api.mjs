@@ -1,6 +1,6 @@
 // CAPITAL_AI_GOOGLE_MAINTENANCE@1
 // Trusted-worker REST client. No public web route or arbitrary URL execution.
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { isSeoIndexable } from '../shared/seo-indexing-policy.mjs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -8,6 +8,40 @@ import { promisify } from 'node:util';
 export const GOOGLE_PROJECT_ID = 'aifinancial-500208';
 export const GA4_PROPERTY_ID = '548187678';
 const PROPERTY = 'properties/' + GA4_PROPERTY_ID;
+const ADS_ORIGIN = 'https://googleads.googleapis.com';
+const ADS_VERSION = 'v26';
+const ADS_MARKETS = Object.freeze({ DE: ['2276','1001'], US: ['2840','1000'], GLOBAL_EN: [null,'1000'] });
+const ADS_ID = /^[0-9]{10}$/;
+const ADS_MONTHS = 'JANUARY FEBRUARY MARCH APRIL MAY JUNE JULY AUGUST SEPTEMBER OCTOBER NOVEMBER DECEMBER'.split(' ');
+function adsTerm(v) {
+  return typeof v === 'string' && v.length >= 1 && v.length <= 80 && v === v.trim()
+    && !/[\x00-\x1f\x7f<>@]/.test(v) && !/https?:|bearer\s|api[_ -]?key|password|github_pat_|sk-proj-/i.test(v);
+}
+function adsCount(v, max = Number.MAX_SAFE_INTEGER) {
+  if (v === undefined || v === null) return null;
+  const n = typeof v === 'string' && /^(0|[1-9][0-9]{0,15})$/.test(v) ? Number(v) : v;
+  if (!Number.isSafeInteger(n) || n < 0 || n > max) throw Error('ADS_INVALID_METRIC');
+  return n;
+}
+function adsMetrics(m) {
+  if (m === undefined || m === null) return null;
+  object(m);
+  const volumes = m.monthlySearchVolumes ?? [];
+  if (!Array.isArray(volumes) || volumes.length > 12) throw Error('ADS_INVALID_METRIC');
+  const seen = new Set();
+  const monthly = volumes.map(row => {
+    const year = adsCount(row?.year, 2100), month = row?.month;
+    if (year === null || year < 2000 || !ADS_MONTHS.includes(month) || seen.has(year + month)) throw Error('ADS_INVALID_METRIC');
+    seen.add(year + month);
+    return { year, month, searches: adsCount(row.monthlySearches) };
+  }).sort((a,b) => a.year-b.year || ADS_MONTHS.indexOf(a.month)-ADS_MONTHS.indexOf(b.month));
+  const competition = m.competition ?? null;
+  if (competition !== null && !['LOW','MEDIUM','HIGH','UNKNOWN','UNSPECIFIED'].includes(competition)) throw Error('ADS_INVALID_METRIC');
+  const low = adsCount(m.lowTopOfPageBidMicros), high = adsCount(m.highTopOfPageBidMicros);
+  if (low !== null && high !== null && low > high) throw Error('ADS_INVALID_METRIC');
+  return { averageMonthlySearches: adsCount(m.avgMonthlySearches), monthly, competition,
+    competitionIndex: adsCount(m.competitionIndex,100), lowTopOfPageBidMicros: low, highTopOfPageBidMicros: high };
+}
 const ADMIN_ORIGIN = 'https://analyticsadmin.googleapis.com';
 const DATA_ORIGIN = 'https://analyticsdata.googleapis.com';
 const CLOUD_ORIGIN = 'https://cloudresourcemanager.googleapis.com';
@@ -42,8 +76,24 @@ function propertyPatch(input) {
   return Object.freeze(Object.fromEntries(keys.map(key => [key, input[key]])));
 }
 
-export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, now = Date.now, tokenProvider } = {}) {
+export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, now = Date.now, tokenProvider, adsTokenProvider } = {}) {
   const plans = new Map();
+  const adsEnabled = env.GOOGLE_MAINTENANCE_ADS_READ_ENABLED === 'true';
+  const adsCustomer = env.GOOGLE_MAINTENANCE_ADS_CUSTOMER_ID;
+  const adsManager = env.GOOGLE_MAINTENANCE_ADS_LOGIN_CUSTOMER_ID;
+  const adsIdentityConfigured = ADS_ID.test(adsCustomer ?? '') &&
+    (adsManager === undefined || ADS_ID.test(adsManager)) &&
+    (!!adsTokenProvider || !!env.GOOGLE_MAINTENANCE_ADS_ACCESS_TOKEN);
+  let adsInFlight = false;
+  async function adsToken() {
+    if (!adsEnabled) throw Error('ADS_READ_DISABLED');
+    if (!adsIdentityConfigured) throw Error('ADS_IDENTITY_NOT_CONFIGURED');
+    let value;
+    try { value = adsTokenProvider ? await adsTokenProvider() : env.GOOGLE_MAINTENANCE_ADS_ACCESS_TOKEN; }
+    catch { throw Error('ADS_IDENTITY_NOT_CONFIGURED'); }
+    if (typeof value !== 'string' || value.length < 8 || value.length > 8192 || /[\s\x00-\x1f\x7f]/.test(value)) throw Error('ADS_IDENTITY_NOT_CONFIGURED');
+    return value;
+  }
   const writesEnabled = env.GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED === 'true';
   async function token() {
     if (tokenProvider) return tokenProvider();
@@ -58,8 +108,11 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
     throw new Error('GOOGLE_IDENTITY_NOT_CONFIGURED');
   }
   async function request(origin, pathname, { method = 'GET', body, query } = {}) {
-    if (![ADMIN_ORIGIN, DATA_ORIGIN, CLOUD_ORIGIN, SERVICE_ORIGIN, GSC_ORIGIN, INSPECTION_ORIGIN].includes(origin)) throw new Error('ORIGIN_NOT_ALLOWED');
-    const accessToken = await token();
+    if (![ADMIN_ORIGIN, DATA_ORIGIN, CLOUD_ORIGIN, SERVICE_ORIGIN, GSC_ORIGIN, INSPECTION_ORIGIN, ADS_ORIGIN].includes(origin)) throw new Error('ORIGIN_NOT_ALLOWED');
+    const isAds = origin === ADS_ORIGIN;
+    if (isAds && (method !== 'POST' || query !== undefined ||
+        !['generateKeywordIdeas','generateKeywordHistoricalMetrics'].some(op => pathname === '/' + ADS_VERSION + '/customers/' + adsCustomer + ':' + op))) throw Error('ADS_OPERATION_DENIED');
+    const accessToken = await (isAds ? adsToken() : token());
     if (typeof accessToken !== 'string' || !accessToken || /[\r\n]/.test(accessToken)) throw new Error('INVALID_TOKEN');
     const url = new URL(pathname, origin);
     if (query) for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
@@ -67,7 +120,7 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
     try {
       response = await fetchImpl(url, {
         method, redirect: 'error', signal: AbortSignal.timeout(15_000),
-        headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json', ...(isAds && adsManager ? { 'login-customer-id': adsManager } : {}) },
         ...(body ? { body: JSON.stringify(body) } : {}),
       });
     } catch { throw new Error('GOOGLE_TRANSPORT_UNAVAILABLE'); }
@@ -145,7 +198,54 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
       return { status: 'NOT_PROVEN', error: /^GOOGLE_HTTP_[45][0-9]{2}$/.test(error.message) ? error.message : 'GA4_SETTINGS_UNAVAILABLE' };
     }
   }
+  async function keywordRead(name, input) {
+    exact(input, ['keywords','market']);
+    if (!Object.hasOwn(ADS_MARKETS,input.market) || !Array.isArray(input.keywords) ||
+        input.keywords.length < 1 || input.keywords.length > 20 || !input.keywords.every(adsTerm) ||
+        new Set(input.keywords.map(k => k.toLowerCase())).size !== input.keywords.length) throw Error('ADS_INVALID_KEYWORD_INPUT');
+    if (!adsEnabled) throw Error('ADS_READ_DISABLED');
+    if (!adsIdentityConfigured) throw Error('ADS_IDENTITY_NOT_CONFIGURED');
+    if (adsInFlight) throw Error('ADS_READ_BUSY');
+    adsInFlight = true;
+    try {
+      const [geo,language] = ADS_MARKETS[input.market];
+      const ideas = name === 'ads_keyword_ideas';
+      const operation = ideas ? 'generateKeywordIdeas' : 'generateKeywordHistoricalMetrics';
+      const body = { language: 'languageConstants/' + language, geoTargetConstants: geo ? ['geoTargetConstants/' + geo] : [],
+        keywordPlanNetwork: 'GOOGLE_SEARCH',
+        ...(ideas ? { keywordSeed: { keywords: input.keywords }, includeAdultKeywords: false, pageSize: 100 } : { keywords: input.keywords }) };
+      const data = await request(ADS_ORIGIN, '/' + ADS_VERSION + '/customers/' + adsCustomer + ':' + operation,{method:'POST',body});
+      object(data);
+      if (data.error || data.errors) throw Error('ADS_INVALID_RESPONSE');
+      const results = data.results ?? [];
+      if (!Array.isArray(results) || results.length > (ideas ? 100 : 20)) throw Error('ADS_INVALID_RESPONSE');
+      const terms = new Set();
+      const rows = results.map(row => {
+        if (!adsTerm(row?.text) || terms.has(row.text.toLowerCase())) throw Error('ADS_INVALID_RESPONSE');
+        terms.add(row.text.toLowerCase());
+        const variants = row.closeVariants ?? [];
+        if (!Array.isArray(variants) || variants.length > 100 || !variants.every(adsTerm)) throw Error('ADS_INVALID_RESPONSE');
+        return { keyword:row.text, closeVariants:variants, metrics:adsMetrics(ideas ? row.keywordIdeaMetrics : row.keywordMetrics) };
+      });
+      const projection = { schema:'CAPITAL_AI_ADS_KEYWORD_READ@1', source:'GOOGLE_ADS_API', apiVersion:ADS_VERSION,
+        operation, observedAt:new Date(now()).toISOString(), market:input.market, language:body.language,
+        geoTargetConstants:body.geoTargetConstants, network:body.keywordPlanNetwork,
+        requestedKeywords:[...input.keywords], rows, truncated:!!data.nextPageToken,
+        metricSemantics:'PROVIDER_ESTIMATES_CLOSE_VARIANTS_MAY_BE_GROUPED', bidUnit:'ACCOUNT_CURRENCY_MICROS_CURRENCY_NOT_RESOLVED',
+        competitionSemantics:'PAID_ADVERTISER_COMPETITION_NOT_ORGANIC_SEO_DIFFICULTY',
+        status:rows.some(row => row.metrics?.averageMonthlySearches != null || row.metrics?.monthly.some(m => m.searches !== null)) ?
+          'SOURCE_RECORDED_NOT_INDEPENDENTLY_AUTHENTICATED' : 'NOT_PROVEN_NO_VOLUME',
+        private:true, readOnly:true, providerCalls:1, publicationAllowed:false, costActivationAllowed:false, automaticChanges:false };
+      return {...projection,evidenceSha256:createHash('sha256').update(JSON.stringify(projection)).digest('hex')};
+    } finally { adsInFlight = false; }
+  }
   async function call(name, input = {}) {
+    if (name === 'ads_keyword_status') {
+      exact(input, []);
+      return { enabled:adsEnabled, identityConfigured:adsIdentityConfigured, apiVersion:ADS_VERSION, accessVerified:false,
+        readOnly:true, providerCalls:0, publicationAllowed:false, costActivationAllowed:false, automaticChanges:false };
+    }
+    if (name === 'ads_keyword_ideas' || name === 'ads_keyword_history') return keywordRead(name,input);
     if (name === 'ga4_learning_configuration') {
       exact(input, []);
       const boundProperty = await property();
@@ -220,7 +320,7 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
         gscWritesEnabled: env.GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED === 'true',
         identityConfigured: !!env.GOOGLE_MAINTENANCE_ACCESS_TOKEN || env.GOOGLE_MAINTENANCE_USE_ADC === 'true',
         identityVerified: false, transport: 'Google REST from trusted MCP worker',
-        cloudWritesEnabled: false, adsEnabled: false, workspaceAdminEnabled: false,
+        cloudWritesEnabled: false, adsEnabled: false, adsKeywordReadsEnabled: adsEnabled, workspaceAdminEnabled: false,
       };
     }
     if (name === 'ga4_get_property') { exact(input, []); return property(); }

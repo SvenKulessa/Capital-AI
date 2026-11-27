@@ -1,0 +1,11 @@
+# Direct Google Ads keyword research (private operator slice)
+
+2026-11-27. Reuses the existing Google Maintenance stdio MCP. No new service, SDK dependency, public route, scheduler or campaign writer. Google Ads API v26 REST reference: https://developers.google.com/google-ads/api/docs/keyword-planning/generate-historical-metrics and https://developers.google.com/google-ads/api/docs/api-policy/developer-token . Cloud project access and OAuth authorization remain necessary. Developer tokens are no longer used for this API access.
+
+Tools: ads_keyword_status (no request), ads_keyword_ideas (bounded first page), ads_keyword_history (up to 20 terms). Markets DE, US, GLOBAL_EN (English language, all geographies); Google Search only. Results are approximate provider estimates, not exact search counts. Close variants may be grouped; do not sum them. Missing values are null; paid competition is not organic ranking difficulty. Bid values are in account currency micros, currency not resolved. No automatic data promotion or redistribution.
+
+The trusted local operator must explicitly enable GOOGLE_MAINTENANCE_ADS_READ_ENABLED and configure GOOGLE_MAINTENANCE_ADS_CUSTOMER_ID plus a short-lived GOOGLE_MAINTENANCE_ADS_ACCESS_TOKEN obtained through the authorized first-party Google Cloud project with the Google Ads OAuth scope. Optional GOOGLE_MAINTENANCE_ADS_LOGIN_CUSTOMER_ID for manager access. No token from MCP arguments, no automatic reuse of existing GA4/GSC tokens, no secret logging. Do not store credentials in Git or paste them into chat. Project access must permit keyword planning. No account creation, scope change or API enablement performed by this change.
+
+Run existing npm run test:google-maintenance and npm run growth:google:mcp. Use only non-sensitive public search terms. Status is configuration, not a live read. A provider response still requires separate review before use in research evidence. Existing product-market-research contracts and owner archive gates remain unchanged. Forecasts, fixed GAQL reports, persistent OAuth, LangGraph and owner dashboard integration remain subsequent scope; no external data import or public product rename.
+
+Rollback: revert the change, or leave the read flag unset. No data migration or provider mutation.
