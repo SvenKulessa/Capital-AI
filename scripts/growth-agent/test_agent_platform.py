@@ -339,12 +339,11 @@ print(json.dumps({"status":result["status"],"agents":result["agent_route"],"cita
     def test_offline_lock_is_a_reviewable_subset_with_patched_certifi(self):
         base = Path(__file__).with_name("requirements.lock").read_text(encoding="utf-8")
         worker = Path(__file__).with_name("requirements.offline-worker.lock").read_text(encoding="utf-8")
-        common = base.splitlines()
-        expected = "\n".join("certifi==2026.10.23" if x.startswith("certifi==") else x
-                             for x in common)
-        self.assertEqual(worker, expected + "\n" if not expected.endswith("\n") else expected)
-        self.assertIn("sqlite-vec==0.1.9", worker)
-        self.assertIn("certifi==2026.10.23", worker)
+        self.assertEqual(worker, base)
+        self.assertIn("sqlite-vec==0.1.9", worker.splitlines())
+        for lock in (base, worker):
+            self.assertEqual([line for line in lock.splitlines() if line.startswith("certifi==")],
+                             ["certifi==2026.11.20"])
 
     def test_offline_image_preserves_sqlite_vec_and_rejects_unscanned_base(self):
         docker = (Path(__file__).resolve().parents[2] / "deploy" /

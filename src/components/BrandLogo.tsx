@@ -1,6 +1,7 @@
 import React from 'react';
 const brandLogo = '/branding/capital-ai-logo.jpg';
-const vendorLogo = '/branding/asset-pack/vendor/vendor-app-icon-512x512.png';
+// Web header mark only. Existing master, OAuth/vendor derivatives and Hero globe stay pinned.
+const vendorLogo = '/branding/universe/capital-ai-mark-v4.webp';
 
 interface BrandLogoProps {
   variant?: 'emblem' | 'inline' | 'stacked' | 'banner' | 'vendor';
@@ -20,14 +21,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   onClick,
 }) => {
   // Existing owner-supplied vendor artwork: no wordmark, no added background.
-  // Screen blending integrates its dark raster backdrop into the header surface.
+  // Preserve the complete approved mark without cropping the original.
   if (variant === 'vendor') {
     const dimensions = {
       sm: 'w-16 h-10', md: 'w-20 h-12', lg: 'w-24 h-14', xl: 'w-32 h-20',
     }[size];
     const image = <img src={vendorLogo} alt="Capital-AI — Globus in Blau und Gold"
-      width={512} height={512} decoding="async"
-      className={`${dimensions} object-cover object-center mix-blend-screen`} />;
+      width={1536} height={1536} decoding="async"
+      className={`${dimensions} object-contain object-center`} />;
     const classes = `inline-flex shrink-0 items-center justify-center select-none ${className}`;
     return onClick ? (
       <button type="button" onClick={onClick} aria-label="Capital-AI – zum Seitenanfang"
