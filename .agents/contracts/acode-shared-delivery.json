@@ -28,5 +28,34 @@
     "forbidSecondSync": true,
     "syncOwner": "EXISTING_ACODEX_STARTUP_DRIVE_PULL",
     "initialStatus": "NOT_PROVEN"
+  },
+  "terminalOutput": {
+    "schema": "ACODEX_TERMINAL_STATUS_BRANDING@1",
+    "scope": "NEW_OR_MODIFIED_ACODEX_SCRIPTS_AND_INVOCATIONS",
+    "ansi": {
+      "verified": 32,
+      "error": 31,
+      "review": 33,
+      "running": 36
+    },
+    "ttyOnly": true,
+    "respectNoColor": true,
+    "plainMachineEvidence": true,
+    "preserveExitCodes": true,
+    "preserveStdin": true,
+    "conditionalExitSemantics": true,
+    "neverColorBySubstring": true,
+    "neverModifyPinnedHistoricalScriptsAutomatically": true,
+    "existingHookOptional": true,
+    "onDemandSync": "ACODEX_ON_DEMAND_SYNC@1",
+    "reuseExistingPinnedPull": true,
+    "displaySurface": "ACODEX_TERMINAL_ONLY",
+    "plainClipboard": true,
+    "plainChatTransfer": true,
+    "plainExportedLogs": true,
+    "forbidAnsiOscInTransferredOutput": true,
+    "separatePresentationFromCapture": true,
+    "plainFallbackIfSeparationUnproven": true,
+    "preserveForegroundTty": true
   }
 }
