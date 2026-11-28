@@ -126,10 +126,46 @@ test('AcodeX archive is separately validated and never promoted to live provider
   assert.equal(snapshot.acodex?.currentDeviceStatus, 'NOT_PROVEN');
   assert.equal(evidenceState(snapshot, 'ci'), 'NOT_PROVEN');
   assert.equal(readDashboardSnapshot(base)?.acodex, undefined); // backwards-compatible, absent is not live
+  const recovery = {"classification":"OWNER_TERMINAL_RECOVERY_SNAPSHOT","provenance":"OWNER_TERMINAL_OUTPUT","status":"VERIFIED","historicalIncidentStatus":"BLOCKED_OBSERVED","currentDeviceStatus":"NOT_PROVEN","baselineUtc":"2026-11-25T17:03:15Z","expectedStartUtc":"2026-11-25T17:08:56Z","latestSuccessUtc":"2026-11-25T17:09:01Z","checkedUtc":"2026-11-25T17:10:23Z","healthExit":0,"outerExit":0,"guardAuditExit":0,"acopyCommandExit":0,"lockClear":true,"newOAuthFailures":0,"newPullFailures":0,"postBaselineSuccessCount":1,"pullShaMatch":true,"guardShaMatch":true,"filtersPresent":true,"bridgeAckStatus":"NOT_PROVEN"};
+  const recovered = readDashboardSnapshot({...base, acodex: {...archive, recovery}});
+  assert.equal(recovered?.acodex?.recovery?.status, 'VERIFIED');
+  assert.equal(recovered?.acodex?.currentDeviceStatus, 'NOT_PROVEN');
+  for (const invalid of [
+    {...recovery, currentDeviceStatus:'VERIFIED'},
+    {...recovery, bridgeAckStatus:'VERIFIED'},
+    {...recovery, expectedStartUtc:recovery.baselineUtc},
+    {...recovery, latestSuccessUtc:recovery.baselineUtc},
+    {...recovery, healthExit:3},
+    {...recovery, acopyCommandExit:2},
+    {...recovery, newOAuthFailures:1},
+    {...recovery, postBaselineSuccessCount:0},
+    {...recovery, guardShaMatch:false}
+  ]) assert.equal(readDashboardSnapshot({...base, acodex:{...archive,recovery:invalid}}),null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, currentDeviceStatus: 'VERIFIED' } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, archiveStatus: 'NOT_PROVEN' } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, healthExit: 1 } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, checkedUtc: 'not-a-time' } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, evidence: { ...archive.evidence, v11: { ...archive.evidence.v11, sha256: 'x'.repeat(64) } } } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, evidence: { ...archive.evidence, v11: { ...archive.evidence.v11, url: 'https://evil.example/exfiltrate?token=fixture' } } } }), null);
+});
+
+import { parseCommercialRoadmap, serializeCommercialRoadmap, isOwnerRoadmapSession } from './ownerCommercialRoadmapModel';
+import { makeRow, exportWorkspace } from './growthOwnerWorkspaceModel';
+
+test('commercial roadmap accepts only current owner session', () => {
+  const owner = { authenticated:true, mfaRequired:false, user:{id:'synthetic-owner'}, account:{available:true,iamRole:'owner'} };
+  assert.equal(isOwnerRoadmapSession(owner,'synthetic-owner'),true);
+  assert.equal(isOwnerRoadmapSession(owner,'different-user'),false);
+  assert.equal(isOwnerRoadmapSession({...owner,mfaRequired:true},'synthetic-owner'),false);
+  assert.equal(isOwnerRoadmapSession({...owner,account:{available:true,iamRole:'admin'}},'synthetic-owner'),false);
+  assert.equal(isOwnerRoadmapSession({...owner,account:{available:false,iamRole:'owner'}},'synthetic-owner'),false);
+  assert.equal(isOwnerRoadmapSession(null,'synthetic-owner'),false);
+});
+test('commercial roadmap rejects unrelated workspace and downgrades imported VERIFIED', () => {
+  const row = {...makeRow('commercial-roadmap-test','Synthetic gate','TRUST'),status:'VERIFIED' as const};
+  const raw = exportWorkspace([{version:1,at:'2026-01-01T00:00:00Z',rows:[row]}]);
+  const parsed = parseCommercialRoadmap(raw);
+  assert.equal(parsed[0].rows[0].status,'NOT_PROVEN');
+  assert.equal(parseCommercialRoadmap(serializeCommercialRoadmap(parsed))[0].rows[0].status,'NOT_PROVEN');
+  assert.throws(()=>parseCommercialRoadmap(exportWorkspace([{version:1,at:'2026-01-01T00:00:00Z',rows:[makeRow('unrelated','Unrelated','TRUST')]}])));
 });

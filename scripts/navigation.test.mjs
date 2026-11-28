@@ -3,6 +3,7 @@ import { BRAND_COLORS, HUB_BRANDING, ASSET_BRANDING, hubTabAccent, legalPageAcce
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute, CONTROL_CENTER_SECTION_IDS } from '../src/utils/appNavigation.ts';
 import { messages } from '../src/i18n/messages.ts';
 
@@ -197,7 +198,7 @@ test('documentation hub catalog links to the existing content instead of reopeni
 });
 
 
-test('Control Center offers eleven dedicated, keyboard-accessible routes and legacy query links', () => {
+test('Control Center offers dedicated, keyboard-accessible routes and legacy query links', () => {
   const sidebar = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
   const page = readFileSync(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
   const appRoutes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
@@ -212,6 +213,8 @@ test('Control Center offers eleven dedicated, keyboard-accessible routes and leg
   assert.equal(resolveAppRoute('/control-center/unknown'), '/');
   assert.match(appRoutes, /currentRoute\.startsWith\('\/control-center\/'\)/);
   assert.match(page, /HubNavigationPanel/);
+  assert.ok(destinations.includes('/control-center/providers'));
+  assert.match(page, /activeTab === 'providers' && <OpenAiProviderStatus/);
   assert.doesNotMatch(page, /<select/);
   assert.match(page, /APP_NAVIGATION_EVENT/);
   assert.doesNotMatch(page, /role="tablist"/);
@@ -326,9 +329,10 @@ test('paused price alerts cannot render navigation or run background price check
 test('hero uses shared 3D brand scene and shared product disclaimer', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
   const globe = readFileSync(new URL('../src/components/BrandGlobe.tsx', import.meta.url), 'utf8');
-  assert.match(hero, /<BrandGlobe paused=\{globePaused\}/);
+  assert.match(hero, /<BrandGlobe paused=\{false\}/);
   assert.match(globe, /src=\{BRAND_GLOBE.asset\}/);
-  assert.match(hero, /aria-pressed=\{globePaused\}/);
+  assert.doesNotMatch(hero, /hero-globe-pause|globePaused|Globus pausieren/);
+  assert.doesNotMatch(hero, /style=\{\{ background:/);
   assert.doesNotMatch(hero, /hero-universe-orbit\.svg/);
   assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
   assert.match(hero, /ProductDisclaimer/);
@@ -649,4 +653,116 @@ test('profile menu shares all five private routes on the right and authenticated
   assert.match(header, /Object\.entries\(BRAND_COLORS\)/);
   assert.match(header, /data-universe-spectrum="header"/);
   assert.match(footer, /Object\.values\(BRAND_COLORS\)/);
+});
+
+test('sideboard keeps Profile Hub first and canonical hub names and outline tokens', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const drawer = header.slice(header.indexOf('id="capital-ai-mobile-navigation"'));
+  assert.ok(drawer.indexOf('id="drawer-account-toggle"') < drawer.indexOf('<nav aria-label={nav.main}'));
+  assert.match(drawer, />Profile Hub<\/span>/);
+  assert.match(header, /HUB_BRANDING\.learning/);
+  assert.match(header, /HUB_BRANDING\.marketscreener/);
+  assert.match(header, /borderColor: brand.color/);
+  assert.match(header, /brand\?\.name \?\? primaryLabels\[index\]/);
+  assert.equal(HUB_BRANDING.learning.name, 'Learning Hub');
+  assert.equal(HUB_BRANDING.learning.color, BRAND_COLORS.gold);
+  assert.equal(HUB_BRANDING.marketscreener.name, 'Analytics Hub');
+  assert.equal(HUB_BRANDING.marketscreener.color, BRAND_COLORS.violet);
+});
+
+
+test('analytics overview stays scoped to six analysis processes and labels static examples', () => {
+  const article = readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx', import.meta.url), 'utf8');
+  const hub = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx', import.meta.url), 'utf8');
+  assert.match(hub, /active === 'overview' && <AnalyticsHubArticle \/>/);
+  for (const label of ['Quellen','Datenqualität','Scoring','Risiko','Evidenz','Marktnews']) assert.ok(article.includes(label));
+  assert.doesNotMatch(article, /Learning Hub|Lernpfad|href="\/learning/);
+  assert.match(article, /DEMO · Statische Beispieldaten/);
+  assert.match(article, /data-analytics-orbit-star/);
+  assert.match(article, /AnalyticsProcessFlow key=\{selected\}/);
+});
+
+test('Universe view policy and public learning source isolation', async () => {
+  const { UNIVERSE_VIEW_BRANDING: policy } = await import('../shared/hub-branding.mjs');
+  assert.equal(policy.minimumActiveColors, 2);
+  assert.equal(policy.maximumActiveColors, 4);
+  assert.deepEqual(policy.pair, ['gold','cyan']);
+  assert.equal(policy.globalNebulaSaturation, .94);
+  assert.equal(policy.nebulaMaxViewportFraction, .2);
+  assert.equal(policy.studioNavigationTarget, '/');
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /primaryRoutes = \['\/marketscreener', '\/learning', '\/'/);
+  for (const path of ['../src/features/learning/LearningPortalPage.tsx','../shared/learning-journey.mjs','../server/index.mjs']) {
+    const source = readFileSync(new URL(path, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /VOCABULARY_SOURCE_PRS|github\.com\/SvenKulessa\/Capital-AI\/pull\//);
+  }
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  assert.equal(policy.globalBackground, '/branding/universe/owner-nebula-v4.webp');
+  assert.equal(policy.logoBadgeNebulaMaxFraction, .10);
+  assert.ok(css.includes(policy.globalBackground));
+  assert.match(css, /\.universe-space::before\s*\{[^}]*grayscale\(1\)/);
+  assert.match(css, /\.universe-space::after\s*\{[^}]*clip-path: ellipse\(20% 25% at 20% 25%\)/);
+  assert.match(css, /forced-colors:active/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+});
+
+
+test('v4 website branding uses exact approved bytes, local URLs and existing public admission', async () => {
+  const { WEBSITE_BRANDING_V4: assets } = await import('../shared/hub-branding.mjs');
+  const ignore = readFileSync(new URL('../.dockerignore', import.meta.url), 'utf8');
+  const docker = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  const admission = readFileSync(new URL('../server/public-artifact-policy.mjs', import.meta.url), 'utf8');
+  assert.equal(Object.keys(assets).length, 3);
+  for (const [name, record] of Object.entries(assets)) {
+    const bytes = readFileSync(new URL('../public/branding/universe/' + name, import.meta.url));
+    assert.equal(bytes.length, record.bytes);
+    assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(bytes.toString('ascii', 8, 12), 'WEBP');
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), record.sha256);
+    assert.ok(ignore.includes('!public/branding/universe/' + name));
+    assert.ok(admission.includes('"branding/universe/' + name + '"'));
+  }
+  assert.ok(docker.includes('COPY public/branding/universe ./public/branding/universe'));
+  assert.ok(readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx', import.meta.url),'utf8').includes('/branding/universe/analytics-overview-v4.webp'));
+  assert.ok(readFileSync(new URL('../src/components/BrandLogo.tsx', import.meta.url),'utf8').includes('/branding/universe/capital-ai-mark-v4.webp'));
+  assert.ok(readFileSync(new URL('../src/components/BrandLogo.tsx', import.meta.url),'utf8').includes('/branding/capital-ai-logo.jpg'));
+});
+
+
+test('all admitted no-JS static documents share the pinned v4 canvas without publishing redirected BYOK files', () => {
+  const htmlPaths = ["public/agb/index.html","public/datenschutz/index.html","public/impressum/index.html","public/documentation/pipeline-architectures.html","public/documentation/pricing-models.html","public/documentation/domains.html","public/downloads/market-screener-hub-open-source.html"];
+  for (const path of htmlPaths) assert.ok(readFileSync(new URL('../' + path, import.meta.url), 'utf8').includes('href="/branding/universe/static-canvas-v4.css"'), path);
+  const css = readFileSync(new URL('../public/branding/universe/static-canvas-v4.css', import.meta.url), 'utf8');
+  assert.ok(css.includes('/branding/universe/owner-nebula-v4.webp'));
+  assert.match(css, /filter: saturate\(\.94\)/);
+  assert.match(css, /forced-colors: active/);
+  assert.match(css, /print/);
+  const docker = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  assert.ok(docker.includes('public/documentation/presentation.css'));
+  const ignore = readFileSync(new URL('../.dockerignore', import.meta.url), 'utf8');
+  assert.ok(ignore.includes('!public/branding/universe/static-canvas-v4.css'));
+  assert.ok(ignore.includes('!public/documentation/presentation.css'));
+  assert.ok(!ignore.includes('!public/documentation/byok.html'));
+  assert.ok(!ignore.includes('!public/downloads/capital-ai-byok-presentation.html'));
+});
+
+
+test('public static pricing and source downloads omit repository operational references', () => {
+  const pricing = readFileSync(new URL('../public/documentation/pricing-models.html', import.meta.url), 'utf8');
+  assert.match(pricing, /Learning Hub Paket/);
+  assert.doesNotMatch(pricing, /Market Vocabulary|Pricing Catalog|Webhook-E2E/);
+
+});
+
+
+test('public presentations do not expose internal operational identifiers and canvas color is bounded', () => {
+  for (const path of ['public/documentation/domains.html','public/documentation/pipeline-architectures.html','public/downloads/market-screener-hub-open-source.html']) {
+    const source = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /MARKET_QUOTES_ENABLED|admittedSources|GitHub PR #\d+|Owner Decision|Legacy Isolation|NATS JetStream|Valkey/i, path);
+  }
+  for (const path of ['src/index.css','public/branding/universe/static-canvas-v4.css']) {
+    const css = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+    assert.match(css, /grayscale\(1\)/);
+    assert.match(css, /clip-path: ellipse\(20% 25% at 20% 25%\)/);
+  }
 });

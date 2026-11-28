@@ -130,11 +130,20 @@ try {
     // MUST offer real learning and commerce navigation; documentation MUST
     // still expose all four evidence-neutral demos (checked below).
     await navigate('/', `!!document.querySelector('section[aria-label="CAPITAL-AI entdecken"] button,section[aria-label="Produkt entdecken"] button')
-      || document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
+      || document.querySelectorAll('#market-blueprint-catalog article').length === 4
+      || (!!document.querySelector('#hero-open-learning-link[href="/learning"]')
+        && !!document.querySelector('#public-final-cta-title'))`);
     const homepage = await evaluate(`(() => {
       const legacy=document.querySelectorAll('#market-blueprint-catalog article').length===4;
       if(legacy) return {mode:'blueprint-cards',links:['/learning','/pricing','/marketscreener/dokumentation'].every(
         path=>!!document.querySelector('#market-blueprint-catalog a[href="'+path+'"]'))};
+      const currentHero=document.querySelector('#hero-open-learning-link[href="/learning"]');
+      if(currentHero) {
+        const final=document.querySelector('section[aria-labelledby="public-final-cta-title"]');
+        return {mode:'universe-hero',links:!!final && ['/learning','/pricing'].every(
+          path=>!!final.querySelector('a[href="'+path+'"]')) &&
+          !!document.querySelector('#hero-start-analysis-btn[href="/marketscreener"]')};
+      }
       const cta=document.querySelector('section[aria-label="CAPITAL-AI entdecken"] button,section[aria-label="Produkt entdecken"] button');
       return {mode:'product-discovery',links:!!cta && /CAPITAL-AI entdecken|Produkt entdecken/.test(cta.textContent)
         && ['/learning','/pricing'].every(path=>!!document.querySelector('a[href="'+path+'"]'))};
@@ -256,6 +265,8 @@ try {
   // Preserve the actual browser assertion; teardown must not replace it.
   report.error = error instanceof Error ? error.message : String(error);
   console.error('LEARNING_COMMERCE_BROWSER_READBACK_FAILED', report.error);
+  // Report the already observed, sanitized public runtime identity even on a later DOM failure.
+  console.log(JSON.stringify({origin:report.origin,health:report.health,checks:report.checks,status:report.status,error:report.error}));
   process.exitCode = 1;
 } finally {
   await writeFile(join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n');

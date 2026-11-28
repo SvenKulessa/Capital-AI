@@ -83,13 +83,51 @@ test('direct GSC owner route binds fixed property, isolates disabled/auth failur
  assert.equal(calls,2);
 });
 
+import {createGrowthConversionReadback} from './growth-owner-engine-readback.mjs';
+test('owner conversion readback is opt-in, recovery gated, aggregate-only and graph compatible',async()=>{
+ const on={CAPITAL_AI_GROWTH_CONVERSION_READBACK_ENABLED:'true',CAPITAL_AI_GROWTH_CONVERSION_RECOVERY_VERIFIED:'true'};
+ const good={status:'RECORDED_CANDIDATES_ONLY',candidateRegistrations:2,candidatePaidSubscriptions:1,candidateInitialInvoiceCents:249,registrations:null,paidSubscriptions:null,revenueCents:null};
+ const now=()=>Date.parse('2026-11-25T00:00:00.000Z');
+ let reads=0;
+ const readCandidates=async w=>{reads++;assert.deepEqual(w,{start:'2026-11-18T00:00:00.000Z',end:'2026-11-25T00:00:00.000Z'});return good;};
+ const api=(over={})=>createGrowthConversionReadback({env:on,authorized:async()=>true,readCandidates,now,...over});
+ async function call(h,method='GET',query=''){
+   const res={headers:{},setHeader(k,v){this.headers[k]=v;}};
+   assert.equal(await h.handle({method},res,new URL('https://capital-ai.online/api/profile/growth-intelligence/conversion-readback'+query),(r,status,data)=>{r.status=status;r.data=data;}),true);
+   return res;
+ }
+ assert.equal((await call(api({authorized:async()=>false}))).status,404);
+ assert.equal((await call(api({authorized:async()=>{throw Error('secret');}}))).status,404);
+ assert.equal((await call(api(),'POST')).status,405);
+ assert.equal((await call(api(),'GET','?user=other')).status,400);
+ assert.equal((await call(api({env:{}}))).status,503);
+ assert.equal((await call(api({env:{CAPITAL_AI_GROWTH_CONVERSION_READBACK_ENABLED:'true'}}))).status,503);
+ assert.equal((await call(api({readCandidates:undefined}))).status,503);
+ assert.equal(reads,0);
+ const valid=await call(api());
+ assert.equal(valid.status,200);assert.equal(reads,1);
+ assert.match(valid.headers['Cache-Control'],/no-store/);
+ assert.equal(valid.data.graphInput.contractVersion,'CAPITAL_AI_X_CONVERSION_CANDIDATES@1');
+ assert.equal(valid.data.graphInput.candidatePaidSubscribers,1);
+ assert.equal(valid.data.graphInput.paidSubscriptions,null);
+ assert.equal(valid.data.graphInput.providerAuthentication,'NOT_PROVEN');
+ assert.equal(valid.data.graphInput.costActivationAllowed,false);
+ assert.equal(valid.data.graphExecution,'NOT_PROVEN');
+ for(const bad of [{...good,userId:'secret'},{...good,registrations:2},{...good,candidatePaidSubscriptions:3},
+   {...good,candidateInitialInvoiceCents:null},{...good,candidateRegistrations:'2'}]){
+   const denied=await call(api({readCandidates:async()=>bad}));
+   assert.equal(denied.status,503);assert.doesNotMatch(JSON.stringify(denied.data),/secret/);
+ }
+ assert.equal((await call(api({readCandidates:async()=>{throw Error('secret');}}))).status,503);
+});
+
 test('owner snapshot exposes only draft channel counts and source hash; no live metrics or self-promotion',()=>{
  const actual=buildOwnerEngineSnapshot(),p=actual.productChannels;
  assert.ok(p.products>0);assert.equal(p.mapped+p.researchQueue,p.products);assert.equal(p.liveMetrics,null);
  assert.deepEqual(validateEngineSnapshot(actual).productChannels,p);
  assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...p,liveMetrics:{sales:0}}}));
  assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...p,mapped:p.products+1}}));
- const {productChannels,...legacy}=actual;assert.deepEqual(validateEngineSnapshot(legacy),legacy);
+ const {productChannels,marketplace,...legacy}=actual;assert.deepEqual(validateEngineSnapshot(legacy),legacy);
 });
 
 test('visual owner readback returns scene IDs only and rejects fabricated assets or activation',()=>{
@@ -98,4 +136,17 @@ test('visual owner readback returns scene IDs only and rejects fabricated assets
  assert.deepEqual(validateEngineSnapshot(actual).visualIntelligence,actual.visualIntelligence);
  assert.throws(()=>validateEngineSnapshot({...actual,visualIntelligence:{...actual.visualIntelligence,actualMediaAssets:1}}));
  assert.throws(()=>validateEngineSnapshot({...actual,visualIntelligence:{...actual.visualIntelligence,publicPublishAllowed:true}}));
+});
+
+
+test('TRUST: marketplace catalog is private, fails closed on authority injection, URL spoofing and source mismatch',async()=>{
+ const actual=buildOwnerEngineSnapshot(),c=actual.marketplace;
+ assert.ok(Buffer.byteLength(JSON.stringify(actual))<=16384);
+ assert.deepEqual(validateEngineSnapshot(actual).marketplace,c);
+ for(const bad of [{...c,publicationAllowed:true},{...c,ownerApproval:'GRANTED'},{...c,spendCents:1},{...c,rows:[{...c.rows[0],url:'https://evil.invalid/'},...c.rows.slice(1)]},{...c,catalogSha256:'0'.repeat(64)}])assert.throws(()=>validateEngineSnapshot({...actual,marketplace:bad}));
+ assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...actual.productChannels,sourceSha256:'0'.repeat(64)}}));
+ let reads=0;const load=async()=>{reads++;return Buffer.from(JSON.stringify(actual));};
+ const req={method:'GET'},path=new URL('https://capital-ai.online/api/profile/growth-intelligence/engine-readback');
+ for(const authorized of [async()=>false,async()=>({role:'owner'}),async()=>{throw Error('synthetic');}]){const res={setHeader(){}};await createGrowthEngineReadback({authorized,load}).handle(req,res,path,(r,status)=>{r.status=status;});assert.equal(res.status,404);}
+ assert.equal(reads,0);
 });

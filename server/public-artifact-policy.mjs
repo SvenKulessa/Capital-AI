@@ -14,6 +14,16 @@ export function mayPublishInformation(classification) {
 const BLOCKED_PUBLIC_PREFIXES = Object.freeze([
   '/downloads/blueprints/',
 ]);
+// Preserve source/license evidence in the repository, never ship internal review artifacts.
+const PRIVATE_STATIC_FILES = new Set([
+  'branding/asset-pack/meta/asset-manifest.json',
+  'branding/asset-pack/meta/generation-environment.json',
+  'branding/asset-pack/meta/validation-report.json',
+  'branding/asset-pack/meta/social-render-tokens.json',
+  'documentation/presentation-manifest.json',
+  'downloads/capital-ai_byok_2026-10-05.md',
+]);
+const PRIVATE_RUNTIME_PREFIXES = ['/evidence/','/generated/','/docs/growth/research/'];
 
 function normalizeArtifactPath(pathname) {
   if (typeof pathname !== 'string' || !pathname.startsWith('/')) return null;
@@ -29,6 +39,7 @@ export function isBlockedPublicArtifactPath(pathname) {
   if (!normalized) return true;
   return normalized === '/downloads/blueprints' ||
     BLOCKED_PUBLIC_PREFIXES.some(prefix => normalized.startsWith(prefix)) ||
+    PRIVATE_STATIC_FILES.has(normalized.slice(1)) || PRIVATE_RUNTIME_PREFIXES.some(prefix=>normalized===prefix.slice(0,-1)||normalized.startsWith(prefix)) ||
     normalized.endsWith('.map') || normalized === '/bundle-evidence.json';
 }
 
@@ -153,6 +164,11 @@ const STATIC_SOURCE_BASELINE = new Set([
   "branding/social/tiktok.svg",
   "branding/social/x.svg",
   "branding/social/youtube.svg",
+  "branding/universe/analytics-universe-orbit.webp",
+  "branding/universe/owner-nebula-v4.webp",
+  "branding/universe/static-canvas-v4.css",
+  "branding/universe/analytics-overview-v4.webp",
+  "branding/universe/capital-ai-mark-v4.webp",
   "branding/universe/hero-universe-desktop.webp",
   "branding/universe/hero-universe-globe.webp",
   "branding/universe/hero-universe-mobile.webp",
@@ -406,9 +422,8 @@ export async function enforcePublicBuildInventory(root, generatedPaths) {
   const files = await artifactFiles(root);
   const excluded = [];
   for (const file of files) {
-    // Vite's local public copy may contain pre-existing private Blueprint files.
-    // Never copy these to a release; remove only the explicit legacy inputs.
-    if (STATIC_SOURCE_BASELINE.has(file) && file.startsWith('downloads/blueprints/')) {
+    // Remove explicit legacy private inputs before any public release; retain source inventory.
+    if (STATIC_SOURCE_BASELINE.has(file) && (file.startsWith('downloads/blueprints/') || PRIVATE_STATIC_FILES.has(file.toLowerCase()))) {
       excluded.push(file);
       continue;
     }

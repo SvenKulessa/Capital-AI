@@ -5,6 +5,7 @@ import { AnalysisComponentExplorer } from '../features/analysis/AnalysisComponen
 import { PipelineConfiguratorConsole } from '../features/analysis/PipelineConfiguratorConsole';
 import { analysisUiEnabled } from '../features/analysis/analysisUiFlags';
 import { RoadmapPanel } from './RoadmapPanel';
+import { OpenAiProviderStatus } from './OpenAiProviderStatus';
 import { ProviderStatusDashboard } from './ProviderStatusDashboard';
 import { DataUnavailable } from './DataUnavailable';
 import { LicenseEnginePanel } from './LicenseEnginePanel';
@@ -122,6 +123,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
           {activeTab === 'roadmap' && <RoadmapPanel />}
           {activeTab === 'components' && <><ComponentInventoryDashboard />{analysisUiEnabled('components') && <AnalysisComponentExplorer compact />}</>}
           {activeTab === 'tools' && <RepositoryToolCatalogDashboard />}
+          {activeTab === 'providers' && <OpenAiProviderStatus />}
           {activeTab === 'observability' && <ObservabilityDashboard />}
           {activeTab === 'news' && <ControlCenterNewsPanel />}
           {activeTab === 'licenses' && <LicenseEnginePanel />}

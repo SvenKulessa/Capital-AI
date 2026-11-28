@@ -32,7 +32,8 @@ test('homepage uses shared 3D brand artwork with a static fallback and preserves
   const hero = read('src/components/Hero.tsx').toString();
   const globe = read('src/components/BrandGlobe.tsx').toString();
   assert.doesNotMatch(hero, /hero-universe-orbit.svg/);
-  assert.match(hero, /<BrandGlobe paused=\{globePaused\}/);
+  assert.match(hero, /<BrandGlobe paused=\{false\}/);
+  assert.doesNotMatch(hero, /hero-globe-pause|globePaused/);
   assert.match(globe, /src=\{BRAND_GLOBE.asset\}/);
   assert.match(globe, /reducedMotion !== false/);
   assert.match(hero, /id="hero-open-learning-link" href="\/learning"/);

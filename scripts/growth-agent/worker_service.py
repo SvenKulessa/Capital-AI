@@ -18,6 +18,7 @@ from pathlib import Path
 from agent_platform import DOMAINS, build_research_graph
 from domain_profile_binding import bind_domain_task
 from checkpoint_store import execute_durable_graph
+from acode_failure_event import research_task, SCHEMA as ACOPY_SCHEMA
 
 ROOT = Path("/var/lib/capital-ai-agent")
 MAX_TASK_SIZE = 2048
@@ -63,6 +64,8 @@ def load_task(path: Path, inbox: Path) -> dict:
     finally:
         os.close(fd)
     task = json.loads(raw)
+    if isinstance(task, dict) and task.get("schema") == ACOPY_SCHEMA:
+        task = research_task(task)
     if (not isinstance(task, dict) or set(task) != {"schema", "task_id", "domain", "query"}
             or task["schema"] != "CAPITAL_AI_OFFLINE_RESEARCH@1"
             or not isinstance(task["task_id"], str)
@@ -112,7 +115,7 @@ def main():
         parser.error("--serve cannot override production root")
     if args.serve and os.environ.get("CAPITAL_AI_OFFLINE_WORKER_ENABLED") != "true":
         parser.error("worker disabled by default")
-    for name in ("GITHUB_TOKEN", "GH_TOKEN", "RENDER_API_KEY", "SUPABASE_SERVICE_ROLE_KEY", "OPENAI_API_KEY"):
+    for name in ("GITHUB_TOKEN", "GH_TOKEN", "RENDER_API_KEY", "SUPABASE_SERVICE_ROLE_KEY", "OPENAI_API_KEY", "OPENAI_API_KEY_PERSONAL", "DEEPSEEK_API_KEY", "SUPABASE_SECRET_KEY"):
         if os.environ.get(name):
             parser.error("provider credential not permitted in offline worker")
     os.umask(0o077)

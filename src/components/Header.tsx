@@ -1,4 +1,4 @@
-import { BRAND_COLORS, hubBrandForRoute } from '../../shared/hub-branding.mjs';
+import { BRAND_COLORS, HUB_BRANDING, hubBrandForRoute } from '../../shared/hub-branding.mjs';
 import { accountDisplay, verifiedOwner } from '../../shared/account-display.mjs';
 /**
  * ============================================================================
@@ -80,10 +80,11 @@ interface HeaderProps {
   onNavigate?: (path: string) => void;
 }
 
-function ProfileAvatar({ url, owner, size = 'sm' }: { url?: string | null; owner: boolean; size?: 'sm' | 'md' }) {
+function ProfileAvatar({ url, privateUrl, owner, size = 'sm' }: { url?: string | null; privateUrl?: string | null; owner: boolean; size?: 'sm' | 'md' }) {
+  const displayedUrl = privateUrl ?? (url?.startsWith('https://') ? '/api/profile/avatar/provider' : url);
   return <span className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border ${size === 'md' ? 'h-8 w-8' : 'h-6 w-6'} ${owner ? 'border-rose-400/40 bg-rose-500/10 text-rose-300' : 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300'}`}>
     <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-    {url && <img key={url} src={url} alt="" referrerPolicy="no-referrer" loading="lazy"
+    {displayedUrl && <img key={displayedUrl} src={displayedUrl} alt="" referrerPolicy="no-referrer" loading="lazy"
       onError={event => { event.currentTarget.hidden = true; }}
       className="absolute inset-0 h-full w-full rounded-full object-cover" />}
   </span>;
@@ -112,6 +113,25 @@ export const Header: React.FC<HeaderProps> = ({
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
   const [authStatus, setAuthStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [sessionRetry, setSessionRetry] = useState(0);
+  const [avatarRevision, setAvatarRevision] = useState(0);
+  const [privateAvatarUrl, setPrivateAvatarUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const refresh = () => setAvatarRevision(value => value + 1);
+    window.addEventListener('capital-ai:profile-avatar-updated', refresh);
+    return () => window.removeEventListener('capital-ai:profile-avatar-updated', refresh);
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    setPrivateAvatarUrl(null);
+    if (!authSession?.authenticated) return () => controller.abort();
+    fetch('/api/profile/logo', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
+      .then(response => {
+        if (controller.signal.aborted) return;
+        if (response.ok) setPrivateAvatarUrl('/api/profile/avatar/current?revision=' + avatarRevision);
+      })
+      .catch(() => { /* Provider avatar remains the fallback. */ });
+    return () => controller.abort();
+  }, [authSession?.authenticated, authSession?.user?.email, avatarRevision]);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isDrawerAccountExpanded, setIsDrawerAccountExpanded] = useState(false);
 
@@ -190,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
     pt: ['Produto', 'Aprender', 'Análise', 'Preços', 'Para empresas'],
     es: ['Producto', 'Aprender', 'Análisis', 'Precios', 'Para empresas'],
   }[locale];
-  const primaryRoutes = ['/', '/learning', '/marketscreener', '/pricing', '/governance-evidence-sprint'];
+  const primaryRoutes = ['/marketscreener', '/learning', '/', '/pricing', '/governance-evidence-sprint'];
   const activeHub = hubBrandForRoute(currentRoute);
   const isCurrent = (path: string) => currentRoute === path ||
     (path === '/learning' && activeHub === 'learning') ||
@@ -200,9 +220,15 @@ export const Header: React.FC<HeaderProps> = ({
     setIsMenuOpen(false);
     if (onNavigate) { event.preventDefault(); onNavigate(path); }
   };
-  const primaryLinks = () => primaryRoutes.map((path, index) => <a key={path} href={path}
-    aria-current={isCurrent(path) ? 'page' : undefined} onClick={event => follow(event, path)}
-    className={`inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${isCurrent(path) ? 'bg-amber-300/15 text-amber-200 underline underline-offset-4' : 'text-slate-200 hover:bg-white/10'}`}>{primaryLabels[index]}</a>);
+  const primaryLinks = () => primaryRoutes.map((path, index) => {
+    const brand = path === '/learning' ? HUB_BRANDING.learning
+      : path === '/marketscreener' ? HUB_BRANDING.marketscreener : path === '/' ? HUB_BRANDING.studio : undefined;
+    const current = isCurrent(path);
+    return <a key={path} href={path}
+      aria-current={current ? 'page' : undefined} onClick={event => follow(event, path)}
+      style={brand ? { borderColor: brand.color, color: brand.color, backgroundColor: current ? `${brand.color}20` : undefined } : undefined}
+      className={`inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${brand ? 'border hover:bg-white/10' : current ? 'bg-amber-300/15 text-amber-200' : 'text-slate-200 hover:bg-white/10'} ${current ? 'underline underline-offset-4' : ''}`}>{brand?.name ?? primaryLabels[index]}</a>;
+  });
 
   const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace' | '/profile/rights' | '/profile/subscription' | '/profile/dashboard') => {
     setIsAccountOpen(false);
@@ -250,7 +276,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="relative z-30 flex w-full flex-wrap items-center justify-between gap-2 border-b border-slate-800 px-3 py-3 sm:px-6">
+    <header className={`relative z-30 flex w-full items-center justify-between gap-2 border-b border-slate-800 px-3 py-3 sm:px-6 ${authStatus === 'ready' && authSession?.authenticated ? 'flex-nowrap xl:flex-wrap' : 'flex-wrap'}`}>
       <div aria-hidden="true" data-universe-spectrum="header" className="pointer-events-none absolute inset-x-0 bottom-0 flex h-[3px] overflow-hidden">
         {Object.entries(BRAND_COLORS).map(([name, color]) => <span key={name} data-universe-color={name} className="flex-1" style={{ backgroundColor: color }} />)}
       </div>
@@ -284,7 +310,7 @@ export const Header: React.FC<HeaderProps> = ({
       <nav aria-label={nav.main} className="hidden flex-wrap items-center gap-1 xl:flex">{primaryLinks()}</nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
-      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+      <div className="ml-auto flex min-w-0 max-w-full items-center justify-end gap-2">
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
         {/* Session errors are not evidence of a logout; the login route stays reachable. */}
@@ -303,14 +329,14 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
-              className={`flex min-h-11 items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
+              className={`flex min-h-11 min-w-11 items-center gap-1 px-1.5 sm:gap-2 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
               aria-controls="header-account-navigation"
               aria-expanded={isAccountOpen}
               aria-label={t('navAccount')}
               title="Kontomenü"
             >
-              <ProfileAvatar url={authSession.user?.avatarUrl} owner={isOwner} size="md" />
-              <span className="flex min-w-0 flex-col items-start leading-tight">
+              <ProfileAvatar url={authSession.user?.avatarUrl} privateUrl={privateAvatarUrl} owner={isOwner} size="md" />
+              <span className="hidden min-w-0 flex-col items-start leading-tight sm:flex">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
                   <span className={`font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
@@ -423,7 +449,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
-                <nav aria-label={nav.main} className="mt-5 grid gap-1">{primaryLinks()}</nav>
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authStatus === 'loading' ? (
@@ -444,8 +469,9 @@ export const Header: React.FC<HeaderProps> = ({
                         className="flex min-h-14 w-full items-center justify-between gap-2 rounded-xl px-2 py-2 text-left hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                       >
                         <span className="min-w-0 flex-1">
+                          <span className="mb-1 block text-xs font-semibold text-slate-200">Profile Hub</span>
                           <span className="flex items-center gap-2">
-                            <ProfileAvatar url={authSession.user?.avatarUrl} owner={isOwner} />
+                            <ProfileAvatar url={authSession.user?.avatarUrl} privateUrl={privateAvatarUrl} owner={isOwner} />
                             <span className={`min-w-0 truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
                           </span>
                           {accountTier && <span className={`mt-1 block truncate pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</span>}
@@ -509,11 +535,14 @@ export const Header: React.FC<HeaderProps> = ({
                   {authStatus !== 'ready' && <a href="/login" onClick={event => follow(event, '/login')} className="mt-2 inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">{nav.login}</a>}
                 </div>
 
+                <nav aria-label={nav.main} className="mt-5 grid gap-1">{primaryLinks()}</nav>
+
                 <details className="mt-4 rounded-xl border border-slate-700 p-2">
                   <summary className="cursor-pointer rounded-lg px-3 py-3 text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-amber-300">{locale === 'de' ? 'Weitere Bereiche' : 'More areas'}</summary>
                   <div className="grid gap-1 px-1">
                     {[
-                      {path: '/studio', label: 'Studio'},
+                      {path: '/studio', label: 'Studio-Werkzeuge'},
+                      {path: '/social', label: HUB_BRANDING.social.name},
                       {path: '/blueprints', label: 'Blueprints'},
                       {path: '/dokumentation', label: t('docs')},
                       ...(isOwner ? [{path: '/control-center', label: 'Control Center'}] : []),

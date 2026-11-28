@@ -280,14 +280,12 @@
  * A translucent canvas protects text contrast without creating a separate row. */
 .brand-globe-art { position:relative; width:100%; height:100%; pointer-events:none; }
 .brand-globe-poster, .brand-globe-canvas { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; transition:opacity .6s ease; }
-.capital-ai-hero { min-height:640px; padding-bottom:4.5rem; }
+.capital-ai-hero { min-height:640px; padding-bottom:1.75rem; }
 .hero-globe-background { position:absolute; z-index:-1; right:-8%; top:0; width:90%; height:100%; pointer-events:none; }
 .capital-ai-hero .hero-copy { background:none; overflow-wrap:anywhere; }
 .capital-ai-hero .hero-copy button > div,
 .capital-ai-hero .hero-copy button > span { min-width:0; }
 .capital-ai-hero .hero-copy button svg { flex-shrink:0; }
-.hero-globe-pause { position:absolute; z-index:20; bottom:1rem; right:1.25rem; min-height:44px; padding:.5rem 1rem; border:1px solid var(--color-brand-gold); border-radius:999px; color:var(--color-brand-gold); background:var(--color-brand-canvas); font-size:.875rem; }
-.hero-globe-pause:focus-visible { outline:2px solid var(--color-brand-gold); outline-offset:4px; }
 @media (prefers-reduced-motion:reduce) {
   .brand-globe-poster, .brand-globe-canvas { transition:none; }
 }
@@ -358,3 +356,36 @@
   outline: 2px solid var(--color-brand-gold);
   outline-offset: 3px;
 }
+
+/* Owner-approved v4 global canvas. Opaque/contrasting reading surfaces remain independent. */
+.universe-space {
+  background-color: #081229;
+}
+.universe-space::before, .universe-space::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgb(5 12 25 / .55), rgb(5 12 25 / .72)), url('/branding/universe/owner-nebula-v4.webp') center / cover no-repeat;
+}
+.universe-space::before { filter: grayscale(1); }
+/* The colored region is contained in a 40% x 50% rectangle (20% of viewport). */
+.universe-space::after {
+  filter: saturate(.94);
+  clip-path: ellipse(20% 25% at 20% 25%);
+  mask-image: radial-gradient(ellipse 20% 25% at 20% 25%, #000 0%, transparent 100%);
+}
+@media(forced-colors:active), print { .universe-space { display:none; } }
+.universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#F9BF21 54%,#F87171 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
+.universe-hub-action { position:relative; isolation:isolate; border:1px solid var(--action-accent); font-weight:700; color:var(--action-accent); background:color-mix(in srgb,var(--action-accent) 12%,transparent); }
+.universe-hub-action--learning { --action-accent:#F9BF21; }
+.universe-hub-action--analytics { --action-accent:#B794F4; }
+.universe-hub-action::after { content:''; pointer-events:none; position:absolute; inset:0; border-radius:inherit; opacity:0; background:radial-gradient(circle at 12% 8%,currentColor 0 1px,transparent 3px),radial-gradient(circle at 83% 92%,currentColor 0 1px,transparent 3px),linear-gradient(118deg,transparent 12%,currentColor 12.4%,transparent 13%,transparent 83%,currentColor 83.4%,transparent 84%); }
+.universe-hub-action .universe-neuron-path { position:absolute; inset:-3px; width:calc(100% + 6px); height:calc(100% + 6px); pointer-events:none; color:var(--action-accent); opacity:0; transition:opacity 160ms ease; filter:drop-shadow(0 0 3px currentColor); }
+.universe-hub-action:is(:hover,:focus-visible,:active) .universe-neuron-path { opacity:.88; }
+@media(prefers-reduced-motion:reduce){.universe-hub-action .universe-neuron-path{transition:none}}
+@media(forced-colors:active){.universe-hub-action .universe-neuron-path{display:none}}
+.universe-hub-action:hover,.universe-hub-action:focus-visible,.universe-hub-action:active { box-shadow:0 0 18px color-mix(in srgb,var(--action-accent) 45%,transparent); background:color-mix(in srgb,var(--action-accent) 18%,transparent); }
+.universe-hub-action:is(:hover,:focus-visible,:active)::after { opacity:.75; transition:opacity 160ms ease; }
+@media(prefers-reduced-motion:reduce){.universe-space,.universe-hub-action::after{transition:none}}
+@media(forced-colors:active){.universe-hero-heading{background:none;color:CanvasText;-webkit-text-fill-color:CanvasText}.universe-hub-action::after{display:none}}

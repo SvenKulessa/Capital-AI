@@ -105,6 +105,8 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const [keyReport, setKeyReport] = useState<BuddyKeyReport | null>(null);
   const [learnReport, setLearnReport] = useState<LearnStatus | null>(null);
   const [keyNote, setKeyNote] = useState('');
+  const [geminiConnected, setGeminiConnected] = useState(false);
+  const [geminiSelected, setGeminiSelected] = useState(false);
   const lastAssist = useRef(0);
   const [avatarAzimuth, setAvatarAzimuth] = useState(0);
   const rotatePointer = useRef<{ x: number; angle: number } | null>(null);
@@ -151,6 +153,17 @@ export function HeroBuddy(props: HeroBuddyProps) {
       .catch(() => {
         if (!controller.signal.aborted) setKeyNote('Schlüsselstatus gerade nicht erreichbar.');
       });
+    fetch('/api/chat-buddy/gemini', {
+      credentials: 'same-origin', cache: 'no-store',
+      headers: { Accept: 'application/json' }, signal: controller.signal,
+    }).then(response => response.ok ? response.json() : Promise.reject())
+      .then(status => {
+        if (!controller.signal.aborted) {
+          setGeminiConnected(status.connected === true);
+          if (status.connected !== true) setGeminiSelected(false);
+        }
+      })
+      .catch(() => {if (!controller.signal.aborted) {setGeminiConnected(false);setGeminiSelected(false);}});
     fetch('/api/chat-buddy/learn', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: controller.signal })
       .then((response) => (response.ok ? response.json() : Promise.reject()))
       .then((report: LearnStatus) => {
@@ -231,6 +244,24 @@ export function HeroBuddy(props: HeroBuddyProps) {
     setDraft('');
     setOpen(true);
     setSpeech(null);
+    if (geminiSelected && geminiConnected) {
+      void fetch('/api/chat-buddy/gemini/answer', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: clean, consent: true }),
+      }).then(async response => {
+        if (!response.ok) throw new Error('GEMINI_UNAVAILABLE');
+        const result: { answer?: string } = await response.json();
+        if (!result.answer) throw new Error('GEMINI_EMPTY');
+        setMessages(current => current.map(message =>
+          message.id === buddyId ? { ...message, text: result.answer as string } : message));
+      }).catch(() => {
+        setMessages(current => current.map(message => message.id === buddyId
+          ? { ...message, text: 'Gemini ist derzeit nicht verfügbar. Es wurde keine lokale oder weitere externe Anfrage ausgelöst.' }
+          : message));
+      });
+      return;
+    }
     void answerFor(clean).then(async (local) => {
       setMessages((current) => current.map((message) =>
         message.id === buddyId ? { ...message, text: local } : message));
@@ -357,7 +388,13 @@ export function HeroBuddy(props: HeroBuddyProps) {
               )}
               {settingsOn ? (
                 <div className="mb-2 rounded-xl border border-slate-700 bg-[#030716] px-2 py-2">
-                  <p className="text-[11px] text-slate-300">Schlüssel aus Render. Kostenpflichtige Schlüssel werden nicht genutzt. Die Antwort bleibt lokal.</p>
+                  <p className="text-[11px] text-slate-300">Ohne ausdrückliche Auswahl antwortet JaJa weiterhin lokal. Persönliche Gemini-BYOK-Aufrufe können über das eigene Google-Kontingent kostenpflichtig sein.</p>
+                  <label className="mt-3 flex min-h-11 items-start gap-2 rounded-xl border border-pink-300/30 p-2 text-xs text-pink-100">
+                    <input type="checkbox" checked={geminiSelected} disabled={!geminiConnected}
+                      onChange={event => setGeminiSelected(event.target.checked)} />
+                    Gemini für neue Nachrichten ausdrücklich verwenden {geminiConnected ? '(Schlüssel verbunden)' : '(nicht verbunden)'}
+                  </label>
+                  <a href="/profile" className="mt-2 block text-xs font-semibold text-pink-200 underline">Gemini BYOK im Profil verwalten</a>
                   {keyNote ? <p className="mt-1 text-[11px] text-amber-300">{keyNote}</p> : null}
                   <ul className="mt-2 space-y-1">
                     {(keyReport?.keys ?? []).map((item) => (

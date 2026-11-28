@@ -178,11 +178,41 @@ const graphHandoff = z.object({
   costActivationAllowed:z.literal(false), automaticChanges:z.literal(false),
 }).strict();
 
+const conversionGraphHandoff = z.object({
+  contractVersion:z.literal('CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1'),
+  engine:z.literal('langgraph'), quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),
+  nextAction:z.enum(['VERIFY_SOURCE_AND_COHORT','REPAIR_INPUT']),
+  providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
+  registrations:z.null(), paidSubscriptions:z.null(), revenueCents:z.null(),
+  publicationAllowed:z.literal(false), costActivationAllowed:z.literal(false),
+  automaticChanges:z.literal(false),
+}).strict();
+
+function projectConversionGraphHandoff(raw:unknown, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
+  const data=conversionGraphHandoff.parse(raw);
+  if(data.nextAction!==(data.quality==='BLOCKED'?'REPAIR_INPUT':'VERIFY_SOURCE_AND_COHORT'))
+    throw Error('Invalid conversion graph report');
+  const row:GrowthRow={
+    ...makeRow('x-conversion-graph-handoff','X Growth · Conversion-Graph-Import','PLATFORM',
+      data.quality==='BLOCKED'?'Graph-Eingabe korrigieren':'Authentifizierte Quellen und vollständige Kohorte separat verifizieren'),
+    flow:'Offline-Conversion-Graph → Owner-Dokumentation; keine Live-Metriken',
+    operation:'Importierte Conversion-Graph-Qualität: '+data.quality,
+    auth:'NOT_PROVEN_BY_GRAPH',
+    evidence:'Importdatei SHA-256 '+reportSha,
+    approvals:'Keine Publikations-, Kosten- oder Mutationsfreigabe',
+    tests:'Registrierungen, zahlende Abos und Umsatz: NOT_PROVEN',
+  };
+  return [...rows.filter(r=>r.id!==row.id),row];
+}
+
 /** Untrusted offline status-only report; separate rows never overwrite live owner readbacks. */
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
   const parsed=JSON.parse(raw);
+  if(parsed && typeof parsed==='object' && 'contractVersion' in parsed &&
+    parsed.contractVersion==='CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1')
+    return projectConversionGraphHandoff(parsed,reportSha,rows);
   if(parsed?.contractVersion==='CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'){
     const result=z.object({contractVersion:z.literal('CAPITAL_AI_SMARTCOPY_CONVERSION_GRAPH_HANDOFF@1'),engine:z.literal('langgraph'),productId:z.literal('ai-smartcopy'),
       quality:z.enum(['PASS_WITH_GAPS','BLOCKED']),nextAction:z.enum(['VERIFY_SOURCE_AND_COHORT','REPAIR_INPUT']),providerAuthentication:z.literal('NOT_PROVEN_BY_GRAPH'),
@@ -244,4 +274,19 @@ export function projectGsc(raw:unknown,row:GrowthRow):GrowthRow {
     auth:data.transport,operation:'GSC Readback: '+data.observedAt,error:verified?'':'Kein bestätigter Report',
     evidence:m&&p?p.startDate+' – '+p.endDate+': Klicks '+m.clicks+', Impressionen '+m.impressions+', CTR '+(m.ctr*100).toFixed(2)+' %, Position '+m.position+'; SHA-256 '+data.evidenceSha256:'',
     tests:'Quellengetrennter serverseitiger Readback; keine Aussage über andere Quellen'};
+}
+
+
+const marketplaceHosts:Record<string,string[]> = {"stripeDirect":["dashboard.stripe.com","docs.stripe.com","stripe.com"],"gumroad":["gumroad.com"],"githubMarketplace":["github.com","docs.github.com"],"microsoftMarketplace":["partner.microsoft.com","learn.microsoft.com"],"awsMarketplace":["aws.amazon.com","docs.aws.amazon.com"],"googleCloudMarketplace":["console.cloud.google.com","docs.cloud.google.com"],"notionMarketplace":["www.notion.com"],"lemonSqueezy":["www.lemonsqueezy.com","docs.lemonsqueezy.com"],"paddle":["www.paddle.com","developer.paddle.com"],"atlassianMarketplace":["marketplace.atlassian.com","developer.atlassian.com"],"googlePlay":["play.google.com","developers.google.com"],"chromeWebStore":["chrome.google.com","developer.chrome.com"],"googleWorkspaceMarketplace":["workspace.google.com","developers.google.com"]};
+const marketplaceId=z.string().regex(/^[a-zA-Z][a-zA-Z0-9]{1,40}$/);
+const marketplaceLink=z.string().max(300).refine(s=>{try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port;}catch{return false;}});
+const marketplaceRow=z.object({id:marketplaceId,url:marketplaceLink,source:marketplaceLink,automation:z.enum(['API_SUBMISSION_DOCUMENTED','PORTAL_REVIEW','MCP_DRAFT_AND_PUBLISH_DOCUMENTED','PORTAL_CREATE_API_READ','API_CATALOG_DOCUMENTED','API_LISTING_DOCUMENTED','API_EXISTING_APP_EDITS','API_EXISTING_ITEM_RELEASES']),feeNote:z.string().max(250),feeSource:marketplaceLink.nullable(),products:z.array(z.string().regex(/^[a-z0-9-]{1,80}$/)).max(133)}).strict().refine(r=>Object.hasOwn(marketplaceHosts,r.id)&&[r.url,r.source,...(r.feeSource?[r.feeSource]:[])].every(s=>marketplaceHosts[r.id].includes(new URL(s).hostname))&&new Set(r.products).size===r.products.length);
+const marketplaceCatalogSchema=z.object({schema:z.literal('CAPITAL_AI_MARKETPLACE_CATALOG@1'),state:z.literal('DRAFT_ONLY'),sourceSha256:graphDigest,catalogSha256:graphDigest,rows:z.array(marketplaceRow).length(Object.keys(marketplaceHosts).length),accountAdmission:z.literal('NOT_PROVEN'),costAdmission:z.literal('NOT_PROVEN'),rightsAdmission:z.literal('NOT_PROVEN'),ownerApproval:z.literal('NOT_GRANTED'),publicationAllowed:z.literal(false),providerCalls:z.literal(0),spendCents:z.literal(0)}).strict().refine(c=>new Set(c.rows.map(r=>r.id)).size===c.rows.length);
+export type MarketplaceCatalog=z.infer<typeof marketplaceCatalogSchema>;
+export function parseMarketplaceCatalog(raw:unknown):MarketplaceCatalog{return marketplaceCatalogSchema.parse(raw);}
+export async function marketplaceDraftRow(catalog:MarketplaceCatalog,channelId:string,productId:string):Promise<GrowthRow>{
+ const c=parseMarketplaceCatalog(catalog),channel=c.rows.find(r=>r.id===channelId&&r.products.includes(productId));if(!channel)throw Error('MARKETPLACE_UNMAPPED');
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([c.catalogSha256,channelId,productId])));
+ const key=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+ return {...makeRow('marketplace-draft-'+key.slice(0,32),('Marketplace · '+channelId+' · '+productId).slice(0,120),'GROWTH','Produktartefakt, Rechte, Gebühren und Owner-Freigabe verifizieren'),endpoint:channel.url,operation:'DRAFT_ONLY · OFFLINE_PREVIEW',flow:channel.automation,auth:'Account NOT_PROVEN',approvals:'NOT_GRANTED · keine operative Autorität',evidence:'Catalog SHA-256 '+c.catalogSha256+' · Draft '+key,dependencies:channel.feeNote+' · Kosten NOT_PROVEN · Rechte NOT_PROVEN',tests:'0 Provideraufrufe · keine Preisänderung'};
 }

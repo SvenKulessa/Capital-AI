@@ -80,6 +80,67 @@ nicht autorisierende gemeinsame Vorlage
 Deren alte Analyse-/Berichts-Stopps sind bei einem ausdrücklichen
 Implementierungsauftrag nur interne Phasengrenzen, kein neues Gate.
 
+### PROCESS_ACCELERATION@1 – kürzester sicherer Ausführungspfad
+
+`MODE=SHORTEST_PATH_EXECUTION_FIRST`, integriert in SOLO2, SOLO2-CHAT und
+`AUTONOMOUS_EXECUTION_FIRST`. Diese Ausführungspräferenz schafft weder
+neue Rechte noch Gates, sondern konkretisiert die bestehende Delegation.
+
+- **Prozessökonomie:** Vorhandene Evidence, Berechtigungen, APIs, Federation,
+  Service-Accounts, Skills und Agentenprozesse wiederverwenden, soweit gültig
+  und auf den Scope anwendbar. Redundante Inventare, Audits, Handoffs und
+  Freigabeschleifen vermeiden. Unabhängige Aufgaben parallelisieren;
+  bei nachgewiesenem technischen Fehler einen geeigneten alternativen Pfad
+  wählen. Autorisierte Umsetzung, Tests, Reparatur und Verifikation möglichst
+  im selben Arbeitsablauf abschließen. Prozessoptimierungspotenziale aktiv
+  identifizieren und im autorisierten Scope umsetzen.
+- **Evidence proportional zum Risiko:** Für das Solo-Unternehmen in der
+  Vorumsatzphase den kleinsten aussagekräftigen Nachweis wählen: bei
+  Dokumentation gezielter Diff-/Konsistenzcheck, bei gewöhnlichen Features
+  relevante Tests und bestehende CI, bei geänderten Trust Boundaries
+  gezielte Negativtests und entscheidungsrelevanter Runtime-Readback,
+  bei produktiven Datenbankänderungen, Zahlungen oder Datenverlustrisiken
+  die konkret erforderliche Sicherheits-, Freigabe- und Recovery-Evidence.
+  Vor Zusatznachweisen deren Entscheidungsnutzen prüfen; vorhandene
+  Nachweise nur bei gültiger Bindung wiederverwenden. Bestehende Required
+  Checks, Rulesets, verpflichtende Nachweise und die Merge-Regel bleiben
+  vollständig erhalten. Keine unbelegten VERIFIED-Status.
+- **Supabase:** Erforderliche Mutationen frühzeitig konkret mit Zielprojekt,
+  SQL-/Migrationsumfang, Risiko, Tests und angemessenem Rollback bündeln.
+  Nach tatsächlich gültiger, scopegebundener Owner-Freigabe durchführen und
+  per Readback verifizieren; gültige Freigaben nicht wiederholen. Produktive
+  Mutationen weiterhin nur mit gesonderter Autorisierung und belastbarer
+  Backup-/Recovery-Evidence. Isolierte Testmutationen sind ebenfalls an
+  ihren autorisierten Scope gebunden. Keine Selbstautorisierung.
+- **GROWTH/MARKET – Commercial Readiness:** Marktbedarf, Wettbewerb,
+  Preispositionierung, Aufwand, Time-to-Market, Marge und Umsatzpotenzial
+  anhand realer Quellen oder klar gekennzeichneter Hypothesen bewerten.
+  Für geeignete eigene Produkte den kleinsten vollständigen Vertriebsweg
+  mit Produktkatalog, versioniertem Release, SEO-Produktseite, Preis,
+  Lizenzentwurf, Checkout, signaturgeprüften/idempotenten Webhooks,
+  Lizenzvergabe, geschützter Auslieferung, Support, Rückerstattung und
+  consent-konformer Conversion-Messung über bestehende Infrastruktur
+  umsetzen. Technische Angebotsreife und tatsächliche kommerzielle
+  Freigabe getrennt ausweisen; keine unautorisierte Veröffentlichung,
+  Provideraktivierung oder Kosten.
+- **Lizenzierung:** Kommerzielle Nutzung, Redistribution und jeweilige
+  Drittanbieter-, Daten-, Modell- und Medienrechte versionsbezogen prüfen.
+  Für eigene Produkte passende versionierte Lizenzentwürfe einschließlich
+  Nutzungsumfang, Weitergabe, Laufzeit, Support und Rechte Dritter erstellen;
+  rechtsverbindliche Annahme und Veröffentlichung bleiben beim Owner.
+  Ungeklärte Rechte sperren nur den betroffenen Vertriebspfad.
+- **SEO und autonome Optimierung:** Bestehende SEO-Tabellen, Search Console,
+  GA4, rechtmäßig verfügbare Marktquellen, `scripts/growth-agent/auto_loop.py`,
+  Skill-Registry und RAG wiederverwenden. Technische SEO, Suchintention,
+  Indexierbarkeit, strukturierte Daten, interne Links, mobile Leistung,
+  Barrierefreiheit und Conversion verbessern. LangGraph/RAG im erlaubten
+  Scope mit persistenten Checkpoints, begrenzten Reparaturzyklen,
+  Quellenherkunft/Lizenz/Freshness, Tenant-Isolation und tatsächlichen
+  Vergleichstests autonom optimieren. Keine konkurrierenden Agenten,
+  Scheduler oder erfundenen Kennzahlen; keine neue laufende Ressource
+  ohne erforderliche Kostenfreigabe. Zeitgesteuerte Ausführung bleibt
+  an die bestehende autorisierte Automation gebunden.
+
 ### Auftragsgrenzen bei neuen Prompts – keine pauschale Sperrvererbung
 
 - **Fortsetzung desselben Auftrags:** Ausdrücklich vereinbarte Read-only-, No-Merge-, No-Deploy- oder No-Publish-Grenzen gelten auch bei kurzen Fortsetzungen wie „fahre fort“, solange der Auftrag unverändert fortgesetzt wird.
@@ -106,6 +167,40 @@ In einem autorisierten Roadmap-Auftrag arbeitet der Agent wiederholt in vollstä
 Für Weboptimierung gehören messbare Nutzerwirkungen wie barrierefreie Navigation, mobile Ladezeit, verständliche Finanzbildung und verlässliche Checkout-Pfade zur Priorisierung. Bei einem geeigneten Tool vergleicht der Agent die vorhandene Integration mit einem konkret passenden Open-Source- oder kommerziellen Kandidaten. Er prüft die für die eingesetzte Version geltenden Nutzungs- und Weitergaberechte, Datenflüsse, Kosten, Integrationsaufwand und Rücknahme und nutzt den bestehenden Kosten- und Freigaberahmen. Eine technische Bewertung oder ein CADS-Ergebnis belegt keine Rechtefreigabe.
 
 Die Iteration endet, wenn das Ziel erreicht ist, kein unabhängiger ausführbarer Schritt im beauftragten Umfang bleibt oder sich das beobachtbare Ergebnis trotz eines begründet anderen Ansatzes nicht ändert. Bestehende HOLDs, Merge-Bedingungen und Produktionsgrenzen gelten. Diese Arbeitsweise läuft im aktiven Auftrag. Zeitgesteuerte Ausführung braucht eine gesondert eingerichtete Automation.
+
+## CAPITAL_AI_ERROR_RECOVERY@1 – Fehlerbehebung und Abbruch
+
+Konkretisierung von SOLO_MAINTAINER_FLOW@2 / AUTONOMOUS_EXECUTION_FIRST;
+keine neue Governance-Instanz, keine zusätzlichen Required Checks,
+keine zusätzliche Provider- oder Ausführungsberechtigung.
+
+- Fehler reproduzieren, Ursache und betroffenen Wirkungspfad eingrenzen,
+  kleinsten sicheren Fix und passende Positiv-/Negativtests wählen.
+  Standardbudget zwei Reparaturversuche; bestehende technische Obergrenze
+  drei nur bei explizit autorisierter Konfiguration. Keine identischen
+  Reparaturwiederholungen ohne neue belastbare Erkenntnis. Budget und
+  Berechtigungen bei jedem Wiederanlauf erneut prüfen.
+- Nachweislich laufende CI oder erwartetes SHA-gebundenes Deployment:
+  WAIT am bestehenden Checkpoint, kein Reparaturversuch, kein neuer
+  Workflow, kein automatischer Scheduler. Bei erneuter autorisierter
+  Invocation nur den wartenden Lesevorgang fortsetzen; keine erneute
+  Implementierung oder Merge-Mutation.
+- SECURITY_STOP, PERMISSION_STOP, COST_STOP, DATA_INTEGRITY_STOP und
+  LICENSE_STOP beenden den betroffenen unsicheren Wirkungspfad.
+  NO_PROGRESS und RETRY_EXHAUSTED beenden den Reparaturkreislauf.
+  Unbekannte oder nicht belegte Ergebnisse bleiben NOT_PROVEN;
+  fehlende Messwerte sind keine gemessenen Nullwerte. Unabhängige
+  autorisierte Arbeit fortsetzen, global nur bei übergreifendem Risiko stoppen.
+- Nur begrenzte, typisierte Fehlerklassen und nicht vertrauliche
+  Fingerprints, SHA/Run-IDs und Status im Checkpoint. Keine Rohfehler,
+  Tokens oder Provider-Payloads. Unklare Schreibresultate zuerst durch
+  unabhängigen Readback klären; keine blinden Wiederholungen. Terminale
+  Checkpoints nicht automatisch neu starten.
+- API-401/403 und Kontobindungsfehler nicht umgehen; autorisierte direkte
+  Provider-Adapter verwenden. Rate-Limits und Retry-After respektieren;
+  nur sichere, begrenzte Reads erneut versuchen. Keine nicht autorisierten
+  Mehrkosten oder produktiven Datenbankmutationen. Merge, Recovery und
+  Deployment weiterhin nach den unveränderten bestehenden Regeln.
 
 ## Entwicklungsfluss
 
@@ -379,6 +474,9 @@ Für **neu durch ChatGPT/Codex erzeugten, in AcodeX ausführbaren Quellcode** gi
 4. **Bestand und Sicherheit bewahren:** Vorher auf Namenskollision prüfen, bei Existenz nur eine neue `_vN`-Version anlegen; vorhandene Dateien weder überschreiben noch löschen oder umbenennen. Keine Secrets, privaten Schlüssel, Passwörter, Zugangstoken, Dumps oder personenbezogenen Rohdaten in `shared`. Keine versteckte Ausführung, `chmod`-Automatik oder zweiter `rclone`/Drive-Pull, Watcher, Cronjob, Scheduler oder OAuth-Client; der vorhandene `startup.sh → drive-pull.sh`-Pfad bleibt unverändert. Acode führt Skripte erst nach bewusstem Nutzeraufruf (`bash <Pfad>` bzw. `python3 -B <Pfad>`) aus.
 5. **Evidence/Scope:** `NAME=VERIFIED`, `DRIVE_UPLOAD=VERIFIED`, `DRIVE_PARENT=VERIFIED`, `SHA256=VERIFIED`, `ACODE_SYNC=VERIFIED` nur für tatsächlich einzeln belegte Stufen. Skriptnamen-Prüfung oder Mocktests behaupten keine Geräteausführung und keine produktiven Berechtigungen. Die bestehenden GitHub-Checks werden wiederverwendet; kein neuer Required Check und keine zusätzliche Policy-Autorität.
 
+6. **Verbindliche Chat-Regel `ACODE_ACOPY_INTEGRATION@1`:** Alle nichtinteraktiven AcodeX/Codex-Terminalaufträge standardmäßig als `acopy sh -s <<'ACODE'` mit abgeschlossenem Heredoc bzw. `acopy python3 -B <verifizierter Pfad>` liefern. Vorhandenes `acopy`/AI-Smartcopy verwenden, bereinigte Statuswerte, Fehlerklassen, SHA-256 und tatsächlichen Exit-Code erfassen; keine zweite Clipboard-Bridge, Rekursion oder Installation. Interaktive OAuth-/Passwort-/Token-/Schlüssel-/Recovery-Vorgänge und interaktive Shells niemals mit acopy erfassen; nur den nachfolgenden bereinigten Readback. Vor Ausführung den versionierten Shared-Delivery-Pfad und unabhängigen SHA-256 prüfen. Bei fehlendem Upload-/Lock-Pfad den konkreten Blocker und manuellen Create-only-Transfer nennen, nicht den Guard umgehen. Diese Chat-Auslieferungsregel gilt in allen CAPITAL-AI-Domain-Chats und SOLO2-Prompts; keine neue Governance-Autorität.
+
+
 ### Projektweite Dateiablage: deterministisches Drive-Routing (Owner-Korrektur 2026-11-21)
 
 Für alle CAPITAL-AI-Domains gilt der **integrierte Router** `CAPITAL_AI_DRIVE_ARTIFACT_ROUTING@1` in `scripts/platform/drive-artifact-router.mjs` mit dem durch den tatsächlichen Drive-Ordnerplan vom 14.11.2026 belegten **Pfad-Mapping** `.agents/contracts/drive-artifact-routing.json`. Dieses Routing ist eine interne Ausführungs- und Delivery-Regel, kein weiterer Required Check, Scheduler oder Provider-Schreibrecht.
@@ -389,6 +487,7 @@ Für alle CAPITAL-AI-Domains gilt der **integrierte Router** `CAPITAL_AI_DRIVE_A
 4. **Pipeline: CLASSIFY → PRIVACY/RIGHTS → ROUTE → NAME/VERSION → FOLDER READBACK → UPLOAD → READBACK:** Der Router erstellt **ausschließlich** einen deterministischen Plan mit Dateiname und einem erst durch authentifizierten Drive-Readback aufgelösten Folder-ID-Wert, keine Netzwerkaktion und keinen Upload. Er verlangt die eindeutige Projektzuordnung, eine abgeschlossene Datenschutz-/Rechteprüfung und die vollständige Zielordnerliste; andernfalls `BLOCKED/WAIT`. Bei autorisiertem Upload vorhandenen Drive-Connector verwenden, anschließend tatsächliche Datei-ID, Dateiname, Parent und Bytes/Hash soweit möglich separat verifizieren; Acode-Geräte-Sync ausschließlich nach echtem Device-Readback. `ROUTE_READY` ist keine Upload-Freigabe ohne tatsächliche Connector-Rechte.
 5. **Keine Querverschiebung:** Bestehende Drive-Dateien weder ohne ausdrücklichen Auftrag automatisch umbenennen, überschreiben, löschen noch archivieren. Keine Secrets, privaten Schlüssel, Tokens, personenbezogenen Rohdaten, vertrauliche Provider-Dumps oder ungeklärte lizensierte Medien in allgemein zugängliche Projektordner übertragen. Bei unklarem Folder-Mapping oder fehlender Share-/Write-Berechtigung halten; nie ein fremdes Projekt oder eine frei erfundene Drive-ID verwenden.
 7. **Autorisiertes Create-only-Delivery:** Der optionale Adapter `scripts/platform/drive-artifact-delivery.mjs` ergänzt den bisherigen Offline-Router nur als **in einen bereits authentifizierten Drive-Connector injizierte Schnittstelle**. Vor jedem Schreiben sind eine ausdrücklich autorisierte Create-only-Aktion, korrekte Parent-Chain, vollständige Namensliste und **globale exklusive Schreibsperre über parallele Agenten hinweg** erforderlich. Fehlt eine dieser Providerfähigkeiten, gilt `HOLD`; kein simuliertes Schreiben. Ein Replay mit bereits vorhandenen, bytegleich und per SHA-256 rückgelesenen Versionen ist ein bestätigtes `SKIP`, **kein erneuter Upload**. Nach neuer Datei-Erstellung nur bei tatsächlichem unabhängigen Drive-Readback von Datei-ID, Name, Parent, Bytes und SHA-256 `DRIVE_UPLOAD=VERIFIED`. Bei unklarer Uploadwirkung weder automatisch erneut hochladen noch vorhandene Dateien überschreiben oder löschen. Die bestehende Acode-only-Grenze bleibt zwingend; keine neue Authentifizierung, kein Scheduler und kein Required Check.
+8. **Direktablage Branding und Lizenznachweise (Owner-Auftrag 2026-11-26):** Neu erstellte/geänderte Branding-Assets, Branding-Manifeste, Design-/Media-Kit-Unterlagen unmittelbar im selben autorisierten Arbeitsgang nach `PRODUCT_BRANDING` (`10_Product/Branding`), Lizenztexte und Rechte-/Provenienz-/Hashnachweise nach `LEGAL_LICENSES` (`80_Legal/Licenses`) routen. Originaldateien, Version, SHA-256, zugehöriger Lizenznachweis und nachgewiesener Status bleiben korrelierbar. Die Designfreigabe ersetzt keine Produkt-/Lizenzfreigabe. Private Review-Archive erhalten alle DRAFT-/HOLD-Grenzen. Direkt beauftragte interaktive Einzelablagen erfolgen create-only, sequenziell mit bestehendem Connector, vollständiger Folder-/Kollisionsprüfung und unabhängigem Readback; keine globale Exklusivität behaupten. Der optionale autonome/parallele Delivery-Adapter behält unverändert die globale Lease-Pflicht aus Punkt 7. Keine neue OAuth-Verbindung, keine parallelen Uploads, keine Publikation. Ohne tatsächliche Bytes/Providerrechte/erforderliche Prüfungen HOLD bzw. NOT_PROVEN; kein Abschluss nur mit Repository-Commit. Keine personenbezogenen Referenzbilder in allgemeine Branding-Exporte übernehmen. Gestaltungsvertrag: `docs/branding/UNIVERSE-VIEW-BRANDING-20261126.md`.
 6. **Verifikation ohne Schein-Evidence:** `FILE_NAME`, `ROUTE`, `LOCAL_EXPORT`, `DRIVE_UPLOAD`, `DRIVE_PARENT`, `SHA256`, `ACODE_SYNC` separat als `VERIFIED`, `BLOCKED`, `WAIT` oder `NOT_PROVEN` ausweisen. Ein CI- oder Router-Test belegt nur seinen geprüften Code- und Datenstand, nicht tatsächliche Drive-Übertragung, Live-Dienstwirkung oder Android-Readback.
 
 

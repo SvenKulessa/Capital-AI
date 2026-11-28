@@ -1,3 +1,4 @@
+import { createOpenAiStatus } from './openai-provider.mjs';
 import { createHistoricalAnalyticsDemo } from './historical-analytics-demo.mjs';
 import { canonicalHubTarget, DOCUMENT_ROUTES } from '../shared/hub-routes.mjs';
 import { renderLearningLandingFallback as learningLandingFallback } from '../shared/learning-journey.mjs';
@@ -9,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createProfileAvatarUpload } from './profile-avatar-upload.mjs';
+import { createProfileProviderAvatar } from './profile-provider-avatar.mjs';
 import { startProfileAvatarClamav } from './profile-avatar-clamav.mjs';
 import { createOAuthConsent } from './oauth-consent.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
@@ -36,7 +38,7 @@ import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createGrowthEvidenceApi } from './growth-owner-evidence-api.mjs';
-import { createGrowthEngineReadback } from './growth-owner-engine-readback.mjs';
+import { createGrowthEngineReadback, createGrowthConversionReadback } from './growth-owner-engine-readback.mjs';
 import { createGrowthGscReadback } from './growth-gsc-readback.mjs';
 import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.mjs';
@@ -85,7 +87,6 @@ import { createBenchmarkStore } from './benchmark-store.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
 import {
   vocabularyMetadata,
-  VOCABULARY_SOURCE_PRS,
   vocabularyMetadataByPath,
   vocabularyTitle,
   vocabularyDescription,
@@ -95,6 +96,7 @@ import { cadsSnapshot } from './cads-observability.mjs';
 import { createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
 import { createSkillRoutingCatalog } from './skill-routing-catalog.mjs';
 import { inspectChatBuddyKeys } from './chat-buddy-keys.mjs';
+import { createBuddyGeminiByok } from './buddy-gemini-byok.mjs';
 import { learnStatus } from './chat-buddy-learn.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -111,7 +113,7 @@ const buildIdentity =
 const renderGitBuildIdentity = /^[0-9a-f]{40}$/.test(embeddedRenderGitSha) && !buildIdentity.bound
   ? { sourceSha: embeddedRenderGitSha, evidence: 'RENDER_GIT_BUILD_ARG_UNATTESTED' }
   : { sourceSha: null, evidence: 'NOT_PROVEN' };
-const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
+const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = SECURITY_HEADERS;
 const publicVocabularyEntries = vocabularyMetadata;
 const publicVocabularyCount = publicVocabularyEntries.length;
@@ -319,7 +321,7 @@ function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
   const lesson = [['Erklärung',entry.detailedExplanation],['Regel / Formel',entry.formulaOrRule],['Synthetisches Praxisbeispiel',entry.practicalExample],['Merksatz',entry.keyTakeaway]].filter(([,text])=>text).map(([title,text])=>`<section><h2>${escapeHtml(title)}</h2><p>${escapeHtml(text)}</p></section>`).join('');
   const sources = entry.sources?.length ? `<section><h2>Fachquellen</h2><ul>${entry.sources.map(source=>`<li><a href="${escapeHtml(source.url)}" rel="noreferrer">${escapeHtml(source.title)}</a></li>`).join('')}</ul></section>` : '';
-  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul>${lesson}${sources}<details><summary>PR-Quellen des Katalogs</summary><ul>${VOCABULARY_SOURCE_PRS.map(pr=>`<li><a href="https://github.com/SvenKulessa/Capital-AI/pull/${pr.number}">PR #${pr.number} · ${escapeHtml(pr.title)}</a></li>`).join('')}</ul></details><nav aria-label="Weiterlernen"><a href="/learning#learning-methodology">Mathematische Lernbeispiele kostenlos lesen</a> · <a href="/learning?tab=glossar#learning-offer">Learning-Angebot und Voraussetzungen</a></nav></article></main>`;
+  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul>${lesson}${sources}<nav aria-label="Weiterlernen"><a href="/learning#learning-methodology">Mathematische Lernbeispiele kostenlos lesen</a> · <a href="/learning?tab=glossar#learning-offer">Learning-Angebot und Voraussetzungen</a></nav></article></main>`;
 }
 function vocabularyLandingFallback() {
   const links = publicVocabularyEntries
@@ -462,7 +464,9 @@ export function createApp(root = defaultRoot, options = {}) {
   const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
+  const openAiStatus = createOpenAiStatus({ env: options.env || process.env, authorized: renderOwnerDashboard.authorized });
   const growthEngineReadback = createGrowthEngineReadback({ authorized: renderOwnerDashboard.authorized });
+  const growthConversionReadback = createGrowthConversionReadback({ env: options.env || process.env, authorized: renderOwnerDashboard.authorized, readCandidates: options.growthConversionCandidateRead });
   const growthGscReadback = createGrowthGscReadback({ authorized: renderOwnerDashboard.authorized, env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const growthEvidenceApi = createGrowthEvidenceApi({ env: options.env || process.env, auth, authorized: renderOwnerDashboard.authorized });
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
@@ -529,6 +533,8 @@ export function createApp(root = defaultRoot, options = {}) {
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
   const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
   const agentOperationsPilot = createAgentOperationsPilot({ auth, env: runtimeEnv });
+  const profileProviderAvatar = createProfileProviderAvatar({auth,fetchImpl:options.fetchImpl||fetch});
+  const buddyGeminiByok = createBuddyGeminiByok({auth,env:runtimeEnv,fetchImpl:options.fetchImpl||fetch});
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -554,6 +560,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await profileAvatarUpload.handle(req, res, url, json)) return;
+  if (await profileProviderAvatar.handle(req, res, url, json)) return;
   if (await oauthConsent.handle(req, res, url)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
   if (await socialXPublishOAuthStart.handle(req, res, url, json)) return;
@@ -572,10 +579,13 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await xUrlContext.handle(req, res, url, json)) return;
   if (await socialPublishOAuthCallback.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
+  if (await buddyGeminiByok.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
+  if (await openAiStatus.handle(req, res, url, json)) return;
   if (await growthEngineReadback.handle(req, res, url, json)) return;
+  if (await growthConversionReadback.handle(req, res, url, json)) return;
   if (await growthGscReadback.handle(req, res, url, json)) return;
   if (await growthEvidenceApi.handle(req, res, url, json)) return;
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;

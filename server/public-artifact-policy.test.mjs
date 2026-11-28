@@ -9,7 +9,7 @@ import { isBlockedPublicArtifactPath, publicArtifactPolicySnapshot, mayPublishIn
 test('commercial Blueprint static downloads are fail-closed', () => {
   assert.equal(isBlockedPublicArtifactPath('/downloads/blueprints/TIER_1_4_LIVE.md'), true);
   assert.equal(isBlockedPublicArtifactPath('/downloads/blueprints/secret.JSON'), true);
-  assert.equal(isBlockedPublicArtifactPath('/downloads/CAPITAL-AI_BYOK_2026-10-05.md'), false);
+  assert.equal(isBlockedPublicArtifactPath('/downloads/CAPITAL-AI_BYOK_2026-10-05.md'), true);
   assert.equal(isBlockedPublicArtifactPath('/branding/badges/data-pipeline-blueprint.svg'), false);
   assert.deepEqual(publicArtifactPolicySnapshot(), {
     schema: 'CAPITAL_AI_PUBLIC_ARTIFACT_POLICY@1',
@@ -70,4 +70,16 @@ test('public source and build inventories reject unknown files and non-regular e
   await assert.rejects(access(blueprint));
   await symlink(join(root, 'bootstrap-failure.js'), join(root, 'alias.js'));
   await assert.rejects(enforcePublicBuildInventory(root, ['assets/generated.js', 'alias.js']), /Non-regular entry/);
+});
+
+
+test('TRUST: legacy internal metadata and runtime evidence are not public assets',async t=>{
+  const root=await mkdtemp(join(tmpdir(),'cai-private-static-'));t.after(()=>rm(root,{recursive:true,force:true}));
+  const files=['branding/asset-pack/meta/asset-manifest.json','branding/asset-pack/meta/generation-environment.json','branding/asset-pack/meta/validation-report.json','branding/asset-pack/meta/social-render-tokens.json','documentation/presentation-manifest.json','downloads/CAPITAL-AI_BYOK_2026-10-05.md'];
+  for(const file of files){assert.equal(isBlockedPublicArtifactPath('/'+file),true);await mkdir(join(root,...file.split('/').slice(0,-1)),{recursive:true});await writeFile(join(root,...file.split('/')),'synthetic');}
+  for(const path of ['/evidence','/evidence/growth-owner-engine-snapshot.json','/generated/private.json','/docs/growth/research/report.json','/branding/asset-pack/meta/%76alidation-report.json'])assert.equal(isBlockedPublicArtifactPath(path),true,path);
+  const publicLicense='branding/asset-pack/meta/ASSET-LICENSE-AND-PROVENANCE.txt';await writeFile(join(root,...publicLicense.split('/')),'synthetic public license');
+  assert.equal(isBlockedPublicArtifactPath('/'+publicLicense),false);assert.equal(await assertKnownPublicSourceInventory(root),files.length+1);
+  assert.deepEqual(await enforcePublicBuildInventory(root,[]),{admitted:1,excluded:files.length});
+  for(const file of files)await assert.rejects(access(join(root,...file.split('/'))));await access(join(root,...publicLicense.split('/')));
 });

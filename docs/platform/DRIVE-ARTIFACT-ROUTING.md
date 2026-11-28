@@ -53,7 +53,7 @@ The trusted provider adapter exposes these existing Drive capabilities under a n
 | `assertCreateAuthorized` | Existing delegated Google Drive identity/permissions for the exact folder; no new auth scopes |
 | `resolveFolderId`, `getFolder` | Resolve existing path, read each parent/name/ID, folder MIME and `canAddChildren`; anchor to previously authorized root ID |
 | `listFolder` | Enumerate **every page**, return `{files:[{id,name,parentId}],nextPageToken:null|string}`; detect duplicates, cycles and missing pages |
-| `withExclusiveCreateLease` | Trusted cross-agent, cross-process lease for route/category/topic; **no write if the runtime cannot provide it** |
+| `withExclusiveCreateLease` | Trusted cross-agent, cross-process lease on the fixed project-wide key `CAPITAL-AI/DRIVE/CREATE_ONLY@1`; **no write if the runtime cannot provide it** |
 | `uploadNewFile` | Map to existing Drive **create-new-file** action, with required parent/name/content/MIME, never update/overwrite/move |
 | `getFile`, `readFileBytes` | Independent metadata and **remote file bytes** readback, not only a Drive MD5/ETag or client-provided SHA |
 
@@ -63,7 +63,7 @@ A ChatGPT Google Drive connector can provide listing, upload and metadata/fetch 
 
 - SHA-256 is computed from local bytes. Under an exclusive lease, list and verify existing matching versions against **actual provider-downloaded bytes**; exact matches yield `VERIFIED_SKIP` with `driveUpload=NOT_PERFORMED`. Different content receives the next free version. Any unreadable existing match yields `HOLD`; do not create a duplicate.
 - After create-only upload, fetch fresh file metadata and bytes, verify exact **name, unique parent, ID and digest**, then re-list the complete folder to detect duplicate names. Only then `VERIFIED_CREATED`; device sync remains `NOT_PROVEN`.
-- If the write may already have happened but its readback fails, return `HOLD` and **do not blindly retry** or delete the file. A later attempt can prove a matching existing file and skip it. Cross-worker locking must remain active over both read and write operations.
+- If the write may already have happened but its readback fails, return `HOLD` and **do not blindly retry** or delete the file. A later attempt can prove a matching existing file and skip it. Cross-worker locking must remain active over both read and write operations. All authorized automated writers, including different topics and destinations, must share this exact lease namespace. A per-topic mutex cannot protect the complete folder invariant. This change does not install a lock backend or grant direct connector writes. If a lease owner crashes or an upload outcome is unknown, do not automatically steal an expired lease: Google Drive creation has no fencing-token check. Reconcile the prior operation and prove the old writer is quiescent before an authorized recovery releases the lease. No automatic force-unlock, fallback writer or second scheduler.
 - No existing Drive object is changed; no cloud resources, costs, OAuth grants or separate synchronization service are created. File size limit: 32 MiB for this adapter. A caller lacking source-byte rights or remote-byte readback cannot claim SHA-256 proof.
 - These are **mock-port tests**, not a successful live Drive upload. Production integration remains unproven until the real host adapter and exclusive lease are observed.
 
@@ -92,3 +92,33 @@ The example variable names are **injection points**, not evidence that provider 
 **Rollback:** revert the small routing PR via the existing GitHub flow. No Drive records or production services are changed by this implementation.
 
 **Important:** The JSON above is a template, not a verified listing. Its `REPLACE_...` placeholders intentionally fail folder admission until replaced by an actual connected Google Drive readback; never mark a user-provided placeholder as a verified provider result.
+
+### Private PostgreSQL backend (staged, default disabled)
+
+The existing Supabase service identity can supply the shared lock using
+`bindSupabaseDriveLease(provider,{enabled:true,env})` from
+`scripts/platform/drive-create-lease.mjs` in an authorized server-side host.
+Never pass the service secret to a browser, Android device, agent prompt, or
+client-side integration. The host still needs the real Drive provider ports;
+a standalone ChatGPT connector is not automatically bound by this module.
+
+The staged SQL `scripts/platform/drive-create-lease.sql` creates one private
+singleton row with an atomic insert, owner-checked durable write-intent and
+owner-checked release. No lease expiry or automatic takeover. The restricted
+RPCs use SECURITY INVOKER and explicit service-role-only execute grants.
+The service role remains a trusted administrative identity; this is not a
+tenant-facing API. No production migration is included in automatic deploys.
+
+Activation requires a separately authorized SQL application after production
+backup/restore evidence, existing server-side identity and verified host
+routing. Test two independent workers against the same backend, rejection of
+anon/authenticated, owner mismatch, crash after acquisition, ambiguous upload
+and verified replay. On uncertainty hold the row, reconcile the exact Drive
+object and prove the previous writer is quiescent before authorized recovery.
+After DB restore keep writers disabled until outstanding Drive operations are
+reconciled. For rollback disable all writer hosts first; preserve any pending
+row and reconcile it before removing the three RPCs and dedicated schema.
+
+### Durable reconciliation identity and host entry point
+
+The staged lock persists the exact target folder ID, generated filename and SHA-256 before the external call. All three are retained across database restart and ambiguous upload. Do not log owner tokens or private target metadata. A trusted host may use `createLeasedDriveWriter(existingDriveProvider,{enabled:true,env})` and call its `deliver({request,bytes,authorization})` entry point; per-request provider overrides are ignored. The host must still supply its independently authenticated Drive ports, and must not expose the raw provider separately. An existing LangGraph action may invoke this host-owned callback, but checkpoints must not contain credentials or owner tokens. On HOLD, stop automatic retries and reconcile recorded intent before separately authorized recovery. No new graph, scheduler, HTTP route or provider credential is introduced here.

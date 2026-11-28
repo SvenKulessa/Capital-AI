@@ -1,5 +1,5 @@
 import { Activity, Bot, ChartColumnIncreasing, Cloud, Crown, GitPullRequest, Info, Layers3, LockKeyhole, ShieldCheck } from 'lucide-react';
-import { isVerified, isSnapshotStale, type DashboardReadback } from './ownerOperationsModel';
+import { ga4DiagnosticLabel, isVerified, isSnapshotStale, type DashboardReadback } from './ownerOperationsModel';
 import {
   ownerAgentRows, ownerEvidenceCounts, ownerEvidenceRows, ownerGa4Metrics,
   ownerPrTimeline, ownerSourceCounts,
@@ -143,7 +143,7 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
       <OwnerKpi type="github" title="GitHub" value={prValue} detail={prValue === '–' ? 'NOT_PROVEN' : 'Offene PRs'} verified={prValue !== '–'}/>
       <OwnerKpi type="render" title="Render" value={isVerified(render) ? render.deployStatus ?? '–' : '–'}
         detail={renderLive ? 'Provider meldet LIVE' : 'Kein bestätigter LIVE-Status'} verified={renderLive}/>
-      <OwnerKpi type="ga4" title="GA4" value={pretty(events.views)} detail={events.views === null ? 'NOT_PROVEN' : 'page_view · 7 Tage'} verified={events.views !== null}/>
+      <OwnerKpi type="ga4" title="GA4 Status" value={isVerified(ga4) ? 'Verifiziert' : 'Offen'} detail={events.views === null ? (ga4DiagnosticLabel(ga4?.reason) || 'Keine Eventzahl bestätigt') : pretty(events.views) + ' page_view · 7 Tage'} verified={isVerified(ga4)}/>
       <OwnerKpi type="evidence" title="Evidence" value={Math.round(counts.verified/counts.total*100)+'%'}
         detail={counts.verified+' / '+counts.total+' Provider-Nachweise'} verified={counts.verified>0}/>
     </div>
@@ -172,7 +172,7 @@ export function OwnerOperationsVisualOverview({ snapshot }: { snapshot: Dashboar
     <section className="ops-mock-card ops-mock-ga4" aria-labelledby="ops-ga4-analysis-title">
       <h4 id="ops-ga4-analysis-title"><ChartColumnIncreasing aria-hidden="true"/> GA4 · Website und Conversion</h4>
       <p className="ops-mock-subtitle">
-        {isVerified(ga4) ? ga4?.property : 'NOT_PROVEN · Serverseitiger Property-Readback fehlt'}
+        {isVerified(ga4) ? ga4?.property : `NOT_PROVEN · ${ga4DiagnosticLabel(ga4?.reason)}`}
         {' · '}7 Kalendertage einschließlich heute · Ereignisse sind keine Zahlungen.
       </p>
       <div className="ops-mock-ga4-grid">

@@ -108,6 +108,41 @@ class ProviderAdapterTests(unittest.TestCase):
         self.assertEqual(state["merge_sha"], MERGE)
         self.assertIn(("health", "/healthz"), client.calls)
 
+    def test_repair_executor_requires_current_approved_scope_even_without_merge(self):
+        class Executor:
+            calls = 0
+
+            def repair(self, state):
+                self.calls += 1
+                return True
+
+        with self.assertRaises(ValueError):
+            GitHubRenderActions(FakeHTTP(), pr_number=42, assessment=GOOD,
+                                executor=Executor())
+        for drift in ({"head": "d" * 40}, {"base": "d" * 40},
+                      {"main": "d" * 40}, {"title": "[HOLD] pending"},
+                      {"merged": True}):
+            with self.subTest(drift=drift):
+                client = FakeHTTP()
+                executor = Executor()
+                adapter = GitHubRenderActions(
+                    client, pr_number=42, assessment=GOOD, executor=executor,
+                    approved_head_sha=HEAD, approved_base_sha=MAIN)
+                for key, value in drift.items():
+                    setattr(client, key, value)
+                self.assertEqual(adapter.repair({}), {
+                    "ok": False, "failure_class": "PERMISSION_STOP"})
+                self.assertEqual(executor.calls, 0)
+                self.assertEqual(client.mutation_count, 0)
+        client = FakeHTTP()
+        executor = Executor()
+        adapter = GitHubRenderActions(
+            client, pr_number=42, assessment=GOOD, executor=executor,
+            approved_head_sha=HEAD, approved_base_sha=MAIN)
+        self.assertEqual(adapter.repair({}), {"ok": True})
+        self.assertEqual(executor.calls, 1)
+        self.assertEqual(client.mutation_count, 0)
+
     def test_adapter_does_not_merge_when_authority_missing(self):
         client = FakeHTTP()
         a = self.adapter(client, merge=False)
@@ -151,6 +186,16 @@ class ProviderAdapterTests(unittest.TestCase):
                 self.assertEqual(state["status"], "MERGE_NOT_PROVEN")
                 self.assertNotIn("merge", state["history"])
                 self.assertEqual(client.mutation_count, 0)
+
+    def test_direct_ci_pending_is_wait_not_repair_and_failed_provenance_is_not_wait(self):
+        client = FakeHTTP()
+        run = next(r for r in client.checks if r["name"] == "Docker Security Gate")
+        run.update(status="in_progress", conclusion=None)
+        adapter = self.adapter(client)
+        self.assertEqual(adapter.test({}), {"passed": False, "status": "WAIT", "failure_class": "CI_PENDING"})
+        run["head_sha"] = "f" * 40
+        self.assertNotEqual(adapter.test({}).get("status"), "WAIT")
+        self.assertEqual(client.mutation_count, 0)
 
     def test_optional_skips_do_not_block_but_unknown_skip_does(self):
         c = FakeHTTP()
