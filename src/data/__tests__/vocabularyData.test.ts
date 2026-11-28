@@ -84,7 +84,7 @@ test('simple video lesson uses an actual Elite glossary term and no repository i
 });
 
 test('architecture, governance and OCC-v2 skills reach glossary and SEO from the same source', () => {
-  assert.equal(ARCHITECTURE_GOVERNANCE_VOCABULARY.length, 20);
+  assert.equal(ARCHITECTURE_GOVERNANCE_VOCABULARY.length, 22);
   const glossary = new Map(VOCABULARY_TERMS.map(term => [term.id, term]));
   const metadata = new Map(vocabularyMetadata.map(entry => [entry.id, entry]));
   for (const item of ARCHITECTURE_GOVERNANCE_VOCABULARY) {
@@ -107,9 +107,23 @@ test('architecture, governance and OCC-v2 skills reach glossary and SEO from the
     ['learning-kappa-architecture', 'Enterprise'],
     ['learning-langgraph-architecture', 'Elite'],
     ['learning-occ-v2', 'Enterprise'],
+    ['learning-subshell', 'Enterprise'],
+    ['learning-probe', 'Enterprise'],
   ]);
   for (const [id, level] of expected) {
     assert.equal(vocabularySkillLevel(glossary.get(id)!), level);
   }
   assert.ok(ARCHITECTURE_GOVERNANCE_VOCABULARY.every(term => term.sources.every(source => source.url.startsWith('https://'))));
+});
+
+test('runtime additions include flashcard content and three searchable equivalents', () => {
+  for (const [id, expected] of [['learning-subshell', 'Untershell'], ['learning-probe', 'Diagnoseprüfung']]) {
+    const term = VOCABULARY_TERMS.find(item => item.id === id);
+    assert.ok(term);
+    assert.equal(term.category, 'MOBILE_RUNTIME');
+    assert.ok(term.shortDefinition && term.detailedExplanation && term.practicalExample && term.keyTakeaway);
+    assert.ok(term.thesaurus.includes(expected));
+    assert.ok(term.searchTags.includes(expected));
+    assert.equal(vocabularyMetadata.find(item => item.id === id)?.description, term.shortDefinition);
+  }
 });
