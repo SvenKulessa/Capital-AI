@@ -59,3 +59,35 @@ test('distribution catalog separates discovery, packages, direct checkout and pr
  for(const r of c.rows){assert.ok(r.policyNote.length<=300);assert.ok(r.feeNote.length<=250);}
  assert.throws(()=>planMarketplaceDraft({catalogSha256:c.catalogSha256,channelId:'gptStore',productId:'solo2-rag'}));
 });
+
+test('SaaS marketplace candidates preserve manual submission, review and zero authority',()=>{
+  const a=projectProductChannels(sample('SAAS-MEMBERSHIP','LEARNING-PORTAL','CADS-BENCHMARK-ENGINE','NEW-PRODUCT'));
+  const expected={saasHub:'HUMAN_ONLY_SUBMISSION_REQUIRED',g2:'LISTING_REVIEW_REQUIRED',capterra:'LISTING_REVIEW_REQUIRED',microsoftMarketplace:'LISTING_REVIEW_REQUIRED'};
+  const p=a.products.find(p=>p.id==='saas-membership');
+  assert.equal(p.profile,'saas');
+  assert.equal(p.channels[0].id,'website');
+  assert.equal(p.currentCommercialReadiness,'NOT_PROVEN');
+  for(const [id,rule] of Object.entries(expected)){
+    const c=p.channels.find(c=>c.id===id);
+    assert.equal(c.rule,rule);
+    assert.equal(c.sourceReviewedAt,'2026-11-28');
+    assert.equal(c.reviewRequired,true);
+    assert.equal(c.automaticPublishAllowed,false);
+    assert.equal(c.paidActivationAllowed,false);
+    assert.deepEqual(c.metrics,{reach:null,visits:null,conversions:null,revenue:null});
+  }
+  assert.equal(p.channels.find(c=>c.id==='saasHub').method.includes('menschlichen Betreiber'),true);
+  assert.equal(p.channels.find(c=>c.id==='microsoftMarketplace').method.includes('Contact Me'),true);
+  assert.ok(a.products.find(p=>p.id==='learning-portal').channels.some(c=>c.id==='saasHub'));
+  assert.ok(a.products.find(p=>p.id==='smartclip').channels.some(c=>c.id==='saasHub'));
+  assert.ok(!a.products.find(p=>p.id==='smartclip').channels.some(c=>c.id==='microsoftMarketplace'));
+  assert.deepEqual(a.products.find(p=>p.id==='new-product').channels,[]);
+  assert.ok(a.products.every(p=>new Set(p.channels.map(c=>c.id)).size===p.channels.length));
+  const handoff=buildProductChannelGraphHandoff();
+  const h=handoff.products.find(p=>p.id==='saas-membership');
+  for(const [id,rule] of Object.entries(expected))assert.equal(h.channels.find(c=>c.id===id).rule,rule);
+  assert.equal(handoff.publicPublishAllowed,false);
+  assert.equal(handoff.liveSalesAllowed,false);
+  assert.equal(handoff.providerCalls,0);
+  assert.equal(handoff.campaignSpend,0);
+});

@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 export const PRODUCT_REGISTRY_PATH = "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md";
 const channels = {
+  "capterra": {"kind":"DIRECTORY","url":"https://www.capterra.com/","source":"https://documentation.g2.com/docs/product-information","sourceReviewedAt":"2026-11-28","rule":"LISTING_REVIEW_REQUIRED","method":"Gemeinsame Produktpflege über my.G2 prüfen; keine Doppelregistrierung oder bezahlte Werbung.","automation":"PORTAL_REVIEW"},
+  "g2": {"kind":"DIRECTORY","url":"https://www.g2.com/","source":"https://documentation.g2.com/help/docs/finding-or-listing-a-product-on-g2","sourceReviewedAt":"2026-11-28","rule":"LISTING_REVIEW_REQUIRED","method":"Vorhandenes Profil, Herstellerfreigabe und echte Produktkategorie prüfen. Keine erfundenen Bewertungen.","automation":"PORTAL_REVIEW"},
+  "saasHub": {"kind":"DIRECTORY","url":"https://www.saashub.com/","source":"https://www.saashub.com/services/submit","sourceReviewedAt":"2026-11-28","rule":"HUMAN_ONLY_SUBMISSION_REQUIRED","method":"Nur persönlich durch den menschlichen Betreiber einreichen. Keine automatisierte Einreichung.","automation":"HUMAN_ONLY_SUBMISSION_REQUIRED"},
   "acti": {"kind":"DIRECTORY","url":"https://openacti.com/","source":"https://openacti.com/terms/","rule":"REVIEW_REQUIRED","method":"Acts/Skills Community; nur bereinigte, zur Weitergabe autorisierte Workflows; öffentliche Plugin-API und Verkäuferauszahlung nicht nachgewiesen.","automation":"NOT_PROVEN"},
   "chatgptApps": {"kind":"DISTRIBUTION","url":"https://developers.openai.com/plugins/deploy/submission","source":"https://developers.openai.com/plugins/plugin-guidelines","rule":"LISTING_REVIEW_REQUIRED","method":"MCP-Plugin, Privacy Policy und Review; keine digitalen Verkäufe, Credits, Abos oder indirekten Upsells ohne zulässigen Policy-Pfad.","automation":"PORTAL_REVIEW"},
   "gptStore": {"kind":"DIRECTORY","url":"https://chatgpt.com/gpts","source":"https://help.openai.com/en/articles/8554397-creating-and-editing-gpts","rule":"REVIEW_REQUIRED","method":"Persönliche Konten können keine neuen GPTs erstellen oder publizieren; verwaltete Workspaces und Migration separat prüfen.","automation":"NOT_PROVEN"},
@@ -15,7 +18,7 @@ const channels = {
   "ghcr": {"kind":"DISTRIBUTION","url":"https://ghcr.io/","source":"https://docs.github.com/en/billing/concepts/product-billing/github-packages","rule":"REVIEW_REQUIRED","method":"OCI-Image, Digest, SBOM, Provenienz, Signaturen und Registry-Berechtigungen prüfen.","automation":"PACKAGE_PUBLISH_DOCUMENTED"},
   "vscodeMarketplace": {"kind":"DISTRIBUTION","url":"https://marketplace.visualstudio.com/","source":"https://code.visualstudio.com/api/working-with-extensions/publishing-extension","rule":"LISTING_REVIEW_REQUIRED","method":"VSIX, Publisher und Extension-Manifest; Least Privilege, Sicherheitsprüfung und Support.","automation":"PACKAGE_PUBLISH_DOCUMENTED"},
   "rapidApi": {"kind":"DISTRIBUTION","url":"https://rapidapi.com/","source":"https://docs.rapidapi.com/docs/hub-listing-monetize-tab","rule":"LISTING_REVIEW_REQUIRED","method":"Nur dokumentierte API mit Rate Limits, Auth, Datenschutz, Produktrechten und Support; kein bestehendes API-Produkt angenommen.","automation":"PORTAL_REVIEW"},
-  "microsoftMarketplace": {"kind":"DISTRIBUTION","url":"https://partner.microsoft.com/dashboard","source":"https://learn.microsoft.com/en-us/partner-center/marketplace-offers/submission-api-overview","rule":"LISTING_REVIEW_REQUIRED","method":"SaaS Submission API; Partner Center, Entra, Review und Fulfillment prüfen.","automation":"API_SUBMISSION_DOCUMENTED"},
+  "microsoftMarketplace": {"kind":"DISTRIBUTION","url":"https://partner.microsoft.com/dashboard","source":"https://learn.microsoft.com/en-us/partner-center/marketplace-offers/submission-api-overview","rule":"LISTING_REVIEW_REQUIRED","sourceReviewedAt":"2026-11-28","method":"SaaS Submission API dokumentiert; derzeit nur Contact Me prüfen, kein Transact/Billing. Partner Center, Entra, Review und Fulfillment separat verifizieren.","automation":"API_SUBMISSION_DOCUMENTED"},
   "awsMarketplace": {"kind":"DISTRIBUTION","url":"https://aws.amazon.com/marketplace/management/","source":"https://docs.aws.amazon.com/marketplace/latest/developerguide/work-with-saas-products.html","rule":"LISTING_REVIEW_REQUIRED","method":"Catalog API StartChangeSet; Seller-Onboarding, Billing und Review prüfen.","automation":"API_SUBMISSION_DOCUMENTED"},
   "googleCloudMarketplace": {"kind":"DISTRIBUTION","url":"https://console.cloud.google.com/producer-portal","source":"https://docs.cloud.google.com/marketplace/docs/partners/integrated-saas/submitting","rule":"LISTING_REVIEW_REQUIRED","method":"Producer Portal; allgemeine Listing-Write-API nicht nachgewiesen.","automation":"PORTAL_REVIEW"},
   "notionMarketplace": {"kind":"DISTRIBUTION","url":"https://www.notion.com/become-a-creator","source":"https://www.notion.com/help/selling-on-marketplace","rule":"LISTING_REVIEW_REQUIRED","method":"Nur passende Notion-Vorlagen; Creator-Profil und Review.","automation":"PORTAL_REVIEW"},
@@ -123,8 +126,51 @@ const channels = {
   }
 };
 const profiles = {
-  "saas": {"audience":"B2B-SaaS-Kunden und technische Entscheider","groups":[["website","stripeDirect","linkedin"],["microsoftMarketplace","awsMarketplace","googleCloudMarketplace","paddle","productHunt"],[]],"queries":["B2B SaaS buyer requirements","Cloud marketplace SaaS listing"],"asset":"Belegte SaaS-Demo, Datenschutz, Support und Fulfillment-Konzept."},
-  "integration": {"audience":"Workspace- und Developer-Integrationen","groups":[["website"],["atlassianMarketplace","googleWorkspaceMarketplace","chromeWebStore"],[]],"queries":["integration marketplace eligibility"],"asset":"Nur nachgewiesene kompatible Integration und minimale Berechtigungen."},
+  "saas": {
+    "audience": "B2B-SaaS-Kunden und technische Entscheider",
+    "groups": [
+      [
+        "website",
+        "stripeDirect",
+        "linkedin"
+      ],
+      [
+        "microsoftMarketplace",
+        "awsMarketplace",
+        "googleCloudMarketplace",
+        "paddle",
+        "productHunt",
+        "saasHub"
+      ],
+      [
+        "g2",
+        "capterra"
+      ]
+    ],
+    "queries": [
+      "B2B SaaS buyer requirements",
+      "Cloud marketplace SaaS listing"
+    ],
+    "asset": "Belegte SaaS-Demo, Datenschutz, Support und Fulfillment-Konzept."
+  },
+  "integration": {
+    "audience": "Workspace- und Developer-Integrationen",
+    "groups": [
+      [
+        "website"
+      ],
+      [
+        "atlassianMarketplace",
+        "googleWorkspaceMarketplace",
+        "chromeWebStore"
+      ],
+      []
+    ],
+    "queries": [
+      "integration marketplace eligibility"
+    ],
+    "asset": "Nur nachgewiesene kompatible Integration und minimale Berechtigungen."
+  },
   "mobile": {
     "audience": "Android-Entwickler und mobile Terminal-Nutzer",
     "groups": [
@@ -144,7 +190,8 @@ const profiles = {
         "tiktok"
       ],
       [
-        "showHN"
+        "showHN",
+        "saasHub"
       ]
     ],
     "queries": [
@@ -167,7 +214,11 @@ const profiles = {
         "productHunt"
       ],
       [
-        "showHN"
+        "showHN",
+        "saasHub",
+        "g2",
+        "capterra",
+        "microsoftMarketplace"
       ]
     ],
     "queries": [
@@ -188,9 +239,13 @@ const profiles = {
         "gumroad",
         "lemonSqueezy",
         "productHunt",
-        "linkedin"
+        "linkedin",
+        "saasHub"
       ],
-      []
+      [
+        "g2",
+        "capterra"
+      ]
     ],
     "queries": [
       "Finanzbildung Lernmaterial digitale Lernprodukte",
@@ -214,7 +269,11 @@ const profiles = {
         "notionMarketplace"
       ],
       [
-        "showHN"
+        "showHN",
+        "saasHub",
+        "g2",
+        "capterra",
+        "microsoftMarketplace"
       ]
     ],
     "queries": [
@@ -314,7 +373,7 @@ export function projectProductChannels(markdown) {
         researchStatus:profile?"CANDIDATES_REVIEW_REQUIRED":"UNMAPPED_RESEARCH_REQUIRED",
         discoveryQueries:profile?.queries??[p.id+" target users distribution channels",p.id+" official marketplace requirements"],
         assetBrief:profile?.asset??null,
-        channels:profile?profile.groups.map((ids,i)=>i===1?[...new Set([...ids,...(supplementalMatches[p.id]??[])].filter(id=>!profile.groups[0].includes(id)))]:ids).flatMap((ids,i)=>ids.map(id=>({id,priority:"P"+i,...channels[id],automation:channels[id].automation??'NOT_PROVEN',accountAdmission:'NOT_PROVEN',costAdmission:'NOT_PROVEN',reviewRequired:true,automaticPublishAllowed:false,paidActivationAllowed:false,externalPurchaseLinkInPluginAllowed:false,metrics:{reach:null,visits:null,conversions:null,revenue:null}}))):[]};
+        channels:profile?profile.groups.map((ids,i)=>i===1?[...new Set([...ids,...(supplementalMatches[p.id]??[])].filter(id=>!profile.groups[0].includes(id)&&!profile.groups[2].includes(id)))]:ids).flatMap((ids,i)=>ids.map(id=>({id,priority:"P"+i,...channels[id],automation:channels[id].automation??'NOT_PROVEN',accountAdmission:'NOT_PROVEN',costAdmission:'NOT_PROVEN',reviewRequired:true,automaticPublishAllowed:false,paidActivationAllowed:false,externalPurchaseLinkInPluginAllowed:false,metrics:{reach:null,visits:null,conversions:null,revenue:null}}))):[]};
     })
   };
 }
@@ -348,6 +407,10 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
 // Derived catalog: no second product registry, provider calls or commercial authority.
 const marketplacePriority = ['stripeDirect','gumroad','githubMarketplace','microsoftMarketplace','awsMarketplace'];
 const commercialEvidence = {
+  "saasHub": ["DISCOVERY_ONLY",["SAAS"],"Nur persönlich durch menschlichen Betreiber einreichen; keine automatisierte Einreichung."],
+  "g2": ["DISCOVERY_ONLY",["SAAS"],"Herstellerprofil und Kategorie prüfen; keine erfundenen Bewertungen."],
+  "capterra": ["DISCOVERY_ONLY",["SAAS"],"Gemeinsame Produktpflege über my.G2 prüfen; keine Doppelregistrierung oder bezahlte Werbung."],
+  "microsoftMarketplace": ["RESTRICTED_OR_UNVERIFIED",["SAAS"],"Nur Contact Me prüfen; kein Transact/Billing. Partner Center, Entra, Review und Fulfillment separat verifizieren."],
   "stripeDirect": [
     "OWN_CHECKOUT",
     [

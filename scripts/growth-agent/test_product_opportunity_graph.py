@@ -355,6 +355,22 @@ class ProductChannelReviewTests(unittest.TestCase):
         p["products"][0]["channels"][-1]["rule"] = "PUBLISH_ALLOWED"
         self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
 
+    def test_saas_marketplace_rules_accept_only_exact_review_contract(self):
+        rules = {"saasHub": "HUMAN_ONLY_SUBMISSION_REQUIRED",
+                 "g2": "LISTING_REVIEW_REQUIRED", "capterra": "LISTING_REVIEW_REQUIRED",
+                 "microsoftMarketplace": "LISTING_REVIEW_REQUIRED"}
+        for channel, rule in rules.items():
+            with self.subTest(channel=channel):
+                p = self.fixture()
+                row = {"id": channel, "priority": "P1", "rule": rule}
+                p["products"][0]["channels"].append(row)
+                self.assertTrue(graph.channel_source_review({"payload": p})["channel_valid"])
+                row["rule"] = "REVIEW_REQUIRED"
+                self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+                row["rule"] = rule
+                p["products"][0]["channels"].append(dict(row))
+                self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+
     def test_actual_existing_review_topology_preserves_queue_and_denies_publication(self):
         try:
             from langgraph.graph import StateGraph
@@ -362,8 +378,14 @@ class ProductChannelReviewTests(unittest.TestCase):
             self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
         _ = StateGraph
         compiled = graph.build_channel_read_graph()
-        report = compiled.invoke({"payload": self.fixture(), "findings": []}, {"recursion_limit": 8})["report"]
+        payload = self.fixture()
+        for channel, rule in (("saasHub", "HUMAN_ONLY_SUBMISSION_REQUIRED"),
+                              ("g2", "LISTING_REVIEW_REQUIRED"), ("capterra", "LISTING_REVIEW_REQUIRED"),
+                              ("microsoftMarketplace", "LISTING_REVIEW_REQUIRED")):
+            payload["products"][0]["channels"].append({"id": channel, "priority": "P1", "rule": rule})
+        report = compiled.invoke({"payload": payload, "findings": []}, {"recursion_limit": 8})["report"]
         self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(report["products"][0]["channels"], payload["products"][0]["channels"])
         self.assertEqual(report["researchQueue"], ["unknown"])
         self.assertFalse(report["publicationAllowed"])
         self.assertFalse(report["liveSalesAllowed"])
@@ -403,6 +425,47 @@ class SmartcopyConversionReviewTests(unittest.TestCase):
         p = self.fixture()
         p["liveSalesAllowed"] = True
         self.assertEqual(compiled.invoke({"payload": p, "findings": []}, {"recursion_limit": 8})["report"]["quality"], "BLOCKED")
+
+
+class VisualReviewTests(unittest.TestCase):
+    def fixture(self):
+        drafts = []
+        for content, channel, w, h in (("CAP-GROW-005", "X", 1440, 960), ("CAP-GROW-007", "INSTAGRAM", 1080, 1350)):
+            drafts.append(dict(contentId=content, channel=channel, width=w, height=h,
+                sourceSha256="a"*64, manifestSha256="b"*64, elapsedMs=25, repairCycles=0,
+                selectedSha256="c"*64, assets=[
+                    dict(sha256="a"*64, mimeType="image/png", byteLength=500),
+                    dict(sha256="b"*64, mimeType="image/svg+xml", byteLength=600),
+                    dict(sha256="d"*64, mimeType="image/jpeg", byteLength=200),
+                    dict(sha256="c"*64, mimeType="image/webp", byteLength=100)]))
+        return dict(contractVersion="CAPITAL_AI_VISUAL_GRAPH_INPUT@1",
+            sourceDigest="d08aa8e7f831dea7cb15010f46374f8fbdecaee1408619af1a4fb857460c1234",
+            state="DRAFT_ONLY", publicPublishAllowed=False, providerCalls=0, providerCost=0,
+            manualTimeSavedMs=None, drafts=drafts)
+
+    def test_receipt_bounds_and_authority(self):
+        p = self.fixture()
+        self.assertEqual(graph.visual_source_review({"payload":p})["metrics"],
+            dict(assetCount=8,inputBytes=1000,selectedBytes=200,elapsedMs=50,repairCycles=0))
+        for change in ({"publicPublishAllowed": True}, {"providerCost":1}, {"manualTimeSavedMs":100}, {"sourceDigest":"a"*64}):
+            self.assertFalse(graph.visual_source_review({"payload":{**p,**change}})["visual_valid"])
+        for change in ({"selectedSha256":"0"*64},{"channel":"WEBSITE"},{"width":1080},{"elapsedMs":True}):
+            p = self.fixture()
+            p["drafts"][0].update(change)
+            self.assertFalse(graph.visual_source_review({"payload":p})["visual_valid"])
+
+    def test_actual_graph_join_keeps_metrics_unverified(self):
+        compiled=graph.build_visual_read_graph()
+        report=compiled.invoke({"payload":self.fixture(),"findings":[]},{"recursion_limit":8})["report"]
+        self.assertEqual(report["quality"],"PASS_WITH_GAPS")
+        self.assertEqual(report["sourceAuthentication"],"NOT_PROVEN_BY_GRAPH")
+        self.assertFalse(report["publicationAllowed"])
+        self.assertIsNone(report["manualTimeSavedMs"])
+        p=self.fixture()
+        p["drafts"][0]["assets"][3]["byteLength"]=501
+        blocked=compiled.invoke({"payload":p,"findings":[]},{"recursion_limit":8})["report"]
+        self.assertEqual(blocked["quality"],"BLOCKED")
+        self.assertIsNone(blocked["metrics"])
 
 
 if __name__ == "__main__":
