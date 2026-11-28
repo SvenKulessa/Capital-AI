@@ -126,6 +126,7 @@ const channels = {
   }
 };
 const profiles = {
+  "agentRace": {"audience":"KI-Lernende, Entwickler und technische Teams","groups":[["website","youtube","linkedin"],["x","tiktok","redditShowcase","devto"],["productHunt"]],"queries":["prompt competition benchmark demand","agent evaluation willingness to pay"],"asset":"First-party tier-based challenge storyboard; no live claims."},
   "saas": {
     "audience": "B2B-SaaS-Kunden und technische Entscheider",
     "groups": [
@@ -352,6 +353,7 @@ export function parseProductRegistry(markdown) {
   return result;
 }
 function profileFor(id) {
+  if(id==='agent-race')return 'agentRace';
   if(["saas-membership","b2b-data-api","sentiment-api","white-label-widgets","enterprise-scorer"].includes(id))return "saas";
   if(id==="hero-buddy-support")return "integration";
   if(id==="ai-smartcopy"||id==="smartclip")return "mobile";
