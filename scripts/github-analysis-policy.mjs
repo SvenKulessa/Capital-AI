@@ -54,6 +54,12 @@ export function evaluateAnalysisEvidence({ sourceSha, activeRules = [], ruleSuit
   });
 }
 
+export function summarizeAnalysisEvidence({ report, blocker = null } = {}) {
+  if (blocker !== null || !Array.isArray(report) || report.length !== TYPES.length) return 'NOT_PROVEN';
+  return TYPES.every(type => report.filter(row => row?.type === type && row.status === 'PASS').length === 1)
+    ? 'PASS' : 'NOT_PROVEN';
+}
+
 function nextPage(link) {
   const match = /<([^>]+)>;\s*rel="next"/.exec(link || '');
   if (!match) return null;
@@ -150,7 +156,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   });
   writeFileSync(outPath, JSON.stringify(result.report, null, 2) + '\n');
   console.log(JSON.stringify({
-    status: result.report.every(r => r.status === 'PASS') ? 'PASS' : 'NOT_PROVEN',
+    status: summarizeAnalysisEvidence(result),
     types: result.report.map(r => ({ type: r.type, status: r.status })),
     blocker: result.blocker,
   }));
