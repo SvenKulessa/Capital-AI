@@ -347,6 +347,22 @@ class ProductChannelReviewTests(unittest.TestCase):
         p["products"][1]["channels"] = [{"id": "unknown", "priority": "P0", "rule": "REVIEW_REQUIRED"}]
         self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
 
+    def test_saas_marketplace_rules_accept_only_exact_review_contract(self):
+        rules = {"saasHub": "HUMAN_ONLY_SUBMISSION_REQUIRED",
+                 "g2": "LISTING_REVIEW_REQUIRED", "capterra": "LISTING_REVIEW_REQUIRED",
+                 "microsoftMarketplace": "LISTING_REVIEW_REQUIRED"}
+        for channel, rule in rules.items():
+            with self.subTest(channel=channel):
+                p = self.fixture()
+                row = {"id": channel, "priority": "P1", "rule": rule}
+                p["products"][0]["channels"].append(row)
+                self.assertTrue(graph.channel_source_review({"payload": p})["channel_valid"])
+                row["rule"] = "REVIEW_REQUIRED"
+                self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+                row["rule"] = rule
+                p["products"][0]["channels"].append(dict(row))
+                self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+
     def test_actual_existing_review_topology_preserves_queue_and_denies_publication(self):
         try:
             from langgraph.graph import StateGraph
@@ -354,8 +370,14 @@ class ProductChannelReviewTests(unittest.TestCase):
             self.skipTest("pinned LangGraph not installed locally; execution NOT_PROVEN")
         _ = StateGraph
         compiled = graph.build_channel_read_graph()
-        report = compiled.invoke({"payload": self.fixture(), "findings": []}, {"recursion_limit": 8})["report"]
+        payload = self.fixture()
+        for channel, rule in (("saasHub", "HUMAN_ONLY_SUBMISSION_REQUIRED"),
+                              ("g2", "LISTING_REVIEW_REQUIRED"), ("capterra", "LISTING_REVIEW_REQUIRED"),
+                              ("microsoftMarketplace", "LISTING_REVIEW_REQUIRED")):
+            payload["products"][0]["channels"].append({"id": channel, "priority": "P1", "rule": rule})
+        report = compiled.invoke({"payload": payload, "findings": []}, {"recursion_limit": 8})["report"]
         self.assertEqual(report["quality"], "PASS_WITH_GAPS")
+        self.assertEqual(report["products"][0]["channels"], payload["products"][0]["channels"])
         self.assertEqual(report["researchQueue"], ["unknown"])
         self.assertFalse(report["publicationAllowed"])
         self.assertFalse(report["liveSalesAllowed"])
