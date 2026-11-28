@@ -114,7 +114,7 @@ try {
     await send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: 1 });
     await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
     await navigate();
-    assert.ok((await evaluate("getComputedStyle(document.querySelector('.universe-space')).backgroundImage")).includes('/branding/universe/owner-nebula-v4.webp'), 'Home uses the global v4 background');
+    assert.ok((await evaluate("getComputedStyle(document.querySelector('.universe-space'),'::before').backgroundImage")).includes('/branding/universe/owner-nebula-v4.webp'), 'Home uses the global v4 background');
     await until(() => evaluate("document.querySelector('.brand-globe-poster').complete && document.querySelector('.brand-globe-poster').naturalWidth === 1254"), 'POSTER');
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
@@ -304,7 +304,7 @@ try {
     const layoutAnalytics=await evaluate("(()=>{const el=document.getElementById('analytics-hub-universe-article');const stars=[...el.querySelectorAll('[data-analytics-orbit-star]')];return {stars:stars.length,targets:stars.map(b=>{const r=b.getBoundingClientRect();return [r.width,r.height]}),overflow:el.scrollWidth>el.clientWidth+2,pageOverflow:document.documentElement.scrollWidth>innerWidth+2,demo:el.querySelector('[data-analytics-example-cards]').textContent.includes('Statische Beispieldaten'),learningLinks:el.querySelectorAll('a[href^=\"/learning\"]').length,history:!!document.querySelector('.historical-demo'),archiveVisible:[...document.querySelectorAll('.historical-demo button')].some(b=>b.textContent.includes('Historisches Archiv ansehen')),defaultStage:stars.findIndex(b=>b.getAttribute('aria-pressed')==='true')};})()");
     assert.equal(layoutAnalytics.stars,6);
     assert.equal(await evaluate("document.querySelector('#analytics-hub-universe-article svg image').getAttribute('href')"),'/branding/universe/analytics-overview-v4.webp');
-    assert.ok((await evaluate("getComputedStyle(document.querySelector('.universe-space')).backgroundImage")).includes('/branding/universe/owner-nebula-v4.webp'), 'Analytics uses the global v4 background');
+    assert.ok((await evaluate("getComputedStyle(document.querySelector('.universe-space'),'::before').backgroundImage")).includes('/branding/universe/owner-nebula-v4.webp'), 'Analytics uses the global v4 background');
     assert.ok(layoutAnalytics.targets.every(([w,h])=>w>=44&&h>=44),'Analytics star touch target');
     assert.equal(layoutAnalytics.overflow,false,'Analytics article overflow');
     assert.equal(layoutAnalytics.pageOverflow,false,'Analytics overview page overflow');
