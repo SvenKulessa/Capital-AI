@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 929,
-  "mergeCount": 740,
-  "fromPr": 922,
-  "toPr": 929,
-  "sourceSha": "8dd8138b54c38c43d04d6fbbf9b1f3290d1ac44a",
-  "reconciledAt": "2026-11-24T02:45:37.213Z",
+  "lastReconciledPr": 988,
+  "mergeCount": 810,
+  "fromPr": 1013,
+  "toPr": 988,
+  "sourceSha": "ed67c384281f1e30f8d0e30b6a2faf37819d28e3",
+  "reconciledAt": "2026-11-28T12:59:25.511Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
@@ -30,7 +30,7 @@
     },
     {
       "path": "src/components/RoadmapPanel.tsx",
-      "sha256": "a09d1997d81a978b14ac62cf3d42ec1588e193020788f93e6cd051b81aa30b25"
+      "sha256": "d9ac221b68088492016d45b09065d2306b4dcce2ea139725e537a6143a578342"
     }
   ],
   "packages": [
