@@ -1,0 +1,25 @@
+{
+  "schema": "CAPITAL_AI_SMARTCOPY_MANIFEST_BRANDING@1",
+  "pluginId": "online.capitalai.acopybridge",
+  "version": "1.3.3",
+  "author": {
+    "name": "CAPITAL-AI",
+    "url": "https://capital-ai.online/",
+    "github": "SvenKulessa"
+  },
+  "license": "UNLICENSED",
+  "licenseStatus": "PRIVATE_TEST_ONLY_NO_CUSTOMER_GRANT",
+  "price": 0,
+  "website": "https://capital-ai.online/",
+  "pricingCatalog": "https://capital-ai.online/pricing",
+  "pricingCatalogMode": "INFORMATION_ONLY_PRIVATE_RC",
+  "brandAsset": "public/branding/capital-ai-logo.jpg",
+  "commercialRelease": "HOLD",
+  "notes": [
+    "Acode local ZIP reload icon is expected; preserve plugin ID and original source path.",
+    "GitHub username fixes undefined contributor URL; Acode controls contributor avatar and may show the account avatar rather than the brand logo.",
+    "Website and general catalog links are informational in the private RC; no product purchase or checkout link. Recheck Acode rules before publishing.",
+    "UNLICENSED denotes no customer license grant; replace only with approved license terms.",
+    "Keep private product code and ZIP out of public Git history. Apply this overlay in the private build and deliver through existing Drive channel."
+  ]
+}
