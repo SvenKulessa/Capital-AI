@@ -205,11 +205,58 @@ function projectConversionGraphHandoff(raw:unknown, reportSha:string, rows:Growt
   return [...rows.filter(r=>r.id!==row.id),row];
 }
 
+const offlineThread = z.string().regex(/^offline-[a-f0-9]{40}$/);
+const hygieneHandoffSchema = z.object({
+  contractVersion:z.literal('CAPITAL_AI_HYGIENE_HANDOFF@1'),threadId:offlineThread.nullable(),
+  runId:z.string().regex(/^hygiene-[a-f0-9]{64}$/),sourceSha:z.string().regex(/^[a-f0-9]{40}$/),
+  observedAt:z.iso.datetime(),scopeDigest:graphDigest,sourceDigest:graphDigest,contentDigest:graphDigest,
+  methodId:z.literal('doc-drift-claims-v1'),checked:z.number().int().min(0).max(1000000),
+  affected:z.number().int().min(0).max(1000000),missing:z.number().int().min(0).max(1000000),
+  score:z.number().int().min(0).max(100).nullable(),coverage:z.union([z.literal(0),z.literal(15)]),
+  status:z.literal('NOT_PROVEN'),authorityGranted:z.literal(false),
+}).strict().refine(d=>d.runId==='hygiene-'+d.sourceDigest && d.affected<=d.checked &&
+  (d.checked===0 ? d.score===null && d.coverage===0 : d.coverage===15 && d.score===Math.round(100*(d.checked-d.affected)/d.checked)));
+const researchEvidenceSchema = z.object({
+  contractVersion:z.literal('CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1'),threadId:offlineThread,
+  domain:z.enum(domains),bundleSha256:graphDigest,profileSha256:graphDigest,
+  citationDigests:z.array(graphDigest).max(3),sourceCount:z.number().int().min(0).max(3),
+  status:z.enum(['SOURCE_READBACK_MATCH','NOT_PROVEN']),authorityGranted:z.literal(false),
+}).strict().refine(d=>new Set(d.citationDigests).size===d.citationDigests.length &&
+  (d.status==='SOURCE_READBACK_MATCH' ? d.citationDigests.length>0 && d.citationDigests.length<=d.sourceCount : d.sourceCount===0&&d.citationDigests.length===0));
+
+function upsertEvidenceNote(rows:GrowthRow[], row:GrowthRow, reportSha:string):GrowthRow[] {
+  const existing=rows.find(r=>r.id===row.id);
+  if(existing?.origin==='OWNER_NOTE'&&existing.status==='NOT_PROVEN'&&existing.evidence===row.evidence &&
+    existing.evidence.includes('Import SHA-256 '+reportSha)&&JSON.stringify(existing)===JSON.stringify(row))return rows;
+  return [...rows.filter(r=>r.id!==row.id),row];
+}
+
+function projectHygieneNote(raw:unknown, reportSha:string, rows:GrowthRow[]):GrowthRow[]{
+  const d=hygieneHandoffSchema.parse(raw);
+  const row=makeRow('document-hygiene-handoff','Document Hygiene · Offline-Messung','TRUST','Messscope und unabhängigen Readback prüfen');
+  return upsertEvidenceNote(rows,{...row,flow:'Claim-Stabilität · kein allgemeiner Hygiene- oder Freigabenachweis',
+    operation:'Score '+(d.score??'unbekannt')+' / 100 · Abdeckung '+d.coverage+' % · '+d.observedAt,
+    tests:'Geprüft '+d.checked+' · Auffällig '+d.affected+' · Fehlend '+d.missing+' · '+d.methodId,
+    dependencies:d.threadId??'Keine Graph-Korrelation',
+    evidence:'Import SHA-256 '+reportSha+'; Commit '+d.sourceSha+'; Scope '+d.scopeDigest+'; Report '+d.sourceDigest+'; Content '+d.contentDigest+'; Run '+d.runId,
+    auth:'Importierte Messung; Herkunft und Aktualität NOT_PROVEN',approvals:'Keine Mutations-, Merge- oder Verkaufsfreigabe'},reportSha);
+}
+function projectResearchEvidenceNote(raw:unknown,reportSha:string,rows:GrowthRow[]):GrowthRow[]{
+  const d=researchEvidenceSchema.parse(raw);
+  const row=makeRow('research-evidence-handoff','LangGraph · RAG-Evidence','PLATFORM','Quellen und Task-Bindung unabhängig zurücklesen');
+  return upsertEvidenceNote(rows,{...row,domain:d.domain,flow:'Offline LangGraph · keine Provider-Autorität',
+    operation:'Importierter Graph-Status '+d.status,tests:'Zitierte Abschnitte '+d.sourceCount,
+    dependencies:d.threadId,auth:'Importiert, nicht unabhängig authentifiziert',approvals:'Keine Freigabe',
+    evidence:'Import SHA-256 '+reportSha+'; Bundle '+d.bundleSha256+'; Profil '+d.profileSha256+'; Quellen '+d.citationDigests.join(', ')},reportSha);
+}
+
 /** Untrusted offline status-only report; separate rows never overwrite live owner readbacks. */
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
   const parsed=JSON.parse(raw);
+  if(parsed?.contractVersion==='CAPITAL_AI_HYGIENE_HANDOFF@1')return projectHygieneNote(parsed,reportSha,rows);
+  if(parsed?.contractVersion==='CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1')return projectResearchEvidenceNote(parsed,reportSha,rows);
   if(parsed && typeof parsed==='object' && 'contractVersion' in parsed &&
     parsed.contractVersion==='CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1')
     return projectConversionGraphHandoff(parsed,reportSha,rows);
@@ -274,4 +321,19 @@ export function projectGsc(raw:unknown,row:GrowthRow):GrowthRow {
     auth:data.transport,operation:'GSC Readback: '+data.observedAt,error:verified?'':'Kein bestätigter Report',
     evidence:m&&p?p.startDate+' – '+p.endDate+': Klicks '+m.clicks+', Impressionen '+m.impressions+', CTR '+(m.ctr*100).toFixed(2)+' %, Position '+m.position+'; SHA-256 '+data.evidenceSha256:'',
     tests:'Quellengetrennter serverseitiger Readback; keine Aussage über andere Quellen'};
+}
+
+
+const marketplaceHosts:Record<string,string[]> = {"stripeDirect":["dashboard.stripe.com","docs.stripe.com","stripe.com"],"gumroad":["gumroad.com"],"githubMarketplace":["github.com","docs.github.com"],"microsoftMarketplace":["partner.microsoft.com","learn.microsoft.com"],"awsMarketplace":["aws.amazon.com","docs.aws.amazon.com"],"googleCloudMarketplace":["console.cloud.google.com","docs.cloud.google.com"],"notionMarketplace":["www.notion.com"],"lemonSqueezy":["www.lemonsqueezy.com","docs.lemonsqueezy.com"],"paddle":["www.paddle.com","developer.paddle.com"],"atlassianMarketplace":["marketplace.atlassian.com","developer.atlassian.com"],"googlePlay":["play.google.com","developers.google.com"],"chromeWebStore":["chrome.google.com","developer.chrome.com"],"googleWorkspaceMarketplace":["workspace.google.com","developers.google.com"]};
+const marketplaceId=z.string().regex(/^[a-zA-Z][a-zA-Z0-9]{1,40}$/);
+const marketplaceLink=z.string().max(300).refine(s=>{try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port;}catch{return false;}});
+const marketplaceRow=z.object({id:marketplaceId,url:marketplaceLink,source:marketplaceLink,automation:z.enum(['API_SUBMISSION_DOCUMENTED','PORTAL_REVIEW','MCP_DRAFT_AND_PUBLISH_DOCUMENTED','PORTAL_CREATE_API_READ','API_CATALOG_DOCUMENTED','API_LISTING_DOCUMENTED','API_EXISTING_APP_EDITS','API_EXISTING_ITEM_RELEASES']),feeNote:z.string().max(250),feeSource:marketplaceLink.nullable(),products:z.array(z.string().regex(/^[a-z0-9-]{1,80}$/)).max(133)}).strict().refine(r=>Object.hasOwn(marketplaceHosts,r.id)&&[r.url,r.source,...(r.feeSource?[r.feeSource]:[])].every(s=>marketplaceHosts[r.id].includes(new URL(s).hostname))&&new Set(r.products).size===r.products.length);
+const marketplaceCatalogSchema=z.object({schema:z.literal('CAPITAL_AI_MARKETPLACE_CATALOG@1'),state:z.literal('DRAFT_ONLY'),sourceSha256:graphDigest,catalogSha256:graphDigest,rows:z.array(marketplaceRow).length(Object.keys(marketplaceHosts).length),accountAdmission:z.literal('NOT_PROVEN'),costAdmission:z.literal('NOT_PROVEN'),rightsAdmission:z.literal('NOT_PROVEN'),ownerApproval:z.literal('NOT_GRANTED'),publicationAllowed:z.literal(false),providerCalls:z.literal(0),spendCents:z.literal(0)}).strict().refine(c=>new Set(c.rows.map(r=>r.id)).size===c.rows.length);
+export type MarketplaceCatalog=z.infer<typeof marketplaceCatalogSchema>;
+export function parseMarketplaceCatalog(raw:unknown):MarketplaceCatalog{return marketplaceCatalogSchema.parse(raw);}
+export async function marketplaceDraftRow(catalog:MarketplaceCatalog,channelId:string,productId:string):Promise<GrowthRow>{
+ const c=parseMarketplaceCatalog(catalog),channel=c.rows.find(r=>r.id===channelId&&r.products.includes(productId));if(!channel)throw Error('MARKETPLACE_UNMAPPED');
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([c.catalogSha256,channelId,productId])));
+ const key=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+ return {...makeRow('marketplace-draft-'+key.slice(0,32),('Marketplace · '+channelId+' · '+productId).slice(0,120),'GROWTH','Produktartefakt, Rechte, Gebühren und Owner-Freigabe verifizieren'),endpoint:channel.url,operation:'DRAFT_ONLY · OFFLINE_PREVIEW',flow:channel.automation,auth:'Account NOT_PROVEN',approvals:'NOT_GRANTED · keine operative Autorität',evidence:'Catalog SHA-256 '+c.catalogSha256+' · Draft '+key,dependencies:channel.feeNote+' · Kosten NOT_PROVEN · Rechte NOT_PROVEN',tests:'0 Provideraufrufe · keine Preisänderung'};
 }

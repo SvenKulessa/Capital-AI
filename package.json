@@ -12,7 +12,7 @@
     "test:screener-branding-learning": "node --test scripts/media/screener-blueprint-badges.test.mjs scripts/growth/screener-learning-loop.test.mjs",
     "test:cads-growth": "node --import tsx --test scripts/cads-growth-quality.test.mjs",
     "benchmark:oss-market": "node --experimental-strip-types scripts/benchmark-oss-market-pipelines.mjs",
-    "test:benchmark": "node --test packages/benchmark-core/index.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs",
+    "test:benchmark": "node --test packages/eif-product/index.test.mjs packages/eif-product/handoff.test.mjs packages/benchmark-core/index.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs",
     "dev": "vite --port=3000 --host=127.0.0.1",
     "build": "node scripts/generate-jaja-3d.mjs && vite build",
     "preview": "vite preview --host=127.0.0.1",

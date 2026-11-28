@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from agent_platform import DOMAINS, build_research_graph, retrieve
+from agent_platform import DOMAINS, build_research_graph, retrieve, research_evidence_handoff
 from domain_profile_binding import PROFILES, SOURCES, load_domain_profiles
 from offline_scope import scoped_thread_id
 from worker_service import check_root, load_task, process
@@ -84,6 +84,19 @@ class PlatformResearchTests(unittest.TestCase):
                     "domain": "PLATFORM", "query": "SQLite checkpoint"}
             first = process(task, state_root=root, repo_root=repo)
             self.assertEqual(first["status"], "RESEARCH_DRAFT")
+            handoff = research_evidence_handoff(repo, first)
+            self.assertEqual(handoff["status"], "SOURCE_READBACK_MATCH")
+            self.assertFalse(handoff["authorityGranted"])
+            self.assertNotIn("excerpt", json.dumps(handoff))
+            self.assertNotIn("query", handoff)
+            self.assertEqual(handoff["threadId"], first["task_id"])
+            source = repo / "docs/architecture/EXECUTION-FIRST-LANGGRAPH.md"
+            original_source = source.read_text(encoding="utf-8")
+            source.write_text(original_source + "New source bytes.\n", encoding="utf-8")
+            self.assertEqual(research_evidence_handoff(repo, first)["status"], "NOT_PROVEN")
+            source.write_text(original_source, encoding="utf-8")
+            with self.assertRaises(ValueError):
+                research_evidence_handoff(repo, {**first, "task_id": "unbound"})
             self.assertEqual(len(list((root / "checkpoints").glob("*.sqlite3"))), 1)
             p = repo / PROFILES["PLATFORM"]
             original = p.read_text(encoding="utf-8")

@@ -1,4 +1,7 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+import { HYGIENE_WEIGHTS, createDocumentHygieneBenchmark } from '../packages/benchmark-core/document-hygiene.mjs';
+const sha = value => createHash('sha256').update(value).digest('hex');
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -82,6 +85,7 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
   const resolvedMainSha = (mainSha ?? currentMainSha(root)).toLowerCase();
   const resolvedFiles = files ?? trackedFiles(root);
   const findings = [];
+  const checked = [];
   const living = resolvedFiles.filter((file) => isLivingDocument(file, resolvedProfile));
 
   for (const expected of resolvedProfile.livingDocuments.exact) {
@@ -98,8 +102,21 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
 
   for (const file of living) {
     const absolute = path.join(root, file);
-    if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
-    const content = fs.readFileSync(absolute, 'utf8');
+    // Missing or symlinked paths do not become successful observations.
+    if (!fs.existsSync(absolute) || !fs.lstatSync(absolute).isFile() ||
+        fs.realpathSync(absolute) !== path.resolve(fs.realpathSync(root), file)) {
+      findings.push({ class: 'UNREADABLE_LIVING_DOCUMENT', severity: 'ERROR', path: file, autoRepairEligible: false });
+      continue;
+    }
+    let content, bytes;
+    try {
+      bytes = fs.readFileSync(absolute);
+      content = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch {
+      findings.push({ class: 'UNREADABLE_LIVING_DOCUMENT', severity: 'ERROR', path: file, autoRepairEligible: false });
+      continue;
+    }
+    checked.push({ path: file, digest: sha(bytes) });
     for (const claim of extractCurrentMainClaims(content)) {
       const stale = claim.sha !== resolvedMainSha;
       findings.push({
@@ -144,6 +161,9 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
     inventory: {
       trackedFiles: resolvedFiles.length,
       livingDocuments: living.length,
+      checkedLivingDocuments: checked.length,
+      checkedDocumentSetSha256: sha(JSON.stringify([resolvedProfile.version, [...new Set([...living, ...resolvedProfile.livingDocuments.exact])].sort(), checked.map(x => x.path).sort()])),
+      checkedContentSha256: sha(JSON.stringify(checked.sort((a,b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0))),
       historicalDocuments: resolvedFiles.filter((file) => isHistoricalPath(file, resolvedProfile)).length,
     },
     findings,
@@ -168,6 +188,30 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
   };
 }
 
+// The existing scanner measures only current-main claim stability, not general correctness.
+export function projectHygieneHandoff(report, threadId = null) {
+  if (threadId !== null && (typeof threadId !== 'string' || !/^offline-[a-f0-9]{40}$/.test(threadId))) throw Error('INVALID_THREAD');
+  const count = report.inventory.checkedLivingDocuments;
+  const affected = new Set(report.findings.filter(f => ['SOURCE_DRIFT','VOLATILE_MAIN_IDENTITY_CLAIM'].includes(f.class)).map(f => f.path)).size;
+  const missing = new Set(report.findings.filter(f => ['MISSING_LIVING_DOCUMENT','UNREADABLE_LIVING_DOCUMENT'].includes(f.class)).map(f => f.path)).size;
+  if (!Number.isSafeInteger(count) || count < affected || count < 0 ||
+      !/^[a-f0-9]{40}$/.test(report.mainSha) || !/^[a-f0-9]{64}$/.test(report.inventory.checkedDocumentSetSha256) ||
+      !/^[a-f0-9]{64}$/.test(report.inventory.checkedContentSha256)) throw Error('INVALID_DRIFT_REPORT');
+  const sourceDigest = sha(JSON.stringify(report));
+  const benchmark = createDocumentHygieneBenchmark({
+    runId: 'hygiene-' + sourceDigest,
+    scopeDigest: report.inventory.checkedDocumentSetSha256, methodId: 'doc-drift-claims-v1',
+    dimensions: { ...Object.fromEntries(Object.keys(HYGIENE_WEIGHTS).map(k => [k, null])),
+      freshness: count ? { score: Math.round(100 * (count - affected) / count), sampleSize: count, evidenceRefs: [sourceDigest] } : null },
+    criticalControls: { security: null, privacy: null, rights: null, integrity: null }
+  });
+  return { contractVersion: 'CAPITAL_AI_HYGIENE_HANDOFF@1', threadId,
+    runId: benchmark.runId, sourceSha: report.mainSha, observedAt: report.generatedAt,
+    scopeDigest: benchmark.scopeDigest, sourceDigest, contentDigest: report.inventory.checkedContentSha256,
+    methodId: benchmark.methodId, checked: count, affected, missing, score: benchmark.score,
+    coverage: benchmark.coverage, status: 'NOT_PROVEN', authorityGranted: false };
+}
+
 function parseArgs(argv) {
   const options = { root: DEFAULT_ROOT, reportOnly: false, pretty: true };
   for (let index = 0; index < argv.length; index += 1) {
@@ -175,6 +219,8 @@ function parseArgs(argv) {
     if (arg === '--root') options.root = path.resolve(argv[++index]);
     else if (arg === '--report-only') options.reportOnly = true;
     else if (arg === '--compact') options.pretty = false;
+    else if (arg === '--hygiene') options.hygiene = true;
+    else if (arg === '--thread-id') { if (!argv[index+1]) throw Error('INVALID_THREAD'); options.threadId = argv[++index]; }
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return options;
@@ -183,7 +229,9 @@ function parseArgs(argv) {
 function runCli() {
   const options = parseArgs(process.argv.slice(2));
   const report = analyzeDocumentationDrift({ root: options.root });
-  process.stdout.write(`${JSON.stringify(report, null, options.pretty ? 2 : 0)}\n`);
+  if (options.threadId && !options.hygiene) throw Error('THREAD_REQUIRES_HYGIENE');
+  const output = options.hygiene ? projectHygieneHandoff(report, options.threadId ?? null) : report;
+  process.stdout.write(`${JSON.stringify(output, null, options.pretty ? 2 : 0)}\n`);
   if (report.summary.driftDetected && !options.reportOnly) process.exitCode = 1;
 }
 

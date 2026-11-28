@@ -306,6 +306,8 @@
 !packages/
 !packages/benchmark-core/
 !packages/benchmark-core/**
+!packages/eif-product/
+!packages/eif-product/*.mjs
 !apps/
 !apps/cads-github-app/
 !apps/cads-github-app/marketplace-plans.production.json
@@ -352,6 +354,7 @@
 !public/documentation/pipeline-architectures.html
 !public/documentation/pricing-models.html
 !public/documentation/domains.html
+!public/documentation/presentation.css
 !public/downloads/
 !public/downloads/market-screener-hub-open-source.html
 !public/fonts/
@@ -369,6 +372,10 @@
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
 !public/branding/universe/analytics-universe-orbit.webp
+!public/branding/universe/owner-nebula-v4.webp
+!public/branding/universe/static-canvas-v4.css
+!public/branding/universe/analytics-overview-v4.webp
+!public/branding/universe/capital-ai-mark-v4.webp
 !public/branding/universe/hero-universe-desktop.webp
 !public/branding/universe/hero-universe-tablet.webp
 !public/branding/universe/hero-universe-mobile.webp

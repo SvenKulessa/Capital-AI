@@ -15,7 +15,7 @@ import stat
 import time
 from pathlib import Path
 
-from agent_platform import DOMAINS, build_research_graph
+from agent_platform import DOMAINS, build_research_graph, research_evidence_handoff
 from domain_profile_binding import bind_domain_task
 from offline_task_input import MAX_TASK_BYTES, decode_offline_task, valid_research_query
 from checkpoint_store import execute_durable_graph
@@ -108,9 +108,12 @@ def main():
     parser.add_argument("--serve", action="store_true", help="Offline inbox scanner; no network calls")
     parser.add_argument("--single", metavar="TASK_FILE", help="Run one synthetic/local offline task")
     parser.add_argument("--synthetic-root", help="Test-only private state path, never in --serve")
+    parser.add_argument("--evidence-handoff", action="store_true", help="Single-task reference-only owner handoff")
     args = parser.parse_args()
     if args.serve == bool(args.single):
         parser.error("specify exactly one of --serve or --single")
+    if args.evidence_handoff and not args.single:
+        parser.error("--evidence-handoff requires --single")
     if args.serve and args.synthetic_root:
         parser.error("--serve cannot override production root")
     if args.serve and os.environ.get("CAPITAL_AI_OFFLINE_WORKER_ENABLED") != "true":
@@ -127,6 +130,9 @@ def main():
     if args.single:
         task = load_task(Path(args.single), root / "inbox")
         result = process(task, state_root=root, repo_root=repo_root)
+        if args.evidence_handoff:
+            print(json.dumps(research_evidence_handoff(repo_root, result), sort_keys=True))
+            return
         print(json.dumps({"status": result.get("status"), "domain": result.get("domain"),
                           "sources": len(result.get("citations", [])),
                           "agents": result.get("agent_route", [])}, sort_keys=True))
