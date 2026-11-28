@@ -6,11 +6,49 @@ const exact=(v,keys)=>v && typeof v==='object' && !Array.isArray(v) && Object.ke
 const date=v=>typeof v==='string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0,10)===v;
 const url=v=>{try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&!u.search&&!u.hash&&u.hostname.includes('.')&&!u.hostname.endsWith('.local')&&/^[a-z][a-z0-9.-]+\.[a-z]{2,}$/i.test(u.hostname)&&u.href===v;}catch{return false;}};
 const short=(v,n)=>typeof v==='string'&&v.length>0&&v.length<=n&&v===v.trim()&&!/[\x00-\x1f\x7f<>]/.test(v)&&!/(?:bearer\s|api[_ -]?key\s*[=:]|password\s*[=:]|-----BEGIN)/i.test(v);
-const kinds=['PLATFORM_RULE','COMPETITOR','DEMAND_SIGNAL'];
+const kinds=['PLATFORM_RULE','COMPETITOR','DEMAND_SIGNAL','WILLINGNESS_TO_PAY','PRODUCT_ACCEPTANCE'];
 const recordKeys=['productId','kind','entityId','sourceUrl','observedOn','summary'];
+const studyKeys=['studyId','segmentId','productVersion','method','recruitment','limitations','consentRef','sampleSize','positiveResponses','priceCents','currency','billing'];
+const methods={DEMAND_SIGNAL:['PROBLEM_INTERVIEW','DEMAND_SURVEY'],WILLINGNESS_TO_PAY:['PRICE_SURVEY','PRICE_OFFER_TEST'],PRODUCT_ACCEPTANCE:['CONCEPT_TEST','PROTOTYPE_TEST','PILOT_FEEDBACK']};
+function validateStudy(kind,s){
+  if(!exact(s,studyKeys)||!id(s.studyId)||!id(s.segmentId)||!short(s.productVersion,80)||!methods[kind]?.includes(s.method)||!short(s.recruitment,200)||!short(s.limitations,300)||!short(s.consentRef,160)||!Number.isSafeInteger(s.sampleSize)||s.sampleSize<1||s.sampleSize>1000000||!Number.isSafeInteger(s.positiveResponses)||s.positiveResponses<0||s.positiveResponses>s.sampleSize)throw Error('RESEARCH_STUDY_INVALID');
+  if(kind==='WILLINGNESS_TO_PAY'){
+    if(!Number.isSafeInteger(s.priceCents)||s.priceCents<1||s.priceCents>100000000||s.currency!=='EUR'||!['one_time','monthly','annual'].includes(s.billing))throw Error('RESEARCH_PRICE_INVALID');
+  }else if(s.priceCents!==null||s.currency!==null||s.billing!==null)throw Error('RESEARCH_PRICE_SCOPE_INVALID');
+  return Object.fromEntries(studyKeys.map(k=>[k,s[k]]));
+}
 export function researchDigest(r){
-  if(!exact(r,recordKeys)||!id(r.productId)||!id(r.entityId)||!kinds.includes(r.kind)||!url(r.sourceUrl)||!date(r.observedOn)||!short(r.summary,400))throw Error('RESEARCH_RECORD_INVALID');
-  return hash(Object.fromEntries(recordKeys.map(k=>[k,r[k]])));
+  const measured=Object.hasOwn(r??{},'study');
+  if(!exact(r,measured?[...recordKeys,'study']:recordKeys)||!id(r.productId)||!id(r.entityId)||!kinds.includes(r.kind)||!url(r.sourceUrl)||!date(r.observedOn)||!short(r.summary,400)||(!measured&&['WILLINGNESS_TO_PAY','PRODUCT_ACCEPTANCE'].includes(r.kind)))throw Error('RESEARCH_RECORD_INVALID');
+  const canonical=Object.fromEntries(recordKeys.map(k=>[k,r[k]]));
+  if(measured)canonical.study=validateStudy(r.kind,r.study);
+  return hash(canonical);
+}
+// Descriptive aggregates only. Customer feedback and imported research never grant
+// owner approval, verify sales, authenticate a provider or establish causality.
+function productValidation(productId,accepted){
+  const rows=accepted.filter(r=>r.productId===productId);
+  const studies=rows.filter(r=>r.study).map(r=>({kind:r.kind,evidenceDigest:r.digest,observedOn:r.observedOn,...validateStudy(r.kind,r.study),positiveRate:r.study.positiveResponses/r.study.sampleSize,status:'OPERATOR_REVIEWED_NOT_PROVIDER_AUTHENTICATED'}));
+  const demand=studies.filter(s=>s.kind==='DEMAND_SIGNAL');
+  const willingnessToPay=studies.filter(s=>s.kind==='WILLINGNESS_TO_PAY');
+  const customerAcceptance=studies.filter(s=>s.kind==='PRODUCT_ACCEPTANCE');
+  const missing=['DEMAND_SIGNAL','WILLINGNESS_TO_PAY','PRODUCT_ACCEPTANCE'].filter(k=>!studies.some(s=>s.kind===k));
+  return {
+    contractVersion:'CAPITAL_AI_PRODUCT_VALIDATION@1',
+    researchPlan:[
+      {dimension:'DEMAND_SIGNAL',methods:methods.DEMAND_SIGNAL,questions:['Wann trat das Problem zuletzt auf?','Wie lösen Sie es heute und welchen Aufwand verursacht es?'],successDefinition:'Vor Erhebung Problem, Zielgruppe, Zeitraum und positives Signal festlegen.'},
+      {dimension:'WILLINGNESS_TO_PAY',methods:methods.WILLINGNESS_TO_PAY,questions:['Würden Sie das beschriebene Angebot zum genannten EUR-Preis und Zahlungsintervall kaufen?','Welche Alternative nutzen oder bezahlen Sie derzeit?'],successDefinition:'Je Preisangebot und Kohorte getrennt messen; Kaufabsicht und echte Zahlung separat halten.'},
+      {dimension:'PRODUCT_ACCEPTANCE',methods:methods.PRODUCT_ACCEPTANCE,questions:['Konnten Sie die definierte Kernaufgabe mit dem Prototyp erledigen?','Welche Voraussetzung fehlt für einen Pilot oder eine Kaufentscheidung?'],successDefinition:'Konzeptzustimmung, beobachtete Aufgabenerfüllung und Pilotfeedback getrennt bewerten.'},
+    ],
+    demand:{status:demand.length?'REVIEW_REQUIRED':'NOT_PROVEN',signalCount:rows.filter(r=>r.kind==='DEMAND_SIGNAL').length,studies:demand},
+    willingnessToPay:{status:willingnessToPay.length?'REVIEW_REQUIRED':'NOT_PROVEN',studies:willingnessToPay,validatedPriceCents:null},
+    customerAcceptance:{status:customerAcceptance.length?'REVIEW_REQUIRED':'NOT_PROVEN',studies:customerAcceptance},
+    decision:{recommendation:missing.length?'VALIDATE':'OWNER_REVIEW_REQUIRED',missingEvidence:missing,automaticApproval:false},
+    productApprovals:['CONCEPT','PROTOTYPE','PILOT','COMMERCIAL_RELEASE'].map(stage=>({stage,status:'NOT_PROVEN',authority:'EXISTING_OWNER_APPROVAL_CONTRACT',researchGrantsApproval:false})),
+    ownerApprovalReadback:'NOT_PROVEN_NOT_IMPORTED',
+    verifiedMetrics:{demandRate:null,purchaseConversionRate:null,revenueCents:null},
+    publicPublishAllowed:false,liveSalesAllowed:false,
+  };
 }
 // The grants argument is a separate trusted operator input, not a field of imported research.
 // Review is not provider authentication, a redistribution license, or authority to publish.
@@ -20,13 +58,14 @@ export function buildResearchRound(plan,{asOf,records,reviewGrants}){
   for(const p of plan.products){if(!id(p.id)||products.has(p.id))throw Error('PRODUCT_ID_INVALID');products.set(p.id,p);}
   const grants=new Map();
   for(const g of reviewGrants){if(!exact(g,['digest','reviewRef'])||!sha.test(g.digest)||!short(g.reviewRef,160)||grants.has(g.digest))throw Error('RESEARCH_GRANT_INVALID');grants.set(g.digest,g.reviewRef);}
-  const accepted=[],rejected=[];const seen=new Set();
+  const accepted=[],rejected=[];const seen=new Set(),studies=new Set();
   for(const r of records){const digest=researchDigest(r);if(seen.has(digest))throw Error('RESEARCH_DUPLICATE');seen.add(digest);
     const age=(Date.parse(asOf)-Date.parse(r.observedOn))/86400000;
     if(!products.has(r.productId)||!grants.has(digest)||age<0||age>30){rejected.push({digest,reason:!products.has(r.productId)?'UNKNOWN_PRODUCT':!grants.has(digest)?'UNREVIEWED':'STALE_OR_FUTURE'});continue;}
+    if(r.study){const cohort=JSON.stringify([r.productId,r.study.studyId,r.study.segmentId,r.study.productVersion]);if(studies.has(cohort))throw Error('RESEARCH_STUDY_DUPLICATE');studies.add(cohort);}
     accepted.push({...r,digest,reviewRef:grants.get(digest),status:'OPERATOR_REVIEWED_NOT_PROVIDER_AUTHENTICATED'});
   }
-  return {contractVersion:'CAPITAL_AI_PRODUCT_MARKET_RESEARCH@1',sourceSha256:plan.sourceSha256,asOf,publicationState:'DRAFT_ONLY',publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,accepted,rejected,products:[...products.values()].map(p=>({productId:p.id,queries:[...(Array.isArray(p.discoveryQueries)?p.discoveryQueries.filter(q=>short(q,200)).slice(0,5):[]),`${p.id} official marketplace listing requirements`,`${p.id} competitors pricing alternative`,`${p.id} user problems developer community`],observations:accepted.filter(r=>r.productId===p.id).map(r=>r.digest),status:accepted.some(r=>r.productId===p.id)?'REVIEWED_RESEARCH_CANDIDATE':'RESEARCH_REQUIRED',metrics:{reach:null,visits:null,conversions:null,revenue:null}}))};
+  return {contractVersion:'CAPITAL_AI_PRODUCT_MARKET_RESEARCH@1',sourceSha256:plan.sourceSha256,asOf,publicationState:'DRAFT_ONLY',publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,accepted,rejected,products:[...products.values()].map(p=>({productId:p.id,queries:[...(Array.isArray(p.discoveryQueries)?p.discoveryQueries.filter(q=>short(q,200)).slice(0,5):[]),`${p.id} official marketplace listing requirements`,`${p.id} competitors pricing alternative`,`${p.id} user problems developer community`],observations:accepted.filter(r=>r.productId===p.id).map(r=>r.digest),validation:productValidation(p.id,accepted),status:accepted.some(r=>r.productId===p.id)?'REVIEWED_RESEARCH_CANDIDATE':'RESEARCH_REQUIRED',metrics:{reach:null,visits:null,conversions:null,revenue:null}}))};
 }
 const pilotChannels={website:'WEBSITE',youtube:'YOUTUBE',redditShowcase:'REDDIT',x:'X',linkedin:'LINKEDIN'};
 export function buildSmartcopyPilot(plan,input,{planContentCampaign,buildDraftContentSocialPackage}){

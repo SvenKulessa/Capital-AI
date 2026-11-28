@@ -227,8 +227,22 @@ test('product research uses real Content Engine and Social package, never publis
   assert.ok(r.pilot.drafts.every(d=>d.contentPlan.cadsQuality.technicalStatus==='PASS'&&d.socialPackage.approvals.length===0&&d.socialPackage.deliveries.length===0));
   assert.ok(r.pilot.manualChannelPreparation.some(c=>c.id==='showHN'));
   assert.equal(r.pilot.conversionPlan.metrics.revenueCents,null);
+  const validation=r.research.products.find(p=>p.productId==='ai-smartcopy').validation;
+  assert.equal(validation.researchPlan.length,3);
+  assert.equal(validation.decision.recommendation,'VALIDATE');
+  assert.ok(validation.productApprovals.every(p=>p.researchGrantsApproval===false));
   assert.equal(runProductMarketResearch({records},{...ledger,reviewGrants:[]}).pilot,null);
   assert.throws(()=>runProductMarketResearch({records,reviewGrants:ledger.reviewGrants},ledger));
+});
+
+test('existing research entrypoint carries aggregate willingness to pay for registered products',()=>{
+  const record={productId:'ai-smartcopy',kind:'WILLINGNESS_TO_PAY',entityId:'synthetic-survey',sourceUrl:'https://capital-ai.online/',observedOn:'2026-11-28',summary:'Synthetic integration fixture, no real respondents.',study:{studyId:'synthetic-price-study',segmentId:'mobile-developers',productVersion:'private-rc',method:'PRICE_SURVEY',recruitment:'Synthetic fixture',limitations:'Not market evidence',consentRef:'synthetic-consent',sampleSize:10,positiveResponses:2,priceCents:499,currency:'EUR',billing:'one_time'}};
+  const result=runProductMarketResearch({records:[record]},{asOf:'2026-11-28',reviewGrants:[{digest:researchDigest(record),reviewRef:'synthetic-independent-review'}]});
+  const v=result.research.products.find(p=>p.productId==='ai-smartcopy').validation;
+  assert.equal(v.willingnessToPay.studies[0].positiveRate,0.2);
+  assert.equal(v.willingnessToPay.validatedPriceCents,null);
+  assert.equal(v.ownerApprovalReadback,'NOT_PROVEN_NOT_IMPORTED');
+  assert.equal(result.pilot,null);assert.equal(result.publicPublishAllowed,false);
 });
 
 test('Growth visual plans cover the seven source-bound campaigns without creating or publishing media',()=>{
