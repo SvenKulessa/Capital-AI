@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import skillRegistry from '../../../.agents/skills/registry.json' with { type: 'json' };
-import { buildChatFollowUps, classifyChatDomain } from '../chatNextStepPrompts';
+import { buildChatFollowUps, classifyChatDomain, serializeChatFollowUp, CHAT_BRAND } from '../chatNextStepPrompts';
 import { ChatNextStepActions } from '../../components/ChatNextStepActions';
 import { openHeroBuddy, takePendingHeroBuddyOpen } from '../../components/heroBuddyEvents';
 
@@ -145,4 +145,27 @@ test('lazy JaJa open events are replayed once, including a click before module m
   openHeroBuddy();
   assert.equal(takePendingHeroBuddyOpen(), true);
   assert.equal(takePendingHeroBuddyOpen(), false);
+});
+
+
+test('Universe-7 role identity and JSON copy are deterministic and non-authorizing', () => {
+  for (const domain of ['PRODUCT','MARKET','PLATFORM','TRUST','GROWTH'] as const) {
+    const steps = buildChatFollowUps('Prüfe token=example-not-a-real-secret und Architektur',domain);
+    assert.equal(steps[0].brand.profileId,CHAT_BRAND.domains[domain].id);
+    assert.equal(steps[1].brand.role,'QUALITY');
+    assert.equal(steps[1].brand.accent,CHAT_BRAND.palette.green);
+    const json = JSON.parse(serializeChatFollowUp(steps[0]));
+    assert.equal(json.schema,'CAPITAL_AI_CHAT_FOLLOWUP@1');
+    assert.equal(json.domain,domain);
+    assert.equal(json.permissionExpansion,false);
+    assert.equal(json.executionStatus,'NOT_PROVEN');
+    assert.deepEqual(json.skillIds,steps[0].skills);
+    assert.equal(json.prompt,steps[0].prompt);
+    assert.ok(!json.prompt.includes('example-not-a-real-secret'));
+    const html = renderToStaticMarkup(React.createElement(ChatNextStepActions,{task:'Architektur prüfen',domain}));
+    assert.match(html,new RegExp('data-brand-profile="'+CHAT_BRAND.domains[domain].id+'"'));
+    assert.match(html,/Maschinenlesbare Prompts/);
+    assert.match(html,/data-agent-role="QUALITY"/);
+    for (const color of Object.values(CHAT_BRAND.palette)) assert.ok(html.includes(color));
+  }
 });

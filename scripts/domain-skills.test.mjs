@@ -371,3 +371,32 @@ test('SOLO2 domain-chat config negatives cannot expand authority or spoof a doma
     null
   ]) assert.equal(admits(altered), false);
 });
+
+
+test('Universe-7 presentation and adaptive profile are bounded, source-bound prompt metadata', () => {
+  const p = registry.promptContracts.presentation;
+  const a = registry.promptContracts.adaptiveProfile;
+  assert.equal(p.schema, 'CAPITAL_AI_AGENT_BRAND_PROFILE@1');
+  assert.equal(p.authority, 'AGENTS.md');
+  assert.equal(p.permissionExpansion, false);
+  assert.deepEqual(Object.keys(p.domains).sort(), [...expected].sort());
+  assert.equal(new Set(Object.values(p.domains).map(x => x.id)).size, 5);
+  assert.deepEqual(p.signature, Object.keys(p.palette));
+  assert.equal(new Set(Object.values(p.palette)).size, 7);
+  assert.deepEqual(p.palette, {cyan:'#67E8F9',violet:'#B794F4',gold:'#F9BF21',pink:'#F9A8D4',rose:'#F87171',blue:'#60A5FA',green:'#4ADE80'});
+  for (const d of Object.values(p.domains)) assert.ok(Object.hasOwn(p.palette,d.accent));
+  assert.notEqual(p.perspectives.TRUST_SECURITY.accent,p.perspectives.INDEPENDENT_QUALITY.accent);
+  const app = JSON.parse(read('.agents/app.prompt.json'));
+  assert.deepEqual(Object.keys(p.perspectives).sort(), [...app.multiAgent.perspectives].sort());
+  assert.ok(p.render.statusUsesTextAndIcon && p.render.staticTextFallback && p.render.reducedMotion);
+  assert.equal(p.logo.replacementAllowed,false);
+  assert.equal(a.authority,'AGENTS.md');
+  assert.equal(a.permissionExpansion,false);
+  assert.equal(a.trigger.distinctCompletedRuns,3);
+  assert.equal(a.trigger.idempotency,'RUN_ID');
+  assert.ok(a.rollback.stopOnConflict && a.rollback.governanceRequiresConcreteOwnerApproval);
+  assert.equal(a.rollback.forcePush,false);
+  assert.equal(a.runtimeActivation,'NOT_PROVEN');
+  assert.equal(p.targets.android,'NOT_PROVEN');
+  assert.match(read('.agents/skills/visual-chat/SKILL.md'), /promptContracts\.presentation/);
+});
