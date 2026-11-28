@@ -211,6 +211,14 @@ CLI examples (routing metadata, not execution):
 `node scripts/skill-routing.mjs /resume`
 `node scripts/skill-routing.mjs --plan --domain PLATFORM "/resume LangGraph checkpoint repair"`
 
-## AcodeX Chat-Delivery (CAPITAL_AI_ACODE_SHARED_DELIVERY@1 / ACODE_ACOPY_INTEGRATION@1)
+## AcodeX Chat-Delivery (CAPITAL_AI_ACODE_SHARED_DELIVERY@1 / ACODE_ACOPY_INTEGRATION@1 / ACODEX_ON_DEMAND_SYNC@1 / ACODEX_TERMINAL_STATUS_BRANDING@1)
 
 In allen Domain-Chats die Root-AGENTS.md-Abschnitte zur Acode-Shared-Delivery und ACOPY anwenden: versionierter Code in den bestehenden Shared Folder, autorisierter Create-only-Upload mit Parent-/SHA-Readback, vorhandener Startup-Guard, nichtinteraktiver `acopy`-Aufruf, keine Credentials oder interaktive Authentifizierung in Clipboard-Ausgaben. Bei Blockern lokale versionierte Datei und konkreten manuellen Transferweg statt behauptetem Upload liefern. Keine zweite Sync- oder Governance-Architektur.
+
+Für AcodeX-Terminalausgaben die Root-AGENTS.md-Regel ACODEX_TERMINAL_STATUS_BRANDING@1 anwenden: Grün bestätigter Erfolg, Rot Fehler/Blocker, Gelb Review/NOT_PROVEN, Cyan laufender Schritt; TTY-only, NO_COLOR, Plain-Evidence, konkrete Exit-Verträge und ursprüngliche ACOPY-/Heredoc-Semantik erhalten. Bestehenden SHA-geprüften On-Demand-Pull vor Ausführung neu ausgelieferter Skripte verwenden, kein Neustart oder zweiter Scheduler. Keine unbewiesene Farbhook-Installation behaupten.
+
+Owner-Präzisierung 2026-11-27: Farbregeln ausschließlich in der sichtbaren AcodeX-Terminalausgabe anwenden. ACOPY-Zwischenablage, native Bridge, Chat-Transfer und Evidence bleiben unveränderter Klartext ohne ANSI-/OSC-Steuersequenzen. Farbdarstellung von Capture trennen; wenn die Trennung nicht nachgewiesen ist, Klartext verwenden. Foreground-TTY, Heredocs und Exit-Code erhalten; keine zusätzliche Farbpipeline/Subshell für ACOPY. Keine Pflicht zur Übernahme der Terminalfarben in den Chat.
+
+Bei strukturierten mehrstufigen Arbeiten STRUCTURED_CHAT_EXECUTION@1 gemäß Root-AGENTS.md anwenden: Ziel/Prioritäten, mobiloptimierte Universe-7-Ablaufgrafik bei Mehrwert, tatsächliche Umsetzung und getrennte Evidence, Blocker sowie kopierbare nächste Schritte. Nach realer Evidence Roadmap aktualisieren. Keine Scheinfortschritte, keine zusätzlichen Gates; kurze Sachfragen direkt beantworten.
+
+Für Evidence-Matrizen, messbare Benchmarks und scopebezogene Dokumentenhygiene/Readback ergänzend GLOBAL_EVIDENCE_VISUAL@1 aus Root-AGENTS.md und den vorhandenen visual-chat-Skill verwenden. Terminalfarben bleiben strikt lokal; keine zusätzlichen Gates oder behauptete Live-Synchronisierung.
