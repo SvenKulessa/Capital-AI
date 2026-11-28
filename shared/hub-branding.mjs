@@ -10,6 +10,28 @@ export const BRAND_COLORS = Object.freeze({
   green: '#4ADE80',
 });
 
+/** Per-view design contract. Neutral surfaces, status semantics, immutable illustrations
+ * and the seven-colour global identity stripe are not additional active UI accents. */
+export const UNIVERSE_VIEW_BRANDING = Object.freeze({
+  version: 'UNIVERSE_VIEW_BRANDING@2',
+  designReference: 'owner-approved-first-layout-20261126',
+  approvedWebColors: Object.freeze({ cyan: BRAND_COLORS.cyan, gold: BRAND_COLORS.gold, violet: BRAND_COLORS.violet, rose: BRAND_COLORS.rose }),
+  minimumActiveColors: 2, maximumActiveColors: 4,
+  pair: Object.freeze(['gold', 'cyan']),
+  accent: Object.freeze(['rose', 'violet']),
+  // Keep the original full-page in grayscale; color is confined to a viewport ellipse.
+  globalNebulaSaturation: 0.94,
+  // The colored ellipse is bounded by 40% x 50% of the viewport.
+  nebulaMaxViewportFraction: 0.20,
+  logoBadgeNebulaMaxFraction: 0.10,
+  globalBackground: '/branding/universe/owner-nebula-v4.webp',
+  canvasRelativeRgbLift: 0.08,
+  canvas: '#081229',
+  hubOrder: Object.freeze(['marketscreener', 'learning', 'studio']),
+  studioNavigationTarget: '/',
+  reducedMotion: 'static',
+});
+
 export const HUB_BRANDING = Object.freeze({
   marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.violet },
   studio: { name: 'Studio Hub', color: BRAND_COLORS.green },
@@ -66,3 +88,22 @@ export function hubBrandForRoute(route = '') {
   if (/^\/(legal|faq|agb|datenschutz|impressum|kontakt)(\/|$)/.test(path)) return 'legal';
   return undefined;
 }
+
+/** Byte-bound public website references from the 2026-11-28 owner design scope. No private storage IDs. */
+export const WEBSITE_BRANDING_V4 = Object.freeze({
+  "owner-nebula-v4.webp": {
+    "sha256": "e9b0935ecae9e5c5b663e10f57e77ab7a3a9a8d76a7820bf9a8073f6549e199e",
+    "bytes": 61840,
+    "mime": "image/webp"
+  },
+  "analytics-overview-v4.webp": {
+    "sha256": "587808fe3a7660e22cdb9f95eb599ef00e0694bc3bfa56d9d27d1130a4ffa435",
+    "bytes": 123072,
+    "mime": "image/webp"
+  },
+  "capital-ai-mark-v4.webp": {
+    "sha256": "61bc0831b4868544b3982787dde4f1911583e27c993a89e8b46c514e07ea0993",
+    "bytes": 74572,
+    "mime": "image/webp"
+  }
+});
