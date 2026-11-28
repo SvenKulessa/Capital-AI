@@ -141,7 +141,7 @@ test('visual owner readback returns scene IDs only and rejects fabricated assets
 
 test('TRUST: marketplace catalog is private, fails closed on authority injection, URL spoofing and source mismatch',async()=>{
  const actual=buildOwnerEngineSnapshot(),c=actual.marketplace;
- assert.ok(Buffer.byteLength(JSON.stringify(actual))<=16384);
+ assert.ok(Buffer.byteLength(JSON.stringify(actual))<=32768);
  assert.deepEqual(validateEngineSnapshot(actual).marketplace,c);
  for(const bad of [{...c,publicationAllowed:true},{...c,ownerApproval:'GRANTED'},{...c,spendCents:1},{...c,rows:[{...c.rows[0],url:'https://evil.invalid/'},...c.rows.slice(1)]},{...c,catalogSha256:'0'.repeat(64)}])assert.throws(()=>validateEngineSnapshot({...actual,marketplace:bad}));
  assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...actual.productChannels,sourceSha256:'0'.repeat(64)}}));
@@ -149,4 +149,15 @@ test('TRUST: marketplace catalog is private, fails closed on authority injection
  const req={method:'GET'},path=new URL('https://capital-ai.online/api/profile/growth-intelligence/engine-readback');
  for(const authorized of [async()=>false,async()=>({role:'owner'}),async()=>{throw Error('synthetic');}]){const res={setHeader(){}};await createGrowthEngineReadback({authorized,load}).handle(req,res,path,(r,status)=>{r.status=status;});assert.equal(res.status,404);}
  assert.equal(reads,0);
+});
+
+
+test('distribution metadata fails closed even with recomputed digest',async()=>{
+ const {createHash}=await import('node:crypto');
+ const actual=buildOwnerEngineSnapshot();
+ for(const change of [{distributionMode:'ALLOW_ALL'},{reviewedOn:'2026-02-30'},{policyNote:'x'.repeat(301)},{productTypes:['INVALID']}]){
+  const rows=[{...actual.marketplace.rows[0],...change},...actual.marketplace.rows.slice(1)];
+  const catalogSha256=createHash('sha256').update(JSON.stringify({sourceSha256:actual.marketplace.sourceSha256,rows})).digest('hex');
+  assert.throws(()=>validateEngineSnapshot({...actual,marketplace:{...actual.marketplace,rows,catalogSha256}}));
+ }
 });

@@ -281,3 +281,54 @@ export function evaluateProductPortfolio(opportunities) {
   uniqueIds(parsed, 'campaignId', 'CAMPAIGN');
   return parsed.map(evaluateProductOpportunity);
 }
+
+
+// Separate versioned evaluation within the existing opportunity engine; no new CADS authority.
+export const DISTRIBUTION_OPPORTUNITY_VERSION = 'DISTRIBUTION_OPPORTUNITY_SCORE@1';
+export const DISTRIBUTION_OPPORTUNITY_WEIGHTS = Object.freeze({
+  demand:20, customerValue:15, reuse:15, monetization:15, delivery:15, platformFit:10, trust:10,
+});
+export function evaluateDistributionOpportunity(input) {
+  const p=record(input,['contractVersion','productId','criteria','gates'],'DISTRIBUTION');
+  if(p.contractVersion!==DISTRIBUTION_OPPORTUNITY_VERSION)fail('DISTRIBUTION_VERSION');
+  if(typeof p.productId!=='string'||!/^[a-z][a-z0-9-]{2,80}$/.test(p.productId))fail('DISTRIBUTION_ID');
+  const names=Object.keys(DISTRIBUTION_OPPORTUNITY_WEIGHTS);
+  const criteria=record(p.criteria,names,'DISTRIBUTION_CRITERIA');
+  const gates=record(p.gates,['rights','security','authorization'],'DISTRIBUTION_GATES');
+  let coverage=0,points=0;
+  const missing=[];
+  for(const [name,weight] of Object.entries(DISTRIBUTION_OPPORTUNITY_WEIGHTS)){
+    const c=record(criteria[name],['status','score','evidenceRef'],'DISTRIBUTION_CRITERION');
+    if(c.status==='NOT_PROVEN'){
+      if(c.score!==null||c.evidenceRef!==null)fail('DISTRIBUTION_UNKNOWN_MUST_BE_EMPTY');
+      missing.push(name);
+    }else if(c.status==='SOURCE_RECORDED'){
+      finite(c.score,'DISTRIBUTION_SCORE',100);
+      safeText(c.evidenceRef,'DISTRIBUTION_EVIDENCE',160);
+      coverage+=weight;points+=weight*c.score/100;
+    }else fail('DISTRIBUTION_STATUS');
+  }
+  const gateStates=Object.entries(gates);
+  if(gateStates.length!==3)fail('DISTRIBUTION_GATE_COUNT');
+  for(const [name,value] of gateStates){
+    const g=record(value,['status','evidenceRef'],'DISTRIBUTION_GATE');
+    if(g.status==='NOT_PROVEN'){
+      if(g.evidenceRef!==null)fail('DISTRIBUTION_GATE_UNKNOWN');
+    }else if(g.status==='SOURCE_RECORDED'||g.status==='BLOCKED'){
+      safeText(g.evidenceRef,'DISTRIBUTION_GATE_EVIDENCE',160);
+    }else fail('DISTRIBUTION_GATE_STATUS');
+  }
+  // Source-recorded evidence is caller supplied, not independently authenticated.
+  // Even a complete hypothetical score never grants a commercial action.
+  return Object.freeze({
+    contractVersion:DISTRIBUTION_OPPORTUNITY_VERSION,productId:p.productId,
+    score:coverage===100?round2(points):null,
+    observedWeightedPoints:round2(points),scoreCoveragePercent:coverage,
+    provisionalCoveredScore:coverage===0?null:round2(points*100/coverage),
+    scoreBasis:'SOURCE_RECORDED_HYPOTHESIS_NOT_AUTHENTICATED',
+    missingCriteria:missing,
+    commercialGate:gateStates.some(([,g])=>g.status==='BLOCKED')?'BLOCKED':
+      gateStates.some(([,g])=>g.status==='NOT_PROVEN')?'HOLD':'REVIEW_REQUIRED',
+    independentQuality:'NOT_PROVEN',publicationAllowed:false,liveSalesAllowed:false,spendAllowed:false,
+  });
+}

@@ -37,3 +37,25 @@ test('marketplace catalog is prioritized and digest-bound; draft keys are idempo
  for(const bad of [{...input,catalogSha256:'0'.repeat(64)},{...input,productId:'unmapped'},{...input,publicationAllowed:true},{...input,price:1}])assert.throws(()=>planMarketplaceDraft(bad));
  assert.throws(()=>projectMarketplaceCatalog({...buildProductChannelIntelligence(),providerCalls:1}));
 });
+
+
+test('distribution catalog separates discovery, packages, direct checkout and prohibited digital commerce',()=>{
+ const c=projectMarketplaceCatalog(buildProductChannelIntelligence());
+ assert.equal(c.schema,'CAPITAL_AI_MARKETPLACE_CATALOG@2');
+ const row=id=>c.rows.find(r=>r.id===id);
+ assert.equal(row('chatgptApps').distributionMode,'NO_DIGITAL_COMMERCE');
+ assert.equal(row('mcpRegistry').distributionMode,'DISCOVERY_ONLY');
+ assert.equal(row('ghcr').distributionMode,'PACKAGE_DISTRIBUTION');
+ assert.equal(row('stripeDirect').distributionMode,'OWN_CHECKOUT');
+ assert.equal(row('notionMarketplace').distributionMode,'DIRECT_MARKETPLACE');
+ assert.equal(row('acti').automation,'NOT_PROVEN');
+ assert.equal(row('gptStore').products.length,0);
+ assert.match(row('notionMarketplace').feeNote,/8%/);
+ assert.equal(row('mcpRegistry').reviewedOn,'2026-11-28');
+ assert.equal(row('mcpRegistry').nextReviewOn,'2026-12-12');
+ assert.ok(row('rapidApi').products.includes('b2b-data-api'));
+ assert.ok(row('mcpRegistry').products.includes('solo2-rag'));
+ assert.equal(c.publicationAllowed,false);assert.equal(c.spendCents,0);
+ for(const r of c.rows){assert.ok(r.policyNote.length<=300);assert.ok(r.feeNote.length<=250);}
+ assert.throws(()=>planMarketplaceDraft({catalogSha256:c.catalogSha256,channelId:'gptStore',productId:'solo2-rag'}));
+});

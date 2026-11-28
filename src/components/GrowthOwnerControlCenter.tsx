@@ -20,6 +20,7 @@ type View = 'matrix' | 'edit' | 'compare' | 'handoff';
 export function GrowthOwnerControlCenter() {
   const [history, setHistory] = useState(() => appendSnapshot([], initialRows(), new Date().toISOString()));
   const [marketplace,setMarketplace]=useState<MarketplaceCatalog|null>(null);
+  const [marketMode,setMarketMode]=useState('ALL');
   const [marketChannel,setMarketChannel]=useState('');
   const [marketProduct,setMarketProduct]=useState('');
   const [sceneIds,setSceneIds]=useState<string[]>([]);
@@ -156,7 +157,7 @@ export function GrowthOwnerControlCenter() {
       for(const row of byId.values())next.push(row);
       const nextHistory=appendSnapshot(history,next,new Date().toISOString());
       setHistory(nextHistory);setView('handoff');
-      setMarketplace(marketCatalog);setMarketChannel(marketCatalog?.rows[0]?.id??'');setMarketProduct(marketCatalog?.rows[0]?.products[0]??'');
+      setMarketplace(marketCatalog);setMarketMode('ALL');setMarketChannel(marketCatalog?.rows[0]?.id??'');setMarketProduct(marketCatalog?.rows[0]?.products[0]??'');
       setSceneIds(visual?.sceneIds??[]);setSelectedScene(visual?.sceneIds?.[0]??'');
       setMessage('Build-Artefakte gelesen. Keine laufende Engine, Live-Publikation oder Graph-Ausführung nachgewiesen.');
     }catch{setMarketplace(null);setMarketChannel('');setMarketProduct('');setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
@@ -217,9 +218,12 @@ export function GrowthOwnerControlCenter() {
       <h3 className="font-bold text-amber-200">Marketplace-Vertrieb</h3>
       <p className="text-sm text-slate-300">Privater Katalog · nur Entwürfe. Konten, Rechte, Kosten und Freigaben sind separat nachzuweisen.</p>
       {!marketplace?<p className="text-sm">Katalog über Engine-Readback laden.</p>:<>
-        <label className="block text-sm">Vertriebskanal<select className={control} value={marketChannel} onChange={e=>{setMarketChannel(e.target.value);setMarketProduct(marketplace.rows.find(r=>r.id===e.target.value)?.products[0]??'');}}>{marketplace.rows.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select></label>
+        <label className="block text-sm">Vertriebsart<select className={control} value={marketMode} onChange={e=>{const mode=e.target.value;const first=marketplace.rows.find(r=>mode==='ALL'||r.distributionMode===mode);setMarketMode(mode);setMarketChannel(first?.id??'');setMarketProduct(first?.products[0]??'');}}><option value="ALL">Alle</option>{[...new Set(marketplace.rows.map(r=>r.distributionMode))].map(mode=><option key={mode} value={mode}>{mode}</option>)}</select></label>
+        <label className="block text-sm">Vertriebskanal<select className={control} value={marketChannel} onChange={e=>{setMarketChannel(e.target.value);setMarketProduct(marketplace.rows.find(r=>r.id===e.target.value)?.products[0]??'');}}>{marketplace.rows.filter(r=>marketMode==='ALL'||r.distributionMode===marketMode).map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select></label>
         {marketplace.rows.filter(r=>r.id===marketChannel).map(r=><div key={r.id} className="space-y-2 break-words text-sm">
-          <p className="text-cyan-200">{r.automation}</p>
+          <p className="text-cyan-200">{r.distributionMode} · {r.automation}</p>
+          <p>{r.productTypes.join(" · ") || "Produktform NOT_PROVEN"} · {r.policyNote}</p>
+          <p className="text-xs text-slate-400">Quellenprüfung: {r.reviewedOn??"NOT_PROVEN"} · nächste Prüfung: {r.nextReviewOn??"offen"}</p>
           <p>{r.feeNote} · Kostenfreigabe NOT_PROVEN</p>
           <div className="flex flex-wrap gap-3"><a className="underline" href={r.url} target="_blank" rel="noopener noreferrer">Vertriebsportal</a><a className="underline" href={r.source} target="_blank" rel="noopener noreferrer">Offizielle Dokumentation</a>{r.feeSource&&<a className="underline" href={r.feeSource} target="_blank" rel="noopener noreferrer">Gebührenquelle</a>}</div>
           <label className="block">Produktkandidat<select className={control} value={marketProduct} onChange={e=>setMarketProduct(e.target.value)}>{r.products.length===0&&<option value="">Keine geprüfte Zuordnung</option>}{r.products.map(id=><option key={id} value={id}>{id}</option>)}</select></label>
