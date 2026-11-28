@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { OpenAiProviderStatus } from './OpenAiProviderStatus';
 import { InteractiveArticleScene } from '../features/home/InteractiveArticleScene';
 import { growthVisualScene } from '../shared/growthVisualScenes';
-import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, parseMarketplaceCatalog, marketplaceDraftRow, type MarketplaceCatalog, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -19,6 +19,9 @@ type View = 'matrix' | 'edit' | 'compare' | 'handoff';
 
 export function GrowthOwnerControlCenter() {
   const [history, setHistory] = useState(() => appendSnapshot([], initialRows(), new Date().toISOString()));
+  const [marketplace,setMarketplace]=useState<MarketplaceCatalog|null>(null);
+  const [marketChannel,setMarketChannel]=useState('');
+  const [marketProduct,setMarketProduct]=useState('');
   const [sceneIds,setSceneIds]=useState<string[]>([]);
   const [selectedScene,setSelectedScene]=useState('');
   const [view, setView] = useState<View>('matrix');
@@ -131,6 +134,8 @@ export function GrowthOwnerControlCenter() {
         g?.state!=='SOURCE_ONLY_RUNTIME_NOT_PROVEN'||!digest(g.sourceSha256))throw new Error('Invalid engine snapshot');
       const p=data.productChannels;
       if(p!==undefined&&(p?.state!=='DRAFT_ONLY'||!count(p.products,133)||!count(p.mapped,133)||!count(p.researchQueue,133)||p.mapped+p.researchQueue!==p.products||!digest(p.sourceSha256)||p.liveMetrics!==null))throw new Error('Invalid product channel snapshot');
+      const marketCatalog=data.marketplace===undefined?null:parseMarketplaceCatalog(data.marketplace);
+      if(marketCatalog&&marketCatalog.sourceSha256!==p?.sourceSha256)throw Error('Marketplace source mismatch');
       const visual=data.visualIntelligence;
       if(visual!==undefined&&(visual.state!=='DRAFT_ONLY'||visual.actualMediaAssets!==0||visual.publicPublishAllowed!==false||visual.toolRadar!=='SCHEDULED_SOURCE_ONLY'||!Array.isArray(visual.sceneIds)||visual.sceneIds.length>100||new Set(visual.sceneIds).size!==visual.sceneIds.length||visual.sceneIds.some((id:unknown)=>typeof id!=='string'||!growthVisualScene(id))))throw Error('Invalid visual snapshot');
       const updates:GrowthRow[]=[
@@ -150,9 +155,10 @@ export function GrowthOwnerControlCenter() {
       for(const row of byId.values())next.push(row);
       const nextHistory=appendSnapshot(history,next,new Date().toISOString());
       setHistory(nextHistory);setView('handoff');
+      setMarketplace(marketCatalog);setMarketChannel(marketCatalog?.rows[0]?.id??'');setMarketProduct(marketCatalog?.rows[0]?.products[0]??'');
       setSceneIds(visual?.sceneIds??[]);setSelectedScene(visual?.sceneIds?.[0]??'');
       setMessage('Build-Artefakte gelesen. Keine laufende Engine, Live-Publikation oder Graph-Ausführung nachgewiesen.');
-    }catch{setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
+    }catch{setMarketplace(null);setMarketChannel('');setMarketProduct('');setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
     finally{setPending(false);}
   }
   async function importGraph(file:File|undefined) {
@@ -195,6 +201,21 @@ export function GrowthOwnerControlCenter() {
       <p className="mt-2 text-xs text-slate-400">Arbeitsstand in der aktuellen Sitzung; JSON-Export und freigegebenes verschlüsseltes Owner-Archiv zur Wiederverwendung. Bis zu 30 Versionen (4 MB Historie). Keine Tokens, Kundendaten oder Secrets eingeben. Dokumentierte Freigaben erteilen keine Berechtigungen.</p>
     </header>
     <OpenAiProviderStatus />
+    <section aria-label="Marketplace-Vertrieb" className="space-y-3 rounded-xl border border-amber-300/40 p-3">
+      <h3 className="font-bold text-amber-200">Marketplace-Vertrieb</h3>
+      <p className="text-sm text-slate-300">Privater Katalog · nur Entwürfe. Konten, Rechte, Kosten und Freigaben sind separat nachzuweisen.</p>
+      {!marketplace?<p className="text-sm">Katalog über Engine-Readback laden.</p>:<>
+        <label className="block text-sm">Vertriebskanal<select className={control} value={marketChannel} onChange={e=>{setMarketChannel(e.target.value);setMarketProduct(marketplace.rows.find(r=>r.id===e.target.value)?.products[0]??'');}}>{marketplace.rows.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select></label>
+        {marketplace.rows.filter(r=>r.id===marketChannel).map(r=><div key={r.id} className="space-y-2 break-words text-sm">
+          <p className="text-cyan-200">{r.automation}</p>
+          <p>{r.feeNote} · Kostenfreigabe NOT_PROVEN</p>
+          <div className="flex flex-wrap gap-3"><a className="underline" href={r.url} target="_blank" rel="noopener noreferrer">Vertriebsportal</a><a className="underline" href={r.source} target="_blank" rel="noopener noreferrer">Offizielle Dokumentation</a>{r.feeSource&&<a className="underline" href={r.feeSource} target="_blank" rel="noopener noreferrer">Gebührenquelle</a>}</div>
+          <label className="block">Produktkandidat<select className={control} value={marketProduct} onChange={e=>setMarketProduct(e.target.value)}>{r.products.length===0&&<option value="">Keine geprüfte Zuordnung</option>}{r.products.map(id=><option key={id} value={id}>{id}</option>)}</select></label>
+          <p className="text-xs text-rose-200">Rechte: NOT_PROVEN · Owner-Freigabe: NOT_GRANTED · keine Preise oder Publikation.</p>
+          <button type="button" className={button} disabled={pending||!r.products.includes(marketProduct)} onClick={async()=>{setPending(true);try{const row=await marketplaceDraftRow(marketplace,r.id,marketProduct);if(!rows.some(x=>x.id===row.id))save(row);setMessage('Offline-Entwurf vorhanden. Keine Provideraufrufe oder Veröffentlichung.');setView('matrix');}catch{setMessage('Marketplace-Entwurf abgelehnt.');}finally{setPending(false);}}}>Offline-Entwurf übernehmen</button>
+        </div>)}
+      </>}
+    </section>
     {sceneIds.length>0&&<section className="rounded-xl border border-cyan-300/30 p-3" aria-label="Growth 3D Content Studio">
       <h3 className="font-semibold text-cyan-200">Growth 3D Content Studio</h3>
       <p className="mt-1 text-xs text-slate-300">{sceneIds.length} geplante Szenen · DRAFT_ONLY · keine exportierten Medien oder Publikationsfreigaben. Tool-Radar: täglicher Watch vorgesehen, Laufzeit nicht nachgewiesen.</p>
