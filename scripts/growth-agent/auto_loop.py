@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import os
 import re
 from typing import TypedDict
+from hygiene_lifecycle import observe_handoff, finish_lifecycle
 
 from domain_profile_binding import BoundDomainTask, REPOSITORY, bind_domain_task, load_domain_profiles
 
@@ -39,6 +40,8 @@ class LoopState(TypedDict, total=False):
     failure_fingerprint: str
     repair_fingerprints: list[str]
     wait_phase: str
+    hygiene_baseline: dict | None
+    hygiene_lifecycle: dict
 
 
 @dataclass(frozen=True)
@@ -86,7 +89,7 @@ def merge_evidence_verified(evidence: object) -> bool:
 
 
 def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_after=None,
-                bound_task: BoundDomainTask | None = None, repo_root=None):
+                bound_task: BoundDomainTask | None = None, repo_root=None, hygiene_observer=None):
     """Compile LangGraph without granting authority to runtime inputs.
 
     Trusted actions: analyze, implement, test, repair, evidence, merge,
@@ -266,49 +269,74 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
             return event(state, "resume_denied", status="BLOCKED", stop_reason="PERMISSION_STOP", wait_phase="")
         return event(state, "resume_wait")
 
+    def hygiene_baseline(state):
+        value = (observe_handoff(hygiene_observer, "baseline", state.get("task_id"))
+                 if binding_valid(state) else None)
+        return {"hygiene_baseline": value}
+
+    def hygiene_finalize(state):
+        task_id = state.get("task_id")
+        allowed = (hygiene_observer is not None and binding_valid(state)
+                   and state.get("status") != "WAIT"
+                   and state.get("stop_reason") not in HARD_STOPS
+                   and state.get("failure_class") not in HARD_STOPS)
+        final = observe_handoff(hygiene_observer, "final", task_id) if allowed else None
+        readback = (observe_handoff(hygiene_observer, "readback", task_id)
+                    if final and binding_valid(state) else None)
+        if not binding_valid(state):
+            final = readback = None
+        return {"hygiene_lifecycle": finish_lifecycle(
+            task_id, state.get("hygiene_baseline"), final, readback)}
+
     builder = StateGraph(LoopState)
+    # Explicit trusted observer only; no new execution authority.
+    builder.add_node("hygiene_baseline", hygiene_baseline)
+    builder.add_node("hygiene_finalize", hygiene_finalize)
+    terminal = "hygiene_finalize" if hygiene_observer is not None else END
+    builder.add_edge("hygiene_baseline", "analyze")
+    builder.add_edge("hygiene_finalize", END)
     for name, node in (("analyze", analyze), ("implement", implement), ("test", test),
                        ("repair", repair), ("evidence", evidence), ("authorize", authorize),
                        ("merge", merge), ("observe", observe), ("verify", verify), ("wait", wait)):
         builder.add_node(name, node)
-    builder.add_edge(START, "analyze")
+    builder.add_edge(START, "hygiene_baseline" if hygiene_observer is not None else "analyze")
     builder.add_conditional_edges("analyze", after_analyze,
-                                  {"end": END, "evidence": "evidence", "implement": "implement"})
+                                  {"end": terminal, "evidence": "evidence", "implement": "implement"})
     builder.add_conditional_edges("implement",
                                   lambda s: "test" if s["status"] == "IMPLEMENTED" else "evidence",
                                   {"test": "test", "evidence": "evidence"})
     builder.add_conditional_edges("test", after_test, {"repair": "repair", "evidence": "evidence", "wait": "wait"})
     builder.add_conditional_edges("wait", lambda s: s["wait_phase"] if s["status"] == "WAIT" else "end",
-                                  {"test": "test", "observe": "observe", "end": END})
+                                  {"test": "test", "observe": "observe", "end": terminal})
     builder.add_conditional_edges("repair",
                                   lambda s: "test" if s["status"] == "REPAIRED" else "evidence",
                                   {"test": "test", "evidence": "evidence"})
     builder.add_edge("evidence", "authorize")
     builder.add_conditional_edges("authorize",
                                   lambda s: "merge" if s["status"] == "MERGE_READY" else "end",
-                                  {"merge": "merge", "end": END})
+                                  {"merge": "merge", "end": terminal})
     builder.add_conditional_edges("merge",
                                   lambda s: "observe" if s["status"] == "MERGED" and authority.observe_existing_deploy else "end",
-                                  {"observe": "observe", "end": END})
+                                  {"observe": "observe", "end": terminal})
     builder.add_conditional_edges("observe",
                                   lambda s: "verify" if s["status"] == "DEPLOYED" else "wait" if s["status"] == "WAIT" else "end",
-                                  {"verify": "verify", "wait": "wait", "end": END})
-    builder.add_edge("verify", END)
+                                  {"verify": "verify", "wait": "wait", "end": terminal})
+    builder.add_edge("verify", terminal)
     return builder.compile(checkpointer=checkpointer if checkpointer is not None else InMemorySaver(),
                            interrupt_after=interrupt_after, interrupt_before=["wait"])
 
 
-def execute(actions, authority: Authority, task_id: str) -> LoopState:
+def execute(actions, authority: Authority, task_id: str, *, hygiene_observer=None) -> LoopState:
     if not isinstance(task_id, str) or not re.fullmatch(r"[a-zA-Z0-9._:-]{1,96}", task_id):
         raise ValueError("task_id must be a short non-secret identifier")
-    return build_graph(actions, authority).invoke(
+    return build_graph(actions, authority, hygiene_observer=hygiene_observer).invoke(
         {"task_id": task_id, "attempts": 0, "history": []},
         {"configurable": {"thread_id": task_id}, "recursion_limit": 24},
     )
 
 
 
-def execute_durable(actions, authority: Authority, task_id: str, db_path: str) -> LoopState:
+def execute_durable(actions, authority: Authority, task_id: str, db_path: str, *, hygiene_observer=None) -> LoopState:
     """Single-writer SQLite-backed LangGraph checkpoint and crash-safe continuation.
 
     A completed thread is returned without repeating actions; a pending checkpoint
@@ -348,7 +376,7 @@ def execute_durable(actions, authority: Authority, task_id: str, db_path: str) -
         conn = sqlite3.connect(path, check_same_thread=False, timeout=5.0)
         try:
             saver = SqliteSaver(conn)
-            graph = build_graph(actions, authority, checkpointer=saver)
+            graph = build_graph(actions, authority, checkpointer=saver, hygiene_observer=hygiene_observer)
             config = {"configurable": {"thread_id": task_id}, "recursion_limit": 24}
             snapshot = graph.get_state(config)
             if snapshot and snapshot.values:
@@ -368,7 +396,7 @@ def execute_durable(actions, authority: Authority, task_id: str, db_path: str) -
 
 def execute_bound_readonly(actions, repo_root, task: dict, *,
                            tenant: str = "owner-local",
-                           repository: str = REPOSITORY) -> LoopState:
+                           repository: str = REPOSITORY, hygiene_observer=None) -> LoopState:
     """Read-only use of the SAME existing execution graph and offline identity.
 
     Does not construct an additional orchestrator or admit ONLINE/customer
@@ -378,7 +406,8 @@ def execute_bound_readonly(actions, repo_root, task: dict, *,
         repo_root, tenant=tenant, repository=repository, task=task
     )
     state = build_graph(
-        actions, Authority(read_only=True), bound_task=binding, repo_root=repo_root
+        actions, Authority(read_only=True), bound_task=binding, repo_root=repo_root,
+        hygiene_observer=hygiene_observer
     ).invoke(
         binding.initial_state(),
         {"configurable": {"thread_id": binding.thread_id}, "recursion_limit": 24},
@@ -403,7 +432,7 @@ def _bound_sources_current(repo_root, binding: BoundDomainTask) -> bool:
 
 def execute_bound_durable_readonly(actions, repo_root, task: dict, db_path: str, *,
                                    tenant: str = "owner-local",
-                                   repository: str = REPOSITORY) -> LoopState:
+                                   repository: str = REPOSITORY, hygiene_observer=None) -> LoopState:
     """Reuse the existing SQLite lock and file binding; fail closed on replay."""
     from checkpoint_store import execute_durable_graph
 
@@ -413,7 +442,7 @@ def execute_bound_durable_readonly(actions, repo_root, task: dict, db_path: str,
     state = execute_durable_graph(
         lambda saver: build_graph(
             actions, Authority(read_only=True), checkpointer=saver,
-            bound_task=binding, repo_root=repo_root,
+            bound_task=binding, repo_root=repo_root, hygiene_observer=hygiene_observer,
         ),
         binding.thread_id, db_path, binding.initial_state(),
         enforce_offline_binding=True,
