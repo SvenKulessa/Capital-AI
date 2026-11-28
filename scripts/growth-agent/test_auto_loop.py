@@ -222,5 +222,141 @@ class AutoLoopTests(unittest.TestCase):
         self.assertNotIn("merge", a.calls)
 
 
+
+def hygiene_receipt(phase, task_id, **patch):
+    index = {"baseline": 1, "final": 2, "readback": 3}[phase]
+    digest = str(index) * 64
+    return {"contractVersion": "CAPITAL_AI_HYGIENE_HANDOFF@1",
+            "threadId": task_id if task_id.startswith("offline-") else None,
+            "runId": "hygiene-" + digest, "sourceSha": SHA_MAIN,
+            "observedAt": "2026-11-28T12:00:0%d.000Z" % index,
+            "scopeDigest": "a" * 64, "sourceDigest": digest,
+            "contentDigest": "b" * 64 if index == 1 else "c" * 64,
+            "methodId": "doc-drift-claims-v1", "checked": 4,
+            "affected": 1 if index == 1 else 0, "missing": 0,
+            "score": 75 if index == 1 else 100, "coverage": 15,
+            "status": "NOT_PROVEN", "authorityGranted": False, **patch}
+
+
+class HygieneLifecycleTests(unittest.TestCase):
+    def test_checkpoint_replay_and_measured_delta(self):
+        calls = []
+        def observer(phase, task):
+            calls.append(phase)
+            return hygiene_receipt(phase, task)
+        with tempfile.TemporaryDirectory() as d:
+            os.chmod(d, 0o700)
+            path = os.path.join(d, "hygiene.sqlite3")
+            adapter = Adapter()
+            auth = loop.Authority(read_only=True)
+            first = loop.execute_durable(adapter, auth, "hygiene:test", path, hygiene_observer=observer)
+            self.assertEqual(first["status"], "READ_ONLY_COMPLETE")
+            self.assertEqual(first["hygiene_lifecycle"]["deltaPoints"], 25)
+            self.assertTrue(first["hygiene_lifecycle"]["readbackMatch"])
+            self.assertFalse(first["hygiene_lifecycle"]["authorityGranted"])
+            self.assertEqual(first["hygiene_lifecycle"]["status"], "NOT_PROVEN")
+            self.assertEqual(calls, ["baseline", "final", "readback"])
+            second = loop.execute_durable(adapter, auth, "hygiene:test", path, hygiene_observer=observer)
+            self.assertEqual(first, second)
+            self.assertEqual(calls, ["baseline", "final", "readback"])
+            self.assertEqual(adapter.calls, ["analyze", "evidence"])
+
+    def test_wait_does_not_finalize_and_resume_does_not_repeat_baseline(self):
+        calls = []
+        def observer(phase, task):
+            calls.append(phase)
+            return hygiene_receipt(phase, task)
+        with tempfile.TemporaryDirectory() as d:
+            os.chmod(d, 0o700)
+            path = os.path.join(d, "wait.sqlite3")
+            adapter = Adapter()
+            adapter.test = lambda state: {"passed": False, "status": "WAIT", "failure_class": "CI_PENDING"}
+            auth = loop.Authority(allow_changes=True, allow_merge=False)
+            first = loop.execute_durable(adapter, auth, "hygiene:wait", path, hygiene_observer=observer)
+            self.assertEqual(first["status"], "WAIT")
+            self.assertNotIn("hygiene_lifecycle", first)
+            self.assertEqual(calls, ["baseline"])
+            adapter.test = lambda state: {"passed": True}
+            second = loop.execute_durable(adapter, auth, "hygiene:wait", path, hygiene_observer=observer)
+            self.assertEqual(second["status"], "MERGE_NOT_PROVEN")
+            self.assertEqual(calls, ["baseline", "final", "readback"])
+            self.assertEqual(adapter.calls.count("implement"), 1)
+
+    def test_mismatched_readback_and_forged_claims_cannot_improve_score(self):
+        for patch in ({"scopeDigest": "d" * 64}, {"contentDigest": "d" * 64},
+                      {"authorityGranted": True}, {"score": 99}, {"status": "VERIFIED"},
+                      {"rawPrompt": "synthetic-private"}, {"threadId": "offline-" + "f" * 40}):
+            with self.subTest(patch=patch):
+                def observer(phase, task):
+                    return hygiene_receipt(phase, task, **(patch if phase == "readback" else {}))
+                result = loop.execute(Adapter(), loop.Authority(read_only=True), "hygiene:negative",
+                                      hygiene_observer=observer)["hygiene_lifecycle"]
+                self.assertFalse(result["readbackMatch"])
+                self.assertIsNone(result["deltaPoints"])
+                self.assertNotIn("synthetic-private", str(result))
+                self.assertFalse(result["authorityGranted"])
+
+    def test_hard_stop_does_not_call_final_observer(self):
+        calls = []
+        def observer(phase, task):
+            calls.append(phase)
+            return hygiene_receipt(phase, task)
+        adapter = Adapter()
+        adapter.test = lambda state: {"passed": False, "failure_class": "SECURITY_STOP"}
+        result = loop.execute(adapter, loop.Authority(allow_changes=True), "hygiene:stop",
+                              hygiene_observer=observer)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(calls, ["baseline"])
+        self.assertIsNone(result["hygiene_lifecycle"]["deltaPoints"])
+
+    def test_failed_analysis_is_recorded_without_changing_status(self):
+        adapter = Adapter()
+        adapter.analyze = lambda state: {"ok": False}
+        result = loop.execute(adapter, loop.Authority(), "hygiene:failed",
+                              hygiene_observer=hygiene_receipt)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["hygiene_lifecycle"]["status"], "NOT_PROVEN")
+        self.assertEqual(result["hygiene_lifecycle"]["deltaPoints"], 25)
+
+
+    def test_pinned_scanner_real_checkout_and_tamper(self):
+        import hashlib
+        import shutil
+        import subprocess
+        from hygiene_scanner_adapter import PinnedScanner, PIN_PATHS
+        node, git = shutil.which("node"), shutil.which("git")
+        source = Path(__file__).resolve().parents[2]
+        if not node or not git or not all((source / p).is_file() for p in PIN_PATHS):
+            self.skipTest("host scanner dependencies absent from isolated worker image")
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d).resolve()
+            pins = {}
+            for name in PIN_PATHS:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((source / name).read_bytes())
+                pins[name] = hashlib.sha256(target.read_bytes()).hexdigest()
+            (root / "README.md").write_text("Synthetic local document", encoding="utf-8")
+            subprocess.run([git, "init", "-q", str(root)], check=True)
+            subprocess.run([git, "-C", str(root), "add", "."], check=True)
+            subprocess.run([git, "-C", str(root), "-c", "user.name=Fixture",
+                            "-c", "user.email=fixture@example.invalid",
+                            "-c", "commit.gpgsign=false", "commit", "-qm", "fixture"], check=True)
+            observer = PinnedScanner(root, node=node, git=git, pins=pins)
+            task = "offline-" + "a" * 40
+            result = loop.execute(Adapter(), loop.Authority(read_only=True), task,
+                                  hygiene_observer=observer)["hygiene_lifecycle"]
+            self.assertTrue(result["readbackMatch"])
+            self.assertEqual(result["baseline"]["threadId"], task)
+            self.assertEqual(result["deltaPoints"], 0)
+            self.assertEqual(result["baseline"]["coverage"], 15)
+            self.assertFalse(result["authorityGranted"])
+            with self.assertRaises(ValueError):
+                observer("final", "../untrusted")
+            (root / PIN_PATHS[0]).write_text("tampered", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                observer("final", task)
+
+
 if __name__ == "__main__":
     unittest.main()
