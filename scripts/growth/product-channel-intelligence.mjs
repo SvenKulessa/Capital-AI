@@ -330,3 +330,47 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
     catch{process.stderr.write('PRODUCT_CHANNEL_HANDOFF_REJECTED\n');process.exitCode=1;}
   }
 }
+
+// Derived catalog: no second product registry, provider calls or commercial authority.
+const marketplacePriority = ['stripeDirect','gumroad','githubMarketplace','microsoftMarketplace','awsMarketplace'];
+const feeEvidence = {
+  "stripeDirect": [
+    "Zahlungsart- und vertragsspezifische Gebühren",
+    "https://stripe.com/de/pricing"
+  ],
+  "gumroad": [
+    "Direkt: 10% + 0,50 USD; Discover: 30%; mögliche weitere Verarbeitungskosten prüfen",
+    "https://gumroad.com/pricing"
+  ],
+  "githubMarketplace": [
+    "5% Einbehalt; Organisations-Publisher und Auszahlungsvoraussetzungen",
+    "https://docs.github.com/en/apps/github-marketplace/selling-your-app-on-github-marketplace/receiving-payment-for-app-purchases"
+  ],
+  "microsoftMarketplace": [
+    "Standard Store Service Fee 3%; Ausnahmen/Vertragsbedingungen prüfen",
+    "https://learn.microsoft.com/en-gb/partner-center/marketplace-offers/marketplace-commercial-transaction-capabilities-and-considerations"
+  ],
+  "awsMarketplace": [
+    "Listing-Gebühren abhängig von Angebotsart, Vertragswert und Region",
+    "https://docs.aws.amazon.com/marketplace/latest/userguide/listing-fees.html"
+  ]
+};
+const marketplaceHash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+export function projectMarketplaceCatalog(plan) {
+  if(plan?.contractVersion!=='CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1'||plan.publicationState!=='DRAFT_ONLY'||plan.publicPublishAllowed!==false||plan.liveSalesAllowed!==false||plan.providerCalls!==0||plan.campaignSpend!==0||!Array.isArray(plan.products)||plan.products.length>133||!(/^[a-f0-9]{64}$/).test(plan.sourceSha256??''))throw Error('MARKETPLACE_PLAN_INVALID');
+  const ids=[...marketplacePriority,...Object.keys(channels).filter(id=>channels[id].automation&&!marketplacePriority.includes(id))];
+  const rows=ids.map(id=>{
+    const c=channels[id];
+    const products=plan.products.filter(p=>p.channels?.some(x=>x.id===id)).map(p=>p.id).sort();
+    if(new Set(products).size!==products.length||products.some(p=>typeof p!=='string'||!(/^[a-z0-9-]{1,80}$/).test(p)))throw Error('MARKETPLACE_PRODUCT_INVALID');
+    return {id,url:c.url,source:c.source,automation:c.automation,feeNote:feeEvidence[id]?.[0]??'Gebühren und Account-Konditionen separat prüfen',feeSource:feeEvidence[id]?.[1]??null,products};
+  });
+  const catalogSha256=marketplaceHash({sourceSha256:plan.sourceSha256,rows});
+  return {schema:'CAPITAL_AI_MARKETPLACE_CATALOG@1',state:'DRAFT_ONLY',sourceSha256:plan.sourceSha256,catalogSha256,rows,accountAdmission:'NOT_PROVEN',costAdmission:'NOT_PROVEN',rightsAdmission:'NOT_PROVEN',ownerApproval:'NOT_GRANTED',publicationAllowed:false,providerCalls:0,spendCents:0};
+}
+export function planMarketplaceDraft(input) {
+  if(!input||Object.keys(input).sort().join(',')!=='catalogSha256,channelId,productId'||typeof input.channelId!=='string'||typeof input.productId!=='string')throw Error('MARKETPLACE_DRAFT_INVALID');
+  const catalog=projectMarketplaceCatalog(buildProductChannelIntelligence());
+  if(input.catalogSha256!==catalog.catalogSha256||!catalog.rows.some(r=>r.id===input.channelId&&r.products.includes(input.productId)))throw Error('MARKETPLACE_DRAFT_NOT_MAPPED_OR_STALE');
+  return {schema:'CAPITAL_AI_MARKETPLACE_DRAFT@1',draftKey:marketplaceHash([catalog.catalogSha256,input.channelId,input.productId]),channelId:input.channelId,productId:input.productId,catalogSha256:catalog.catalogSha256,state:'DRAFT_ONLY',adapterMode:'OFFLINE_PREVIEW',price:null,providerCalls:0,spendCents:0,rightsAdmission:'NOT_PROVEN',ownerApproval:'NOT_GRANTED',publicationAllowed:false};
+}

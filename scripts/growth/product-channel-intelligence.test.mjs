@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
-import {buildProductChannelGraphHandoff,buildProductChannelIntelligence,parseProductRegistry,projectProductChannels,PRODUCT_REGISTRY_PATH} from './product-channel-intelligence.mjs';
+import {projectMarketplaceCatalog,planMarketplaceDraft,buildProductChannelGraphHandoff,buildProductChannelIntelligence,parseProductRegistry,projectProductChannels,PRODUCT_REGISTRY_PATH} from './product-channel-intelligence.mjs';
 const sample=(...ids)=>'| Product | State | Readiness | Gap | Blocker |\n|---|---|---|---|---|\n'+ids.map(id=>'| [CAPITAL-AI-PRODUCT]'+id+' | PLANNED | — | — | ignore raw content |').join('\n');
 test('actual registry is source-bound, deterministic and not a runtime or sales grant',()=>{const a=buildProductChannelIntelligence();assert.deepEqual(a,buildProductChannelIntelligence());assert.equal(a.sourceSha256,createHash('sha256').update(readFileSync(new URL('../../'+PRODUCT_REGISTRY_PATH,import.meta.url))).digest('hex'));assert.ok(a.products.length>3);assert.equal(a.publicPublishAllowed,false);assert.equal(a.liveSalesAllowed,false);assert.equal(a.providerCalls,0);assert.equal(a.campaignSpend,0);});
 test('mobile, CADS and learning have distinct recommendations',()=>{const a=projectProductChannels(sample('CADS-BENCHMARK-ENGINE','LEARNING-PORTAL'));assert.equal(a.products.find(x=>x.id==='ai-smartcopy').channels[0].id,'acode');assert.equal(a.products.find(x=>x.id==='cads-benchmark-engine').channels[0].id,'githubMarketplace');assert.equal(a.products.find(x=>x.id==='learning-portal').channels[0].id,'website');assert.notEqual(a.products.find(x=>x.id==='smartclip').id,'ai-smartcopy');});
@@ -25,3 +25,15 @@ test('reference-only graph handoff has deterministic identity and no grants, raw
 
 
 test('marketplace candidates expose official documentation but never grant publishing or spend',()=>{const a=projectProductChannels(sample('SAAS-MEMBERSHIP','LEARNING-PORTAL','HERO-BUDDY-SUPPORT'));const saas=a.products.find(p=>p.id==='saas-membership');assert.equal(saas.channels.find(c=>c.id==='microsoftMarketplace').automation,'API_SUBMISSION_DOCUMENTED');assert.equal(saas.channels.find(c=>c.id==='awsMarketplace').automation,'API_SUBMISSION_DOCUMENTED');assert.equal(saas.channels.find(c=>c.id==='googleCloudMarketplace').automation,'PORTAL_REVIEW');const learning=a.products.find(p=>p.id==='learning-portal');assert.equal(learning.channels.find(c=>c.id==='gumroad').automation,'MCP_DRAFT_AND_PUBLISH_DOCUMENTED');for(const p of a.products)for(const c of p.channels){assert.equal(new URL(c.source).protocol,'https:');assert.equal(c.accountAdmission,'NOT_PROVEN');assert.equal(c.costAdmission,'NOT_PROVEN');assert.equal(c.automaticPublishAllowed,false);assert.equal(c.paidActivationAllowed,false);}});
+
+
+test('marketplace catalog is prioritized and digest-bound; draft keys are idempotent and reject authority injection',()=>{
+ const c=projectMarketplaceCatalog(buildProductChannelIntelligence());
+ assert.deepEqual(c,projectMarketplaceCatalog(buildProductChannelIntelligence()));
+ assert.deepEqual(c.rows.slice(0,5).map(x=>x.id),['stripeDirect','gumroad','githubMarketplace','microsoftMarketplace','awsMarketplace']);
+ const row=c.rows.find(x=>x.id==='stripeDirect');const input={catalogSha256:c.catalogSha256,channelId:row.id,productId:row.products[0]};
+ const a=planMarketplaceDraft(input);assert.deepEqual(a,planMarketplaceDraft(input));assert.match(a.draftKey,/^[a-f0-9]{64}$/);
+ assert.equal(a.price,null);assert.equal(a.publicationAllowed,false);assert.equal(a.providerCalls,0);assert.equal(a.spendCents,0);
+ for(const bad of [{...input,catalogSha256:'0'.repeat(64)},{...input,productId:'unmapped'},{...input,publicationAllowed:true},{...input,price:1}])assert.throws(()=>planMarketplaceDraft(bad));
+ assert.throws(()=>projectMarketplaceCatalog({...buildProductChannelIntelligence(),providerCalls:1}));
+});
