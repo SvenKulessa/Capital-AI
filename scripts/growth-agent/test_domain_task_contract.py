@@ -84,6 +84,8 @@ class BoundDomainTaskTests(unittest.TestCase):
             {**TASK, "task_id": "id\u202e"},
             {**TASK, "domain": "UNKNOWN"},
             {**TASK, "query": ""},
+            {**TASK, "query": "unsafe\u202equery"},
+            {**TASK, "query": "unsafe\x00query"},
         )
         for payload in invalid:
             with self.subTest(payload=payload), self.assertRaises(ValueError):
