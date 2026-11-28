@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { NEWS_DESIGN_OFFER } from '../../data/pricingCatalog';
 import { catalogueLearningUniverseAssets } from '../../platform/SocialMediaEngine/Branding/learningUniverseAssetRegistry.mjs';
+import { buildLearningUniverseCommercialDraft } from '../../platform/SocialMediaEngine/Branding/learningUniverseCommercialLicenseDrafts.mjs';
 
 const layouts = [
   { id: 'hero', name: 'Titelbild', use: 'Für Produktstarts und einzelne Leitmeldungen',
@@ -54,9 +55,9 @@ export function NewsDesignCatalog() {
 
       <section aria-labelledby="learning-universe-catalogue-title" className="mt-6 border-t border-slate-700 pt-5"
         data-learning-universe-catalogue="first-party-preview">
-        <h4 id="learning-universe-catalogue-title" className="text-lg font-bold text-cyan-100">Learning Universe · Originalgrafiken</h4>
+        <h4 id="learning-universe-catalogue-title" className="text-lg font-bold text-cyan-100">Learning Universe · Designvorschau</h4>
         <p className="mt-2 text-sm leading-relaxed text-slate-300">
-          Eigene SVG-Motive aus dem Learning Hub – zur Ansicht in CAPITAL-AI freigegeben.
+          SVG-Motive aus dem Learning Hub – als Designvorschau innerhalb von CAPITAL-AI.
           Keine separate Verkaufs-, Weitergabe- oder Publishing-Lizenz. Die MediaKit-v5-Übernahme
           bleibt bis zur unabhängigen Prüfung ein Entwurf.
         </p>
@@ -65,7 +66,7 @@ export function NewsDesignCatalog() {
             <figure key={asset.id} data-learning-catalogue-asset={asset.id}
               className="min-w-0 overflow-hidden rounded-xl border border-slate-600 bg-slate-950 p-2">
               <img src={asset.publicUrl} width={asset.width} height={asset.height}
-                loading="lazy" decoding="async" alt={'Originalgrafik: ' + asset.alt}
+                loading="lazy" decoding="async" alt={'Designvorschau: ' + asset.alt}
                 className="aspect-[420/260] w-full rounded-lg object-contain" />
               <figcaption className="mt-2 text-sm font-semibold text-slate-100">{asset.title}</figcaption>
               <p className="mt-1 break-all text-xs text-slate-400">SHA-256: {asset.sha256.slice(0, 16)}…</p>
@@ -73,10 +74,81 @@ export function NewsDesignCatalog() {
           ))}
         </div>
       </section>
-      <a className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-amber-300 px-3 text-base font-semibold text-amber-100 focus-visible:outline-2 focus-visible:outline-cyan-300"
-        href={`mailto:support@capital-ai.online?subject=${encodeURIComponent('FinTech News Design Studio · ' + item.name)}`}>
-        Angebot für {item.name} anfragen
-      </a>
+      <LearningUniverseB2BInquirySection />
+      <p data-inquiry-availability="DISABLED_BY_DEFAULT" role="status"
+        className="mt-3 rounded-lg border border-amber-300/50 px-3 py-3 text-base text-amber-100">
+        Angebot für {item.name}: Anfrage derzeit nicht verfügbar. Bitte keine vertraulichen Dokumente senden.
+      </p>
+    </section>
+  );
+}
+
+
+export function isLearningUniverseInquiryOnlyDraft(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const draft = value as Record<string, unknown>;
+  return draft.schema === 'CAPITAL_AI_LEARNING_UNIVERSE_COMMERCIAL_DRAFTS@1' &&
+    draft.status === 'DRAFT_ONLY' && draft.salesMode === 'INQUIRY_ONLY' &&
+    draft.priceStatus === 'OWNER_INTERNAL_TARGET_APPROVED_PUBLIC_SALES_HOLD' &&
+    draft.publicPriceReference === 'NOT_PROVEN' && draft.rightsStatus === 'REVIEW_REQUIRED' &&
+    draft.amountCents === null && draft.stripeProductId === null && draft.stripePriceId === null &&
+    draft.signedAgreement === false && draft.publicPromotionAllowed === false &&
+    draft.licensedUseAllowed === false && draft.publishingAllowed === false &&
+    draft.buyerEntitled === false && draft.automaticFulfilmentAllowed === false &&
+    draft.rawAssetResaleAllowed === false && draft.sublicensingAllowed === false;
+}
+
+/** Phase A: public-facing copy prepared only in the unmerged Draft PR.
+ * No contact fields, backend write, price, checkout, license or entitlement.
+ * External publication still needs the owner-approved release path. */
+export function LearningUniverseB2BInquirySection() {
+  const concepts = [
+    { key: 'PUBLISHER', title: 'Publisher Pack · Konzept',
+      description: 'Zehn Learning-Universe-Vektormotive als unverbindliche Designbeispiele. Nutzungsumfang und Rechte werden individuell geprüft.' },
+    { key: 'STUDIO', title: 'Publisher Studio · Konzept',
+      description: 'Mögliche Anpassung von Design und Endformaten nach Briefing und gesonderter Machbarkeits- und Rechteprüfung.' },
+    { key: 'RESELLER', title: 'B2B-Partnerschaft · Konzept',
+      description: 'Anfrage zu einer möglichen Zusammenarbeit für fertige Endprodukte. Keine Rohdatei-Weitergabe oder automatische Unterlizenzierung.' },
+  ] as const;
+  // Fail closed if the draft module becomes an authoritative sales/rights object.
+  const drafts = concepts.map(concept => ({
+    ...concept, draft: buildLearningUniverseCommercialDraft(concept.key),
+  }));
+  if (drafts.some(({ draft }) => !isLearningUniverseInquiryOnlyDraft(draft))) return null;
+
+  return (
+    <section aria-labelledby="learning-universe-b2b-heading"
+      data-learning-universe-b2b-inquiry="DRAFT_ONLY"
+      className="mt-6 rounded-xl border border-cyan-400/30 bg-slate-950/70 p-4 sm:p-5">
+      <p className="text-xs font-semibold uppercase tracking-wider text-cyan-200">B2B · unverbindliche Anfrage</p>
+      <h4 id="learning-universe-b2b-heading" className="mt-2 text-xl font-bold text-slate-100">
+        Learning Universe für Unternehmen
+      </h4>
+      <p className="mt-2 text-sm leading-6 text-slate-300">
+        Entdecken Sie mögliche Publisher- und Studio-Pakete oder eine Zusammenarbeit.
+        Aktuell ausschließlich zur Bedarfsklärung: Es gibt kein verbindliches Angebot,
+        keine bestätigte Drittvertriebslizenz und keine sofortige Buchung oder Auslieferung.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {drafts.map(concept => (
+          <article key={concept.key} data-b2b-concept={concept.key}
+            className="flex min-w-0 flex-col rounded-lg border border-slate-700 bg-slate-900 p-3">
+            <h5 className="text-base font-semibold text-amber-100">{concept.title}</h5>
+            <p className="mt-2 flex-1 text-sm leading-6 text-slate-300">{concept.description}</p>
+            <p data-inquiry-availability="DISABLED_BY_DEFAULT" role="status"
+              className="mt-4 rounded-lg border border-cyan-300/40 px-3 py-3 text-center text-sm text-cyan-100">
+              Anfrage derzeit nicht verfügbar
+            </p>
+          </article>
+        ))}
+      </div>
+      <p className="mt-4 text-xs leading-5 text-slate-400">
+        Bitte zunächst keine vertraulichen Dokumente übermitteln.
+        Eine Anfrage begründet weder einen Vertrag noch Nutzungs-, Wiederverkaufs- oder Veröffentlichungsrechte.
+        Hinweise zur Verarbeitung Ihrer Anfrage finden Sie in der{' '}
+        <a href="/datenschutz/" className="text-cyan-200 underline focus-visible:outline-2 focus-visible:outline-cyan-200">Datenschutzerklärung</a>.
+        Verbindliche Konditionen und Nutzungsrechte werden vor einer möglichen Vereinbarung individuell geklärt.
+      </p>
     </section>
   );
 }
