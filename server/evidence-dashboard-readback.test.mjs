@@ -5,6 +5,7 @@ import { createEvidenceDashboardReadback } from './evidence-dashboard-readback.m
 const sha = 'a'.repeat(40);
 const other = 'b'.repeat(40);
 const origin = 'https://capital-ai.online';
+const healthUrl = 'https://capital-ai-uvsl.onrender.com/healthz';
 const env = { GITHUB_TOKEN: 'github-private-fixture', RENDER_API_KEY: 'render-private-fixture' };
 const serviceId = 'srv-dau1rp893c1s73cdhm1g';
 const ownerId = 'tea-d90o4rj7uimc739i86ug';
@@ -23,6 +24,7 @@ function ts7Fixture(record = ts7Evidence) {
 }
 function fixture(url) {
   const s = String(url);
+  if (s === healthUrl) return { status: 'ok', runtimeIdentity: { sourceSha: sha, evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' } };
   if (s.endsWith('/commits/main')) return { sha };
   if (s.includes('/pulls?')) return [{ number: 7, state: 'open', title: '[CAPITAL-AI-PLATFORM] Evidence', draft: false, head: { sha }, updated_at: '2026-11-19T03:30:00Z' }];
   if (s.includes('/contents/' + ts7Path + '?ref=' + sha)) return ts7Fixture();
@@ -100,9 +102,11 @@ test('allows only GET without query parameters and sets private no-store respons
 test('binds provider URLs, identity and properties; produces only verified projections', async () => {
   const h = setup();
   const { body } = await h.request();
-  assert.equal(h.calls.length, 6);
+  assert.equal(h.calls.length, 7);
   assert.ok(h.calls.every(c => c.options.method === 'GET' && c.options.redirect === 'error' && c.options.cache === 'no-store'));
-  assert.ok(h.calls.every(c => c.url.startsWith('https://api.github.com/repos/SvenKulessa/Capital-AI/') || c.url.startsWith(`https://api.render.com/v1/services/${serviceId}`)));
+  assert.ok(h.calls.every(c => c.url === healthUrl || c.url.startsWith('https://api.github.com/repos/SvenKulessa/Capital-AI/') || c.url.startsWith(`https://api.render.com/v1/services/${serviceId}`)));
+  assert.equal(body.comparison.runtimeSha.sourceSha, sha);
+  assert.deepEqual(h.calls.find(c => c.url === healthUrl).options.headers, { Accept: 'application/json' });
   assert.equal(body.github.mainSha, sha);
   assert.equal(body.github.openPrCount, 1);
   assert.equal(body.github.pullRequests[0].headSha, sha);
@@ -119,6 +123,21 @@ test('binds provider URLs, identity and properties; produces only verified proje
   assert.equal(body.baseline.status, 'HISTORICAL_REFERENCE_ONLY');
   assert.equal(body.baseline.valuesImported, false);
   assert.doesNotMatch(JSON.stringify(body), /fixture|user@example.test|github-private|render-private|6998|3525|private-user-id/);
+});
+
+test('failed, malformed and oversized health reads leave independent provider evidence intact', async () => {
+  for (const invalid of [
+    new Response('unavailable', { status: 503 }),
+    { status: 'ok', runtimeIdentity: { sourceSha: sha, evidence: 'NOT_PROVEN' } },
+    { status: 'ok', runtimeIdentity: { sourceSha: [sha], evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' } },
+    { ...fixture(healthUrl), extra: 'x'.repeat(8192) },
+  ]) {
+    const h = setup({ provider: url => String(url) === healthUrl ? invalid : fixture(url) });
+    const { body } = await h.request();
+    assert.equal(body.comparison.runtimeSha, undefined);
+    assert.equal(body.render.status, 'VERIFIED_PROVIDER_READ');
+    assert.equal(body.ga4.status, 'VERIFIED_PROVIDER_READ');
+  }
 });
 
 test('projects only sha-pinned BLOCKED TypeScript evidence; no live scan assertion', async () => {
@@ -164,13 +183,13 @@ test('uses five-minute cache and deduplicates concurrent reads', async () => {
   let time = 1800000000000;
   const h = setup({ now: () => time });
   await Promise.all([h.request(), h.request()]);
-  assert.equal(h.calls.length, 6);
+  assert.equal(h.calls.length, 7);
   time += 299_999;
   await h.request();
-  assert.equal(h.calls.length, 6);
+  assert.equal(h.calls.length, 7);
   time += 2;
   await h.request();
-  assert.equal(h.calls.length, 12);
+  assert.equal(h.calls.length, 14);
 });
 
 test('does not let missing Render credential erase independently verified GitHub/GA4 evidence', async () => {
@@ -180,7 +199,7 @@ test('does not let missing Render credential erase independently verified GitHub
   assert.equal(body.ga4.status, 'VERIFIED_PROVIDER_READ');
   assert.deepEqual(body.render, { status: 'NOT_PROVEN', reason: 'RENDER_CREDENTIAL_NOT_CONFIGURED' });
   assert.equal(body.comparison.mainVsDeploy, 'NOT_PROVEN');
-  assert.equal(h.calls.length, 4);
+  assert.equal(h.calls.length, 5);
 });
 
 test('rejects wrong Render workspace and keeps raw errors/secrets private', async () => {
@@ -323,10 +342,10 @@ test('AcodeX P1-v2 is archived owner-only evidence, never a live device probe', 
   assert.equal(archive.evidence.v11.sha256, '89b2215cf85420928c70271dffa38ee4ad51ccd07d1832b4bb35192e28c892a3');
   assert.equal(archive.evidence.v1.sha256, '991b97eef4f31a69ece605347d9b6aeebc8405f0fcd30ee7e96d03869c5e5afd');
   assert.equal(archive.evidence.standard.sha256, 'be03a2c479eddc1a40d4bad133e34b41e20039aa27ee5a776b05a24571d9eb17');
-  assert.equal(h.calls.length, 6);
+  assert.equal(h.calls.length, 7);
   assert.ok(h.calls.every(c => {
     const url = new URL(c.url);
-    return url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname);
+    return c.url === healthUrl || (url.protocol === 'https:' && new Set(['api.github.com', 'api.render.com']).has(url.hostname));
   }));
   assert.doesNotMatch(JSON.stringify(body), /github-private-fixture|render-private-fixture|password|secret_value/i);
 });
