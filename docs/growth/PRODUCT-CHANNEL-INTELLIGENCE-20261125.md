@@ -15,3 +15,14 @@ Supplemental source-reviewed planning candidates: digital Blueprints, SOLO2 RAG 
 ## Existing LangGraph review
 
 Run `node scripts/growth/product-channel-intelligence.mjs --graph-handoff | python3 scripts/growth-agent/product_opportunity_graph.py --product-channels -` (pinned LangGraph environment required). The existing offline five-domain review topology validates bounded IDs, channel rule mapping, draft state and zero provider calls; it returns the unmapped research queue and never promotes imported hashes to source authenticity or grants publication, sales, spend or mutation. The Node and Python tests cover malformed references and authority denial. No new graph service, provider, schedule or CI requirement. This is a separate operator-invoked review from live channel discovery.
+
+## SaaS distribution candidate extension — 2026-11-28
+
+Existing deterministic projection and graph allowlist are extended together. SaaS membership maps to a source-listed planning profile; learning, engineering, CADS and mobile profiles get only applicable draft candidates. MediaKit standalone media licensing is not represented as a verified SaaS SKU. The private owner import remains the separate commercial planning view.
+
+- SaaSHub: [official submission](https://www.saashub.com/services/submit), human operator submits personally; no automated submission.
+- G2: [official listing guidance](https://documentation.g2.com/help/docs/finding-or-listing-a-product-on-g2), product/category and claim review required.
+- Capterra: [shared my.G2 listing guidance](https://documentation.g2.com/docs/product-information), avoid duplicate vendor/product records and paid activation.
+- Microsoft Marketplace: [SaaS offer planning](https://learn.microsoft.com/en-us/partner-center/marketplace-offers/plan-saas-offer), Contact Me evaluation only; no transactable offer, publisher enrolment, billing or deployment.
+
+New channel references reviewed 2026-11-28; existing channel review dates unchanged. All candidates remain draft-only, zero provider calls/spend, null metrics, no publish/sales authority. Actual account access, fees, listing eligibility, legal rights and owner approval remain independent. Existing Node and graph regression suites cover exact rule acceptance, duplicate rejection, wrong-rule denial and reference-only handoff. No new CI check, dependency or scheduler.
