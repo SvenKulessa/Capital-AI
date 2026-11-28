@@ -1,5 +1,5 @@
 import {
-  AGENT_ROLES, agentFromTitle, ga4EventCount, ga4RealtimeEventCount, isVerified,
+  AGENT_ROLES, agentFromTitle, ga4EventCount, ga4RealtimeEventCount, isVerified, runtimeEvidence,
   type DashboardReadback, type AgentRole,
 } from './ownerOperationsModel';
 
@@ -29,9 +29,7 @@ export function ownerEvidenceRows(snapshot: DashboardReadback): OwnerEvidenceRow
     { label: 'GA4 Events',
       status: isVerified(snapshot.ga4) ? 'VERIFIED' : 'NOT_PROVEN',
       detail: '7-Tage-Events, keine Zahlungen' },
-    { label: 'Runtime BuildIdentity',
-      status: 'NOT_PROVEN',
-      detail: snapshot.comparison.runtimeBuildIdentity || 'Kein unabhängiger Runtime-Readback' },
+    { label: 'Runtime-SHA / Healthz', ...runtimeEvidence(snapshot) },
     { label: 'Stripe-Umsatz',
       status: 'NOT_PROVEN',
       detail: 'Kein signierter Zahlungs- oder Transaktionsnachweis' },
