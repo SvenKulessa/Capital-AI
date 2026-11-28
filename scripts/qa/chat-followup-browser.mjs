@@ -114,7 +114,7 @@ try {
     const jsonLayout = await evaluate("(() => { const buttons = [...document.querySelectorAll('section details button')]; return { count: buttons.length, touch: buttons.every(b => b.getBoundingClientRect().height >= 44), inside: buttons.every(b => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0), labels: buttons.every(b => b.getAttribute('aria-label').includes('JSON kopieren')) }; })()");
     assert.deepEqual(jsonLayout, { count: 3, touch: true, inside: true, labels: true });
     assert.equal(await evaluate("(() => { const b = document.querySelector('section details button'); b.focus(); return document.activeElement === b; })()"), true);
-    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\\r', unmodifiedText: '\\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
     await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
     await until(() => evaluate("document.querySelector('section details button').textContent === 'Kopiert'"), 'JSON clipboard confirmation');
     const envelope = JSON.parse(await evaluate("navigator.clipboard.readText()"));
