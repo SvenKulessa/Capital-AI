@@ -23,7 +23,7 @@ export function ProfileAvatarUpload() {
           setAvailable(true);
         } else {
           // Never present a working upload picker while ClamAV/storage are unavailable.
-          setMessage('Profilbild-Upload momentan nicht freigeschaltet. Die serverseitige Sicherheitsprüfung oder der private Speicher ist nicht verfügbar. Nutze bis dahin das Bild des Anmeldeanbieters.');
+          setMessage('Profilbild kann momentan nicht geändert werden.');
         }
       })
       .catch(() => {
@@ -45,7 +45,7 @@ export function ProfileAvatarUpload() {
       setUploaded(true); setRevision(x => x + 1);
       window.dispatchEvent(new Event('capital-ai:profile-avatar-updated'));
       setMessage('Profilbild geprüft und gespeichert. Bei einem Seitenwechsel wird es auch im Profilkopf angezeigt.');
-    } catch { setMessage('Upload nicht verfügbar oder durch die Sicherheitsprüfung abgelehnt.'); }
+    } catch { setMessage('Das Profilbild konnte nicht gespeichert werden.'); }
     finally { setBusy(false); if (picker.current) picker.current.value = ''; }
   }
   async function remove() {
@@ -63,14 +63,14 @@ export function ProfileAvatarUpload() {
   }
   return (
     <section className="mt-4 rounded-xl border border-violet-400/30 bg-violet-500/10 p-3" aria-label="Privates Profilbild">
-      <p className="text-sm font-bold text-violet-100">Profilbild oder Logo</p>
-      <p className="mt-1 text-xs text-slate-300">Privater Upload mit lokaler Malware-Prüfung. Ohne Upload gilt das verifizierte Bild des aktiven Anmeldeanbieters.</p>
+      <p className="text-sm font-bold text-violet-100">Profilbild</p>
+
       {uploaded && <img src={'/api/profile/avatar/current?revision=' + revision} alt="Gespeichertes Profilbild" width={64} height={64} className="mt-2 h-16 w-16 rounded-xl object-cover" />}
       <input ref={picker} type="file" accept="image/png,image/jpeg,image/webp"
         disabled={busy || !available} className="mt-3 block w-full text-xs text-slate-200"
         aria-label="Profilbild auswählen" aria-describedby="avatar-upload-availability"
         onChange={e => { const file = e.target.files?.[0]; if (file) void upload(file); }} />
-      <p id="avatar-upload-availability" className="mt-2 text-xs text-slate-300">{available ? 'Upload verfügbar: PNG, JPEG oder WebP, maximal 2 MB.' : 'Upload gesperrt, bis die bestehende Malware- und Speicherprüfung bereitsteht.'}</p>
+      <p id="avatar-upload-availability" className="mt-2 text-xs text-slate-300">{available ? 'Upload verfügbar: PNG, JPEG oder WebP, maximal 2 MB.' : 'Profilbild ändern derzeit nicht verfügbar.'}</p>
       {uploaded && <button type="button" disabled={busy} onClick={() => void remove()}
         className="mt-3 rounded-lg border border-white/30 px-3 py-2 text-xs text-white">Profilbild entfernen</button>}
       {message && <p role="status" className="mt-2 text-xs text-slate-200">{message}</p>}

@@ -28,6 +28,14 @@ description: "Use for clear, evidence-based visual communication in chat across 
 - **Separately prove implementation QA:** when frontend code is changed, record the exact commit/PR, browser or testing tool, tested mobile/tablet/desktop viewport(s), keyboard/accessible navigation scope, and actual pass/fail observations. If live browser, responsive or screen-reader QA was not run, mark it `NOT_PROVEN`. A generated or chat-rendered mockup is not production/browser evidence.
 - These are non-authorizing presentation and evidence guidelines under `AGENTS.md`: no extra required CI checks, admissions, mandatory reviews, merge rights or promises of renderer availability.
 
+## Evidence matrices and continuous improvement (GLOBAL_EVIDENCE_VISUAL@1)
+
+- For complex results, show relevant decision and evidence rows with phase-specific status (implementation, test, merge, deployment, live readback), owner approval, rights/commercial hold, provenance, observed time, priority, blocker and next action. Label stale and missing evidence; a concept approval is not a release approval.
+- Prefer compact, accessible filterable matrices and expandable evidence details, status cards, process/architecture diagrams and actionable next steps when the runtime genuinely supports them. Use Markdown/Mermaid/text otherwise. Keep UNIVERSE_7 semantics and canonical branding tokens; never rely on color alone.
+- Compare baseline and current measurements only when units, scope, method, sample and provenance are compatible. Show score version, coverage, missing values, absolute/relative deltas where meaningful; never invent numbers or imply that a composite score clears a critical security/rights blocker.
+- Present authorized scope-specific hygiene findings and versioned changes to prompts, routing, docs, instructions, folders and naming conventions; distinguish proposed changes from applied and independently read back changes. Reuse existing LangGraph/RAG and contracts; no compulsory full scan or additional gate. Only claim private dashboard synchronization, persistence or live data when actually verified.
+- Do not expose private evidence or chat raw data. Preserve the status snippets and 1–3 actionable copyable next steps under AGENTS.md.
+
 ## Domain usage
 
 | Domain | High-value visual patterns |

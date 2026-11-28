@@ -1,0 +1,23 @@
+/* Shared no-JS canvas for admitted static CAPITAL-AI documents. */
+body {
+  isolation: isolate;
+  position: relative;
+  background: #081229;
+}
+body::before, body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(rgb(5 12 25 / .78), rgb(5 12 25 / .86)), url('/branding/universe/owner-nebula-v4.webp') center / cover no-repeat;
+}
+body::before { filter: grayscale(1); }
+body::after {
+  filter: saturate(.94);
+  clip-path: ellipse(20% 25% at 20% 25%);
+  mask-image: radial-gradient(ellipse 20% 25% at 20% 25%, #000 0%, transparent 100%);
+}
+@media (forced-colors: active), print {
+  body::before, body::after { display: none; }
+}

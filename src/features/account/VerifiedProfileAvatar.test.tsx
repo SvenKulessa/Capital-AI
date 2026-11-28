@@ -62,7 +62,9 @@ test('owner account links to existing profile avatar controls without bypassing 
   assert.match(shell, /Profilbild verwalten/);
   assert.match(upload, /r\.status === 404/);
   assert.match(upload, /disabled=\{busy \|\| !available\}/);
-  assert.match(upload, /Sicherheitsprüfung oder der private Speicher/);
+  assert.match(upload, /else \{\s*\/\/ Never present a working upload picker[^\n]*\n\s*setMessage\('Profilbild kann momentan nicht geändert werden\.'\);\s*\}/);
+  assert.match(upload, /Profilbild ändern derzeit nicht verfügbar\./);
+  assert.doesNotMatch(upload, /Sicherheitsprüfung oder der private Speicher/);
   assert.match(overview, /Owner-Bereich · angemeldet/);
   assert.doesNotMatch(overview, /> Nur für Owner</);
   assert.match(panel, /!isVerified\(snapshot\.github\)/);

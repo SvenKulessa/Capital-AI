@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
     pt: ['Produto', 'Aprender', 'Análise', 'Preços', 'Para empresas'],
     es: ['Producto', 'Aprender', 'Análisis', 'Precios', 'Para empresas'],
   }[locale];
-  const primaryRoutes = ['/', '/learning', '/marketscreener', '/pricing', '/governance-evidence-sprint'];
+  const primaryRoutes = ['/marketscreener', '/learning', '/', '/pricing', '/governance-evidence-sprint'];
   const activeHub = hubBrandForRoute(currentRoute);
   const isCurrent = (path: string) => currentRoute === path ||
     (path === '/learning' && activeHub === 'learning') ||
@@ -222,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
   const primaryLinks = () => primaryRoutes.map((path, index) => {
     const brand = path === '/learning' ? HUB_BRANDING.learning
-      : path === '/marketscreener' ? HUB_BRANDING.marketscreener : undefined;
+      : path === '/marketscreener' ? HUB_BRANDING.marketscreener : path === '/' ? HUB_BRANDING.studio : undefined;
     const current = isCurrent(path);
     return <a key={path} href={path}
       aria-current={current ? 'page' : undefined} onClick={event => follow(event, path)}
@@ -276,7 +276,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="relative z-30 flex w-full flex-wrap items-center justify-between gap-2 border-b border-slate-800 px-3 py-3 sm:px-6">
+    <header className={`relative z-30 flex w-full items-center justify-between gap-2 border-b border-slate-800 px-3 py-3 sm:px-6 ${authStatus === 'ready' && authSession?.authenticated ? 'flex-nowrap xl:flex-wrap' : 'flex-wrap'}`}>
       <div aria-hidden="true" data-universe-spectrum="header" className="pointer-events-none absolute inset-x-0 bottom-0 flex h-[3px] overflow-hidden">
         {Object.entries(BRAND_COLORS).map(([name, color]) => <span key={name} data-universe-color={name} className="flex-1" style={{ backgroundColor: color }} />)}
       </div>
@@ -310,7 +310,7 @@ export const Header: React.FC<HeaderProps> = ({
       <nav aria-label={nav.main} className="hidden flex-wrap items-center gap-1 xl:flex">{primaryLinks()}</nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
-      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+      <div className="ml-auto flex min-w-0 max-w-full items-center justify-end gap-2">
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
         {/* Session errors are not evidence of a logout; the login route stays reachable. */}
@@ -329,14 +329,14 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
-              className={`flex min-h-11 items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
+              className={`flex min-h-11 min-w-11 items-center gap-1 px-1.5 sm:gap-2 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
               aria-controls="header-account-navigation"
               aria-expanded={isAccountOpen}
               aria-label={t('navAccount')}
               title="Kontomenü"
             >
               <ProfileAvatar url={authSession.user?.avatarUrl} privateUrl={privateAvatarUrl} owner={isOwner} size="md" />
-              <span className="flex min-w-0 flex-col items-start leading-tight">
+              <span className="hidden min-w-0 flex-col items-start leading-tight sm:flex">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
                   <span className={`font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
@@ -541,7 +541,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <summary className="cursor-pointer rounded-lg px-3 py-3 text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-amber-300">{locale === 'de' ? 'Weitere Bereiche' : 'More areas'}</summary>
                   <div className="grid gap-1 px-1">
                     {[
-                      {path: '/studio', label: 'Studio'},
+                      {path: '/studio', label: 'Studio-Werkzeuge'},
                       {path: '/social', label: HUB_BRANDING.social.name},
                       {path: '/blueprints', label: 'Blueprints'},
                       {path: '/dokumentation', label: t('docs')},
