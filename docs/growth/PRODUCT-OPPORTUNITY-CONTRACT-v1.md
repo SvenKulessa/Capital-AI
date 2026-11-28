@@ -46,7 +46,9 @@ These calculations assume stable user count across horizon (not cohorts), no chu
 
 Input `marketSizing` stores the selected `BOTTOM_UP`, `TOP_DOWN` or `UNKNOWN` method, a 12-month reference period, estimated addressable customer denominator, assumed penetration percentage, and an evidence reference. `UNKNOWN` requires all numeric fields to be null. The only derived count is `addressableCustomers × penetrationPercent / 100` labelled `HYPOTHESIS_NOT_VERIFIED`, never observed TAM/SAM/SOM or a causal conversion estimate. No public revenue, product penetration or paid campaign decision may be justified by that count alone.
 
-## DeviceCare-KI pilot
+## PocketDefend pilot
+
+Owner-approved product display name (2026-11-27): **PocketDefend**. Keep `devicecare-ki` as the stable internal product ID and existing source repository URL until a separately verified compatible migration. Do not rename evidence keys, tenant identifiers, billing IDs, routes or historical records. The new brand is not proof of commercial readiness.
 
 Use `productId=devicecare-ki` and a **fresh verified GitHub source commit SHA** from `SvenKulessa/DeviceCare-KI`. A `SOURCE_RECORDED` capability permits a draft claim only; it does **not** prove its truth. Limit public-facing conceptual positioning to manually initiated, local, data-minimizing Android diagnostic features where source/test evidence is independently available. Do **not** claim proven malware protection, always-on detection, Play Store production availability, Play Integrity approval, medical/security effectiveness, or actual sales.
 
