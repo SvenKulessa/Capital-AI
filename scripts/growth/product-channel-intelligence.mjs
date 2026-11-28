@@ -285,7 +285,7 @@ function profileFor(id) {
   if(id==="ai-smartcopy"||id==="smartclip")return "mobile";
   if(id==="cads-benchmark-engine")return "cads";
   if(["market-vocabulary","learning-portal"].includes(id))return "learning";
-  if(["oss-pipeline-simulation-engine","ghcr-digest-blueprint-marketplace-app","seo-growth-engine","social-media-engine","digital-blueprints","solo2-rag","loop-agent"].includes(id))return "engineering";
+  if(["oss-pipeline-simulation-engine","ghcr-digest-blueprint-marketplace-app","seo-growth-engine","social-media-engine","digital-blueprints","solo2-rag","loop-agent","eif"].includes(id))return "engineering";
   return null;
 }
 export function projectProductChannels(markdown) {

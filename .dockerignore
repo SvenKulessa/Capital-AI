@@ -306,6 +306,8 @@
 !packages/
 !packages/benchmark-core/
 !packages/benchmark-core/**
+!packages/eif-product/
+!packages/eif-product/*.mjs
 !apps/
 !apps/cads-github-app/
 !apps/cads-github-app/marketplace-plans.production.json

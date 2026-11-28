@@ -174,3 +174,18 @@ test('Smartcopy conversion graph import keeps candidate and live metrics separat
  assert.equal(projectGraphHandoff(JSON.stringify(r),reportSha,projected).length,projected.length);
  for(const patch of [{productId:'smartclip'},{verifiedMetrics:{paidLicenses:0,revenueCents:null,refunds:null}},{publicationAllowed:true},{nextAction:'REPAIR_INPUT'},{candidatePayments:1}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...r,...patch}),reportSha,live));
 });
+
+ test('hygiene and research handoff preserve live rows and archive as documentation only',()=>{
+  const d='b'.repeat(64), thread='offline-'+'c'.repeat(40);
+  const hygiene={contractVersion:'CAPITAL_AI_HYGIENE_HANDOFF@1',threadId:thread,runId:'hygiene-'+d,sourceSha:'e'.repeat(40),observedAt:at,scopeDigest:d,sourceDigest:d,contentDigest:d,methodId:'doc-drift-claims-v1',checked:4,affected:1,missing:0,score:75,coverage:15,status:'NOT_PROVEN',authorityGranted:false};
+  const research={contractVersion:'CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1',threadId:thread,domain:'PLATFORM',bundleSha256:d,profileSha256:d,citationDigests:[d],sourceCount:1,status:'SOURCE_READBACK_MATCH',authorityGranted:false};
+  const live=[projectGa4(good,row)];
+  const first=projectGraphHandoff(JSON.stringify(hygiene),reportSha,live);
+  assert.deepEqual(first[0],live[0]);assert.equal(first[1].status,'NOT_PROVEN');
+  assert.strictEqual(projectGraphHandoff(JSON.stringify(hygiene),reportSha,first),first);
+  const next=projectGraphHandoff(JSON.stringify(research),reportSha,first);
+  assert.equal(next[1].dependencies,next[2].dependencies);assert.equal(next[2].status,'NOT_PROVEN');
+  assert.deepEqual(importWorkspace(exportWorkspace(appendSnapshot([],next,at)))[0].rows.slice(1),next.slice(1));
+  for(const patch of [{authorityGranted:true},{score:100},{coverage:100},{affected:5},{threadId:'raw private task'},{status:'VERIFIED'},{rawPrompt:'test'}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...hygiene,...patch}),reportSha,live));
+  for(const patch of [{authorityGranted:true},{citationDigests:[]},{sourceCount:0},{status:'VERIFIED'},{excerpt:'test'},{domain:'ROOT'}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...research,...patch}),reportSha,live));
+});

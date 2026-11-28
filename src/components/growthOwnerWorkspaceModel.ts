@@ -205,11 +205,58 @@ function projectConversionGraphHandoff(raw:unknown, reportSha:string, rows:Growt
   return [...rows.filter(r=>r.id!==row.id),row];
 }
 
+const offlineThread = z.string().regex(/^offline-[a-f0-9]{40}$/);
+const hygieneHandoffSchema = z.object({
+  contractVersion:z.literal('CAPITAL_AI_HYGIENE_HANDOFF@1'),threadId:offlineThread.nullable(),
+  runId:z.string().regex(/^hygiene-[a-f0-9]{64}$/),sourceSha:z.string().regex(/^[a-f0-9]{40}$/),
+  observedAt:z.iso.datetime(),scopeDigest:graphDigest,sourceDigest:graphDigest,contentDigest:graphDigest,
+  methodId:z.literal('doc-drift-claims-v1'),checked:z.number().int().min(0).max(1000000),
+  affected:z.number().int().min(0).max(1000000),missing:z.number().int().min(0).max(1000000),
+  score:z.number().int().min(0).max(100).nullable(),coverage:z.union([z.literal(0),z.literal(15)]),
+  status:z.literal('NOT_PROVEN'),authorityGranted:z.literal(false),
+}).strict().refine(d=>d.runId==='hygiene-'+d.sourceDigest && d.affected<=d.checked &&
+  (d.checked===0 ? d.score===null && d.coverage===0 : d.coverage===15 && d.score===Math.round(100*(d.checked-d.affected)/d.checked)));
+const researchEvidenceSchema = z.object({
+  contractVersion:z.literal('CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1'),threadId:offlineThread,
+  domain:z.enum(domains),bundleSha256:graphDigest,profileSha256:graphDigest,
+  citationDigests:z.array(graphDigest).max(3),sourceCount:z.number().int().min(0).max(3),
+  status:z.enum(['SOURCE_READBACK_MATCH','NOT_PROVEN']),authorityGranted:z.literal(false),
+}).strict().refine(d=>new Set(d.citationDigests).size===d.citationDigests.length &&
+  (d.status==='SOURCE_READBACK_MATCH' ? d.citationDigests.length>0 && d.citationDigests.length<=d.sourceCount : d.sourceCount===0&&d.citationDigests.length===0));
+
+function upsertEvidenceNote(rows:GrowthRow[], row:GrowthRow, reportSha:string):GrowthRow[] {
+  const existing=rows.find(r=>r.id===row.id);
+  if(existing?.origin==='OWNER_NOTE'&&existing.status==='NOT_PROVEN'&&existing.evidence===row.evidence &&
+    existing.evidence.includes('Import SHA-256 '+reportSha)&&JSON.stringify(existing)===JSON.stringify(row))return rows;
+  return [...rows.filter(r=>r.id!==row.id),row];
+}
+
+function projectHygieneNote(raw:unknown, reportSha:string, rows:GrowthRow[]):GrowthRow[]{
+  const d=hygieneHandoffSchema.parse(raw);
+  const row=makeRow('document-hygiene-handoff','Document Hygiene · Offline-Messung','TRUST','Messscope und unabhängigen Readback prüfen');
+  return upsertEvidenceNote(rows,{...row,flow:'Claim-Stabilität · kein allgemeiner Hygiene- oder Freigabenachweis',
+    operation:'Score '+(d.score??'unbekannt')+' / 100 · Abdeckung '+d.coverage+' % · '+d.observedAt,
+    tests:'Geprüft '+d.checked+' · Auffällig '+d.affected+' · Fehlend '+d.missing+' · '+d.methodId,
+    dependencies:d.threadId??'Keine Graph-Korrelation',
+    evidence:'Import SHA-256 '+reportSha+'; Commit '+d.sourceSha+'; Scope '+d.scopeDigest+'; Report '+d.sourceDigest+'; Content '+d.contentDigest+'; Run '+d.runId,
+    auth:'Importierte Messung; Herkunft und Aktualität NOT_PROVEN',approvals:'Keine Mutations-, Merge- oder Verkaufsfreigabe'},reportSha);
+}
+function projectResearchEvidenceNote(raw:unknown,reportSha:string,rows:GrowthRow[]):GrowthRow[]{
+  const d=researchEvidenceSchema.parse(raw);
+  const row=makeRow('research-evidence-handoff','LangGraph · RAG-Evidence','PLATFORM','Quellen und Task-Bindung unabhängig zurücklesen');
+  return upsertEvidenceNote(rows,{...row,domain:d.domain,flow:'Offline LangGraph · keine Provider-Autorität',
+    operation:'Importierter Graph-Status '+d.status,tests:'Zitierte Abschnitte '+d.sourceCount,
+    dependencies:d.threadId,auth:'Importiert, nicht unabhängig authentifiziert',approvals:'Keine Freigabe',
+    evidence:'Import SHA-256 '+reportSha+'; Bundle '+d.bundleSha256+'; Profil '+d.profileSha256+'; Quellen '+d.citationDigests.join(', ')},reportSha);
+}
+
 /** Untrusted offline status-only report; separate rows never overwrite live owner readbacks. */
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
   const parsed=JSON.parse(raw);
+  if(parsed?.contractVersion==='CAPITAL_AI_HYGIENE_HANDOFF@1')return projectHygieneNote(parsed,reportSha,rows);
+  if(parsed?.contractVersion==='CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1')return projectResearchEvidenceNote(parsed,reportSha,rows);
   if(parsed && typeof parsed==='object' && 'contractVersion' in parsed &&
     parsed.contractVersion==='CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1')
     return projectConversionGraphHandoff(parsed,reportSha,rows);
