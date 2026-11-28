@@ -433,3 +433,20 @@ test('corporate resolver has no caller-controlled pathname, bytes or license aut
  assert.equal(logo.customerRedistributionAllowed,false);
  assert.equal(logo.publicPublishAllowed,false);
 });
+
+
+test('Hero Globe Zero aliases are exact and private original bytes are mandatory',async()=>{
+  const { HERO_GLOBE_ZERO,resolveHeroGlobeAlias,resolveHeroGlobeZero }=await import('./brand-kit-graph-drafts.mjs');
+  for(const alias of ['🌎','Globe','hero Globe Zero','globus only','  HERO   GLOBE ZERO  ',HERO_GLOBE_ZERO.id]) {
+    assert.equal(resolveHeroGlobeAlias(alias),HERO_GLOBE_ZERO);
+    assert.throws(()=>resolveHeroGlobeZero(alias),/HERO_GLOBE_ORIGINAL_REQUIRED/);
+  }
+  for(const alias of ['Globe extra','replace Globe','🌍','https://example.com/globe','../Globe',null]) {
+    assert.equal(resolveHeroGlobeAlias(alias),null);
+    assert.throws(()=>resolveHeroGlobeZero(alias,Buffer.alloc(1)),/HERO_GLOBE_ALIAS_UNKNOWN/);
+  }
+  assert.equal(HERO_GLOBE_ZERO.publicPublishAllowed,false);
+  assert.throws(()=>resolveHeroGlobeZero('Globe',Buffer.alloc(HERO_GLOBE_ZERO.bytes)),/HERO_GLOBE_DIGEST_OR_FORMAT_MISMATCH/);
+  assert.throws(()=>buildBrandedGrowthDraft({channel:'X',heroGlobe:{alias:'Globe'}}),/HERO_GLOBE_ORIGINAL_REQUIRED/);
+  assert.equal(buildBrandedGrowthDraft({channel:'X'}).image.heroGlobe,undefined);
+});

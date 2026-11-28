@@ -16,6 +16,42 @@ import { planContentCampaign } from '../../src/contracts/contentEngine.ts';
 import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
 export const CONTRACT = 'CAPITAL_AI_BRAND_CONTEXT_DRAFT@1';
+/** Owner-approved private design reference, not a new publishing grant.
+ * The authenticated caller supplies the original bytes; this resolver never fetches
+ * arbitrary URLs, reads arbitrary paths or substitutes another globe.
+ */
+export const HERO_GLOBE_ZERO = Object.freeze({
+  id:'CAI-HERO-GLOBE-ZERO@1',
+  name:'Hero Globe Zero',
+  aliases:Object.freeze(['🌎','Globe','hero Globe Zero','globus only']),
+  sha256:'a6e3e53cad39d8b2a136c068a6de94b888cadca9d3aa2829aaab9de86dfa99a7',
+  bytes:1511469,mime:'image/png',width:1254,height:1254,
+  scope:'PRIVATE_DRAFT_REFERENCE',publicPublishAllowed:false,customerRedistributionAllowed:false,
+});
+function normalizeGlobeAlias(value) {
+  return typeof value==='string' && value.length<=80
+    ? value.normalize('NFC').trim().replace(/\s+/gu,' ').toLowerCase() : '';
+}
+export function resolveHeroGlobeAlias(value) {
+  const name=normalizeGlobeAlias(value);
+  return [HERO_GLOBE_ZERO.id,...HERO_GLOBE_ZERO.aliases].some(alias=>normalizeGlobeAlias(alias)===name)
+    ? HERO_GLOBE_ZERO : null;
+}
+export function resolveHeroGlobeZero(alias, originalBytes) {
+  const ref=resolveHeroGlobeAlias(alias);
+  if(!ref)throw Error('HERO_GLOBE_ALIAS_UNKNOWN');
+  if(!Buffer.isBuffer(originalBytes)||originalBytes.length!==ref.bytes)
+    throw Error('HERO_GLOBE_ORIGINAL_REQUIRED');
+  const bytes=Buffer.from(originalBytes);
+  if(sha(bytes)!==ref.sha256
+    || !bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))
+    || bytes.toString('ascii',12,16)!=='IHDR'
+    || bytes.readUInt32BE(16)!==ref.width || bytes.readUInt32BE(20)!==ref.height
+    || bytes[25]!==6)throw Error('HERO_GLOBE_DIGEST_OR_FORMAT_MISMATCH');
+  return Object.freeze({...ref,identityStatus:'VERIFIED_BYTES',dataUri:'data:image/png;base64,'+bytes.toString('base64')});
+}
+
+
 const sha = value => createHash('sha256').update(value).digest('hex');
 const FAMILIES = ['cyan','violet','gold','pink','rose','blue','green'];
 const PANELS = [
@@ -179,9 +215,10 @@ function lines(value,limit=28) {
   }
   return result.map(x=>x.slice(0,44));
 }
-export function drawBrandedSvg({draft,kit,context,template}) {
+export function drawBrandedSvg({draft,kit,context,template,heroGlobe}) {
   if(!draft||!template||!kit||!['X','INSTAGRAM'].includes(draft.channel)
     || template!==TEMPLATES[draft.channel])throw Error('BRAND_TEMPLATE_INVALID');
+  const globe=heroGlobe===undefined?null:resolveHeroGlobeZero(heroGlobe?.alias,heroGlobe?.bytes);
   const canonical=readBrandKit(draft.channel);
   const logo=Buffer.from(kit.logo??'','base64');
   if(logo.length<64||sha(logo)!==kit.logoSha256
@@ -223,6 +260,7 @@ export function drawBrandedSvg({draft,kit,context,template}) {
     '<image x="0" y="0" width="'+w+'" height="'+h+'" opacity=".15" preserveAspectRatio="xMidYMid slice" href="data:image/jpeg;base64,'+kit.profileBase64+'"/>'+orbit+
     '<image x="44" y="36" width="174" height="99" href="data:image/jpeg;base64,'+kit.logo+'"/>'+
     svgText('GROWTH INTELLIGENCE · DRAFT',240,95,23,kit.colors[2])+
+    (globe?'<image x="'+(w-164)+'" y="22" width="120" height="120" preserveAspectRatio="xMidYMid meet" href="'+globe.dataUri+'"/>':'')+
     lines(headline).map((s,i)=>svgText(s,44,220+i*70,55,kit.foreground)).join('')+
     svgText(summaryShort,44,h-578,23,kit.colors[0])+panels+spectrum+
     svgText('CAPITAL-AI · METHODIK STATT VERSPRECHEN',44,h-56,22,kit.colors[2])+
@@ -230,7 +268,7 @@ export function drawBrandedSvg({draft,kit,context,template}) {
 }
 
 /** Learning proposes candidate variants; no automatic weights, training or updates. */
-export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],feedback=[],
+export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],feedback=[],heroGlobe,
   evaluatedAt='2026-11-21T00:00:00.000Z'}={}) {
   if(!Object.hasOwn(TEMPLATES,channel))throw Error('BRAND_CHANNEL_UNSUPPORTED');
   const bundle=buildGrowthIntelligenceDraftBundle();
@@ -238,7 +276,8 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
   if(!draft)throw Error('BRAND_SOURCE_DRAFT_MISSING');
   const kit=readBrandKit(channel),context=assessContext(records,trustedRights),template=TEMPLATES[channel];
   const learning=evaluateGrowthLearningCandidates(feedback,{evaluatedAt});
-  const svg=drawBrandedSvg({draft,kit,context,template}),imageSha=sha(Buffer.from(svg));
+  const svg=drawBrandedSvg({draft,kit,context,template,heroGlobe}),imageSha=sha(Buffer.from(svg));
+  const globeRef=heroGlobe===undefined?null:HERO_GLOBE_ZERO;
   // Source summaries are quoted evidence, not instructions or publication-ready claims.
   const contextLines=context.accepted.slice(0,3).map(entry=>'['+entry.id+'] '+entry.summary);
   const copyDraft=contextLines.length ? draft.draftText+'\n\n'+
@@ -255,7 +294,7 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
       mimeType:'image/svg+xml',sourceSha:draft.socialPackage.sourceSha,
       sourceDigest:draft.socialPackage.sourceSha,
       contentDigest:sha(JSON.stringify({template,contentId:draft.contentId,
-        logoSha256:kit.logoSha256,profileSha256:kit.profileSha256,contextDigests:context.accepted.map(c=>c.summarySha256)})),
+        logoSha256:kit.logoSha256,profileSha256:kit.profileSha256,...(globeRef?{heroGlobeSha256:globeRef.sha256}:{}),contextDigests:context.accepted.map(c=>c.summarySha256)})),
       origin:'FIRST_PARTY_TEMPLATE',creationMethod:'AI_ASSISTED',
       renderer:{id:'CAPITAL_AI_BRAND_CONTEXT_SVG',version:'1.0.0'},thirdPartyAssets:false}};
   const socialPackage=buildDraftContentSocialPackage({campaign,contentId:draft.contentId,
@@ -270,6 +309,7 @@ export function buildBrandedGrowthDraft({channel,records=[],trustedRights=[],fee
     template:{...template,version:'1.0.0',state:'DRAFT_ONLY'},
     image:{svg,sha256:imageSha,logoSha256:kit.logoSha256,profileSha256:kit.profileSha256,
       profilePath:kit.profilePath,
+      ...(globeRef?{heroGlobe:{id:globeRef.id,sha256:globeRef.sha256,scope:globeRef.scope}}:{}),
       altText:'Drei Kategorien Quelle, Annahmen, Grenzen mit je drei Unterkategorien.'},
     contentPlan,socialPackage,
     context:{usedIds:context.accepted.map(x=>x.id),

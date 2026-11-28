@@ -83,3 +83,7 @@ Der Owner hat die folgenden **Designanforderungen**, nicht die Freigabe neuer Ma
 - Der private Workspace bleibt bis zur separaten Freigabe und serverseitigen Owner-Isolationsprüfung unveröffentlicht.
 
 **Status:** Designanforderungen bestätigt; konkrete Master, Derivate, Generatorintegration, CI und Produktionswirkung noch nicht nachgewiesen. Keine Änderung der Root-Engineering-Richtlinie oder neuer Required Checks.
+
+
+## Hero Globe Zero · owner-approved private reference (2026-11-28)
+Canonical asset ID `CAI-HERO-GLOBE-ZERO@1`; aliases 🌎, Globe, hero Globe Zero, globus only. Exact normalized alias matching in the GIE brand-kit renderer; original PNG RGBA 1254×1254, 1511469 bytes, SHA-256 `a6e3e53cad39d8b2a136c068a6de94b888cadca9d3aa2829aaab9de86dfa99a7`. Owner-provided and verified against a Drive redownload. Distinct from the existing animated Hero globe, Analytics artwork and logo master. No CA lettering, atoms, orbit rings, charts or background added to the original. The original stays in private storage; no Drive IDs or original bytes in the public repository. Existing offline `buildBrandedGrowthDraft({channel,heroGlobe:{alias,bytes}})` / PNG draft path accepts only caller-supplied, hash-verified exact PNG bytes; unknown, missing or tampered inputs fail closed. Authenticated private byte delivery remains a separate caller responsibility; no public endpoint, arbitrary path, provider fetch, automatic publication, commercial permission or production claim. Existing no-globe rendering remains unchanged. CI and runtime not proven until readback.
