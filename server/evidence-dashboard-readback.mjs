@@ -8,27 +8,30 @@ const REPOSITORY = 'SvenKulessa/Capital-AI';
 const TS7_EVIDENCE = 'docs/security/evidence/dependency-decisions/typescript-7.0.2.json';
 const SERVICE_ID = 'srv-dau1rp893c1s73cdhm1g';
 const WORKSPACE_ID = 'tea-d90o4rj7uimc739i86ug';
+const HEALTH_URL = 'https://capital-ai-uvsl.onrender.com/healthz';
 const SHA = /^[a-f0-9]{40}$/;
 const MAX_BYTES = 128 * 1024;
+const MAX_GITHUB_PR_BYTES = 4 * 1024 * 1024;
 const CACHE_MS = 5 * 60 * 1000;
 const ERROR_CACHE_MS = 30_000;
 const TIMEOUT_MS = 7_000;
 const EVENTS = new Set(['page_view', 'session_start', 'first_visit', 'view_item', 'user_engagement', 'generate_lead', 'purchase']);
 const N = v => Number.isSafeInteger(v) && v >= 0 ? v : null;
 
-async function readJson(fetchImpl, address, token, signal) {
+async function readJson(fetchImpl, address, token, signal, maxBytes = MAX_BYTES) {
   const url = new URL(address);
-  if (url.protocol !== 'https:' || !['api.github.com', 'api.render.com'].includes(url.hostname)) throw Error('INVALID_PROVIDER_HOST');
+  const isHealth = url.href === HEALTH_URL;
+  if (url.protocol !== 'https:' || (!isHealth && !['api.github.com', 'api.render.com'].includes(url.hostname))) throw Error('INVALID_PROVIDER_HOST');
   const headers = { Accept: 'application/json' };
   if (url.hostname === 'api.github.com') {
     headers.Accept = 'application/vnd.github+json';
     headers['X-GitHub-Api-Version'] = '2022-11-28';
   }
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token && !isHealth) headers.Authorization = `Bearer ${token}`;
   const response = await fetchImpl(url, { method: 'GET', headers, redirect: 'error', cache: 'no-store', signal });
   if (!response?.ok) throw Error('PROVIDER_UNAVAILABLE');
   const declared = Number(response.headers?.get?.('content-length'));
-  if (Number.isFinite(declared) && declared > MAX_BYTES) throw Error('RESPONSE_OVERSIZED');
+  if (Number.isFinite(declared) && declared > maxBytes) throw Error('RESPONSE_OVERSIZED');
   let raw = '';
   if (response.body?.getReader) {
     const reader = response.body.getReader();
@@ -39,14 +42,17 @@ async function readJson(fetchImpl, address, token, signal) {
         const { done, value } = await reader.read();
         if (done) break;
         size += value.byteLength;
-        if (size > MAX_BYTES) throw Error('RESPONSE_OVERSIZED');
+        if (size > maxBytes) {
+          await reader.cancel().catch(() => {});
+          throw Error('RESPONSE_OVERSIZED');
+        }
         raw += decoder.decode(value, { stream: true });
       }
       raw += decoder.decode();
     } finally { reader.releaseLock(); }
   } else {
     raw = await response.text();
-    if (Buffer.byteLength(raw) > MAX_BYTES) throw Error('RESPONSE_OVERSIZED');
+    if (Buffer.byteLength(raw) > maxBytes) throw Error('RESPONSE_OVERSIZED');
   }
   return JSON.parse(raw);
 }
@@ -90,7 +96,7 @@ async function readGitHub(fetchImpl, env, signal, now) {
   const token = typeof env.GITHUB_TOKEN === 'string' ? env.GITHUB_TOKEN.trim() : '';
   const commit = await readJson(fetchImpl, `${origin}/commits/main`, token, signal);
   if (!SHA.test(commit?.sha)) throw Error('INVALID_GITHUB_SHA');
-  const prs = await readJson(fetchImpl, `${origin}/pulls?state=open&per_page=100`, token, signal);
+  const prs = await readJson(fetchImpl, `${origin}/pulls?state=open&per_page=100`, token, signal, MAX_GITHUB_PR_BYTES);
   if (!Array.isArray(prs)) throw Error('INVALID_PR_COLLECTION');
   const valid = prs.every(pr => Number.isSafeInteger(pr?.number) && pr.number > 0 && pr?.state === 'open');
   if (!valid) throw Error('INVALID_PR_ENTRY');
@@ -165,6 +171,15 @@ async function readRender(fetchImpl, env, signal, now) {
     deployments,
     deploymentIdentityStatus: 'NOT_PROVEN_INDEPENDENT_HEALTH',
   };
+}
+
+async function readRuntimeSha(fetchImpl, signal, now) {
+  const health = await readJson(fetchImpl, HEALTH_URL, null, signal, 8192);
+  const identity = health?.runtimeIdentity;
+  if (health?.status !== 'ok' || identity?.evidence !== 'RENDER_DEPLOYMENT_ENVIRONMENT' ||
+      typeof identity.sourceSha !== 'string' || !SHA.test(identity.sourceSha))
+    throw Error('RUNTIME_SHA_NOT_PROVEN');
+  return { sourceSha: identity.sourceSha, observedAt: new Date(now()).toISOString() };
 }
 
 // Only allowlisted diagnostic categories may cross the owner-only readback boundary.
@@ -244,7 +259,8 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
       attempt(() => readGitHub(fetchImpl, env, controller.signal, now)),
       attempt(() => readRender(fetchImpl, env, controller.signal, now)),
       attempt(() => readGa4(ga4Readback, now), safeGa4Diagnostic),
-    ]).then(([github, render, ga4]) => {
+      readRuntimeSha(fetchImpl, controller.signal, now).catch(() => null),
+    ]).then(([github, render, ga4, runtimeSha]) => {
       const value = Object.freeze({
         schema: 'CAPITAL_AI_EVIDENCE_DASHBOARD_READBACK@1',
         readOnly: true, private: true, syntheticDataUsed: false,
@@ -257,10 +273,13 @@ export function createEvidenceDashboardReadback({ env = process.env, auth, ga4Re
           mainVsDeploy: github.status === 'VERIFIED_PROVIDER_READ' && render.status === 'VERIFIED_PROVIDER_READ'
             ? (github.mainSha === render.sourceCommitSha ? 'MATCH_PROVIDER_CLAIMS_ONLY' : 'DRIFT_PROVIDER_CLAIMS')
             : 'NOT_PROVEN',
+          ...(runtimeSha && { runtimeSha }),
           runtimeBuildIdentity: 'NOT_PROVEN_INDEPENDENT_READBACK',
         },
       });
-      cached = { until: ts + (github.status === 'VERIFIED_PROVIDER_READ' && render.status === 'VERIFIED_PROVIDER_READ' && ga4.status === 'VERIFIED_PROVIDER_READ' ? CACHE_MS : ERROR_CACHE_MS), value };
+      const live = render.deployments?.filter(deployment => deployment.deployStatus === 'live') ?? [];
+      const runtimeMatches = live.length === 1 && runtimeSha?.sourceSha === live[0].sourceCommitSha;
+      cached = { until: ts + (github.status === 'VERIFIED_PROVIDER_READ' && render.status === 'VERIFIED_PROVIDER_READ' && ga4.status === 'VERIFIED_PROVIDER_READ' && runtimeMatches ? CACHE_MS : ERROR_CACHE_MS), value };
       return value;
     }).finally(() => { clearTimeout(timeout); inflight = null; });
     return inflight;

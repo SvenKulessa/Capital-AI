@@ -18,6 +18,26 @@ type ClaimedStatus = 'VERIFIED' | 'NOT_PROVEN' | 'BLOCKED';
 type MediaKitKind = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 type AssessedStatus = 'NOT_PROVEN' | 'BLOCKED';
 
+type RightsClaim = { status: ClaimedStatus; evidenceRef?: string };
+type NotebookLmChannel = 'WEBSITE' | 'YOUTUBE' | 'INSTAGRAM' | 'X' | 'LINKEDIN' | 'TIKTOK';
+export interface NotebookLmAssetReview {
+  provider: 'GOOGLE_NOTEBOOKLM';
+  artifactKind: 'VIDEO_OVERVIEW' | 'INFOGRAPHIC';
+  assetSha256: string;
+  sourceSnapshotSha256: string;
+  promptSha256: string;
+  generationEvidenceRef: string;
+  providerTerms: RightsClaim;
+  commercialUse: RightsClaim;
+  channelReviews: {
+    channel: NotebookLmChannel;
+    platformTerms: RightsClaim;
+    aiDisclosure: RightsClaim & { decision: 'REQUIRED' | 'NOT_REQUIRED' | 'UNDETERMINED' };
+    editorialReview: RightsClaim;
+    releaseReview: RightsClaim;
+  }[];
+}
+
 export interface MediaKitV5Asset {
   assetId: string;
   kind: MediaKitKind;
@@ -32,6 +52,7 @@ export interface MediaKitV5Asset {
   sourceRights: { status: ClaimedStatus; evidenceRef?: string };
   mediaRights: { status: ClaimedStatus; evidenceRef?: string };
   reviewStatus: 'REVIEW_REQUIRED' | 'APPROVED' | 'REJECTED';
+  notebookLmReview?: NotebookLmAssetReview;
 }
 
 export interface MediaKitV5Manifest {
@@ -57,6 +78,7 @@ export interface MediaKitV5ReviewAsset {
   reportedReviewStatus: MediaKitV5Asset['reviewStatus'];
   reviewStatus: 'REVIEW_REQUIRED';
   route: 'MEDIA_PROJECT_ASSET' | 'REVIEW_ONLY';
+  notebookLmReview?: ReturnType<typeof notebookLmReview>;
 }
 
 function fail(code: string): never {
@@ -101,6 +123,51 @@ function rights(value: unknown, code: string) {
   const assessed: AssessedStatus = declared === 'BLOCKED' ? 'BLOCKED' : 'NOT_PROVEN';
   return { declared, assessed, evidenceRef };
 }
+// Untrusted review claims never create publisher approvals.
+function notebookLmReview(value: unknown, kind: MediaKitKind, origin: string, assetSha256: string) {
+  const r = record(value, 'NOTEBOOKLM_REVIEW_INVALID');
+  keys(r, ['provider', 'artifactKind', 'assetSha256', 'sourceSnapshotSha256', 'promptSha256',
+    'generationEvidenceRef', 'providerTerms', 'commercialUse', 'channelReviews'], 'NOTEBOOKLM_FIELDS_INVALID');
+  if (r.provider !== 'GOOGLE_NOTEBOOKLM' || origin !== 'GENERATED'
+      || !((r.artifactKind === 'VIDEO_OVERVIEW' && kind === 'VIDEO')
+        || (r.artifactKind === 'INFOGRAPHIC' && kind === 'IMAGE'))) fail('NOTEBOOKLM_KIND_INVALID');
+  if (hash(r.assetSha256, 'NOTEBOOKLM_ASSET_HASH_INVALID') !== assetSha256) fail('NOTEBOOKLM_ASSET_HASH_MISMATCH');
+  const sourceSnapshotSha256 = hash(r.sourceSnapshotSha256, 'NOTEBOOKLM_SOURCE_HASH_INVALID');
+  const promptSha256 = hash(r.promptSha256, 'NOTEBOOKLM_PROMPT_HASH_INVALID');
+  const generationEvidenceRef = safeReference(r.generationEvidenceRef, 'NOTEBOOKLM_GENERATION_REF_INVALID');
+  const providerTerms = rights(r.providerTerms, 'NOTEBOOKLM_PROVIDER_TERMS_INVALID');
+  const commercialUse = rights(r.commercialUse, 'NOTEBOOKLM_COMMERCIAL_USE_INVALID');
+  if (!Array.isArray(r.channelReviews) || r.channelReviews.length < 1 || r.channelReviews.length > 6) fail('NOTEBOOKLM_CHANNELS_INVALID');
+  const seen = new Set<string>();
+  const channelReviews = r.channelReviews.map((entry: unknown) => {
+    const channel = record(entry, 'NOTEBOOKLM_CHANNEL_INVALID');
+    keys(channel, ['channel', 'platformTerms', 'aiDisclosure', 'editorialReview', 'releaseReview'], 'NOTEBOOKLM_CHANNEL_FIELDS_INVALID');
+    if (typeof channel.channel !== 'string'
+        || !['WEBSITE', 'YOUTUBE', 'INSTAGRAM', 'X', 'LINKEDIN', 'TIKTOK'].includes(channel.channel)
+        || seen.has(channel.channel)) fail('NOTEBOOKLM_CHANNEL_INVALID');
+    seen.add(channel.channel);
+    const ai = record(channel.aiDisclosure, 'NOTEBOOKLM_DISCLOSURE_INVALID');
+    keys(ai, ['decision', 'status', 'evidenceRef'], 'NOTEBOOKLM_DISCLOSURE_FIELDS_INVALID');
+    if (ai.decision !== 'REQUIRED' && ai.decision !== 'NOT_REQUIRED' && ai.decision !== 'UNDETERMINED') fail('NOTEBOOKLM_DISCLOSURE_INVALID');
+    const disclosure = rights({status: ai.status, ...(ai.evidenceRef !== undefined ? {evidenceRef: ai.evidenceRef} : {})}, 'NOTEBOOKLM_DISCLOSURE_INVALID');
+    return {
+      channel: channel.channel as NotebookLmChannel,
+      platformTerms: rights(channel.platformTerms, 'NOTEBOOKLM_PLATFORM_TERMS_INVALID'),
+      aiDisclosure: { reportedDecision: ai.decision, assessedDecision: 'UNDETERMINED' as const, ...disclosure },
+      editorialReview: rights(channel.editorialReview, 'NOTEBOOKLM_EDITORIAL_REVIEW_INVALID'),
+      releaseReview: rights(channel.releaseReview, 'NOTEBOOKLM_RELEASE_REVIEW_INVALID'),
+      publicationState: 'DRAFT_ONLY' as const,
+    };
+  });
+  return {
+    provider: 'GOOGLE_NOTEBOOKLM' as const,
+    artifactKind: r.artifactKind as NotebookLmAssetReview['artifactKind'],
+    assetSha256, sourceSnapshotSha256, promptSha256, generationEvidenceRef, providerTerms, commercialUse, channelReviews,
+    provenanceStatus: 'NOT_PROVEN' as const,
+    publicationState: 'DRAFT_ONLY' as const,
+    publicPublishAllowed: false as const,
+  };
+}
 function mimeFor(kind: MediaKitKind, value: unknown): string {
   const mime = required(value, 'MIME_INVALID', 120).toLowerCase();
   const accepted: Record<MediaKitKind, readonly string[]> = {
@@ -143,7 +210,7 @@ export function importMediaKitV5Draft(input: unknown): {
   const reviewAssets: MediaKitV5ReviewAsset[] = [];
   for (const entry of value.assets) {
     const asset = record(entry, 'ASSET_INVALID');
-    keys(asset, ['assetId', 'kind', 'reference', 'sha256', 'mimeType', 'provenance', 'sourceRights', 'mediaRights', 'reviewStatus'], 'ASSET_FIELDS_INVALID');
+    keys(asset, ['assetId', 'kind', 'reference', 'sha256', 'mimeType', 'provenance', 'sourceRights', 'mediaRights', 'reviewStatus', 'notebookLmReview'], 'ASSET_FIELDS_INVALID');
     const assetId = required(asset.assetId, 'ASSET_ID_INVALID', 128);
     if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(assetId) || seen.has(assetId)) fail('ASSET_ID_INVALID');
     seen.add(assetId);
@@ -162,12 +229,14 @@ export function importMediaKitV5Draft(input: unknown): {
     };
     const sourceRights = rights(asset.sourceRights, 'SOURCE_RIGHTS_INVALID');
     const mediaRights = rights(asset.mediaRights, 'MEDIA_RIGHTS_INVALID');
+    const notebookReview = asset.notebookLmReview === undefined ? undefined : notebookLmReview(asset.notebookLmReview, kind, provenance.origin, sha256);
     if (!['REVIEW_REQUIRED', 'APPROVED', 'REJECTED'].includes(String(asset.reviewStatus))) fail('REVIEW_STATUS_INVALID');
     const route = kind === 'DOCUMENT' ? 'REVIEW_ONLY' as const : 'MEDIA_PROJECT_ASSET' as const;
     reviewAssets.push({
       assetId, kind, sha256, reference, provenance, sourceRights, mediaRights,
       identityStatus: 'NOT_PROVEN', reportedReviewStatus: asset.reviewStatus as MediaKitV5Asset['reviewStatus'],
       reviewStatus: 'REVIEW_REQUIRED', route,
+      ...(notebookReview ? {notebookLmReview: notebookReview} : {}),
     });
     if (route === 'MEDIA_PROJECT_ASSET') {
       mediaAssets.push({

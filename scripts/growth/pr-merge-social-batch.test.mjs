@@ -3,13 +3,19 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import {
-  assertBatch,runBatch,renderDraftHtml,toolSuitability,readWorkerJson,
+  assertBatch, openAiWorker,runBatch,renderDraftHtml,toolSuitability,readWorkerJson,
   BRAND_ASSET,BRAND_SHA256,
 } from './pr-merge-social-batch.mjs';
 
 const source=JSON.parse(readFileSync('src/data/controlCenterNews.json','utf8'));
 const sha=source.sourceSha,last=source.lastBatchPr;
 const opts={expectedLast:last,mergedSha:sha,env:{}};
+
+const budgetEnv = {
+  SOCIAL_CONTENT_OPENAI_MAX_REQUEST_MICROUSD: '100000',
+  SOCIAL_CONTENT_OPENAI_INPUT_MICROUSD_PER_MTOKEN: '1000000',
+  SOCIAL_CONTENT_OPENAI_OUTPUT_MICROUSD_PER_MTOKEN: '2000000',
+};
 
 test('handoff validates existing 20-merge milestone and blocks stale, tampered or publishable evidence',()=>{
   assert.equal(assertBatch(source,last,sha),source);
@@ -80,9 +86,9 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
       const payload=JSON.parse(request.body);
       assert.equal(payload.store,false);
       assert.equal(payload.model,'test-social-model');
-      assert.equal(payload.reasoning.effort,'none');
+      assert.equal(payload.reasoning,undefined);
       assert.equal(payload.max_output_tokens,550);
-      return new Response(JSON.stringify({output_text:'Transparenter Entwicklungsbericht: PR-Merges nachlesen.'}));
+      return new Response(JSON.stringify({status:'completed',output_text:'Transparenter Entwicklungsbericht: PR-Merges nachlesen.'}));
     }
     assert.equal(url,'https://api.firecrawl.dev/v2/scrape');
     const body=JSON.parse(request.body);
@@ -90,7 +96,7 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
     return new Response(JSON.stringify({data:{markdown:'# Official PR page'}}));
   };
   const {outcome}=await runBatch(source,{...opts,
-    env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'not-real',SOCIAL_CONTENT_OPENAI_MODEL:'test-social-model',FIRECRAWL_API_KEY:'not-real'},fetchImpl});
+    env:{...budgetEnv,SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'not-real',SOCIAL_CONTENT_OPENAI_MODEL:'test-social-model',FIRECRAWL_API_KEY:'not-real'},fetchImpl});
   assert.equal(urls.length,3);
   assert.equal(outcome.workerIntegration.openai.status,'DRAFT_ONLY');
   assert.equal(outcome.workerIntegration.firecrawl.status,'ADVISORY_READBACK');
@@ -112,9 +118,21 @@ test('OpenAI news worker refuses unset or malformed model without calling provid
   assert.equal(calls.length,0);
 });
 
+test('OpenAI refuses a personal-only credential, an unset budget and an oversized input without egress',async()=>{
+  const base = {SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled', SOCIAL_CONTENT_OPENAI_MODEL:'test-social-model'};
+  const fetchImpl = () => assert.fail('Unexpected provider request');
+  assert.equal((await openAiWorker(source, {env:{...base,...budgetEnv,OPENAI_API_KEY_PERSONAL:'personal-only'},fetchImpl})).status,
+    'SKIPPED_NOT_AUTHORIZED');
+  assert.equal((await openAiWorker(source, {env:{...base,OPENAI_API_KEY:'production-key'},fetchImpl})).status,
+    'SKIPPED_BUDGET');
+  assert.equal((await openAiWorker({...source,article:'漢'.repeat(9500)}, {
+    env:{...base,...budgetEnv,OPENAI_API_KEY:'production-key'},fetchImpl,
+  })).status,'SKIPPED_BUDGET');
+});
+
 test('provider failure is fail-closed and never grants publication',async()=>{
   const {outcome}=await runBatch(source,{...opts,
-    env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'x',SOCIAL_CONTENT_OPENAI_MODEL:'test-social-model',FIRECRAWL_API_KEY:'x'},
+    env:{...budgetEnv,SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'x',SOCIAL_CONTENT_OPENAI_MODEL:'test-social-model',FIRECRAWL_API_KEY:'x'},
     fetchImpl:async()=>({ok:false,status:403,text:async()=>''})});
   assert.equal(outcome.workerIntegration.openai.status,'FAILED_CLOSED');
   assert.equal(outcome.workerIntegration.firecrawl.status,'FAILED_CLOSED');

@@ -237,3 +237,44 @@ test('Growth visual plans cover the seven source-bound campaigns without creatin
   assert.equal(bundle.visualIntelligence.actualMediaAssets,0);
   for(const draft of bundle.drafts){const v=draft.visualScene;assert.ok(v);assert.equal(v.contentId,draft.contentId);assert.equal(v.publicationAllowed,false);assert.equal(v.dataMode,'SCHEMATIC');assert.equal(v.actualMediaAssets,0);assert.equal(v.sceneSha256,createHash('sha256').update(JSON.stringify({sourceSha:v.sourceSha,scene:v.scene})).digest('hex'));}
 });
+
+test('direct Instagram signs both fixed Meta GETs and rejects invalid app secret',async()=>{
+  const secret='synthetic-app-secret';
+  const {createHmac}=await import('node:crypto');
+  const proof=createHmac('sha256',secret).update(fakeToken).digest('hex');
+  let calls=0;
+  const input={identity:'1234',token:fakeToken,appSecret:secret,version:'v27.0',startDate:'2026-11-17',endDate:'2026-11-18'};
+  const readers=createGrowthProviderReaders({fetchImpl:async(url,options)=>{
+    const target=new URL(url);
+    assert.equal(target.origin,'https://graph.facebook.com');
+    assert.equal(target.pathname,++calls===1?'/v27.0/1234':'/v27.0/1234/insights');
+    assert.equal(target.searchParams.get('appsecret_proof'),proof);
+    assert.equal(options.method,'GET');
+    assert.equal(options.redirect,'error');
+    assert.equal(options.headers.Authorization,'Bearer '+fakeToken);
+    assert.ok(!url.includes(secret)&&!url.includes(fakeToken));
+    return calls===1?jsonResponse({id:'1234'}):jsonResponse({data:[
+      {name:'reach',period:'day',total_value:{value:15}},
+      {name:'accounts_engaged',period:'day',total_value:{value:2}}]});
+  }});
+  assert.deepEqual(await readers.INSTAGRAM(input),{reach:15,accounts_engaged:2});
+  assert.equal(calls,2);
+  await assert.rejects(()=>readers.INSTAGRAM({...input,appSecret:''}),/AUTH_REQUIRED/);
+  assert.equal(calls,2);
+});
+test('direct Instagram Meta HTTP 400 errors are isolated and sanitized',async()=>{
+  for(const [code,status] of [[190,'AUTH_REQUIRED'],[10,'AUTH_REQUIRED'],[200,'AUTH_REQUIRED'],[4,'RATE_LIMITED'],[100,'PROVIDER_UNAVAILABLE']]){
+    const result=await collectGrowthProviderData({includeDraftBundle:false,env:{
+      GROWTH_INSTAGRAM_READ_ENABLED:'true',GROWTH_INSTAGRAM_ACCOUNT_ID:'1234',
+      GROWTH_INSTAGRAM_READ_TOKEN:fakeToken,GROWTH_INSTAGRAM_READ_APP_SECRET:'synthetic-app-secret',
+      SOCIAL_META_GRAPH_API_VERSION:'v27.0',
+    },now:()=>Date.parse(asOf),fetchImpl:async(url)=>{
+      assert.match(url,/appsecret_proof=[a-f0-9]{64}/);
+      return jsonResponse({error:{code,message:'private-provider-detail'}},400);
+    }});
+    assert.equal(result.transport.find(s=>s.source==='INSTAGRAM').status,status);
+    assert.equal(result.growthDataLayer.sources.find(s=>s.source==='INSTAGRAM').metrics,null);
+    assert.doesNotMatch(JSON.stringify(result),/private-provider-detail|synthetic-app-secret|synthetic-test-token/);
+    assert.equal(result.publicPublishAllowed,false);
+  }
+});
