@@ -84,6 +84,7 @@ while IFS=$'\t' read -r name commit expected_blob expected_version recipe_path; 
     archive_name=''
     case "$name" in
       busybox) case "$expected_version" in '1.37.0-r31') archive_name='busybox-1.37.0.tar.bz2' ;; esac ;;
+      zlib) case "$expected_version" in '1.4-r0') archive_name='zlib-1.4.tar.gz' ;; esac ;;
       apk-tools) case "$expected_version" in '3.0.8-r0') archive_name='apk-tools-v3.0.8.tar.gz' ;; '3.0.9-r0') archive_name='apk-tools-v3.0.9.tar.gz' ;; esac ;;
       ca-certificates) archive_name='ca-certificates-20261020.tar.bz2' ;;
       ncurses) archive_name='ncurses-6.6-20260516.tgz' ;;
