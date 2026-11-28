@@ -92,3 +92,29 @@ The example variable names are **injection points**, not evidence that provider 
 **Rollback:** revert the small routing PR via the existing GitHub flow. No Drive records or production services are changed by this implementation.
 
 **Important:** The JSON above is a template, not a verified listing. Its `REPLACE_...` placeholders intentionally fail folder admission until replaced by an actual connected Google Drive readback; never mark a user-provided placeholder as a verified provider result.
+
+### Private PostgreSQL backend (staged, default disabled)
+
+The existing Supabase service identity can supply the shared lock using
+`bindSupabaseDriveLease(provider,{enabled:true,env})` from
+`scripts/platform/drive-create-lease.mjs` in an authorized server-side host.
+Never pass the service secret to a browser, Android device, agent prompt, or
+client-side integration. The host still needs the real Drive provider ports;
+a standalone ChatGPT connector is not automatically bound by this module.
+
+The staged SQL `scripts/platform/drive-create-lease.sql` creates one private
+singleton row with an atomic insert, owner-checked durable write-intent and
+owner-checked release. No lease expiry or automatic takeover. The restricted
+RPCs use SECURITY INVOKER and explicit service-role-only execute grants.
+The service role remains a trusted administrative identity; this is not a
+tenant-facing API. No production migration is included in automatic deploys.
+
+Activation requires a separately authorized SQL application after production
+backup/restore evidence, existing server-side identity and verified host
+routing. Test two independent workers against the same backend, rejection of
+anon/authenticated, owner mismatch, crash after acquisition, ambiguous upload
+and verified replay. On uncertainty hold the row, reconcile the exact Drive
+object and prove the previous writer is quiescent before authorized recovery.
+After DB restore keep writers disabled until outstanding Drive operations are
+reconciled. For rollback disable all writer hosts first; preserve any pending
+row and reconcile it before removing the three RPCs and dedicated schema.

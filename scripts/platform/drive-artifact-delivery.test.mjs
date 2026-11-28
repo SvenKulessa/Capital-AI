@@ -196,3 +196,57 @@ test('lease provider failure does not trigger a fallback upload',async()=>{
   assert.equal(r.reason,'CONNECTOR_OR_EXCLUSIVE_LEASE_FAILED');
   assert.equal(written.length,0);
 });
+
+test('durable Supabase lease: two independent providers contend on one backend',async()=>{
+  const {bindSupabaseDriveLease}=await import('./drive-create-lease.mjs');
+  const {p,written}=mock();
+  let row=null,started=false,first,unblock;
+  const entered=new Promise(resolve=>first=resolve);
+  const proceed=new Promise(resolve=>unblock=resolve);
+  const original=p.uploadNewFile;
+  p.uploadNewFile=async args=>{first();await proceed;return original.call(p,args);};
+  const fetchImpl=async(url,options)=>{
+    const {_owner}=JSON.parse(options.body);let ok=false;
+    assert.equal(options.redirect,'error');
+    if(url.endsWith('_acquire')){if(!row){row=_owner;started=false;ok=true;}}
+    if(url.endsWith('_mark_write')&&row===_owner&&!started){started=true;ok=true;}
+    if(url.endsWith('_release')&&row===_owner){row=null;ok=true;}
+    return new Response(JSON.stringify(ok));
+  };
+  const options={enabled:true,env:{SUPABASE_URL:'https://fixture.supabase.co',
+    SUPABASE_SECRET_KEY:'sb_secret_synthetic_fixture'},fetchImpl};
+  const a=bindSupabaseDriveLease(p,options),b=bindSupabaseDriveLease(p,options);
+  const pending=deliverDriveArtifact({request,bytes:content,provider:a,authorization:auth});
+  await entered;
+  assert.equal(started,true);
+  const collision=await deliverDriveArtifact({request,bytes:content,provider:b,authorization:auth});
+  assert.equal(collision.status,'HOLD');
+  unblock();
+  assert.equal((await pending).status,'VERIFIED_CREATED');
+  assert.equal(row,null);
+  assert.equal((await deliverDriveArtifact({request,bytes:content,provider:b,authorization:auth})).status,'VERIFIED_SKIP');
+  assert.equal(written.length,1);
+});
+test('durable lease keeps ambiguous writes; disabled backend does not call RPC',async()=>{
+  const {createSupabaseDriveLease}=await import('./drive-create-lease.mjs');
+  let row=null,calls=0,started=false;
+  const fetchImpl=async(url,options)=>{
+    calls++;
+    const {_owner}=JSON.parse(options.body);let ok=false;
+    if(url.endsWith('_acquire')&&!row){row=_owner;ok=true;}
+    if(url.endsWith('_mark_write')&&row===_owner){started=true;ok=true;}
+    if(url.endsWith('_release')&&row===_owner){row=null;ok=true;}
+    return new Response(JSON.stringify(ok));
+  };
+  const config={env:{SUPABASE_URL:'https://fixture.supabase.co',
+    SUPABASE_SECRET_KEY:'sb_secret_synthetic_fixture'},fetchImpl};
+  const disabled=createSupabaseDriveLease(config);
+  await assert.rejects(disabled.withExclusiveCreateLease(DRIVE_CREATE_LEASE_KEY,()=>assert.fail()));
+  assert.equal(calls,0);
+  const {withExclusiveCreateLease:lease}=createSupabaseDriveLease({...config,enabled:true});
+  await assert.rejects(lease(DRIVE_CREATE_LEASE_KEY,async()=>{throw Error('before write');}));
+  assert.equal(row,null);
+  const held=await lease(DRIVE_CREATE_LEASE_KEY,async l=>{await l.beforeCreate();return {status:'HOLD'};});
+  assert.equal(held.status,'HOLD');assert.ok(row);assert.equal(started,true);
+  await assert.rejects(lease(DRIVE_CREATE_LEASE_KEY,()=>assert.fail()),/DRIVE_LEASE_BUSY/);
+});

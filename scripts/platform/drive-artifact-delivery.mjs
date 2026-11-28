@@ -108,7 +108,7 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
   try{
     if(await provider.assertCreateAuthorized({project:'CAPITAL-AI',scope,folderPath:route})!==true)
       return deny('DRIVE_PERMISSION_DENIED');
-    return await provider.withExclusiveCreateLease(lockKey,async()=>{
+    return await provider.withExclusiveCreateLease(lockKey,async(lease)=>{
       const folderId=await verifyFolder(provider,route,scope);
       const listed=await listComplete(provider,folderId);
       const planned=planDriveArtifact({
@@ -134,6 +134,8 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
       }
       if(listed.some(f=>f.name.toLowerCase()===planned.filename.toLowerCase()))
         return deny('EXACT_NAME_COLLISION');
+      // A durable backend must record uncertainty before the external write.
+      if(lease?.beforeCreate) await lease.beforeCreate();
       const uploaded=await provider.uploadNewFile({
         parentFolderId:folderId,fileName:planned.filename,fileBytes:snapshot,
         mimeType:MIME[request.extension],mode:'CREATE_ONLY',sha256:hash
