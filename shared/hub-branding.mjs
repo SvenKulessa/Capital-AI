@@ -17,11 +17,11 @@ export const UNIVERSE_VIEW_BRANDING = Object.freeze({
   designReference: 'owner-approved-first-layout-20261126',
   approvedWebColors: Object.freeze({ cyan: BRAND_COLORS.cyan, gold: BRAND_COLORS.gold, violet: BRAND_COLORS.violet, rose: BRAND_COLORS.rose }),
   minimumActiveColors: 2, maximumActiveColors: 4,
-  pair: Object.freeze(['violet', 'gold']),
-  accent: Object.freeze(['cyan', 'rose']),
-  // Global original remains full-page. Reduce color saturation by 6%, not area.
+  pair: Object.freeze(['gold', 'cyan']),
+  accent: Object.freeze(['rose', 'violet']),
+  // Keep the original full-page in grayscale; color is confined to a viewport ellipse.
   globalNebulaSaturation: 0.94,
-  // Local decorative overlay cap remains separate from global artwork.
+  // The colored ellipse is bounded by 40% x 50% of the viewport.
   nebulaMaxViewportFraction: 0.20,
   logoBadgeNebulaMaxFraction: 0.10,
   globalBackground: '/branding/universe/owner-nebula-v4.webp',

@@ -686,7 +686,7 @@ test('Universe view policy and public learning source isolation', async () => {
   const { UNIVERSE_VIEW_BRANDING: policy } = await import('../shared/hub-branding.mjs');
   assert.equal(policy.minimumActiveColors, 2);
   assert.equal(policy.maximumActiveColors, 4);
-  assert.deepEqual(policy.pair, ['violet','gold']);
+  assert.deepEqual(policy.pair, ['gold','cyan']);
   assert.equal(policy.globalNebulaSaturation, .94);
   assert.equal(policy.nebulaMaxViewportFraction, .2);
   assert.equal(policy.studioNavigationTarget, '/');
@@ -700,7 +700,8 @@ test('Universe view policy and public learning source isolation', async () => {
   assert.equal(policy.globalBackground, '/branding/universe/owner-nebula-v4.webp');
   assert.equal(policy.logoBadgeNebulaMaxFraction, .10);
   assert.ok(css.includes(policy.globalBackground));
-  assert.match(css, /\.universe-space \{[^}]*filter: saturate\(\.94\)/);
+  assert.match(css, /\.universe-space::before\s*\{[^}]*grayscale\(1\)/);
+  assert.match(css, /\.universe-space::after\s*\{[^}]*clip-path: ellipse\(20% 25% at 20% 25%\)/);
   assert.match(css, /forced-colors:active/);
   assert.match(css, /prefers-reduced-motion:reduce/);
 });
@@ -753,5 +754,18 @@ test('public static pricing and source downloads omit repository operational ref
   for (const path of ['public/downloads/CAPITAL-AI_Market-Screener-Hub_Open-Source-SOURCES_2026-10-04.md','public/downloads/CAPITAL-AI_DOCUMENTATION_PROVENANCE_2026-10-05.md']) {
     const content = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
     assert.doesNotMatch(content, /MARKET_QUOTES_ENABLED|admittedSources|GitHub PR #\d+|main@[a-f0-9]{40}|Owner Decision|Legacy Isolation|NATS JetStream|Valkey/i, path);
+  }
+});
+
+
+test('public presentations do not expose internal operational identifiers and canvas color is bounded', () => {
+  for (const path of ['public/documentation/domains.html','public/documentation/pipeline-architectures.html','public/downloads/market-screener-hub-open-source.html']) {
+    const source = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /MARKET_QUOTES_ENABLED|admittedSources|GitHub PR #\d+|Owner Decision|Legacy Isolation|NATS JetStream|Valkey/i, path);
+  }
+  for (const path of ['src/index.css','public/branding/universe/static-canvas-v4.css']) {
+    const css = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+    assert.match(css, /grayscale\(1\)/);
+    assert.match(css, /clip-path: ellipse\(20% 25% at 20% 25%\)/);
   }
 });

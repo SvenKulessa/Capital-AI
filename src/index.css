@@ -360,14 +360,23 @@
 /* Owner-approved v4 global canvas. Opaque/contrasting reading surfaces remain independent. */
 .universe-space {
   background-color: #081229;
-  background-image: linear-gradient(rgb(5 12 25 / .55), rgb(5 12 25 / .72)), url('/branding/universe/owner-nebula-v4.webp');
+}
+.universe-space::before, .universe-space::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgb(5 12 25 / .55), rgb(5 12 25 / .72)), url('/branding/universe/owner-nebula-v4.webp') center / cover no-repeat;
+}
+.universe-space::before { filter: grayscale(1); }
+/* The colored region is contained in a 40% x 50% rectangle (20% of viewport). */
+.universe-space::after {
   filter: saturate(.94);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  clip-path: ellipse(20% 25% at 20% 25%);
+  mask-image: radial-gradient(ellipse 20% 25% at 20% 25%, #000 0%, transparent 100%);
 }
 @media(forced-colors:active), print { .universe-space { display:none; } }
-.universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#B794F4 54%,#F9BF21 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
+.universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#F9BF21 54%,#F87171 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
 .universe-hub-action { position:relative; isolation:isolate; border:1px solid var(--action-accent); font-weight:700; color:var(--action-accent); background:color-mix(in srgb,var(--action-accent) 12%,transparent); }
 .universe-hub-action--learning { --action-accent:#F9BF21; }
 .universe-hub-action--analytics { --action-accent:#B794F4; }
