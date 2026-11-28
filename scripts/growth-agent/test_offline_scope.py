@@ -1,6 +1,9 @@
 """Independent standard-library TRUST/QUALITY negatives for offline scope."""
+import json
 import sqlite3
 import unittest
+
+from offline_task_input import decode_offline_task, valid_research_query
 
 from offline_scope import bind_checkpoint, scoped_thread_id
 
@@ -100,6 +103,45 @@ class OfflineScopeTests(unittest.TestCase):
                     bind_checkpoint(conn, identity)
         finally:
             conn.close()
+
+
+class OfflineTaskInputTests(unittest.TestCase):
+    def test_plain_and_unicode_query(self):
+        task = {"schema": "CAPITAL_AI_OFFLINE_RESEARCH@1", "task_id": "case-895",
+                "domain": "TRUST", "query": "Prüfung\nCheckpoint"}
+        self.assertEqual(decode_offline_task(json.dumps(task).encode()), task)
+        self.assertTrue(valid_research_query(task["query"]))
+
+    def test_duplicate_keys_and_nested_envelope(self):
+        for raw in (b'{"domain":"TRUST","domain":"GROWTH"}',
+                    b'{"offline_task":{"query":"one","query":"two"}}',
+                    b'{"query":"one","\\u0071uery":"two"}'):
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                decode_offline_task(raw)
+
+    def test_unsafe_controls_literal_and_escaped(self):
+        for char in ("\u202e", "\u2066", "\u200f", "\x00", "\ud800", "\x7f"):
+            with self.subTest(char=repr(char)):
+                self.assertFalse(valid_research_query("data" + char))
+                with self.assertRaises(ValueError):
+                    decode_offline_task(json.dumps({"query": char}).encode())
+        with self.assertRaises(ValueError):
+            decode_offline_task('{"query":"\u202e"}'.encode())
+
+    def test_non_json_oversize_and_depth(self):
+        for raw in (b'', b'[]', b'{"x":NaN}', b'{"x":Infinity}', b'\xff',
+                    b' ' * 2049, b'{"x":' + b'[' * 14 + b'0' + b']' * 14 + b'}'):
+            with self.subTest(raw=raw[:40]), self.assertRaises(ValueError):
+                decode_offline_task(raw)
+
+    def test_query_bound(self):
+        for value in (None, [], 42, '', 'x' * 301):
+            self.assertFalse(valid_research_query(value))
+        self.assertTrue(valid_research_query('x' * 300))
+
+    def test_existing_acopy_envelope_parsed_not_authorized(self):
+        task = {"schema": "ACODE_SMARTCOPY_FAILURE@1", "offline_task": {"query": "synthetic"}}
+        self.assertEqual(decode_offline_task(json.dumps(task).encode()), task)
 
 
 if __name__ == "__main__":

@@ -17,11 +17,12 @@ from pathlib import Path
 
 from agent_platform import DOMAINS, build_research_graph
 from domain_profile_binding import bind_domain_task
+from offline_task_input import MAX_TASK_BYTES, decode_offline_task, valid_research_query
 from checkpoint_store import execute_durable_graph
 from acode_failure_event import research_task, SCHEMA as ACOPY_SCHEMA
 
 ROOT = Path("/var/lib/capital-ai-agent")
-MAX_TASK_SIZE = 2048
+MAX_TASK_SIZE = MAX_TASK_BYTES
 STOP = False
 
 
@@ -63,7 +64,7 @@ def load_task(path: Path, inbox: Path) -> dict:
         raw = os.read(fd, MAX_TASK_SIZE + 1)
     finally:
         os.close(fd)
-    task = json.loads(raw)
+    task = decode_offline_task(raw)
     if isinstance(task, dict) and task.get("schema") == ACOPY_SCHEMA:
         task = research_task(task)
     if (not isinstance(task, dict) or set(task) != {"schema", "task_id", "domain", "query"}
@@ -71,8 +72,7 @@ def load_task(path: Path, inbox: Path) -> dict:
             or not isinstance(task["task_id"], str)
             or not re.fullmatch(r"[a-zA-Z0-9._:-]{1,96}", task["task_id"])
             or task["domain"] not in DOMAINS
-            or not isinstance(task["query"], str)
-            or not 1 <= len(task["query"]) <= 300):
+            or not valid_research_query(task["query"])):
         raise ValueError("unsupported research contract")
     return task
 
