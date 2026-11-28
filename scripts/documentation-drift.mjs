@@ -108,8 +108,15 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
       findings.push({ class: 'UNREADABLE_LIVING_DOCUMENT', severity: 'ERROR', path: file, autoRepairEligible: false });
       continue;
     }
-    const content = fs.readFileSync(absolute, 'utf8');
-    checked.push({ path: file, digest: sha(content) });
+    let content, bytes;
+    try {
+      bytes = fs.readFileSync(absolute);
+      content = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch {
+      findings.push({ class: 'UNREADABLE_LIVING_DOCUMENT', severity: 'ERROR', path: file, autoRepairEligible: false });
+      continue;
+    }
+    checked.push({ path: file, digest: sha(bytes) });
     for (const claim of extractCurrentMainClaims(content)) {
       const stale = claim.sha !== resolvedMainSha;
       findings.push({
@@ -155,8 +162,8 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
       trackedFiles: resolvedFiles.length,
       livingDocuments: living.length,
       checkedLivingDocuments: checked.length,
-      checkedDocumentSetSha256: sha(JSON.stringify([resolvedProfile.version, checked.map(x => x.path).sort()])),
-      checkedContentSha256: sha(JSON.stringify(checked.sort((a,b) => a.path.localeCompare(b.path)))),
+      checkedDocumentSetSha256: sha(JSON.stringify([resolvedProfile.version, [...new Set([...living, ...resolvedProfile.livingDocuments.exact])].sort(), checked.map(x => x.path).sort()])),
+      checkedContentSha256: sha(JSON.stringify(checked.sort((a,b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0))),
       historicalDocuments: resolvedFiles.filter((file) => isHistoricalPath(file, resolvedProfile)).length,
     },
     findings,
