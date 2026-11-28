@@ -148,3 +148,24 @@ test('AcodeX archive is separately validated and never promoted to live provider
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, evidence: { ...archive.evidence, v11: { ...archive.evidence.v11, sha256: 'x'.repeat(64) } } } }), null);
   assert.equal(readDashboardSnapshot({ ...base, acodex: { ...archive, evidence: { ...archive.evidence, v11: { ...archive.evidence.v11, url: 'https://evil.example/exfiltrate?token=fixture' } } } }), null);
 });
+
+import { parseCommercialRoadmap, serializeCommercialRoadmap, isOwnerRoadmapSession } from './ownerCommercialRoadmapModel';
+import { makeRow, exportWorkspace } from './growthOwnerWorkspaceModel';
+
+test('commercial roadmap accepts only current owner session', () => {
+  const owner = { authenticated:true, mfaRequired:false, user:{id:'synthetic-owner'}, account:{available:true,iamRole:'owner'} };
+  assert.equal(isOwnerRoadmapSession(owner,'synthetic-owner'),true);
+  assert.equal(isOwnerRoadmapSession(owner,'different-user'),false);
+  assert.equal(isOwnerRoadmapSession({...owner,mfaRequired:true},'synthetic-owner'),false);
+  assert.equal(isOwnerRoadmapSession({...owner,account:{available:true,iamRole:'admin'}},'synthetic-owner'),false);
+  assert.equal(isOwnerRoadmapSession({...owner,account:{available:false,iamRole:'owner'}},'synthetic-owner'),false);
+  assert.equal(isOwnerRoadmapSession(null,'synthetic-owner'),false);
+});
+test('commercial roadmap rejects unrelated workspace and downgrades imported VERIFIED', () => {
+  const row = {...makeRow('commercial-roadmap-test','Synthetic gate','TRUST'),status:'VERIFIED' as const};
+  const raw = exportWorkspace([{version:1,at:'2026-01-01T00:00:00Z',rows:[row]}]);
+  const parsed = parseCommercialRoadmap(raw);
+  assert.equal(parsed[0].rows[0].status,'NOT_PROVEN');
+  assert.equal(parseCommercialRoadmap(serializeCommercialRoadmap(parsed))[0].rows[0].status,'NOT_PROVEN');
+  assert.throws(()=>parseCommercialRoadmap(exportWorkspace([{version:1,at:'2026-01-01T00:00:00Z',rows:[makeRow('unrelated','Unrelated','TRUST')]}])));
+});

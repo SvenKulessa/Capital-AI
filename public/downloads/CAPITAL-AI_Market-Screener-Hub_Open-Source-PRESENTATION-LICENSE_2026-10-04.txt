@@ -20,4 +20,3 @@ IMPORTANT RIGHTS BOUNDARIES
 5. Any production use of a market dataset remains subject to the CAPITAL-AI source-admission policy and independent evidence for the relevant use cases and instruments.
 6. Third-party names are used only descriptively to document the architecture and evaluated candidates.
 
-Status basis: Owner decision 2026-10-04 and CAPITAL-AI MARKET PR #133.

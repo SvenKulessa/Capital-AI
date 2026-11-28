@@ -539,6 +539,19 @@ class ProductChannelReadState(TypedDict, total=False):
 
 
 CHANNEL_RULES = {
+    "saasHub": "HUMAN_ONLY_SUBMISSION_REQUIRED", "g2": "LISTING_REVIEW_REQUIRED", "capterra": "LISTING_REVIEW_REQUIRED",
+    "microsoftMarketplace": "LISTING_REVIEW_REQUIRED",
+    "awsMarketplace": "LISTING_REVIEW_REQUIRED",
+    "googleCloudMarketplace": "LISTING_REVIEW_REQUIRED",
+    "notionMarketplace": "LISTING_REVIEW_REQUIRED",
+    "gumroad": "LISTING_REVIEW_REQUIRED",
+    "lemonSqueezy": "LISTING_REVIEW_REQUIRED",
+    "paddle": "LISTING_REVIEW_REQUIRED",
+    "stripeDirect": "REVIEW_REQUIRED",
+    "atlassianMarketplace": "LISTING_REVIEW_REQUIRED",
+    "googlePlay": "LISTING_REVIEW_REQUIRED",
+    "chromeWebStore": "LISTING_REVIEW_REQUIRED",
+    "googleWorkspaceMarketplace": "LISTING_REVIEW_REQUIRED",
     "website": "REVIEW_REQUIRED", "acode": "LISTING_REVIEW_REQUIRED",
     "acodeCommunity": "LOCAL_RULES_REVIEW_REQUIRED", "youtube": "REVIEW_REQUIRED",
     "productHunt": "REVIEW_REQUIRED", "redditShowcase": "LOCAL_RULES_REVIEW_REQUIRED",
@@ -546,9 +559,6 @@ CHANNEL_RULES = {
     "showHN": "HUMAN_ONLY_NO_GENERATED_TEXT",
     "githubMarketplace": "LISTING_REVIEW_REQUIRED", "linkedin": "REVIEW_REQUIRED",
     "x": "REVIEW_REQUIRED", "tiktok": "COMMERCIAL_DISCLOSURE_REQUIRED",
-    "saasHub": "HUMAN_ONLY_SUBMISSION_REQUIRED",
-    "g2": "LISTING_REVIEW_REQUIRED", "capterra": "LISTING_REVIEW_REQUIRED",
-    "microsoftMarketplace": "LISTING_REVIEW_REQUIRED",
 }
 
 

@@ -86,7 +86,7 @@ export const PUBLIC_FAQ_ITEMS: PublicFaqItem[] = [
     category: 'Sicherheit & Datenschutz',
     question: 'Kann ich Analytics- und Cookie-Einstellungen ändern?',
     answer:
-      'Optionales Analytics und Werbung sind in diesem Dienst deaktiviert. Die Anmeldung verwendet technisch notwendige Cookies für PKCE/OAuth und die serverseitig verwaltete Anwendungssitzung; ein Opt-in für Analytics wird nicht vorgetäuscht.',
+      'Optionales Google Analytics wird nur nach Ihrer Analytics-Einwilligung und bei freigegebener Konfiguration geladen. Über die Cookie-Einstellungen im Footer können Sie Ihre Auswahl ändern oder widerrufen. Werbung und Werbepersonalisierung sind derzeit deaktiviert. Die Anmeldung verwendet technisch notwendige Cookies für PKCE/OAuth und die serverseitig verwaltete Anwendungssitzung. Details stehen in der Datenschutzerklärung.',
   },
   {
     id: 'account-login',

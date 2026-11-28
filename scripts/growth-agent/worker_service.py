@@ -115,7 +115,7 @@ def main():
         parser.error("--serve cannot override production root")
     if args.serve and os.environ.get("CAPITAL_AI_OFFLINE_WORKER_ENABLED") != "true":
         parser.error("worker disabled by default")
-    for name in ("GITHUB_TOKEN", "GH_TOKEN", "RENDER_API_KEY", "SUPABASE_SERVICE_ROLE_KEY", "OPENAI_API_KEY", "DEEPSEEK_API_KEY", "SUPABASE_SECRET_KEY"):
+    for name in ("GITHUB_TOKEN", "GH_TOKEN", "RENDER_API_KEY", "SUPABASE_SERVICE_ROLE_KEY", "OPENAI_API_KEY", "OPENAI_API_KEY_PERSONAL", "DEEPSEEK_API_KEY", "SUPABASE_SECRET_KEY"):
         if os.environ.get(name):
             parser.error("provider credential not permitted in offline worker")
     os.umask(0o077)

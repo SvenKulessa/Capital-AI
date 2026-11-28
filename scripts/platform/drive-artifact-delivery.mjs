@@ -6,6 +6,8 @@
 import { createHash } from 'node:crypto';
 import { planDriveArtifact } from './drive-artifact-router.mjs';
 
+export const DRIVE_CREATE_LEASE_KEY = 'CAPITAL-AI/DRIVE/CREATE_ONLY@1';
+
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 const MAX_BYTES = 32 * 1024 * 1024;
 const MAX_PAGES = 100;
@@ -100,11 +102,13 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
   const snapshot=Buffer.from(bytes);
   const hash=digest(snapshot);
   const scope=request.scope==='ACODE'?'ACODE':'PROJECT';
-  const lockKey='CAPITAL-AI/'+route+'/'+request.category+'/'+request.topic;
+  // The complete folder listing is a shared invariant. Use one project-wide
+  // namespace for all authorized creators, regardless of route, topic or host.
+  const lockKey=DRIVE_CREATE_LEASE_KEY;
   try{
     if(await provider.assertCreateAuthorized({project:'CAPITAL-AI',scope,folderPath:route})!==true)
       return deny('DRIVE_PERMISSION_DENIED');
-    return await provider.withExclusiveCreateLease(lockKey,async()=>{
+    return await provider.withExclusiveCreateLease(lockKey,async(lease)=>{
       const folderId=await verifyFolder(provider,route,scope);
       const listed=await listComplete(provider,folderId);
       const planned=planDriveArtifact({
@@ -130,6 +134,8 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
       }
       if(listed.some(f=>f.name.toLowerCase()===planned.filename.toLowerCase()))
         return deny('EXACT_NAME_COLLISION');
+      // A durable backend must record uncertainty before the external write.
+      if(lease?.beforeCreate) await lease.beforeCreate({folderId,filename:planned.filename,sha256:hash});
       const uploaded=await provider.uploadNewFile({
         parentFolderId:folderId,fileName:planned.filename,fileBytes:snapshot,
         mimeType:MIME[request.extension],mode:'CREATE_ONLY',sha256:hash

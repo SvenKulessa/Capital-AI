@@ -4,38 +4,21 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 export const PRODUCT_REGISTRY_PATH = "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md";
 const channels = {
-  "saasHub": {
-    "kind": "DIRECTORY",
-    "url": "https://www.saashub.com/",
-    "source": "https://www.saashub.com/services/submit",
-    "sourceReviewedAt": "2026-11-28",
-    "rule": "HUMAN_ONLY_SUBMISSION_REQUIRED",
-    "method": "Produktkategorie und Verfügbarkeit prüfen; Einreichung ausschließlich persönlich durch den menschlichen Betreiber. Keine automatisierte Einreichung."
-  },
-  "g2": {
-    "kind": "DIRECTORY",
-    "url": "https://www.g2.com/",
-    "source": "https://documentation.g2.com/help/docs/finding-or-listing-a-product-on-g2",
-    "sourceReviewedAt": "2026-11-28",
-    "rule": "LISTING_REVIEW_REQUIRED",
-    "method": "Vorhandenes Profil und passende Softwarekategorie prüfen, Herstellerfreigabe und echtes Produkt nachweisen. Keine erfundenen Bewertungen oder bezahlte Aktivierung."
-  },
-  "capterra": {
-    "kind": "DIRECTORY",
-    "url": "https://www.capterra.com/",
-    "source": "https://documentation.g2.com/docs/product-information",
-    "sourceReviewedAt": "2026-11-28",
-    "rule": "LISTING_REVIEW_REQUIRED",
-    "method": "Gemeinsame Produktpflege über my.G2 prüfen; bestehende Listing-Identität, Kategorie und Konditionen verifizieren. Keine Doppelregistrierung oder bezahlte Werbung."
-  },
-  "microsoftMarketplace": {
-    "kind": "DISTRIBUTION",
-    "url": "https://marketplace.microsoft.com/",
-    "source": "https://learn.microsoft.com/en-us/partner-center/marketplace-offers/plan-saas-offer",
-    "sourceReviewedAt": "2026-11-28",
-    "rule": "LISTING_REVIEW_REQUIRED",
-    "method": "Nur passendes B2B-SaaS als Contact Me-Kandidat prüfen; Partner-Center-Berechtigung und Listing-Anforderungen belegen. Kein Transact, Billing oder Angebot aktivieren."
-  },
+  "saasHub": {"kind":"DIRECTORY","url":"https://www.saashub.com/","source":"https://www.saashub.com/services/submit","sourceReviewedAt":"2026-11-28","rule":"HUMAN_ONLY_SUBMISSION_REQUIRED","method":"Nur persönlich durch den menschlichen Betreiber einreichen. Keine automatisierte Einreichung.","automation":"HUMAN_ONLY_SUBMISSION_REQUIRED"},
+  "g2": {"kind":"DIRECTORY","url":"https://www.g2.com/","source":"https://documentation.g2.com/help/docs/finding-or-listing-a-product-on-g2","sourceReviewedAt":"2026-11-28","rule":"LISTING_REVIEW_REQUIRED","method":"Vorhandenes Profil, Herstellerfreigabe und echte Produktkategorie prüfen. Keine erfundenen Bewertungen.","automation":"PORTAL_REVIEW"},
+  "capterra": {"kind":"DIRECTORY","url":"https://www.capterra.com/","source":"https://documentation.g2.com/docs/product-information","sourceReviewedAt":"2026-11-28","rule":"LISTING_REVIEW_REQUIRED","method":"Gemeinsame Produktpflege über my.G2 prüfen; keine Doppelregistrierung oder bezahlte Werbung.","automation":"PORTAL_REVIEW"},
+  "microsoftMarketplace": {"kind":"DISTRIBUTION","url":"https://partner.microsoft.com/dashboard","source":"https://learn.microsoft.com/en-us/partner-center/marketplace-offers/submission-api-overview","rule":"LISTING_REVIEW_REQUIRED","sourceReviewedAt":"2026-11-28","method":"SaaS Submission API dokumentiert; derzeit nur Contact Me prüfen, kein Transact/Billing. Partner Center, Entra, Review und Fulfillment separat verifizieren.","automation":"API_SUBMISSION_DOCUMENTED"},
+  "awsMarketplace": {"kind":"DISTRIBUTION","url":"https://aws.amazon.com/marketplace/management/","source":"https://docs.aws.amazon.com/marketplace/latest/developerguide/work-with-saas-products.html","rule":"LISTING_REVIEW_REQUIRED","method":"Catalog API StartChangeSet; Seller-Onboarding, Billing und Review prüfen.","automation":"API_SUBMISSION_DOCUMENTED"},
+  "googleCloudMarketplace": {"kind":"DISTRIBUTION","url":"https://console.cloud.google.com/producer-portal","source":"https://docs.cloud.google.com/marketplace/docs/partners/integrated-saas/submitting","rule":"LISTING_REVIEW_REQUIRED","method":"Producer Portal; allgemeine Listing-Write-API nicht nachgewiesen.","automation":"PORTAL_REVIEW"},
+  "notionMarketplace": {"kind":"DISTRIBUTION","url":"https://www.notion.com/become-a-creator","source":"https://www.notion.com/help/selling-on-marketplace","rule":"LISTING_REVIEW_REQUIRED","method":"Nur passende Notion-Vorlagen; Creator-Profil und Review.","automation":"PORTAL_REVIEW"},
+  "gumroad": {"kind":"DISTRIBUTION","url":"https://gumroad.com/mcp","source":"https://gumroad.com/help/article/355-connect-ai-assistants-to-gumroad","rule":"LISTING_REVIEW_REQUIRED","method":"Offizielles MCP für unveröffentlichte Entwürfe und separate Veröffentlichung; Rechte, OAuth und Produktart prüfen.","automation":"MCP_DRAFT_AND_PUBLISH_DOCUMENTED"},
+  "lemonSqueezy": {"kind":"OWNED","url":"https://www.lemonsqueezy.com/","source":"https://docs.lemonsqueezy.com/help/products/adding-products","rule":"LISTING_REVIEW_REQUIRED","method":"Dashboard-Produktanlage; Produkt-Readback per API; kein Create-Endpunkt angenommen.","automation":"PORTAL_CREATE_API_READ"},
+  "paddle": {"kind":"OWNED","url":"https://www.paddle.com/","source":"https://developer.paddle.com/api-reference/products/create-product/","rule":"LISTING_REVIEW_REQUIRED","method":"Katalog-API; keine garantierte Marketplace-Reichweite oder zweite Billing-Authority.","automation":"API_CATALOG_DOCUMENTED"},
+  "stripeDirect": {"kind":"OWNED","url":"https://dashboard.stripe.com/","source":"https://docs.stripe.com/api/products/create","rule":"REVIEW_REQUIRED","method":"Bestehende Stripe-Integration und Preisautorität wiederverwenden; Sandbox vor Live-Vertrieb.","automation":"API_CATALOG_DOCUMENTED"},
+  "atlassianMarketplace": {"kind":"DISTRIBUTION","url":"https://marketplace.atlassian.com/","source":"https://developer.atlassian.com/platform/marketplace/rest/v4/api-group-app-listing","rule":"LISTING_REVIEW_REQUIRED","method":"Nur kompatible Atlassian-Apps; Listing-/Versions-API, Erstaufnahme und Review prüfen.","automation":"API_LISTING_DOCUMENTED"},
+  "googlePlay": {"kind":"DISTRIBUTION","url":"https://play.google.com/console/","source":"https://developers.google.com/android-publisher/edits/","rule":"LISTING_REVIEW_REQUIRED","method":"Android-App mit bestehendem Package und Signatur; Edits für Listings/Releases; Erstaufnahme und Review prüfen.","automation":"API_EXISTING_APP_EDITS"},
+  "chromeWebStore": {"kind":"DISTRIBUTION","url":"https://chrome.google.com/webstore/devconsole","source":"https://developer.chrome.com/docs/webstore/api","rule":"LISTING_REVIEW_REQUIRED","method":"Nur echte Erweiterungen; erstes Item im Dashboard, spätere Releases per API.","automation":"API_EXISTING_ITEM_RELEASES"},
+  "googleWorkspaceMarketplace": {"kind":"DISTRIBUTION","url":"https://workspace.google.com/marketplace/","source":"https://developers.google.com/workspace/marketplace/how-to-publish","rule":"LISTING_REVIEW_REQUIRED","method":"Nur integrierte Workspace-App; SDK, OAuth und Review; allgemeine Listing-Write-API nicht nachgewiesen.","automation":"PORTAL_REVIEW"},
   "website": {
     "kind": "OWNED",
     "url": "https://capital-ai.online/",
@@ -104,7 +87,8 @@ const channels = {
     "url": "https://github.com/marketplace",
     "source": "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app",
     "rule": "LISTING_REVIEW_REQUIRED",
-    "method": "GitHub-App-Listing und Publisher-/Plan-Anforderungen nachweisen; Marketplace- und Website-Entitlements getrennt halten."
+    "method": "GitHub-App-Listing im Portal einreichen; REST-API für Pläne/Käufe, kein Listing-Create-Endpunkt nachgewiesen. Publisher-Anforderungen und getrennte Entitlements beachten.",
+    "automation": "PORTAL_CREATE_API_READ"
   },
   "linkedin": {
     "kind": "DISCOVERY",
@@ -129,12 +113,8 @@ const channels = {
   }
 };
 const profiles = {
-  "saas": {
-    "audience": "SaaS-Nutzer und technische Entscheider; B2B-Eignung separat prüfen",
-    "groups": [["website"], ["productHunt", "saasHub", "linkedin"], ["g2", "capterra", "microsoftMarketplace"]],
-    "queries": ["AI learning and market intelligence software", "B2B SaaS listing requirements"],
-    "asset": "Belegbare Produktdemo, Leistungsumfang und Lizenz; keine ungeprüften Preise, Ergebnisse oder Kaufversprechen."
-  },
+  "saas": {"audience":"B2B-SaaS-Kunden und technische Entscheider","groups":[["website","stripeDirect","linkedin"],["microsoftMarketplace","awsMarketplace","googleCloudMarketplace","paddle","productHunt","saasHub"],["g2","capterra"]],"queries":["B2B SaaS buyer requirements","Cloud marketplace SaaS listing"],"asset":"Belegte SaaS-Demo, Datenschutz, Support und Fulfillment-Konzept."},
+  "integration": {"audience":"Workspace- und Developer-Integrationen","groups":[["website"],["atlassianMarketplace","googleWorkspaceMarketplace","chromeWebStore"],[]],"queries":["integration marketplace eligibility"],"asset":"Nur nachgewiesene kompatible Integration und minimale Berechtigungen."},
   "mobile": {
     "audience": "Android-Entwickler und mobile Terminal-Nutzer",
     "groups": [
@@ -145,6 +125,7 @@ const profiles = {
         "website"
       ],
       [
+        "googlePlay",
         "productHunt",
         "redditShowcase",
         "alternativeTo",
@@ -153,8 +134,7 @@ const profiles = {
         "tiktok"
       ],
       [
-        "showHN",
-        "saasHub"
+        "showHN", "saasHub"
       ]
     ],
     "queries": [
@@ -177,11 +157,7 @@ const profiles = {
         "productHunt"
       ],
       [
-        "showHN",
-        "saasHub",
-        "g2",
-        "capterra",
-        "microsoftMarketplace"
+        "showHN", "saasHub", "g2", "capterra", "microsoftMarketplace"
       ]
     ],
     "queries": [
@@ -195,12 +171,14 @@ const profiles = {
     "groups": [
       [
         "website",
-        "youtube"
+        "youtube",
+        "stripeDirect"
       ],
       [
+        "gumroad",
+        "lemonSqueezy",
         "productHunt",
-        "linkedin",
-        "saasHub"
+        "linkedin", "saasHub"
       ],
       ["g2", "capterra"]
     ],
@@ -221,14 +199,12 @@ const profiles = {
       ],
       [
         "productHunt",
-        "x"
+        "x",
+        "gumroad",
+        "notionMarketplace"
       ],
       [
-        "showHN",
-        "saasHub",
-        "g2",
-        "capterra",
-        "microsoftMarketplace"
+        "showHN", "saasHub", "g2", "capterra", "microsoftMarketplace"
       ]
     ],
     "queries": [
@@ -307,7 +283,8 @@ export function parseProductRegistry(markdown) {
   return result;
 }
 function profileFor(id) {
-  if(id==="saas-membership")return "saas";
+  if(["saas-membership","b2b-data-api","sentiment-api","white-label-widgets","enterprise-scorer"].includes(id))return "saas";
+  if(id==="hero-buddy-support")return "integration";
   if(id==="ai-smartcopy"||id==="smartclip")return "mobile";
   if(id==="cads-benchmark-engine")return "cads";
   if(["market-vocabulary","learning-portal"].includes(id))return "learning";
@@ -319,14 +296,14 @@ export function projectProductChannels(markdown) {
   const existing=new Set(rows.map(p=>p.id));
   for(const e of extras)if(!existing.has(e.id))rows.push({id:e.id,name:e.name,sourceStatus:e.sourceStatus,...(e.sourceRefs?{sourceRefs:e.sourceRefs}:{})});
   return {
-    contractVersion:"CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1",publicationState:"DRAFT_ONLY",publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,scoreBasis:"EDITORIAL_HYPOTHESIS_NOT_MEASURED",channelSourceReviewDate:"2026-11-25",
+    contractVersion:"CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1",publicationState:"DRAFT_ONLY",publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,scoreBasis:"EDITORIAL_HYPOTHESIS_NOT_MEASURED",channelSourceReviewDate:"2026-11-28",
     products:rows.map(p=>{
       const profile=profiles[profileFor(p.id)];
       return {...p,profile:profileFor(p.id),currentCommercialReadiness:"NOT_PROVEN",audience:profile?.audience??null,
         researchStatus:profile?"CANDIDATES_REVIEW_REQUIRED":"UNMAPPED_RESEARCH_REQUIRED",
         discoveryQueries:profile?.queries??[p.id+" target users distribution channels",p.id+" official marketplace requirements"],
         assetBrief:profile?.asset??null,
-        channels:profile?profile.groups.flatMap((ids,i)=>ids.map(id=>({id,priority:"P"+i,...channels[id],reviewRequired:true,automaticPublishAllowed:false,paidActivationAllowed:false,externalPurchaseLinkInPluginAllowed:false,metrics:{reach:null,visits:null,conversions:null,revenue:null}}))):[]};
+        channels:profile?profile.groups.flatMap((ids,i)=>ids.map(id=>({id,priority:"P"+i,...channels[id],automation:channels[id].automation??'NOT_PROVEN',accountAdmission:'NOT_PROVEN',costAdmission:'NOT_PROVEN',reviewRequired:true,automaticPublishAllowed:false,paidActivationAllowed:false,externalPurchaseLinkInPluginAllowed:false,metrics:{reach:null,visits:null,conversions:null,revenue:null}}))):[]};
     })
   };
 }
@@ -355,4 +332,48 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
     try{process.stdout.write(JSON.stringify(buildProductChannelGraphHandoff())+'\n');}
     catch{process.stderr.write('PRODUCT_CHANNEL_HANDOFF_REJECTED\n');process.exitCode=1;}
   }
+}
+
+// Derived catalog: no second product registry, provider calls or commercial authority.
+const marketplacePriority = ['stripeDirect','gumroad','githubMarketplace','microsoftMarketplace','awsMarketplace'];
+const feeEvidence = {
+  "stripeDirect": [
+    "Zahlungsart- und vertragsspezifische Gebühren",
+    "https://stripe.com/de/pricing"
+  ],
+  "gumroad": [
+    "Direkt: 10% + 0,50 USD; Discover: 30%; mögliche weitere Verarbeitungskosten prüfen",
+    "https://gumroad.com/pricing"
+  ],
+  "githubMarketplace": [
+    "5% Einbehalt; Organisations-Publisher und Auszahlungsvoraussetzungen",
+    "https://docs.github.com/en/apps/github-marketplace/selling-your-app-on-github-marketplace/receiving-payment-for-app-purchases"
+  ],
+  "microsoftMarketplace": [
+    "Standard Store Service Fee 3%; Ausnahmen/Vertragsbedingungen prüfen",
+    "https://learn.microsoft.com/en-gb/partner-center/marketplace-offers/marketplace-commercial-transaction-capabilities-and-considerations"
+  ],
+  "awsMarketplace": [
+    "Listing-Gebühren abhängig von Angebotsart, Vertragswert und Region",
+    "https://docs.aws.amazon.com/marketplace/latest/userguide/listing-fees.html"
+  ]
+};
+const marketplaceHash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+export function projectMarketplaceCatalog(plan) {
+  if(plan?.contractVersion!=='CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1'||plan.publicationState!=='DRAFT_ONLY'||plan.publicPublishAllowed!==false||plan.liveSalesAllowed!==false||plan.providerCalls!==0||plan.campaignSpend!==0||!Array.isArray(plan.products)||plan.products.length>133||!(/^[a-f0-9]{64}$/).test(plan.sourceSha256??''))throw Error('MARKETPLACE_PLAN_INVALID');
+  const ids=[...marketplacePriority,...Object.keys(channels).filter(id=>channels[id].automation&&!marketplacePriority.includes(id))];
+  const rows=ids.map(id=>{
+    const c=channels[id];
+    const products=plan.products.filter(p=>p.channels?.some(x=>x.id===id)).map(p=>p.id).sort();
+    if(new Set(products).size!==products.length||products.some(p=>typeof p!=='string'||!(/^[a-z0-9-]{1,80}$/).test(p)))throw Error('MARKETPLACE_PRODUCT_INVALID');
+    return {id,url:c.url,source:c.source,automation:c.automation,feeNote:feeEvidence[id]?.[0]??'Gebühren und Account-Konditionen separat prüfen',feeSource:feeEvidence[id]?.[1]??null,products};
+  });
+  const catalogSha256=marketplaceHash({sourceSha256:plan.sourceSha256,rows});
+  return {schema:'CAPITAL_AI_MARKETPLACE_CATALOG@1',state:'DRAFT_ONLY',sourceSha256:plan.sourceSha256,catalogSha256,rows,accountAdmission:'NOT_PROVEN',costAdmission:'NOT_PROVEN',rightsAdmission:'NOT_PROVEN',ownerApproval:'NOT_GRANTED',publicationAllowed:false,providerCalls:0,spendCents:0};
+}
+export function planMarketplaceDraft(input) {
+  if(!input||Object.keys(input).sort().join(',')!=='catalogSha256,channelId,productId'||typeof input.channelId!=='string'||typeof input.productId!=='string')throw Error('MARKETPLACE_DRAFT_INVALID');
+  const catalog=projectMarketplaceCatalog(buildProductChannelIntelligence());
+  if(input.catalogSha256!==catalog.catalogSha256||!catalog.rows.some(r=>r.id===input.channelId&&r.products.includes(input.productId)))throw Error('MARKETPLACE_DRAFT_NOT_MAPPED_OR_STALE');
+  return {schema:'CAPITAL_AI_MARKETPLACE_DRAFT@1',draftKey:marketplaceHash([catalog.catalogSha256,input.channelId,input.productId]),channelId:input.channelId,productId:input.productId,catalogSha256:catalog.catalogSha256,state:'DRAFT_ONLY',adapterMode:'OFFLINE_PREVIEW',price:null,providerCalls:0,spendCents:0,rightsAdmission:'NOT_PROVEN',ownerApproval:'NOT_GRANTED',publicationAllowed:false};
 }
