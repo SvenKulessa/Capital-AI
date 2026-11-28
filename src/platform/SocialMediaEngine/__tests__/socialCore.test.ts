@@ -156,7 +156,7 @@ test('active Social runtime paths contain none of the removed audio-model implem
   assert.deepEqual(violations, []);
 });
 
-test('silent Capital-AI tour has twenty seconds and YouTube referral disclosure', async () => {
+test('silent Capital-AI tour has twenty seconds and no revoked Kraken promotion', async () => {
  const {createCapitalAiTourVideoProject,createYouTubeDescription} = await import('../Editing/MediaStudioTemplates');
  const project = createCapitalAiTourVideoProject();
  const manifest=JSON.parse(readFileSync(resolve('scripts/media/capital-ai-tour.json'),'utf8'));
@@ -168,8 +168,7 @@ test('silent Capital-AI tour has twenty seconds and YouTube referral disclosure'
  assert.equal(project.tracks.some(track=>track.kind === 'audio'),false);
  assert.equal(project.renderRecipe.publishReady,false);
  const description=createYouTubeDescription({title:'Capital-AI Tour',summary:'Learning Portal und Analysekomponenten.'});
- assert.match(description,/Werbung \/ Referral/);
- assert.match(description,/https:\/\/proinvite\.kraken\.com\/9f1e\/8nfzp3u7/);
- assert.match(description,/yc4ggk3f/);
+ assert.doesNotMatch(description,/kraken|proinvite|yc4ggk3f|Werbung \/ Referral/i);
+ assert.match(description,/https:\/\/capital-ai\.online\/learning/);
  assert.match(description,/Keine persönliche Anlageberatung/);
 });
