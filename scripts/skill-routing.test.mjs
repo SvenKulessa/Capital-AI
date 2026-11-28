@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { normalizeSkillText, selectSpecialists, selectSkillPlan } from './skill-routing.mjs';
+import { normalizeSkillText, selectSpecialists, selectSkillPlan, selectResumeRoute } from './skill-routing.mjs';
 import { evaluateSpecialistRouting } from './skill-routing-evaluation.mjs';
 import { composeSkillBundle, probeSkillSources, skillSourceAudit, validateSkillCatalog } from './skill-bundles.mjs';
 
@@ -275,4 +275,55 @@ test('cross-domain advice preserves the first domain and incorporates explicit o
   const malformed = structuredClone(registry);
   malformed.advisoryRouting.domains.PRODUCT.advisers[1].skill = 'unregistered-skill';
   assert.throws(() => selectSkillPlan('OpenAPI', { domain: 'PRODUCT', registry: malformed }), /invalid advisory routing profile/);
+});
+
+
+test('explicit resume routes to existing domain loop, RAG and checkpoint without executing', () => {
+  const app = readJson('../.agents/app.prompt.json');
+  const expected = app.resumeRouting;
+  for (const command of ['/resume', 'SOLO2 /RESUME', '/Resume checkpoint repair']) {
+    const route = selectResumeRoute(command, { domain: 'PLATFORM', app });
+    assert.equal(route.schema, expected.schema);
+    assert.deepEqual(route.phases, expected.phases);
+    assert.equal(route.primaryDomain, 'PLATFORM');
+    assert.equal(route.orchestrator, app.solo2DomainLoop.orchestrator);
+    assert.equal(route.offlineResearch, app.solo2DomainLoop.offlineResearch);
+    assert.equal(route.durableCheckpoints, app.solo2DomainLoop.durableCheckpoints);
+    assert.equal(route.status, 'CONTEXT_REVALIDATION_REQUIRED');
+    assert.equal(route.executionStarted, false);
+    assert.equal(route.permissionExpansion, false);
+    assert.equal(route.runtimeActivation, 'NOT_PROVEN');
+  }
+  assert.equal(selectResumeRoute('/resume').primaryDomain, null);
+  assert.equal(selectSkillPlan('/resume LangGraph checkpoint', { domain: 'PLATFORM' }).resumeRoute.command, '/resume');
+});
+
+test('resume only matches leading explicit commands and fails closed on changed authority or routes', () => {
+  const app = readJson('../.agents/app.prompt.json');
+  for (const input of ['Explain /resume', '"/resume"', '/resume-all', '/resume.sh', 'log: SOLO2 /resume']) {
+    assert.equal(selectResumeRoute(input, { app }), null);
+  }
+  assert.throws(() => selectResumeRoute('/resume', { domain: 'ROOT', app }), /unknown primary domain/);
+  for (const mutate of [
+    a => { a.resumeRouting.permissionExpansion = true; },
+    a => { a.resumeRouting.runtimeActivation = 'VERIFIED'; },
+    a => { a.resumeRouting.masterPrompt = '../untrusted.md'; },
+    a => { a.resumeRouting.phases.reverse(); },
+    a => { a.resumeRouting.extra = 'execute'; },
+    a => { a.solo2DomainLoop.offlineResearch = 'untrusted.py'; },
+    a => { a.authority.permissionExpansion = true; },
+  ]) {
+    const modified = structuredClone(app);
+    mutate(modified);
+    assert.throws(() => selectResumeRoute('/resume', { app: modified }), /invalid non-authorizing resume route/);
+  }
+});
+
+test('bare resume CLI outputs context requirement rather than a worker execution claim', () => {
+  const file = fileURLToPath(new URL('./skill-routing.mjs', import.meta.url));
+  const route = JSON.parse(execFileSync(process.execPath, [file, '/resume'], { encoding: 'utf8' }));
+  assert.equal(route.command, '/resume');
+  assert.equal(route.status, 'CONTEXT_REVALIDATION_REQUIRED');
+  assert.equal(route.executionStarted, false);
+  assert.equal(route.primaryDomain, null);
 });

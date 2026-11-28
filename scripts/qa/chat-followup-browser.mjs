@@ -59,7 +59,7 @@ async function evaluate(expression) {
   return r.result.value;
 }
 async function pressButton(index) {
-  assert.equal(await evaluate("(() => { const button = document.querySelectorAll('section[aria-label=\"Kopierbare nächste Schritte\"] button')[" + index + "]; button.focus(); return document.activeElement === button; })()"), true);
+  assert.equal(await evaluate("(() => { const button = document.querySelectorAll('section[aria-label=\"Kopierbare nächste Schritte\"] > ol button')[" + index + "]; button.focus(); return document.activeElement === button; })()"), true);
   await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
   await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
 }
@@ -98,8 +98,8 @@ try {
   for (const width of [320, 390, 1440]) {
     await command('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: width !== 1440 });
     await command('Page.navigate', { url: origin });
-    await until(() => evaluate("document.querySelectorAll('section[aria-label=\"Kopierbare nächste Schritte\"] button').length === 3"), 'three copy buttons');
-    const layout = await evaluate("(() => { const section = document.querySelector('section[aria-label=\"Kopierbare nächste Schritte\"]'); const buttons = [...section.querySelectorAll('button')]; return { overflow: document.documentElement.scrollWidth > innerWidth, buttonsInside: buttons.every(b => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0), touch: buttons.every(b => b.getBoundingClientRect().height >= 44), labels: buttons.every(b => b.getAttribute('aria-label').includes('Prompt kopieren')), hasLiveRegion: !!section.querySelector('[role=status][aria-live=polite]') }; })()");
+    await until(() => evaluate("document.querySelectorAll('section[aria-label=\"Kopierbare nächste Schritte\"] > ol button').length === 3"), 'three copy buttons');
+    const layout = await evaluate("(() => { const section = document.querySelector('section[aria-label=\"Kopierbare nächste Schritte\"]'); const buttons = [...section.querySelectorAll(':scope > ol button')]; return { overflow: document.documentElement.scrollWidth > innerWidth, buttonsInside: buttons.every(b => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0), touch: buttons.every(b => b.getBoundingClientRect().height >= 44), labels: buttons.every(b => b.getAttribute('aria-label').includes('Prompt kopieren')), hasLiveRegion: !!section.querySelector('[role=status][aria-live=polite]') }; })()");
     assert.equal(layout.overflow, false);
     assert.equal(layout.buttonsInside, true);
     assert.equal(layout.touch, true);
@@ -109,9 +109,25 @@ try {
     await until(() => evaluate("document.querySelector('section [role=status]').textContent.includes('erfolgreich kopiert')"), 'clipboard confirmation');
     const clipboard = await evaluate("navigator.clipboard.readText().then(text => text.includes('growth-engineering/SKILL.md') && text.includes('SocialMediaEngine') && text.includes('LangGraph'))");
     assert.equal(clipboard, true);
+    // Exercise the new JSON controls independently of the three original text actions.
+    await evaluate("document.querySelector('section details').open = true");
+    const jsonLayout = await evaluate("(() => { const buttons = [...document.querySelectorAll('section details button')]; return { count: buttons.length, touch: buttons.every(b => b.getBoundingClientRect().height >= 44), inside: buttons.every(b => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0), labels: buttons.every(b => b.getAttribute('aria-label').includes('JSON kopieren')) }; })()");
+    assert.deepEqual(jsonLayout, { count: 3, touch: true, inside: true, labels: true });
+    assert.equal(await evaluate("(() => { const b = document.querySelector('section details button'); b.focus(); return document.activeElement === b; })()"), true);
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\\r', unmodifiedText: '\\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
+    await until(() => evaluate("document.querySelector('section details button').textContent === 'Kopiert'"), 'JSON clipboard confirmation');
+    const envelope = JSON.parse(await evaluate("navigator.clipboard.readText()"));
+    assert.equal(envelope.schema, 'CAPITAL_AI_CHAT_FOLLOWUP@1');
+    assert.equal(envelope.domain, 'GROWTH');
+    assert.equal(envelope.brand.profileId, 'u7-growth');
+    assert.equal(envelope.permissionExpansion, false);
+    assert.equal(envelope.executionStatus, 'NOT_PROVEN');
+    assert.equal(await evaluate("document.documentElement.scrollWidth > innerWidth"), false);
+    await evaluate("document.querySelector('section details').open = false");
     const png = (await command('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false })).data;
     await writeFile(join(output, 'chat-' + width + '.png'), Buffer.from(png, 'base64'));
-    results.push({ width, buttons: 3, noOverflow: true, touch44: true, screenreaderLabels: true, copied: true });
+    results.push({ width, buttons: 3, noOverflow: true, touch44: true, screenreaderLabels: true, copied: true, jsonCopied: true });
   }
 
   await command('Browser.setPermission', { origin, permission: { name: 'clipboard-write', allowWithoutSanitization: false }, setting: 'denied' });
