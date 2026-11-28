@@ -6,6 +6,8 @@
 import { createHash } from 'node:crypto';
 import { planDriveArtifact } from './drive-artifact-router.mjs';
 
+export const DRIVE_CREATE_LEASE_KEY = 'CAPITAL-AI/DRIVE/CREATE_ONLY@1';
+
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 const MAX_BYTES = 32 * 1024 * 1024;
 const MAX_PAGES = 100;
@@ -100,7 +102,9 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
   const snapshot=Buffer.from(bytes);
   const hash=digest(snapshot);
   const scope=request.scope==='ACODE'?'ACODE':'PROJECT';
-  const lockKey='CAPITAL-AI/'+route+'/'+request.category+'/'+request.topic;
+  // The complete folder listing is a shared invariant. Use one project-wide
+  // namespace for all authorized creators, regardless of route, topic or host.
+  const lockKey=DRIVE_CREATE_LEASE_KEY;
   try{
     if(await provider.assertCreateAuthorized({project:'CAPITAL-AI',scope,folderPath:route})!==true)
       return deny('DRIVE_PERMISSION_DENIED');

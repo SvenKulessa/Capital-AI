@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {deliverDriveArtifact} from './drive-artifact-delivery.mjs';
+import {deliverDriveArtifact,DRIVE_CREATE_LEASE_KEY} from './drive-artifact-delivery.mjs';
 import {routingContract,acodeContract} from './drive-artifact-router.mjs';
 
 const root='1CapitalProjectRootFixture', acodeRoot='1AcodeRootFixture___';
@@ -155,4 +155,44 @@ test('mutable caller buffers are snapshotted before asynchronous upload',async()
   assert.equal(r.status,'VERIFIED_CREATED');
   assert.equal(r.sha256,expected);
   assert.equal(hash(written[0].fileBytes),expected);
+});
+
+test('different topics and scopes share one global exclusive create lease',async()=>{
+  const {p,written}=mock();
+  const keys=[], locks=new Map();
+  let active=0, peak=0;
+  p.withExclusiveCreateLease=async(key,fn)=>{
+    keys.push(key);
+    const prior=locks.get(key)||Promise.resolve();
+    let release;
+    const next=new Promise(resolve=>release=resolve);
+    locks.set(key,next);
+    await prior;
+    active++; peak=Math.max(peak,active);
+    try {
+      // Force overlapping callers to reach the keyed mutex.
+      await new Promise(resolve=>setImmediate(resolve));
+      return await fn();
+    } finally {
+      active--; release();
+      if(locks.get(key)===next)locks.delete(key);
+    }
+  };
+  const requests=[request,{...request,topic:'SECOND_TOPIC'},
+    {...request,scope:'ACODE',category:'ACODE_CODE',domain:'TRUST',extension:'py'}];
+  const results=await Promise.all(requests.map(q=>deliverDriveArtifact({
+    request:q,bytes:content,provider:p,authorization:auth
+  })));
+  assert.deepEqual(keys,[DRIVE_CREATE_LEASE_KEY,DRIVE_CREATE_LEASE_KEY,DRIVE_CREATE_LEASE_KEY]);
+  assert.equal(peak,1);
+  assert.equal(written.length,3);
+  assert.ok(results.every(r=>r.status==='VERIFIED_CREATED'));
+});
+test('lease provider failure does not trigger a fallback upload',async()=>{
+  const {p,written}=mock();
+  p.withExclusiveCreateLease=async()=>{throw Error('lease unavailable');};
+  const r=await deliverDriveArtifact({request,bytes:content,provider:p,authorization:auth});
+  assert.equal(r.status,'HOLD');
+  assert.equal(r.reason,'CONNECTOR_OR_EXCLUSIVE_LEASE_FAILED');
+  assert.equal(written.length,0);
 });

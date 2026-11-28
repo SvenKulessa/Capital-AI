@@ -53,7 +53,7 @@ The trusted provider adapter exposes these existing Drive capabilities under a n
 | `assertCreateAuthorized` | Existing delegated Google Drive identity/permissions for the exact folder; no new auth scopes |
 | `resolveFolderId`, `getFolder` | Resolve existing path, read each parent/name/ID, folder MIME and `canAddChildren`; anchor to previously authorized root ID |
 | `listFolder` | Enumerate **every page**, return `{files:[{id,name,parentId}],nextPageToken:null|string}`; detect duplicates, cycles and missing pages |
-| `withExclusiveCreateLease` | Trusted cross-agent, cross-process lease for route/category/topic; **no write if the runtime cannot provide it** |
+| `withExclusiveCreateLease` | Trusted cross-agent, cross-process lease on the fixed project-wide key `CAPITAL-AI/DRIVE/CREATE_ONLY@1`; **no write if the runtime cannot provide it** |
 | `uploadNewFile` | Map to existing Drive **create-new-file** action, with required parent/name/content/MIME, never update/overwrite/move |
 | `getFile`, `readFileBytes` | Independent metadata and **remote file bytes** readback, not only a Drive MD5/ETag or client-provided SHA |
 
@@ -63,7 +63,7 @@ A ChatGPT Google Drive connector can provide listing, upload and metadata/fetch 
 
 - SHA-256 is computed from local bytes. Under an exclusive lease, list and verify existing matching versions against **actual provider-downloaded bytes**; exact matches yield `VERIFIED_SKIP` with `driveUpload=NOT_PERFORMED`. Different content receives the next free version. Any unreadable existing match yields `HOLD`; do not create a duplicate.
 - After create-only upload, fetch fresh file metadata and bytes, verify exact **name, unique parent, ID and digest**, then re-list the complete folder to detect duplicate names. Only then `VERIFIED_CREATED`; device sync remains `NOT_PROVEN`.
-- If the write may already have happened but its readback fails, return `HOLD` and **do not blindly retry** or delete the file. A later attempt can prove a matching existing file and skip it. Cross-worker locking must remain active over both read and write operations.
+- If the write may already have happened but its readback fails, return `HOLD` and **do not blindly retry** or delete the file. A later attempt can prove a matching existing file and skip it. Cross-worker locking must remain active over both read and write operations. All authorized automated writers, including different topics and destinations, must share this exact lease namespace. A per-topic mutex cannot protect the complete folder invariant. This change does not install a lock backend or grant direct connector writes. If a lease owner crashes or an upload outcome is unknown, do not automatically steal an expired lease: Google Drive creation has no fencing-token check. Reconcile the prior operation and prove the old writer is quiescent before an authorized recovery releases the lease. No automatic force-unlock, fallback writer or second scheduler.
 - No existing Drive object is changed; no cloud resources, costs, OAuth grants or separate synchronization service are created. File size limit: 32 MiB for this adapter. A caller lacking source-byte rights or remote-byte readback cannot claim SHA-256 proof.
 - These are **mock-port tests**, not a successful live Drive upload. Production integration remains unproven until the real host adapter and exclusive lease are observed.
 
