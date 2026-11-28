@@ -62,6 +62,9 @@
 !server/vocabulary-checkout.test.mjs
 !server/blueprint-commerce.mjs
 !server/blueprint-commerce.test.mjs
+!server/smartclip-sandbox-commerce.mjs
+!server/smartclip-sandbox-commerce.test.mjs
+!server/smartclip-client-pairing.mjs
 !server/blueprint-private-cloud.mjs
 !server/blueprint-private-cloud.test.mjs
 !server/private-knowledge-vault.mjs

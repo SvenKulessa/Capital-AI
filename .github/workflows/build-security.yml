@@ -129,6 +129,8 @@ jobs:
             scripts/benchmark-ledger-migration.test.mjs \
             scripts/benchmark-cost-calibration.test.mjs \
             scripts/stripe-three-purchase-e2e.test.mjs \
+            server/smartclip-sandbox-commerce.test.mjs \
+            server/smartclip-image-local.test.mjs \
             scripts/ecb-reference-admission.test.mjs \
             scripts/validate-oss-multi-asset-plan.test.mjs \
             scripts/verify-release-readiness.test.mjs \
@@ -141,6 +143,9 @@ jobs:
           npm run validate:all
           git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
           node scripts/license-evidence.mjs
+      - name: SmartClip PostgreSQL two-connection race (isolated Docker)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'capital-ai-growth/smartclip-sandbox-commerce-20261122'
+        run: bash scripts/trust/smartclip-postgres-concurrency.sh
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           docker build --file Dockerfile.security --tag capital-ai-security .
