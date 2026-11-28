@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildGrowthIntelligenceContentDrafts, xAcquisitionDraftOverview, forecastXAcquisitionBudget, buildXAcquisitionCandidate } from '../../src/contracts/growthIntelligenceContent.ts';
 
 import { buildProductChannelIntelligence } from './product-channel-intelligence.mjs';
+import { buildRaceDistribution } from './agent-race-distribution.mjs';
 import { buildResearchRound, buildSmartcopyPilot } from './product-market-research.mjs';
 import { planContentCampaign } from '../../src/contracts/contentEngine.ts';
 import { buildDraftContentSocialPackage } from '../../src/contracts/contentSocialPackage.ts';
@@ -32,6 +33,7 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
   const sourceBytes = readFileSync(fileURLToPath(sourceUrl));
   const rawPlan = JSON.parse(sourceBytes.toString('utf8'));
   const drafts = buildGrowthIntelligenceContentDrafts(rawPlan);
+  const productToMarket = buildProductChannelIntelligence();
   return {
     contractVersion: 'CAPITAL_AI_GROWTH_INTELLIGENCE_DRAFT_BUNDLE@1',
     sourcePath: GROWTH_INTELLIGENCE_PLAN_PATH,
@@ -56,7 +58,8 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
       plannedScenes: drafts.filter(d=>d.visualScene!==null).length, actualMediaAssets: 0,
       publicPublishAllowed: false, toolRadar: { cadence: 'EXISTING_DAILY_DEPENDENCY_WATCH', state: 'SCHEDULED_SOURCE_ONLY', automaticInstall: false } },
     xAcquisition: xAcquisitionDraftOverview(drafts),
-    productToMarket: buildProductChannelIntelligence(),
+    productToMarket,
+    agentRaceDistribution: buildRaceDistribution(productToMarket),
     ...(dataInput === undefined ? {} : { growthDataLayer: projectGrowthDataLayer(dataInput) }),
   };
 }

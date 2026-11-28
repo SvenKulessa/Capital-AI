@@ -1,0 +1,125 @@
+{
+  "schema": "CAPITAL_AI_AGENT_RACE@1",
+  "status": "DRAFT_ONLY",
+  "authority": "AGENTS.md",
+  "domainOwner": "GROWTH",
+  "secondaryDomains": [
+    "PRODUCT",
+    "TRUST",
+    "PLATFORM",
+    "MARKET"
+  ],
+  "skillRegistry": ".agents/skills/registry.json",
+  "existingDistribution": "scripts/growth/product-channel-intelligence.mjs",
+  "existingProductRegistry": "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md",
+  "existingOrchestration": "scripts/growth-agent/auto_loop.py",
+  "permissionExpansion": false,
+  "publicPublishAllowed": false,
+  "liveSalesAllowed": false,
+  "providerCalls": 0,
+  "campaignSpend": 0,
+  "executionStatus": "NOT_PROVEN",
+  "prompt": {
+    "formats": [
+      "PLAIN_TEXT",
+      "JSON"
+    ],
+    "vfdRegistryStatus": "NOT_PROVEN",
+    "tags": [
+      "hardSkills",
+      "softSkills",
+      "vfd"
+    ],
+    "userTextTrust": "UNTRUSTED_DATA",
+    "candidateModule": "scripts/growth/agent-race-candidate.mjs",
+    "executionAuthority": false
+  },
+  "identity": {
+    "animals": [
+      "fox",
+      "owl",
+      "wolf",
+      "cheetah",
+      "turtle",
+      "raven",
+      "dolphin"
+    ],
+    "guestAllowed": true,
+    "publicProfileOptIn": true,
+    "avatarUpload": "NOT_IMPLEMENTED",
+    "profileActivation": "NOT_PROVEN"
+  },
+  "benchmark": {
+    "securityPassRequired": true,
+    "comparableTaskModelBudgetRequired": true,
+    "weights": {
+      "correctness": 50,
+      "instruction": 20,
+      "efficiency": 15,
+      "robustness": 15
+    },
+    "missingEvidence": "NOT_PROVEN",
+    "trafficSeparateFromTechnicalScore": true,
+    "candidateModule": "scripts/growth/agent-race-candidate.mjs",
+    "sourceAuthentication": "NOT_PROVEN"
+  },
+  "improvement": {
+    "interval": 3,
+    "uniqueCompletedEvidenceOnly": true,
+    "onStagnation": true,
+    "rollback": "FILE_LEVEL_SHA_BOUND"
+  },
+  "runner": {
+    "status": "NOT_PROVEN",
+    "default": "OFFLINE_REFERENCE_ONLY",
+    "network": "DENY",
+    "credentials": "DENY",
+    "productionAccess": "DENY"
+  },
+  "publication": {
+    "state": "HOLD",
+    "stages": [
+      "RESEARCH",
+      "CANDIDATE",
+      "OFFLINE_PROTOTYPE",
+      "TESTED",
+      "PRIVATE_BETA",
+      "RELEASE_CANDIDATE",
+      "AUTHORIZED_PUBLISH",
+      "RUNTIME_READBACK"
+    ],
+    "reuseExistingApproval": true,
+    "requiredEvidence": [
+      "security",
+      "privacy",
+      "rights",
+      "tests",
+      "runtime",
+      "ownerPublish"
+    ],
+    "channelAdapterActivation": "NOT_PROVEN"
+  },
+  "marketValue": {
+    "kind": "NON_MONETARY_INDEX",
+    "traffic": "CONSENTED_DEDUPLICATED_ATTRIBUTION",
+    "noCashOrToken": true,
+    "candidateModule": "scripts/growth/agent-race-candidate.mjs",
+    "weights": {
+      "technical": 40,
+      "marketing": 25,
+      "improvement": 20,
+      "demand": 15
+    },
+    "liveIndex": "NOT_PROVEN"
+  },
+  "commercialStatus": "NOT_PROVEN",
+  "distribution": {
+    "schema": "CAPITAL_AI_AGENT_RACE_DISTRIBUTION@1",
+    "entrypoint": "scripts/growth/agent-race-distribution.mjs",
+    "integration": "scripts/growth/growth-intelligence-drafts.mjs",
+    "attribution": "SOURCE_RECORDED_NOT_AUTHENTICATED",
+    "smartClip": "STORYBOARD_ONLY",
+    "activation": "HOLD",
+    "liveDemand": "NOT_PROVEN"
+  }
+}

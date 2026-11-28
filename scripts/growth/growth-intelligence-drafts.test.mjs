@@ -278,3 +278,7 @@ test('direct Instagram Meta HTTP 400 errors are isolated and sanitized',async()=
     assert.equal(result.publicPublishAllowed,false);
   }
 });
+
+import './agent-race-distribution.test.mjs';
+
+test('Agent Race uses the existing Growth product projection without publication authority',()=>{const b=buildGrowthIntelligenceDraftBundle();assert.equal(b.productToMarket.products.find(p=>p.id==='agent-race').profile,'agentRace');assert.equal(b.agentRaceDistribution.state,'DRAFT_ONLY');assert.equal(b.agentRaceDistribution.providerCalls,0);assert.equal(b.agentRaceDistribution.liveMetrics,null);});
