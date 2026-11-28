@@ -5,7 +5,14 @@ import { pathToFileURL } from 'node:url';
 import { createGoogleMaintenance } from '../server/google-maintenance-api.mjs';
 
 const empty = { type: 'object', properties: {}, additionalProperties: false };
+const keywordInput = { type:'object', properties:{
+  keywords:{type:'array',minItems:1,maxItems:20,uniqueItems:true,items:{type:'string',minLength:1,maxLength:80}},
+  market:{type:'string',enum:['DE','US','GLOBAL_EN']}
+},required:['keywords','market'],additionalProperties:false };
 export const GOOGLE_MAINTENANCE_TOOLS = Object.freeze([
+  { name:'ads_keyword_status', description:'Local Google Ads keyword reader configuration; no provider call or permission proof.', inputSchema:empty, annotations:{readOnlyHint:true} },
+  { name:'ads_keyword_ideas', description:'Direct Google Ads keyword suggestions and estimated historical metrics, bounded first page only. No campaign or budget mutation.', inputSchema:keywordInput, annotations:{readOnlyHint:true,openWorldHint:true} },
+  { name:'ads_keyword_history', description:'Direct Google Ads historical search estimates, close variants, paid competition and bid ranges for explicit public search terms. No campaign or budget mutation.', inputSchema:keywordInput, annotations:{readOnlyHint:true,openWorldHint:true} },
   { name: 'google_maintenance_status', description: 'Configured targets and enabled capabilities; does not prove Google access.', inputSchema: empty },
   { name: 'gcp_get_project', description: 'Read exact Capital-AI Cloud project metadata.', inputSchema: empty },
   { name: 'gcp_list_enabled_services', description: 'List enabled APIs for the exact Capital-AI project; does not enable services.', inputSchema: empty },

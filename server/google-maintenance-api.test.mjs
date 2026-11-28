@@ -106,7 +106,7 @@ test('provider identities and HTTP failures fail closed without response-body di
 test('MCP exposes only named maintenance tools and handles initialization and notifications', async () => {
   const { api, calls } = harness();
   const response = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, api);
-  assert.equal(response.result.tools.length, 20);
+  assert.equal(response.result.tools.length, 23);
   for (const name of ['gsc_get_expected_site', 'gsc_inspect_search_configuration', 'gsc_resubmit_canonical_sitemap']) {
     assert.ok(response.result.tools.some(tool => tool.name === name && tool.inputSchema.additionalProperties === false));
   }
@@ -163,4 +163,62 @@ test('oversized responses and transport failures do not expose token material', 
   const result = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'ga4_get_property' } }, api);
   assert.equal(result.result.content[0].text, 'GOOGLE_TRANSPORT_UNAVAILABLE');
   assert.doesNotMatch(JSON.stringify(result), /private-token/);
+});
+
+
+const adsEnv={GOOGLE_MAINTENANCE_ADS_READ_ENABLED:'true',GOOGLE_MAINTENANCE_ADS_CUSTOMER_ID:'1234567890',GOOGLE_MAINTENANCE_ADS_LOGIN_CUSTOMER_ID:'9876543210',GOOGLE_MAINTENANCE_ADS_ACCESS_TOKEN:'synthetic-ads-token'};
+const kwInput={market:'DE',keywords:['terminal output','log viewer']};
+test('keyword tools are default off and isolated from existing Google maintenance credentials',async()=>{
+  let calls=0;
+  const api=createGoogleMaintenance({env:{GOOGLE_MAINTENANCE_ACCESS_TOKEN:'synthetic-other-token'},fetchImpl:async()=>{calls++;throw Error('unexpected');}});
+  assert.equal((await api.call('ads_keyword_status')).accessVerified,false);
+  await assert.rejects(api.call('ads_keyword_history',kwInput),/ADS_READ_DISABLED/);
+  const enabled=createGoogleMaintenance({env:{...adsEnv,GOOGLE_MAINTENANCE_ADS_ACCESS_TOKEN:undefined},tokenProvider:async()=>{throw Error('wrong token provider');},fetchImpl:async()=>{calls++;}});
+  await assert.rejects(enabled.call('ads_keyword_history',kwInput),/ADS_IDENTITY_NOT_CONFIGURED/);
+  assert.equal(calls,0);
+});
+test('keyword history binds direct endpoint, account, network and separate token; missing stays null',async()=>{
+  const calls=[];
+  const api=createGoogleMaintenance({env:adsEnv,now:()=>Date.parse('2026-11-27T00:00:00.000Z'),
+    fetchImpl:async(url,opts)=>{
+      calls.push({url:String(url),opts});
+      return Response.json({results:[{text:'terminal output',closeVariants:['terminal outputs'],keywordMetrics:{avgMonthlySearches:'120',competition:'LOW',competitionIndex:'12',lowTopOfPageBidMicros:'1000',highTopOfPageBidMicros:'2000',monthlySearchVolumes:[{year:'2026',month:'OCTOBER',monthlySearches:'0'},{year:'2026',month:'SEPTEMBER'}]}},{text:'log viewer'}]});
+    }});
+  const report=await api.call('ads_keyword_history',kwInput);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].url,'https://googleads.googleapis.com/v26/customers/1234567890:generateKeywordHistoricalMetrics');
+  assert.equal(calls[0].opts.redirect,'error');
+  assert.equal(calls[0].opts.headers.Authorization,'Bearer synthetic-ads-token');
+  assert.equal(calls[0].opts.headers['login-customer-id'],'9876543210');
+  assert.deepEqual(JSON.parse(calls[0].opts.body),{language:'languageConstants/1001',geoTargetConstants:['geoTargetConstants/2276'],keywordPlanNetwork:'GOOGLE_SEARCH',keywords:kwInput.keywords});
+  assert.equal(report.rows[0].metrics.averageMonthlySearches,120);
+  assert.equal(report.rows[0].metrics.monthly[0].searches,null);
+  assert.equal(report.rows[0].metrics.monthly[1].searches,0);
+  assert.equal(report.rows[1].metrics,null);
+  assert.equal(report.publicationAllowed,false);
+  assert.match(report.evidenceSha256,/^[a-f0-9]{64}$/);
+  assert.doesNotMatch(JSON.stringify(report),/synthetic-ads-token|1234567890|9876543210/);
+});
+test('ideas first page is explicit, and no arbitrary account, URL, operation or malformed input passes',async()=>{
+  let calls=0;
+  const api=createGoogleMaintenance({env:adsEnv,fetchImpl:async(url,opts)=>{
+    calls++;assert.match(String(url),/:generateKeywordIdeas$/);
+    const body=JSON.parse(opts.body);assert.equal(body.pageSize,100);assert.equal(body.includeAdultKeywords,false);
+    assert.deepEqual(body.geoTargetConstants,[]);assert.equal(body.language,'languageConstants/1000');
+    return Response.json({results:[{text:'terminal copy',keywordIdeaMetrics:{}}],nextPageToken:'private-cursor'});
+  }});
+  const result=await api.call('ads_keyword_ideas',{...kwInput,market:'GLOBAL_EN'});
+  assert.equal(result.truncated,true);assert.equal(result.status,'NOT_PROVEN_NO_VOLUME');
+  assert.doesNotMatch(JSON.stringify(result),/private-cursor/);
+  for(const input of [{...kwInput,customerId:'0000000000'},{...kwInput,url:'https://example.com'},{...kwInput,market:'__proto__'},{...kwInput,keywords:['a','A']},{...kwInput,keywords:['https://example.com']},{...kwInput,keywords:['a@b.example']}])await assert.rejects(api.call('ads_keyword_history',input));
+  await assert.rejects(api.call('ads_campaign_mutate',{}),/TOOL_NOT_ALLOWED/);
+  assert.equal(calls,1);
+});
+test('provider error and invalid metrics are rejected, never exposed as zeros or raw error bodies',async()=>{
+  const api=createGoogleMaintenance({env:adsEnv,fetchImpl:async()=>new Response('synthetic-private-error',{status:403})});
+  const result=await handleGoogleMaintenanceMessage({jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'ads_keyword_history',arguments:kwInput}},api);
+  assert.equal(result.result.isError,true);
+  assert.doesNotMatch(JSON.stringify(result),/synthetic-private-error|synthetic-ads-token/);
+  const malformed=createGoogleMaintenance({env:adsEnv,fetchImpl:async()=>Response.json({results:[{text:'terminal output',keywordMetrics:{avgMonthlySearches:'-1'}}]})});
+  await assert.rejects(malformed.call('ads_keyword_history',kwInput),/ADS_INVALID_METRIC/);
 });
