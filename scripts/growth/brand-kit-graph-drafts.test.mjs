@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { CONTRACT,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
+import { buildGrowthIntelligenceDraftBundle } from './growth-intelligence-drafts.mjs';
+import { CONTRACT,readCorporateAssetInventory,resolveCorporateAsset,brandDraftTemplate,readBrandKit,assessContext,drawBrandedSvg,buildBrandedGrowthDraft,renderBrandPng,buildBrandedPngDraft } from './brand-kit-graph-drafts.mjs';
 import { buildSocialPublisherHandoff } from '../../src/contracts/socialPublisherAdapter.ts';
 import { ensureResvgWasmInitialized } from '../../src/platform/SocialMediaEngine/Branding/ResvgWasmRuntime.mjs';
 
@@ -395,4 +396,57 @@ test('existing licensed context adapter cannot bypass separate research review o
  assert.equal(projectLicensedProductResearch({records:[record],rightsLedger:[right],bindings:[{...binding,summarySha256:'a'.repeat(64)}]},'2026-11-25').records.length,0);
  const r=projectLicensedProductResearch({records:[record],rightsLedger:[right],bindings:[binding]},'2026-11-25');
  assert.equal(r.records.length,1);assert.equal(r.publicPublishAllowed,false);assert.equal(r.sourceAuthentication,'NOT_PROVEN');
+});
+
+
+test('a self-hashed logo, profile swap or changed valid palette cannot impersonate the corporate kit',()=>{
+  const bundle=buildGrowthIntelligenceDraftBundle();
+  const draft=bundle.drafts.find(d=>d.channel==='X');
+  const kit=readBrandKit('X');
+  const fake=Buffer.alloc(128,65);
+  for(const altered of [{...kit,logo:fake.toString('base64'),logoSha256:sha(fake)},
+    {...kit,colors:['#FFFFFF',...kit.colors.slice(1)]},
+    {...kit,logoRightsRef:'customer-logo'},
+    {...kit,...Object.fromEntries(Object.entries(readBrandKit('INSTAGRAM')).filter(([key])=>key.startsWith('profile')))}]) {
+    assert.throws(()=>drawBrandedSvg({draft,kit:altered,context:{accepted:[]},template:brandDraftTemplate('X')}),/BRAND_KIT_NOT_TRUSTED|BRAND_PROFILE_NOT_VERIFIED/);
+  }
+});
+
+
+test('corporate inventory projects existing manifests without granting publishing or customer reuse',()=>{
+  const rows=readCorporateAssetInventory();
+  assert.equal(new Set(rows.map(a=>a.id)).size,rows.length);
+  assert.ok(rows.some(a=>a.id==='CAI-LOGO'));
+  assert.ok(rows.some(a=>a.id==='CAI-GLOBE'));
+  assert.ok(rows.some(a=>a.id==='capital-ai-badge-pro'));
+  assert.ok(rows.some(a=>a.id==='learning-universe-glossar'));
+  assert.ok(rows.some(a=>a.id==='typography:PlusJakartaSans-Regular.ttf'));
+  assert.ok(rows.every(a=>a.identityStatus==='VERIFIED_BYTES'&&a.namespace==='CAPITAL_AI_CORPORATE'&&!a.publicPublishAllowed&&!a.customerRedistributionAllowed));
+});
+
+
+test('corporate resolver has no caller-controlled pathname, bytes or license authority',()=>{
+ const logo=resolveCorporateAsset('CAI-LOGO');
+ assert.equal(logo.sha256,readBrandKit('X').logoSha256);
+ assert.equal(resolveCorporateAsset('asset-pack:social/x-link-card-1200x675.jpg').sha256,readBrandKit('X').profileSha256);
+ for(const value of ['customer:logo','../../secret','public/branding/capital-ai-logo.jpg',{id:'CAI-LOGO',sha256:sha('fake')},null])assert.throws(()=>resolveCorporateAsset(value),/CORPORATE_ASSET_UNKNOWN/);
+ assert.equal(logo.customerRedistributionAllowed,false);
+ assert.equal(logo.publicPublishAllowed,false);
+});
+
+
+test('Hero Globe Zero aliases are exact and private original bytes are mandatory',async()=>{
+  const { HERO_GLOBE_ZERO,resolveHeroGlobeAlias,resolveHeroGlobeZero }=await import('./brand-kit-graph-drafts.mjs');
+  for(const alias of ['🌎','Globe','hero Globe Zero','globus only','  HERO   GLOBE ZERO  ',HERO_GLOBE_ZERO.id]) {
+    assert.equal(resolveHeroGlobeAlias(alias),HERO_GLOBE_ZERO);
+    assert.throws(()=>resolveHeroGlobeZero(alias),/HERO_GLOBE_ORIGINAL_REQUIRED/);
+  }
+  for(const alias of ['Globe extra','replace Globe','🌍','https://example.com/globe','../Globe',null]) {
+    assert.equal(resolveHeroGlobeAlias(alias),null);
+    assert.throws(()=>resolveHeroGlobeZero(alias,Buffer.alloc(1)),/HERO_GLOBE_ALIAS_UNKNOWN/);
+  }
+  assert.equal(HERO_GLOBE_ZERO.publicPublishAllowed,false);
+  assert.throws(()=>resolveHeroGlobeZero('Globe',Buffer.alloc(HERO_GLOBE_ZERO.bytes)),/HERO_GLOBE_DIGEST_OR_FORMAT_MISMATCH/);
+  assert.throws(()=>buildBrandedGrowthDraft({channel:'X',heroGlobe:{alias:'Globe'}}),/HERO_GLOBE_ORIGINAL_REQUIRED/);
+  assert.equal(buildBrandedGrowthDraft({channel:'X'}).image.heroGlobe,undefined);
 });

@@ -61,3 +61,29 @@ Aktuelle deterministische Ausgaben: 1280×720, 1080×1080, 1080×1920 und Szenen
 Keine Neugenerierung oder Rückwirkung auf bereits veröffentlichte Inhalte ohne gesonderte, quellen-/lizenzgeprüfte Migration. Keine Veröffentlichung, Secret-Änderung oder kostenpflichtige Modellaktivierung durch das Branding. Das erstmalige Vorliegen der Vertragsdaten beweist nicht, dass alle unabhängigen Legacy-Renderer bereits migriert sind; solche Generatoren sind separat gegen den Token-Vertrag zu inventarisieren.
 
 **Fertig für einen Release-Slice**, wenn die bestehenden relevanten CI-Gates inklusive Docker Security Gate und Domain Governance am aktuellen Head grün sind und die Renderer-Snapshots visuell (Mobile/Desktop, Alt-Text und Lizenzgrenzen) geprüft wurden.
+
+## Owner-Designentscheidung · 2026-11-25 · BR-02 bis BR-04
+
+Der Owner hat die folgenden **Designanforderungen**, nicht die Freigabe neuer Masterassets oder Nutzungsrechte, bestätigt.
+
+| Paket | Auswahl | Umsetzung |
+| --- | --- | --- |
+| BR-02 | `extended` | Pro Produkt ein kanonisches statisches Masterlogo, eine davon abgeleitete interaktive 3D-Variante, eine Videoanimation und ein App-Icon. |
+| BR-04 | `premium` | Lernzertifikate im Universe-Premium-Design: dunkelblau, Goldakzent, diskrete Siebenfarben-Signatur, Plus Jakarta Sans, kontrastreiche lesbare Felder und druckfähige Fassung. |
+| BR-04 | `3d` | Vorhandene Abo- und Rollen-Badges byteidentisch erhalten; ergänzende 3D-Ausführungen als separat versionierte Derivate derselben Identität. |
+| BR-03 | keine neue Medienauswahl | Leere Auswahl protokolliert; bestehender Integrationsauftrag bleibt unverändert. Keine zusätzliche Kanal-, Veröffentlichungs- oder Rechtefreigabe. |
+
+### Ableitungs- und Abnahmeanforderungen
+
+- Master-ID, Version, SHA-256 und Rechtebezug bleiben die Identitätsgrundlage. Jede Ableitung erhält eigene Asset-ID, Version und Prüfsumme sowie Referenz auf den unveränderten Master. Keine eigenmächtige Neugenerierung vorhandener Marken.
+- 3D und Video: bestehende Renderer wiederverwenden; Pause, Reduced Motion und statischer Fallback. App-Icons: geeigneter Safe Area und Erkennbarkeit in kleinen Größen. Keine neue Abhängigkeit oder Kostenaktivierung allein aufgrund dieser Auswahl.
+- Zertifikate: zugänglicher Text, ausstellende Stelle, Lernleistung, Ausstellungsdatum und eindeutige Referenz; nur tatsächlich nachgewiesene Leistungen bescheinigen. Keine erfundenen Qualifikationen oder Akkreditierungen.
+- Badge-Derivate sind ausschließlich visuelle Darstellungen, keine Rollen- oder Abo-Berechtigung. Vorhandene serverseitige Berechtigungslogik bleibt unberührt.
+- Neue Masterlogos, konkrete Entwürfe und Rechte benötigen persönliche Bestätigung. Produktspezifische Logoformen wurden in dieser Auswahl noch nicht festgelegt. Kundenlogos bleiben vom Corporate-Namensraum getrennt.
+- Der private Workspace bleibt bis zur separaten Freigabe und serverseitigen Owner-Isolationsprüfung unveröffentlicht.
+
+**Status:** Designanforderungen bestätigt; konkrete Master, Derivate, Generatorintegration, CI und Produktionswirkung noch nicht nachgewiesen. Keine Änderung der Root-Engineering-Richtlinie oder neuer Required Checks.
+
+
+## Hero Globe Zero · owner-approved private reference (2026-11-28)
+Canonical asset ID `CAI-HERO-GLOBE-ZERO@1`; aliases 🌎, Globe, hero Globe Zero, globus only. Exact normalized alias matching in the GIE brand-kit renderer; original PNG RGBA 1254×1254, 1511469 bytes, SHA-256 `a6e3e53cad39d8b2a136c068a6de94b888cadca9d3aa2829aaab9de86dfa99a7`. Owner-provided and verified against a Drive redownload. Distinct from the existing animated Hero globe, Analytics artwork and logo master. No CA lettering, atoms, orbit rings, charts or background added to the original. The original stays in private storage; no Drive IDs or original bytes in the public repository. Existing offline `buildBrandedGrowthDraft({channel,heroGlobe:{alias,bytes}})` / PNG draft path accepts only caller-supplied, hash-verified exact PNG bytes; unknown, missing or tampered inputs fail closed. Authenticated private byte delivery remains a separate caller responsibility; no public endpoint, arbitrary path, provider fetch, automatic publication, commercial permission or production claim. Existing no-globe rendering remains unchanged. CI and runtime not proven until readback.
