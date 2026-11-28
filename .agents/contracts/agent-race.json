@@ -99,5 +99,14 @@
     "traffic": "CONSENTED_DEDUPLICATED_ATTRIBUTION",
     "noCashOrToken": true
   },
-  "commercialStatus": "NOT_PROVEN"
+  "commercialStatus": "NOT_PROVEN",
+  "distribution": {
+    "schema": "CAPITAL_AI_AGENT_RACE_DISTRIBUTION@1",
+    "entrypoint": "scripts/growth/agent-race-distribution.mjs",
+    "integration": "scripts/growth/growth-intelligence-drafts.mjs",
+    "attribution": "SOURCE_RECORDED_NOT_AUTHENTICATED",
+    "smartClip": "STORYBOARD_ONLY",
+    "activation": "HOLD",
+    "liveDemand": "NOT_PROVEN"
+  }
 }
