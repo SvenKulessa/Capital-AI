@@ -171,10 +171,7 @@ export function GovernanceEvidenceSprintPage() {
           </table>
         </div>
         <p className="mt-4 text-sm text-slate-300">Musterempfehlung: Zuerst fehlende CI- und Build-Identitätsnachweise erfassen; erst danach über Freigaben entscheiden. Keine Sicherheitsbewertung ohne reale Evidenz.</p>
-        <a href="https://github.com/SvenKulessa/Capital-AI/blob/main/docs/growth/GOVERNANCE-EVIDENCE-SPRINT-MUSTERBERICHT-20261119.md"
-          target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center text-amber-200 underline underline-offset-4">
-          Aufbau des Musterberichts im Repository
-        </a>
+
       </section>
 
       <GovernanceSprintInquiry />
