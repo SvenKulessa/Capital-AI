@@ -539,6 +539,17 @@ class ProductChannelReadState(TypedDict, total=False):
 
 
 CHANNEL_RULES = {
+    "acti": "REVIEW_REQUIRED",
+    "chatgptApps": "LISTING_REVIEW_REQUIRED",
+    "gptStore": "REVIEW_REQUIRED",
+    "notionConnections": "LISTING_REVIEW_REQUIRED",
+    "githubReleases": "REVIEW_REQUIRED",
+    "mcpRegistry": "LISTING_REVIEW_REQUIRED",
+    "npmRegistry": "REVIEW_REQUIRED",
+    "pypi": "REVIEW_REQUIRED",
+    "ghcr": "REVIEW_REQUIRED",
+    "vscodeMarketplace": "LISTING_REVIEW_REQUIRED",
+    "rapidApi": "LISTING_REVIEW_REQUIRED",
     "microsoftMarketplace": "LISTING_REVIEW_REQUIRED",
     "awsMarketplace": "LISTING_REVIEW_REQUIRED",
     "googleCloudMarketplace": "LISTING_REVIEW_REQUIRED",
