@@ -744,3 +744,14 @@ test('all admitted no-JS static documents share the pinned v4 canvas without pub
   assert.ok(!ignore.includes('!public/documentation/byok.html'));
   assert.ok(!ignore.includes('!public/downloads/capital-ai-byok-presentation.html'));
 });
+
+
+test('public static pricing and source downloads omit repository operational references', () => {
+  const pricing = readFileSync(new URL('../public/documentation/pricing-models.html', import.meta.url), 'utf8');
+  assert.match(pricing, /Learning Hub Paket/);
+  assert.doesNotMatch(pricing, /Market Vocabulary|Pricing Catalog|Webhook-E2E/);
+  for (const path of ['public/downloads/CAPITAL-AI_Market-Screener-Hub_Open-Source-SOURCES_2026-10-04.md','public/downloads/CAPITAL-AI_DOCUMENTATION_PROVENANCE_2026-10-05.md']) {
+    const content = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+    assert.doesNotMatch(content, /MARKET_QUOTES_ENABLED|admittedSources|GitHub PR #\d+|main@[a-f0-9]{40}|Owner Decision|Legacy Isolation|NATS JetStream|Valkey/i, path);
+  }
+});
