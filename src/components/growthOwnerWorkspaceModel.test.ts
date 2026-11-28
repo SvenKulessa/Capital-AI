@@ -189,3 +189,21 @@ test('Smartcopy conversion graph import keeps candidate and live metrics separat
   for(const patch of [{authorityGranted:true},{score:100},{coverage:100},{affected:5},{threadId:'raw private task'},{status:'VERIFIED'},{rawPrompt:'test'}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...hygiene,...patch}),reportSha,live));
   for(const patch of [{authorityGranted:true},{citationDigests:[]},{sourceCount:0},{status:'VERIFIED'},{excerpt:'test'},{domain:'ROOT'}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...research,...patch}),reportSha,live));
 });
+
+
+test('lifecycle receipt recomputes delta and archives a distinct non-authorizing row',()=>{
+ const thread='offline-'+'c'.repeat(40),scope='d'.repeat(64);
+ const phase=(digit:string,observedAt:string,affected:number,content:string)=>({contractVersion:'CAPITAL_AI_HYGIENE_HANDOFF@1',threadId:thread,runId:'hygiene-'+digit.repeat(64),sourceSha:'e'.repeat(40),observedAt,scopeDigest:scope,sourceDigest:digit.repeat(64),contentDigest:content.repeat(64),methodId:'doc-drift-claims-v1',checked:4,affected,missing:0,score:100-25*affected,coverage:15,status:'NOT_PROVEN',authorityGranted:false});
+ const b=phase('1','2026-11-28T10:00:00.000Z',1,'a'),f=phase('2','2026-11-28T10:00:01.000Z',0,'b'),r=phase('3','2026-11-28T10:00:02.000Z',0,'b');
+ const report={schema:'CAPITAL_AI_HYGIENE_LIFECYCLE@1',status:'NOT_PROVEN',authorityGranted:false,baseline:b,final:f,readback:r,readbackMatch:true,comparable:true,deltaPoints:25,regression:false};
+ const live=[projectGa4(good,row)],source=projectGraphHandoff(JSON.stringify(f),reportSha,live);
+ const projected=projectGraphHandoff(JSON.stringify(report),reportSha,source),note=projected.at(-1)!;
+ assert.deepEqual(projected.slice(0,-1),source);assert.equal(note.id,'document-hygiene-lifecycle');assert.equal(note.status,'NOT_PROVEN');assert.equal(note.origin,'OWNER_NOTE');assert.match(note.tests,/25 Punkte/);
+ assert.strictEqual(projectGraphHandoff(JSON.stringify(report),reportSha,projected),projected);
+ assert.deepEqual(importWorkspace(exportWorkspace(appendSnapshot([],projected,at)))[0].rows.slice(1),projected.slice(1));
+ for(const patch of [{authorityGranted:true},{status:'VERIFIED'},{deltaPoints:100},{regression:true},{readbackMatch:false},{comparable:false},{rawPrompt:'private'}, {readback:{...r,threadId:null}},{readback:{...r,contentDigest:'a'.repeat(64)}},{baseline:{...b,observedAt:r.observedAt}},{baseline:{...b,score:100}},{baseline:{...b,observedAt:'2026-11-28T10:00:00Z'}}])
+  assert.throws(()=>projectGraphHandoff(JSON.stringify({...report,...patch}),reportSha,source));
+ const missing={...report,baseline:null,final:null,readback:null,readbackMatch:false,comparable:false,deltaPoints:null,regression:null};
+ const incomplete=projectGraphHandoff(JSON.stringify(missing),'a'.repeat(64),projected).at(-1)!;
+ assert.equal(incomplete.status,'NOT_PROVEN');assert.match(incomplete.tests,/nicht vergleichbar/);assert.doesNotMatch(incomplete.tests,/25 Punkte/);
+});

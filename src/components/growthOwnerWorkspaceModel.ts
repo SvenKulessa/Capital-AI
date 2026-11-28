@@ -241,6 +241,41 @@ function projectHygieneNote(raw:unknown, reportSha:string, rows:GrowthRow[]):Gro
     evidence:'Import SHA-256 '+reportSha+'; Commit '+d.sourceSha+'; Scope '+d.scopeDigest+'; Report '+d.sourceDigest+'; Content '+d.contentDigest+'; Run '+d.runId,
     auth:'Importierte Messung; Herkunft und Aktualität NOT_PROVEN',approvals:'Keine Mutations-, Merge- oder Verkaufsfreigabe'},reportSha);
 }
+// The lifecycle payload comes from existing SQLite graph state, never the full state.
+const lifecyclePhaseSchema = hygieneHandoffSchema.refine(d=>/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(d.observedAt));
+const hygieneLifecycleSchema = z.object({
+  schema:z.literal('CAPITAL_AI_HYGIENE_LIFECYCLE@1'),status:z.literal('NOT_PROVEN'),authorityGranted:z.literal(false),
+  baseline:lifecyclePhaseSchema.nullable(),final:lifecyclePhaseSchema.nullable(),readback:lifecyclePhaseSchema.nullable(),
+  readbackMatch:z.boolean(),comparable:z.boolean(),deltaPoints:z.number().int().min(-100).max(100).nullable(),regression:z.boolean().nullable(),
+}).strict();
+
+function projectHygieneLifecycleNote(raw:unknown,reportSha:string,rows:GrowthRow[]):GrowthRow[]{
+  const d=hygieneLifecycleSchema.parse(raw);
+  const {baseline:b,final:f,readback:r}=d;
+  const phases=[b,f,r].filter(p=>p!==null);
+  if(new Set(phases.map(p=>p.threadId)).size>1 || (r!==null && f===null))throw Error('Inconsistent lifecycle binding');
+  const fields=['sourceSha','scopeDigest','contentDigest','methodId','checked','affected','missing','score','coverage'] as const;
+  const match=!!(f && r && r.observedAt>=f.observedAt && r.sourceDigest!==f.sourceDigest && fields.every(k=>f[k]===r[k]));
+  const comparable=!!(b && f && match && b.observedAt<f.observedAt && b.sourceDigest!==f.sourceDigest &&
+    b.scopeDigest===f.scopeDigest && b.methodId===f.methodId && b.checked===f.checked && b.missing===f.missing &&
+    b.score!==null && f.score!==null);
+  const delta=comparable && b?.score!=null && f?.score!=null ? f.score-b.score : null;
+  if(d.readbackMatch!==match || d.comparable!==comparable || d.deltaPoints!==delta || d.regression!==(delta===null?null:delta<0))
+    throw Error('Inconsistent lifecycle measurement');
+  const phaseRef=(label:string,p:typeof b)=>p ? label+' '+p.sourceSha+'/'+p.scopeDigest+'/'+p.sourceDigest+'/'+p.contentDigest : label+' fehlt';
+  const phaseScore=(label:string,p:typeof b)=>p ? label+' '+(p.score??'unbekannt')+'/100 ('+p.coverage+' %; '+p.observedAt+')' : label+' fehlt';
+  const row=makeRow('document-hygiene-lifecycle','Document Hygiene · Lifecycle','TRUST','Messscope und unabhängige Herkunft prüfen');
+  return upsertEvidenceNote(rows,rowSchema.parse({...row,
+    flow:'Baseline / Final / Readback · Claim-Stabilität, kein allgemeiner Hygiene- oder Freigabenachweis',
+    operation:[phaseScore('Baseline',b),phaseScore('Final',f),phaseScore('Readback',r)].join('; '),
+    tests:'Readback '+(match?'konsistent':'nicht nachgewiesen')+'; Delta '+(delta===null?'nicht vergleichbar':delta+' Punkte')+'; Regression '+(delta===null?'unbekannt':delta<0?'ja':'nein'),
+    dependencies:phases[0]?.threadId??'Keine Graph-Korrelation',
+    evidence:['Import SHA-256 '+reportSha,phaseRef('B',b),phaseRef('F',f),phaseRef('R',r)].join('; '),
+    auth:'Importierte, nicht unabhängig authentifizierte Messung',
+    approvals:'Keine Mutations-, Merge-, Archivaktivierungs- oder Verkaufsfreigabe',
+  }),reportSha);
+}
+
 function projectResearchEvidenceNote(raw:unknown,reportSha:string,rows:GrowthRow[]):GrowthRow[]{
   const d=researchEvidenceSchema.parse(raw);
   const row=makeRow('research-evidence-handoff','LangGraph · RAG-Evidence','PLATFORM','Quellen und Task-Bindung unabhängig zurücklesen');
@@ -256,6 +291,7 @@ export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow
   graphDigest.parse(reportSha);
   const parsed=JSON.parse(raw);
   if(parsed?.contractVersion==='CAPITAL_AI_HYGIENE_HANDOFF@1')return projectHygieneNote(parsed,reportSha,rows);
+  if(parsed?.schema==='CAPITAL_AI_HYGIENE_LIFECYCLE@1')return projectHygieneLifecycleNote(parsed,reportSha,rows);
   if(parsed?.contractVersion==='CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1')return projectResearchEvidenceNote(parsed,reportSha,rows);
   if(parsed && typeof parsed==='object' && 'contractVersion' in parsed &&
     parsed.contractVersion==='CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1')
