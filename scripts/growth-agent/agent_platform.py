@@ -169,3 +169,27 @@ def build_research_graph(repo_root: Path, *, checkpointer=None,
                                 {**{"agent_" + d.lower(): "agent_" + d.lower() for d in DOMAINS}, "stop": END})
     graph.add_edge("trust", END)
     return graph.compile(checkpointer=checkpointer)
+
+
+def research_evidence_handoff(root: Path, state: ResearchState) -> dict:
+    """Read back curated RAG citations; never export excerpts, prompts or authority."""
+    domain = state.get("domain")
+    thread_id = state.get("task_id")
+    if domain not in DOMAINS or not isinstance(thread_id, str) or not re.fullmatch(r"offline-[a-f0-9]{40}", thread_id):
+        raise ValueError("unbound research result")
+    bundle = load_domain_profiles(root)
+    profile = bundle["domains"][domain]
+    if state.get("bundle_sha256") != bundle["bundle_sha256"] or state.get("profile_sha256") != profile["profile_sha256"]:
+        raise ValueError("stale research profile")
+    def keys(citations):
+        return [(c["source"], c["line"], c["source_sha256"]) for c in citations]
+    current = retrieve(root, domain=domain, query=state["query"])
+    previous = state.get("citations", [])
+    match = state.get("status") == "RESEARCH_DRAFT" and bool(current) and keys(current) == keys(previous)
+    return {"contractVersion": "CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1",
+            "threadId": thread_id, "domain": domain, "bundleSha256": bundle["bundle_sha256"],
+            "profileSha256": profile["profile_sha256"],
+            "citationDigests": sorted({c["source_sha256"] for c in current}) if match else [],
+            "sourceCount": len(current) if match else 0,
+            "status": "SOURCE_READBACK_MATCH" if match else "NOT_PROVEN",
+            "authorityGranted": False}

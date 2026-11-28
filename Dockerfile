@@ -67,6 +67,7 @@ COPY CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json ./CAPITAL-AI-GRO
 COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY packages/benchmark-core ./packages/benchmark-core
+COPY packages/eif-product ./packages/eif-product
 COPY apps/cads-github-app/marketplace-plans.production.json apps/cads-github-app/github-app-registration.production.example.json ./apps/cads-github-app/
 COPY documentary/evidence ./documentary/evidence
 COPY generated/documentary ./generated/documentary
@@ -140,6 +141,7 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
+COPY scripts/growth/visual-export.mjs scripts/growth/visual-export-integration.test.mjs ./scripts/growth/
 COPY scripts/growth/growth-intelligence-image-drafts.mjs scripts/growth/growth-intelligence-image-drafts.test.mjs scripts/growth/growth-intelligence-drafts.mjs scripts/growth/growth-intelligence-drafts.test.mjs scripts/growth/next-round-planner.mjs scripts/growth/next-round-planner.test.mjs ./scripts/growth/
 COPY scripts/growth/product-channel-intelligence.mjs scripts/growth/product-channel-intelligence.test.mjs scripts/growth/product-market-research.mjs scripts/growth/product-market-research.test.mjs ./scripts/growth/
 COPY docs/product/MONETIZABLE-PRODUCT-REGISTRY.md ./docs/product/MONETIZABLE-PRODUCT-REGISTRY.md
@@ -220,6 +222,14 @@ COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
 RUN npm ci --omit=dev --include=optional --ignore-scripts --no-audit --no-fund \
     && node --input-type=module -e "import sharp from 'sharp'; const raw=await sharp({create:{width:1,height:1,channels:4,background:'#000000'}}).png().toBuffer(); if(!raw.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))) process.exit(1)" \
     && rm -rf /root/.npm
+# Exercise the exact existing runtime pin, without a new dependency or required check.
+COPY scripts/growth/visual-export.mjs scripts/growth/visual-export.test.mjs ./scripts/growth/
+RUN node --test scripts/growth/visual-export.test.mjs
+
+# Reuse the existing build source and development dependencies read-only; the runtime Sharp pin remains local to this stage.
+WORKDIR /app
+RUN --network=none --mount=from=build,source=/app,target=/app,ro NODE_PATH=/runtime/node_modules node --import tsx --test scripts/growth/visual-export-integration.test.mjs
+WORKDIR /runtime
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000

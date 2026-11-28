@@ -539,6 +539,18 @@ class ProductChannelReadState(TypedDict, total=False):
 
 
 CHANNEL_RULES = {
+    "acti": "REVIEW_REQUIRED",
+    "chatgptApps": "LISTING_REVIEW_REQUIRED",
+    "gptStore": "REVIEW_REQUIRED",
+    "notionConnections": "LISTING_REVIEW_REQUIRED",
+    "githubReleases": "REVIEW_REQUIRED",
+    "mcpRegistry": "LISTING_REVIEW_REQUIRED",
+    "npmRegistry": "REVIEW_REQUIRED",
+    "pypi": "REVIEW_REQUIRED",
+    "ghcr": "REVIEW_REQUIRED",
+    "vscodeMarketplace": "LISTING_REVIEW_REQUIRED",
+    "rapidApi": "LISTING_REVIEW_REQUIRED",
+    "saasHub": "HUMAN_ONLY_SUBMISSION_REQUIRED", "g2": "LISTING_REVIEW_REQUIRED", "capterra": "LISTING_REVIEW_REQUIRED",
     "microsoftMarketplace": "LISTING_REVIEW_REQUIRED",
     "awsMarketplace": "LISTING_REVIEW_REQUIRED",
     "googleCloudMarketplace": "LISTING_REVIEW_REQUIRED",
@@ -625,6 +637,90 @@ def build_channel_read_graph():
     return build_offline_review_graph(ProductChannelReadState, channel_source_review, channel_domain_review, channel_quality)
 
 
+class VisualReadState(TypedDict, total=False):
+    payload: dict
+    visual_valid: bool
+    metrics: dict
+    findings: Annotated[list[dict], operator.add]
+    report: dict
+
+
+def visual_source_review(state: VisualReadState) -> dict:
+    p = state.get("payload")
+    denied = {"visual_valid": False, "metrics": {}}
+    def sha(v):
+        return isinstance(v, str) and bool(re.fullmatch(r"[a-f0-9]{64}", v))
+    def integer(v, lo, hi):
+        return type(v) is int and lo <= v <= hi
+    keys = {"contractVersion", "sourceDigest", "state", "publicPublishAllowed",
+            "providerCalls", "providerCost", "manualTimeSavedMs", "drafts"}
+    if (not isinstance(p, dict) or set(p) != keys
+        or p["contractVersion"] != "CAPITAL_AI_VISUAL_GRAPH_INPUT@1"
+        or p["sourceDigest"] != "d08aa8e7f831dea7cb15010f46374f8fbdecaee1408619af1a4fb857460c1234"
+        or p["state"] != "DRAFT_ONLY" or p["publicPublishAllowed"] is not False
+        or not all(integer(p[k], 0, 0) for k in ("providerCalls", "providerCost"))
+        or p["manualTimeSavedMs"] is not None or not isinstance(p["drafts"], list)
+        or len(p["drafts"]) != 2):
+        return denied
+    expected = {"CAP-GROW-005": ("X", 1440, 960), "CAP-GROW-007": ("INSTAGRAM", 1080, 1350)}
+    seen = set()
+    totals = dict(assetCount=0, inputBytes=0, selectedBytes=0, elapsedMs=0, repairCycles=0)
+    for d in p["drafts"]:
+        if (not isinstance(d, dict) or set(d) != {"contentId", "channel", "width", "height", "sourceSha256",
+            "manifestSha256", "elapsedMs", "repairCycles", "selectedSha256", "assets"}
+            or not isinstance(d["contentId"], str) or d["contentId"] not in expected or d["contentId"] in seen
+            or (d["channel"], d["width"], d["height"]) != expected[d["contentId"]]
+            or not all(sha(d[k]) for k in ("sourceSha256", "manifestSha256", "selectedSha256"))
+            or not integer(d["elapsedMs"], 0, 3600000) or not integer(d["repairCycles"], 0, 0)
+            or not isinstance(d["assets"], list) or not 3 <= len(d["assets"]) <= 4):
+            return denied
+        seen.add(d["contentId"])
+        assets = {}
+        for a in d["assets"]:
+            if (not isinstance(a, dict) or set(a) != {"sha256", "mimeType", "byteLength"}
+                or not sha(a["sha256"]) or not integer(a["byteLength"], 1, 16777216)
+                or not isinstance(a["mimeType"], str) or a["mimeType"] not in
+                ("image/svg+xml", "image/png", "image/jpeg", "image/webp") or a["mimeType"] in assets):
+                return denied
+            assets[a["mimeType"]] = a
+        if not {"image/svg+xml", "image/png", "image/jpeg"} <= set(assets):
+            return denied
+        png = assets["image/png"]
+        if png["sha256"] != d["sourceSha256"]:
+            return denied
+        selected = next((a for k, a in assets.items() if k in ("image/png", "image/webp")
+                         and a["sha256"] == d["selectedSha256"]), None)
+        if selected is None or selected["byteLength"] > png["byteLength"]:
+            return denied
+        totals["assetCount"] += len(assets)
+        totals["inputBytes"] += png["byteLength"]
+        totals["selectedBytes"] += selected["byteLength"]
+        totals["elapsedMs"] += d["elapsedMs"]
+    return {"visual_valid": True, "metrics": totals}
+
+
+def visual_domain_review(domain: str):
+    def run(state: VisualReadState) -> dict:
+        ok = state.get("visual_valid") is True
+        return {"findings": [finding(domain, "PASS_WITH_GAPS" if ok else "BLOCKED",
+            "Local receipt metadata only; independent bytes, runtime, rights and cost verification required.")]}
+    return run
+
+
+def visual_quality(state: VisualReadState) -> dict:
+    ok = state.get("visual_valid") is True and all(
+        any(f.get("agent") == domain and f.get("status") == "PASS_WITH_GAPS" for f in state.get("findings", []))
+        for domain in ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH"))
+    return {"report": {"contractVersion": "CAPITAL_AI_VISUAL_GRAPH_HANDOFF@1", "engine": "langgraph",
+        "quality": "PASS_WITH_GAPS" if ok else "BLOCKED", "metrics": state.get("metrics") if ok else None,
+        "sourceAuthentication": "NOT_PROVEN_BY_GRAPH", "manualTimeSavedMs": None,
+        "publicationAllowed": False, "costActivationAllowed": False, "automaticChanges": False}}
+
+
+def build_visual_read_graph():
+    return build_offline_review_graph(VisualReadState, visual_source_review, visual_domain_review, visual_quality)
+
+
 def read_growth_input(stream):
     """Bound input before parsing, including stdin or changing local files."""
     raw = stream.read(262145)
@@ -646,7 +742,17 @@ def main():
     inputs.add_argument("--viral-data", type=Path, help="Bounded draft-only reference JSON, or - for stdin")
     inputs.add_argument("--conversion-data", type=Path, help="Bounded candidate JSON, or - for stdin")
     inputs.add_argument("--product-channels", type=Path, help="Bounded draft-only channel JSON, or - for stdin")
+    inputs.add_argument("--visual-data", type=Path, help="Bounded local visual receipt, or - for stdin")
     args = parser.parse_args()
+    if args.visual_data is not None:
+        if args.visual_data == Path("-"):
+            raw = read_growth_input(sys.stdin.buffer)
+        else:
+            with args.visual_data.open("rb") as stream:
+                raw = read_growth_input(stream)
+        result = build_visual_read_graph().invoke({"payload": raw, "findings": []}, {"recursion_limit": 8})
+        print(json.dumps(result["report"], ensure_ascii=False, sort_keys=True))
+        return
     if args.product_channels is not None:
         if args.product_channels == Path("-"):
             raw = read_growth_input(sys.stdin.buffer)
