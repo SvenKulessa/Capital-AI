@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateAnalysisEvidence } from './github-analysis-policy.mjs';
+import { evaluateAnalysisEvidence, summarizeAnalysisEvidence } from './github-analysis-policy.mjs';
 
 const sha = 'a'.repeat(40);
 const rules = [{ type: 'code_scanning' }, { type: 'code_quality' }];
@@ -63,4 +63,20 @@ test('policy is not misrepresented as evaluated if the active rule is absent', (
   const i = input(); i.activeRules = [{ type: 'code_scanning' }];
   const rows = evaluateAnalysisEvidence(i);
   assert.deepEqual(rows.map(r => r.type), ['code_scanning']);
+});
+
+test('aggregate requires both distinct expected policies and no collection blocker', () => {
+  const report = evaluateAnalysisEvidence(input());
+  assert.equal(summarizeAnalysisEvidence({ report }), 'PASS');
+  for (const invalid of [[], [report[0]], [report[1]], [report[0], report[0]],
+    [report[0], { ...report[1], status: 'NOT_PROVEN' }],
+    [report[0], { type: 'unknown', status: 'PASS' }], [...report, report[0]], null]) {
+    assert.equal(summarizeAnalysisEvidence({ report: invalid }), 'NOT_PROVEN');
+  }
+  assert.equal(summarizeAnalysisEvidence({ report, blocker: 'API unavailable' }), 'NOT_PROVEN');
+  assert.equal(summarizeAnalysisEvidence(), 'NOT_PROVEN');
+  const i = input(); i.activeRules = [];
+  assert.equal(summarizeAnalysisEvidence({ report: evaluateAnalysisEvidence(i) }), 'NOT_PROVEN');
+  i.activeRules = [{ type: 'code_scanning' }];
+  assert.equal(summarizeAnalysisEvidence({ report: evaluateAnalysisEvidence(i) }), 'NOT_PROVEN');
 });
