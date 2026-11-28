@@ -1,0 +1,437 @@
+# PR #913 · SHA-gebundene P0-Rechte- und Image-Reconciliation — 2026-11-23
+
+Status: **EVIDENCE ONLY / NO GHCR PUBLICATION / NO RENDER SOURCE SWITCH**. Projekt `SvenKulessa/Capital-AI`, Root-`AGENTS.md` Blob `3d5ad12cb6e0f055dac6db427422a903937c91dd`, `SOLO_MAINTAINER_FLOW@2`. Dieses Dokument begründet keine neue GitHub-Pflichtprüfung, Rechtsfreigabe oder Production-Admission.
+
+## Unveränderliche Git-/CI-Referenzen
+
+### Aktueller Main-Readback nach den ursprünglichen fe4cc7a-Evidence-Belegen
+
+- Nach der oben dokumentierten, SHA-gebundenen fe4cc7a-Artefaktprüfung liegt der neuere Main auf `331170a4fe27580fb9e7305a83851ffafb413f68`. Die ursprünglichen `fe4cc7a...`-Hashes bleiben **historische, SHA-gebundene Evidence** und dürfen nicht als Bytes des neueren Builds ausgegeben werden.
+- GitHub [Main Docker Security Gate Run 45094553010](https://github.com/SvenKulessa/Capital-AI/actions/runs/45094553010), Job `137431343517`: `completed/success`. Im tatsächlichen Joblog steht für `scripts/os-source-inventory.mjs` `{"status":"IMAGE_INVENTORY_BOUND_SOURCE_DELIVERY_NOT_PROVEN","image":"sha256:0203f893831df9f2949c2ad6baae90101b0eff1178989d675f0c1de76a529472","packages":50,"missingSourceMetadata":0}`. Der SHA-256 ist ausschließlich der neu ermittelte lokale Docker-**CONFIG**-Digest; kein OCI-Manifest, Registry-Pull, Attest oder Source-Delivery.
+- Das Run-Artefakt `docker-security-331170a4fe27580fb9e7305a83851ffafb413f68`, GitHub-Artifact-ID `14782603161`, wurde **nach der ersten Reconciliation als ZIP tatsächlich heruntergeladen und byteweise geprüft**. ZIP-Länge **253116 Bytes**, **22 Einträge**, SHA-256 `cd1eec5a42a5d765fa6c296ffb8e14d884772040939fe7638ee6380e0bfd5d0d`; exakt gleich dem von GitHub via Artifact-Metadaten zurückgegebenen `digest=sha256:cd1eec5a42a5d765fa6c296ffb8e14d884772040939fe7638ee6380e0bfd5d0d`. ZIP-Integritätsprüfung PASS. Status: `ARTIFACT_METADATA=VERIFIED`, `NEW_MAIN_ARTIFACT_BYTE_VALIDATION=VERIFIED`.
+- **Vierfacher aktueller Image-CONFIG-Digest-Vergleich**: `image-id.txt` = `container-identity.json.digests.localImageId` = `os-source-inventory.json.imageConfigDigest` = Trivy `image-licenses.json.Metadata.ImageID` = `sha256:0203f893831df9f2949c2ad6baae90101b0eff1178989d675f0c1de76a529472` (**VERIFIED; kein OCI Manifest**). Die Digest-Typen `ociIndexDigest`, `platformManifestDigest`, `runtimeProviderDigest` in der gelieferten Identity bleiben `null`.
+- **Hashbindung tatsächlicher ZIP-Inhalte**: `os-apk-installed.txt` SHA-256 `263c775b75102a70b050dcf8bfde0da4e728ab316c8ebea31cd51735fdc16f64` = Inventar-`installedApkDbSha256`; `runtime-node-license.txt` SHA-256 `8e603aa87c70d36e497004f0dec63111511cb61b7d65ace12e10ea791599286c` = Inventar-`nodeLicenseSha256`; `runtime-font-ofl.txt` SHA-256 `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99` = Inventar-`fontOflSha256`; `THIRD_PARTY_NOTICES.txt` SHA-256 `ada644d883573cae637a8b8b69fae5d6e54a73556490ee781266fb8a470e169d` = Frontend-`noticesSha256`. Die Inventar-Digests sind teilweise mit `sha256:` präfixiert; beim Vergleich wird ausschließlich dieses Präfix normalisiert. Alle **vier Vergleiche VERIFIED**.
+- **Tatsächlich gelesene Bestände**: `os-source-inventory.json` 50 OS-Pakete, 34 Source-Rezept-Locators, `missingSourceMetadata=[]`, `sourceDeliveryProven=false`, `redistributionApproved=false`; `image-licenses.json` 50 Alpine/21 Node/63 Python Einträge; `frontend-license-inventory.json` 38 Frontend-Packages, `deployEligible=false`; `capital-ai.sbom.cdx.json` CycloneDX 1.7, 135 Komponenten, 136 Dependencies, 0 vom SBOM aufgelistete Vulnerabilities, SHA-256 `6b29223d3562164f8643a5206e01566d1855039df215ebc8a79c47a9dcab8c0f`. Der Grünstempel des Trivy-Scans oder 0 SBOM-Vulnerabilities ersetzt **keine Rechtefreigabe**.
+- CI-Smoke-JSON enthält `buildIdentity.bound=true` für source SHA `331170a4fe27580fb9e7305a83851ffafb413f68` **nur im isolierten CI-Container**; daraus folgt keine BuildIdentity des unabhängig gebauten Render-Images. Unverändert `SOURCE_DELIVERY=NOT_PROVEN`, `REDISTRIBUTION_RIGHTS=BLOCKED`, `OCI_SIGNATURE=NOT_PROVEN`, `RENDER_SOURCE_SWITCH=HOLD`.
+- Der separate [PR-#913 Docker Run 45090481063](https://github.com/SvenKulessa/Capital-AI/actions/runs/45090481063) (`success`) testete Head `a3c0a331fac9088315934bb69f9d9403702d09dc` auf GitHubs test-merge `df8266079a961b9c8b9cc34e87ad623e16a301aa` gegen Basis `fe4cc7a...`. Sein Image-CONFIG-Digest `sha256:da884001b942dbe06c396f84f89c6ceaa32b7437a9d6a0e8552d6f956b21c69d` ist weder der fe4cc7a- noch der neue 331170a-Main-Image-Digest.
+- [PR-#913 isolierter Source-Mirror Run 45090481050](https://github.com/SvenKulessa/Capital-AI/actions/runs/45090481050) meldet im Joblog `SOURCE_HASHES_VERIFIED_NON_AUTHORIZING`, `externalFetchFailures=0`, `sourceDeliveryProven=false`, `redistributionApproved=false`. Das ist ein positiver Byte-/Hash-Sicherheitsbeleg für den früheren PR-Teststand, **keine** neue rechtliche Quellcode-Auslieferungsfreigabe.
+- Die neuerliche Main-Änderung gegenüber `fe4cc7a...` umfasst **nur** `docs/growth/LEGAL-DATA-HUNTER-COMMERCIAL-READBACK-20261121.md`, `scripts/growth/growth-intelligence-drafts.mjs` und `scripts/growth/growth-intelligence-drafts.test.mjs`; keine Dateischnittmenge mit den Scope-Pfaden von PR #913. Ein konservativer Merge dieser Main-Änderungen in den bestehenden Draft-Branch ersetzt keine PR-Head-CI und ändert keine Runtime-Rechte.
+
+
+- Main vor Synchronisierung: `fe4cc7a5784af1b4924c8bbb8c5af49af8b29e34`; PR #913 vorheriger Head: `c7fcbed8c951f483d6606142f85d255438eb2d34`, frühere Merge-Basis: `fa706af9aa698d702dc782f3f95a95c7f7572a22`.
+- Branch-Synchronisierung: Die 22 PR-Pfade und die 33 geänderten Main-Pfade sind laut GitHub-Compare **ohne Dateischnittmenge**. Bei neuem Head die GitHub-Required-Checks erneut auswerten.
+- Main Docker Security Gate: [Run 45088125138](https://github.com/SvenKulessa/Capital-AI/actions/runs/45088125138), Job `137411279074`: `completed/success`. [CodeQL 45088124543](https://github.com/SvenKulessa/Capital-AI/actions/runs/45088124543): `completed/success`.
+- In den echten Main-Docker-Logs ist um 2026-11-23T00:25:25Z ein `os-source-inventory.mjs`-Readback `{"status":"IMAGE_INVENTORY_BOUND_SOURCE_DELIVERY_NOT_PROVEN","image":"sha256:9e7e94e8e3fafe20b081cf0fcbb947064e844fdbb50dde14d734314d9f064523","packages":50,"missingSourceMetadata":0}` dokumentiert. Das Digest ist eine **lokale Image-CONFIG-Identität**, **kein** veröffentlichter OCI-Index, Plattform-Manifest oder Render-Runtime-Image-Digest.
+- Dieselben Main-Logs belegen Trivy-Lizenzscan, CycloneDX-SBOM und die Lizenz-/NOTICE-Extraktion. Das authentifiziert geladene GitHub Actions ZIP-Artifact `docker-security-fe4cc7a5784af1b4924c8bbb8c5af49af8b29e34`, ID `14779983571`, wurde **zusätzlich tatsächlich byteweise geprüft**; die folgenden Hash- und Inhaltsbindungen sind echte, unten getrennt ausgewiesene Evidence. Keine OCI- oder Rechtefreigabe.
+
+### Tatsächlicher Byte-Readback des GitHub-Artefakts 14779983571
+
+- ZIP SHA-256: `91404ac64eafddeba3138a7d06546913f8864498c1b69879ef24b17941f4d6f2`; **22** ZIP-Einträge.
+- `image-id.txt` == `container-identity.json.digests.localImageId` == `os-source-inventory.json.imageConfigDigest` == Trivy `image-licenses.json.Metadata.ImageID`: `sha256:9e7e94e8e3fafe20b081cf0fcbb947064e844fdbb50dde14d734314d9f064523` (**4-way equality VERIFIED**). Dies bleibt ein lokaler Docker-CONFIG-Digest.
+- `os-apk-installed.txt` SHA-256 `263c775b75102a70b050dcf8bfde0da4e728ab316c8ebea31cd51735fdc16f64` == `os-source-inventory.installedApkDbSha256` (**VERIFIED**).
+- `runtime-node-license.txt` SHA-256 `8e603aa87c70d36e497004f0dec63111511cb61b7d65ace12e10ea791599286c` == `os-source-inventory.nodeLicenseSha256` (**VERIFIED**).
+- `runtime-font-ofl.txt` SHA-256 `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99` == `os-source-inventory.fontOflSha256` (**VERIFIED**). **Nicht** gleichbedeutend mit einem Byte-Abgleich aller Font-Binärdateien.
+- `THIRD_PARTY_NOTICES.txt` SHA-256 `ada644d883573cae637a8b8b69fae5d6e54a73556490ee781266fb8a470e169d` == `frontend-license-inventory.noticesSha256` (**VERIFIED**).
+- `os-source-inventory.json`: **50** tatsächlich inventarisierte OS-Pakete, **34** Source-Rezept-Locators, `missingSourceMetadata=[]`, `sourceDeliveryProven=false`, `redistributionApproved=false`, `status=IMAGE_INVENTORY_BOUND_SOURCE_DELIVERY_NOT_PROVEN`.
+- `capital-ai.sbom.cdx.json`: CycloneDX 1.7, **135** Komponenten, **136** Dependencies, **0** im SBOM ausgewiesene Vulnerabilities; SBOM SHA-256 `9c99f085c93a5adfa0cd4a9e98a756ca93ee17e1d66eb8dc1c20b19428d6e569`. `image.public.json` hat für genau diese Source-SHA `status=PASS`, `blocking=0`, `secrets=0` — keine externe Registry-Attestation.
+- `image-licenses.json`: Trivy `container_image`, Image CONFIG identisch, Klassen **50** OS- / **21** Node- / **63** Python-Package-Einträge; `frontend-license-inventory.json` dokumentiert **38** Frontend-Packages, `deployEligible=false`.
+- `smoke-health.json` belegt lediglich einen isolierten CI-Smoketest mit `buildIdentity.bound=true` für den **geprüften CI-Container**, nicht die live auf Render beobachtete `buildIdentity.bound=false`. CI-Image und Render-Git-Docker-Image bleiben **unabhängige Builds**.
+- Das ZIP enthält **keine vollständigen tatsächlichen Quellarchive, Fonts/JPEG-Binärdateien des späteren registry-pulled Images, OCI-Index-/Plattformmanifest-Digests, Signaturprüfung oder juristische Lizenzfreigabe**. Die sechs folgenden Rechte-Nachweise bleiben daher auch nach der technischen Byte-Korrelation offen.
+- Git-basierter Render-Service `srv-dau1rp893c1s73cdhm1g`: Deploy `dep-dc1ogavb9u1s738ik7m0` steht `live` mit Git-SHA `fe4cc7a5784af1b4924c8bbb8c5af49af8b29e34`. Öffentlicher `GET /healthz` vom 23.11.2026 00:33:01 UTC: HTTP 200, `status=ok`, `runtimeIdentity.sourceSha=fe4cc7a5784af1b4924c8bbb8c5af49af8b29e34`; `buildIdentity.bound=false`, `renderGitBuildIdentity.evidence=RENDER_GIT_BUILD_ARG_UNATTESTED`. Git-SHA-Korrelation ist kein OCI-Provenance-Beweis.
+
+## Unabhängiger Source-/Asset-Byte-Readback für PR #913 (23.11.2026)
+
+**Zweck:** Weiterführung der sechs vorhandenen Rechte- und Herkunftsnachweise; keine neue Rechts- oder Deployment-Freigabe. Getestete Referenzen: Main `331170a4fe27580fb9e7305a83851ffafb413f68`, PR-Head `98dc3c5a219de7b3d5045117bd5e16ccf463e70c`, PR-GitHub-Test-Merge `7a6c9660ad88a587642c8b6f1beac85026de7b26`. Die Hashprüfung wurde gegen tatsächlich geladene Bytes ausgeführt, nicht aus JSON-Zuständen als Erfolg gefolgert.
+
+### 1. Originale Alpine-Quellen: tatsächlich nachgerechneter SHA-512-Readback
+
+- [Isolierter OS-Source-Mirror Run 45095621730](https://github.com/SvenKulessa/Capital-AI/actions/runs/45095621730), **SUCCESS**, GitHub-Artefakt **14782739944** (`ghcr-aports-source-pr913-7a6c9660ad88a587642c8b6f1beac85026de7b26`), **288333769** ZIP-Bytes, **41** ZIP-Einträge, ZIP CRC erfolgreich. Unabhängig berechneter ZIP-SHA-256 `33dc09f2d8cb7d5d2278f73027ce164c63b7bced043552d260404b9e76eb887f`, identisch zu GitHubs veröffentlichtem Artifact-Digest.
+- Inneres `source-mirror.tar.gz`: **288226135** Bytes, SHA-256 `fe16affa77e0fc28f4b8955d49133edbb6ee76b965f00fec1c6e41bf9428d72e`, unabhängig identisch zu `source-mirror.tar.gz.sha256` und `collection-summary.json.privateMirrorArchiveSha256`.
+- Das TAR enthält **34** tatsächliche `APKBUILD`-Rezeptdateien. Jede einzelne der **229** durch diese APKBUILDs deklarierten SHA-512-Quell-/Patchdateien wurde aus den TAR-Bytes neu gehasht: **229/229 identisch**, **0 fehlende Dateien**, **0 Abweichungen**, **0 Parser-/Formatfehler**. `alpine-base` enthält in diesem Snapshot keine deklarierten SHA-512-Quelldateien und darf nicht fälschlich als zusätzlich gehashter Input zählen.
+- `recipes.tsv` enthält zu allen **34/34** PR-Image-Quellreferenzen denselben source-package-Namen und exakt denselben Aports-Commit. Darüber hinaus sind die **50 installierten Binärpakete samt Version/Quellenzuordnung**, die **34 Rezept-Locators** und der APK-DB-Hash `sha256:263c775b75102a70b050dcf8bfde0da4e728ab316c8ebea31cd51735fdc16f64` zwischen Main-CI-Inventar `331170a...` und PR-Testimage **identisch**.
+- **Identitätsgrenze:** Der Source-Mirror enthält die ältere explizite `sourceSha=fa706af9aa698d702dc782f3f95a95c7f7572a22` / Image-CONFIG `sha256:5f76597529b8ef14ead01b686879b577c9ba35a455c03ae5aa021c1a8ae7d1d7`; Main-CI-Image `sha256:0203f893831df9f2949c2ad6baae90101b0eff1178989d675f0c1de76a529472`; neuer PR-Test-Merge-Image-CONFIG `sha256:931ca59734c2ab661c3977f6562ac8ff24b49396e61bcf5b0516a1f9bd74d2ee`. **Diese drei Builds sind nicht byteidentisch.** Die festgestellte Quellen-/Paketkontinuität beweist keine reproduzierbare Binary-to-Source-Rebuild-Gleichheit und ist keine vollständige Source-Delivery, kein Offer oder eine Empfängerquittung. `sourceDeliveryProven=false`, `redistributionApproved=false` bleiben unverändert.
+
+### 2. Aktuelle Asset-/Marken-Dateien: unabhängiger Bytehash gegen bestehendes Rights-Ledger
+
+Jede folgende Datei wurde direkt am PR-Head über den GitHub-Contents-Readback bezogen und mit einer gegen `SHA-256("abc")` selbstgetesteten SHA-256-Implementierung über den tatsächlichen Bytepuffer neu gehasht. Die Ledger-Werte wurden **nicht** als Hashalgorithmus-Ersatz verwendet.
+
+| Aktueller Datei-Pfad | Bytes | Nachgerechneter SHA-256 | Ledger-/Provenienzabgleich | Nicht nachgewiesen |
+| --- | ---: | --- | --- | --- |
+| `public/branding/capital-ai-logo.jpg` | 224129 | `6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3` | **MATCH**; `docs/licenses/Capital-AI-BRANDING.md` Owner-Projektnutzung | Eigenständige Markenregistrierung/Drittrechte, allgemeine Weitergaberechte |
+| `src/assets/images/glowing_earth_nodes_1789997454893.jpg` | 870199 | `aae548443cb6ec1be4c7d9f9389c52cc1e01b28df28fbc4e985750dd424bb671` | **MATCH**; `docs/security/evidence/asset-mockup-history-review.json` dokumentiert Finance→CAPITAL-AI-Kopierkette / Git-Blob `9bd051fcbbf1bf30d38a98795638c7cf80c84ac4` | Konkreter Generierungslauf, Modell/Tool, Generationstermin, wirksame kommerzielle Output-/Drittrechte |
+| `src/components/AssetLogo.tsx` | 29660 | `b2c1401e6c39116aa81c0d426d5403134fcb2b36b8729ab5e5fd976c01d7213f` | **MATCH** zu historischer Rechteakte; enthält wiedererkennbare inline generierte Symbolgrafiken | Originale Vorlagen-/Urheberherkunft jedes Symbols und ggf. Markennutzungsrechte |
+| `public/fonts/PlusJakartaSans-Regular.ttf` | 176288 | `89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8` | **MATCH** zu Ledger und `public/fonts/provenance.json` | Binär-Bytes des späteren registry-pulled Images / tatsächliche Empfängerauslieferung |
+| `public/fonts/PlusJakartaSans-Italic.ttf` | 183188 | `9529eb888668b6a3c6dd75b6341a2fc5263fb6c9e788822e6117c29dd9e8b115` | **MATCH** zu Ledger und `public/fonts/provenance.json` | Binär-Bytes des späteren registry-pulled Images / tatsächliche Empfängerauslieferung |
+| `public/fonts/OFL.txt` | 4402 | `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99` | **MATCH** zu `public/fonts/provenance.json`, `docs/security/evidence/license-sources/Plus-Jakarta-Sans-OFL.txt` und `runtime-font-ofl.txt` des PR-CI-Images | Vollständigkeit der späteren OCI-Auslieferung und Einhaltung aller Bedingungen |
+
+**Belegter und minimal reparierter Dokumentationsmangel:** Vier historische Asset-Records (Earth-JPEG sowie drei als `REMOVED_FROM_CURRENT_TREE` gekennzeichnete alte Branding-JPEGs) referenzierten `LICENSE-RIGHTS.md#herkunftsbestätigung`, das im aktuellen Repository fehlt (404). Alle vier `evidenceReference`-Felder wurden ausschließlich auf das vorhandene `docs/security/evidence/asset-mockup-history-review.json` (Git-Blob `3052c7bae4a2b08af461c87f8c896c938e7f8a1d`) korrigiert. Dort sind exakt diese vier Dateipfade mit Finance→CAPITAL-AI-Kopier-Evidence erfasst. Der Bericht hat `status=PARTIAL_PROVENANCE_NOT_LICENSE_APPROVAL`, `deployEligible=false`; er beweist weder den ursprünglichen Generierungslauf noch die produktive/kommerzielle Nutzungsrechte-Erteilung. Die unveränderten Ledger-Felder `status=REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null` und sechs `remainingGates` bleiben die autoritative Sperre. Alter Ledger-Blob vor reiner Referenzreparatur: `1cd26301e33a2628f2b4aad8e720f7edfa361bac`.
+
+### 3. Providerrechte und verbleibende End-to-End-Gates
+
+Das tatsächlich vorhandene `docs/market-data/evidence/twelve-data-rights-20261005.json` (Git-Blob `0934784689d50fb87a6d62417acdc386c8d7425c`) dokumentiert eine **schriftliche bedingte** Twelve-Data-Antwort zu kundenorientierter Anzeige und nicht-rekonstruierbaren abgeleiteten Outputs, mit `productionAdmission=false` und `deployEligible=false`. Account/Tier/Feeds/Handelsplätze, Broker-/Backup-/Replay- und Reseller-/Sublizenzrechte sind nicht gebunden; alle anderen Provider verbleiben in der bestehenden Vertragsprüfliste. Eine Providerantwort ist weder ein pauschaler Datennutzungs- noch ein OCI-Veröffentlichungsvertrag.
+
+| Bereits technisch nachgewiesener Anteil | Offener rechtlicher bzw. providergebundener Anteil |
+| --- | --- |
+| OS-Originalinput SHA-512 **229/229**, Aports-Rezepte **34/34** | Korrespondierende Sources/Notices und tatsächliche Recipient-Delivery **NOT_PROVEN** |
+| Aktuelle Branding-JPEG-Bytes und Earth-Kopierhistorie | Generierungsbedingungen, Dritt- und Markenrechte **NOT_PROVEN** |
+| Aktueller `AssetLogo.tsx`-Bytehash | Originäre Symbol-/Markennutzungsrechte **NOT_PROVEN** |
+| Beide TTFs + OFL im Repo byteidentisch, OFL im PR-CI-Image | Vollständiger Font-/OFL-Transport im registry-pulled Image **NOT_PROVEN** |
+| Twelve-Data-Antwort vorhanden, konditionale Nutzungsart dokumentiert | Konkrete Vertrags-/Daten-/Reseller-/Attributionsberechtigungen **BLOCKED** |
+| PR-Image CONFIG, SBOM, Notices und GitHub-CI **VERIFIED** | OCI-Index/Plattformdigest, Signaturen, Render-Image-Pull/-Identität **NOT_PROVEN** |
+
+**Sicherheitsentscheidung:** `RIGHTS_REVIEW=REVIEW_OPEN`, `sourceDeliveryProven=false`, `redistributionApproved=false`, `legalApproval=null` und `deployEligible=false` bleiben bewusst erhalten. Kein GHCR-Push, kein Render-Source-Switch, keine Live-Provideraktivierung und keine neue kostenpflichtige Ressource. Die nächsten unabhängigen Belege wären ein echter Asset-Erstellungs-/Providerrechtsnachweis, ein vervollständigtes rechtlich zulässiges Source-Delivery-Paket sowie später attestierte OCI-/Render-Identität. Dieser Bericht ist technische Evidence, kein selbst erteilter Rechtsbescheid.
+
+
+## Sechs Rechte- und Herkunftsnachweise — genaue Trennung der Evidenzstufen
+
+| Thema | Tatsächlich belegter technischer Teil | Weiter offener Nachweis / Status |
+| --- | --- | --- |
+| 1. OS-Binaries und Quellcodeauslieferung | Main-CI-Inventar für **50 installierte Pakete**, `missingSourceMetadata=0`; ältere PR-#913-Isolationsläufe mit Quellarchiv-/Rezeptprüfungen betreffen frühere Source-/Image-Digests | Für den **aktuellen** Image-Binary-Satz vollständige passende Source-Archive, Patches, Build-Inputs, rechtlich erforderliche Source-Delivery/Offers und Empfängerbezug: **NOT_PROVEN / RELEASE_BLOCKED** |
+| 2. Exaktes Basisimage und NOTICE | Aktuelles Dockerfile pinnt `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`; CI inventarisiert Runtime-Lizenzen | Aktuelle Binary-to-Source-/Upstream-Manifest-Kette und ausreichendes NOTICE-/Source-Lieferverfahren sind **NOT_PROVEN**; historisches Lizenzledger referenziert andere Node-Version |
+| 3. JPEG- und Content-Grafiken | Build kopiert Branding-/Learning-Assets; dadurch können Asset-Listen identifiziert und gegengeprüft werden | Für jedes tatsächlich ausgelieferte relevante JPEG: Pfad, Bytes-/Blobhash, Schöpfer- und Lizenzkette, kommerzielle Bearbeitungs-/Weitergaberechte **NOT_PROVEN**, keine synthetische Eigenschöpfungs-Erklärung |
+| 4. Logos, Inline-SVGs und Marken | Das bestehende Registry-/Manifest-Verfahren erfasst Teile der Branding-Assets | Herkunft und markenrechtliche Freigaben der tatsächlich eingebundenen Elemente **NOT_PROVEN**; Copyright- und Markenprüfung getrennt halten |
+| 5. Provider- und Datenrechte | Main-MARKET-Evaluator prüft Use Cases fail-closed; PR #915 bereits gemergt und getestet. Live-Health meldet `quotesEnabled=false` und `spotIngestion.configured=false` | Verträge für öffentliche Darstellung, API-/Datenweitergabe, abgeleitete Daten, Export und notwendige Attribution je realem Provider: **NOT_PROVEN**; keine Provider-Aktivierung |
+| 6. Fonts und OFL | Main-Docker-Job liest die im finalen **CI-Image** enthaltene `/app/dist/fonts/OFL.txt` und erzeugt SBOM-/NOTICE-Inventare | Byte-/Hashvergleich sämtlicher Fonts plus OFL und Notice-Lieferung im späteren **registry-pulled** Image **NOT_PROVEN**. CI-Image ≠ publizierter OCI-/Render-Digest |
+
+**Source-of-truth Lizenzledger:** `docs/security/evidence/license-rights-review.json` (Blob `70e7400c5e7d647de93d1eecd979740aadbe264c`; vorher `1cd26301e33a2628f2b4aad8e720f7edfa361bac`) hat `status=REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null`, sechs `remainingGates`, historische `applicationSourceSha=ed594ef93f66ee8f13f67d75dde56f46a95b1cd6` sowie `node:24.19.0-alpine` als Basis. Eine pauschale Owner-Arbeitsfreigabe ist **kein** unabhängiger Rechts- oder Weitergabe-Nachweis. Dieses historische Ledger wird ausdrücklich **nicht** künstlich zu `APPROVED` konvertiert.
+
+## Technische Weiterbearbeitung / Akzeptanz
+
+1. Bestehende Tests `scripts/platform/*test.mjs`, `scripts/verify-os-source-mirror.test.mjs` und vorhandene Workflow-Gates am nach Main synchronisierten Head laufen lassen; Test-/Merge-SHA und Run-IDs im PR-Kommentar dokumentieren, fehlende Tests **NOT_PROVEN** lassen.
+2. Die aktuellen CI-Artefakte `14779983571` (Main `fe4cc7a...`) und `14782603161` (Main `331170a...`) wurden jeweils separat SHA-gebunden und byteweise geprüft. Ihre unterschiedlichen lokalen Image-CONFIG-Digests dürfen nicht als veröffentlichtes OCI-Manifest oder als spätere Render-Image-Identität ausgegeben werden. Die Source-/NOTICE-Auslieferung und Registry-/Runtime-Attestation bleiben gesondert offen.
+3. Pro offener Rechtekategorie nur echte Autor-/Vertrags-/Upstream-Quellen und die konkrete, aktuelle Image-Auslieferung belegen. Keine Rechte-„Reparatur“ aus Dateinamen, Hash-Gleichheit oder grünem Scanner.
+4. Das bestehende `scripts/assert-ghcr-publication-rights.mjs` bleibt fail-closed; Registry-Push, GitHub-Attestations-Bewertung und Render-Image-Cutover nur über den bereits bestehenden freigegebenen Pfad nach vollständigen tatsächlichen Rechten, Signaturen, Ruleset-/Kostenfreigaben.
+
+**Rollback:** Der nach Main synchronisierte Draft-Branch kann durch Ref-Rücksetzung auf `c7fcbed8c951f483d6606142f85d255438eb2d34` (nur mit geprüftem Lease) verworfen werden. Keine Mutation von `main`, GHCR oder Render erfolgt durch diese technische Reconciliation.
+
+
+## Fortsetzung am Main/Head vom 23.11.2026 — Runtime-Font-Byte-Gate
+
+- Main und PR-Basis: `651d497400a2ccf603088c33969730ea0af1843b`; PR-Head vor diesem Dokumentationscommit: `d2d209f0884f8be3f25a8073499b2154b91e9fde`. Die ältere Main-Baseline `331170a...` oben ist historisch, nicht mehr aktuell.
+- Neu geprüfter technischer Slice: `scripts/platform/runtime-font-provenance.mjs` (Git Blob `e8753196fbcb8fb5640517b2c5dc8f8daaed2046`) und `scripts/platform/runtime-font-provenance.test.mjs` (Git Blob `4e859d0eaacb920d710502762bb5209a3aee901a`). Die bestehende Docker-Security-Workflow-Definition (Blob `be7524ea94ab45261b14351edbe35ce7ddb1317f`) liest **beide TTFs und die OFL-Datei aus dem gescannten CI-Image**, vergleicht deren tatsächliche Bytes mit den Repository-Dateien und den SHA-256-Werten in `public/fonts/provenance.json`, und bindet die OFL-Datei zusätzlich an den OS-Inventar-Hash und den lokalen Image-CONFIG-Digest.
+- Negative Tests in der tatsächlich eingecheckten Suite: veränderte CI-Bytes, fehlende und vertauschte Fonts, manipulierte Source-Bytes/Checksums, falsche Image-/Source-IDs, OFL-Abweichung, doppelte oder zusätzliche Einträge, Pfad-Traversal, ungültige Lizenzdeklaration und künstlich auf `true` gesetzte `redistributionApproved`/`sourceDeliveryProven` müssen scheitern. **Wichtig:** Die synthetischen Test-Fixtures beweisen allein den Fail-Closed-Codepfad; der Docker-Job überprüft zusätzlich reale CI-Image-Bytes.
+- GitHub-Checks für `d2d209f0884f8be3f25a8073499b2154b91e9fde`: `Docker Security Gate`, `Domain Governance`, `isolated-os-source-mirror`, `CodeQL` und vier `Analyze`-Jobs `completed/success`. Publishing/Handoff sind `skipped`. Die Checks dieses Dokumentationscommits sind separat erneut auszuwerten.
+- **Präzisierter Gate-6-Status:** `CI_IMAGE_FONT_TTF_OFL_BYTE_PROVENANCE=VERIFIED`; `REGISTRY_PULLED_IMAGE_FONT_PROVENANCE=NOT_PROVEN`; `RECIPIENT_DELIVERY=NOT_PROVEN`. Die ursprüngliche sechste Ledger-Anforderung bleibt deshalb **offen**. Keine Promotion von `REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null`, `sourceDeliveryProven=false` oder `redistributionApproved=false`.
+- Auch dieser CI-Image-Beleg ist weder ein veröffentlichter OCI-Index-/Plattformmanifest-Digest noch eine Signatur oder ein Render-Pull-Nachweis. Keine Rechtsfreigabe, kein GHCR-Push und kein Render-Cutover.
+
+
+## SOLO2 23.11.2026 18:06 MEZ — aktuelle Ruleset-/Render-Abnahme
+
+Source of truth für **diesen** Readback: GitHub Branch-/PR-/Check-Run- und Ruleset-GET sowie Render Service-/Deploy-GET, ohne Provider- oder Registry-Mutation. Die historischen Stände oben bleiben für die ursprünglichen Tests gültig, sind aber kein Beleg für den aktuellen Main.
+
+| Prüffeld | Tatsächlich gelesen | Grenze |
+| --- | --- | --- |
+| GitHub Main / PR-Basis | `2b078f18f4c4f6598b4c3a95fd576bb010f7cfca` | Nicht der PR-eigene Head |
+| PR #913 Head vor dieser Dokumentation | `9249999b1e8e706f599cd58db6378b544842606c` | Alle Prüfläufe eines späteren Commits sind separat zu prüfen |
+| GitHub Ruleset | `main-production-protection` ID `24259174`, `enforcement=active`, kein Bypass; `strict_required_status_checks_policy=true`, Required Checks `Docker Security Gate` und `Domain Governance`; lineare Historie, CodeQL, Review-Thread-Auflösung | Grüner Test allein überstimmt keinen Rechte-/Produktiv-HOLD |
+| PR-Head-Checks | `Docker Security Gate`, `Domain Governance`, `CodeQL`, `isolated-os-source-mirror` und die vier CodeQL-Analysejobs `completed/success`; `publish_candidate`, `Production Handoff Gate` und `Supabase Preview` `skipped` | Kein GHCR-Publishing, keine Render-Handoff-Freigabe |
+| Render-Produktionsservice | `srv-dau1rp893c1s73cdhm1g`, Workspace `tea-d90o4rj7uimc739i86ug`, `branch=main`, `autoDeploy=yes`, `autoDeployTrigger=checksPass`, Dockerfile `./Dockerfile`, ein laufender Service auf bestehendem Plan | **Jeder Main-Merge kann bei grünen Checks einen produktiven Git-Autodeploy auslösen** |
+| Neuester Render-Deploy | `dep-dc265ke1egvs738mp25g`, `status=live`, `trigger=new_commit`, Git-Commit `2b078f18f4c4f6598b4c3a95fd576bb010f7cfca`, `finishedAt=2026-11-23T16:03:06.874418Z` | Provider-Metadaten beweisen weder `/healthz`-Body noch einen OCI-Registry-/Plattformmanifest-Digest |
+| Rights-/OCI-Gates | Ledger `REVIEW_OPEN`, `deployEligible=false`; die Render-Service- und Deploy-Antworten lieferten keinen unveränderlichen Runtime-OCI-Manifest-Digest | `REDISTRIBUTION_RIGHTS=BLOCKED`, `REGISTRY_IMAGE_IDENTITY=NOT_PROVEN`, `SOURCE_DELIVERY=NOT_PROVEN`, `RENDER_SOURCE_SWITCH=HOLD` |
+
+**Entscheid:** PR #913 bleibt Draft; weder Main-Merge noch Registry-Publish oder Source-Switch. Der Quell-/Lizenz-/Attestation-Status wird durch den Ruleset- und Provider-Metadatenabgleich **nicht** zu VERIFIED. Der nicht erreichbare externe `/healthz`-Abruf in dieser Sitzung ist ausdrücklich **NOT_PROVEN**; Deploy-Metadaten nicht als Health- oder Runtime-Binding-Test ausgeben. Kein Secret-Wert gelesen oder dokumentiert.
+
+
+## 2026-11-23 post-#926 OCI identity readback and conservative main reconciliation
+
+Evidence status: **SOURCE_ONLY / NON-AUTHORIZING**. GitHub current main at readback:
+`3b92f054ca18b1521fde570ba082acca2b5ec601` (merged #926).
+The existing PR #913 branch was synchronized by a two-parent, non-forced
+fast-forward ref update to `d0b9a7f12fbf3e6622976cfdf9e8e8ca71945bd3`:
+the four files introduced on main by #926 have no path intersection with
+the 26 scoped PR files. GitHub comparison after sync: 52 ahead / 0 behind;
+PR remains DRAFT. This merge commit is **branch-only**, not a main merge.
+Do not interpret this section as a new release gate or rights approval.
+
+### Verified source and CI evidence
+
+- GitHub main [Docker Security Gate 45243073134](https://github.com/SvenKulessa/Capital-AI/actions/runs/45243073134)
+  at exact current main SHA = SUCCESS, source-image license and security scan passed.
+- Real job log for job `137932582312` explicitly reports **CI BuildKit OCI export
+  manifest** `sha256:3d53c680e0f7b15f021c1621f174325c16d109f56ab7e1398a2d1240bfb6d500`
+  and **CI image CONFIG digest** `sha256:21ef93a870f9b15fd982a320e99085fbd2ba1e92f71d0baf649a68eceddcaa12`.
+  Container evidence still has `ociIndexDigest=null`,
+  `platformManifestDigest=null`, `runtimeProviderDigest=null`; the CI
+  BuildKit export digest has **not** been matched to a GHCR registry-pulled
+  platform manifest, signed attestation or the Render runtime. Do not
+  promote this local digest to a registry/runtime identity.
+- GitHub Actions artifact `docker-security-3b92f054ca18b1521fde570ba082acca2b5ec601`
+  ID `14851887854`, ZIP digest metadata
+  `sha256:c11dd99001a79b563e0eff03e6133fda2631127207356a0fd18a2b91139652ca`,
+  `253378` bytes. The ZIP was **not downloaded and independently re-hashed**
+  in this readback; its metadata digest is NOT an OCI image digest.
+- Main `publish_candidate` and `Production Handoff Gate` both `SKIPPED`.
+  GHCR exposes older **public package versions** at
+  https://github.com/SvenKulessa/Capital-AI/pkgs/container/capital-ai ;
+  the current source's immutable GHCR manifest and subject-matched signature
+  and provenance/SBOM attestation remain **NOT_PROVEN**.
+  Anonymous registry tags-list returned HTTP 401; this is not proof of absence.
+
+### Render deployment and HTTP evidence (read-only)
+
+- AICapital workspace `tea-d90o4rj7uimc739i86ug`, service
+  `srv-dau1rp893c1s73cdhm1g`, Git-backed `main`/`./Dockerfile` service.
+  Existing autodeploy `dep-dc28prc9v7es73dd6jq0` reports `live` for
+  source `3b92f054ca18b1521fde570ba082acca2b5ec601`.
+- Both public `/healthz` JSON responses report `status=ok`,
+  `runtimeIdentity.sourceSha=3b92f054ca18b1521fde570ba082acca2b5ec601`,
+  `renderGitBuildIdentity.evidence=RENDER_GIT_BUILD_ARG_UNATTESTED`,
+  `buildIdentity.bound=false`, `buildIdentity.sourceSha=null`.
+  Source-SHA association is verified; builder/OCI attestation is not.
+- Render service and deploy do **not** expose a running immutable OCI
+  platform-manifest digest. A configured GHCR registry credential alone
+  does not prove a GHCR pull.
+
+### Real outstanding source-delivery and rights constraints
+
+- Current branch rights file remains `REVIEW_OPEN`, `deployEligible=false`,
+  `legalApproval=null`, source-bound to obsolete
+  `ed594ef93f66ee8f13f67d75dde56f46a95b1cd6`, with old base
+  `node:24.19.0-alpine`; current Dockerfile is pinned to
+  `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`.
+- Six existing ledger obligations remain open: OS corresponding sources
+  and recipient delivery; exact base-to-source provenance/NOTICE packaging;
+  JPEG creation and use terms; inline logos and marks; actual
+  provider display/API/export contracts; final-published-image font
+  bytes and OFL. Existing CI byte-checked font/NOTICE and offline Alpine
+  source mirror evidence reduces *technical unknowns* but does not certify
+  commercial rights, signed delivery, legal owner consent, or the image
+  actually running on Render.
+- **REDISTRIBUTION_RIGHTS=BLOCKED** until a current source/base-bound
+  review and genuine legal/recipient obligations are evidenced.
+  `CURRENT_SHA_GHCR_PLATFORM_MANIFEST=NOT_PROVEN`,
+  `REGISTRY_SIGNATURE=NOT_PROVEN`, `ATTESTATION=NOT_PROVEN`,
+  `RENDER_RUNTIME_MANIFEST=NOT_PROVEN`, `CUTOVER=HOLD`.
+
+### Validation and rollback
+
+- This update is documentary reconciliation only. The existing PR
+  negative/security tests, `Docker Security Gate`, `Domain Governance`,
+  CodeQL and isolated source-mirror checks must be read at the **new PR HEAD**.
+- No new GHCR push, cost, provider secret, config, source switch,
+  manual deploy, live Stripe or main-branch mutation was performed.
+- Roll back the branch-only main sync by reverting its isolated merge
+  through a normal follow-up commit (or by restoring the prior head
+  `af643e746036222d10465e239e651d67f263420f` with verified lease if
+  explicitly authorized). Existing live Git-backed deploy is unaffected.
+
+
+## Six-gate direct-byte and non-binding contract audit — 2026-11-23
+
+**Authority and evidence scope:** Root `AGENTS.md` (`SOLO_MAINTAINER_FLOW@2`, blob `3d5ad12cb6e0f055dac6db427422a903937c91dd`).
+Main at audit `3b92f054ca18b1521fde570ba082acca2b5ec601`; existing Draft PR #913
+was audited at head `9fddb11da5f12abddb7d92d57c0380be33226dd7` and subsequent
+evidence-only branch changes. The **tested** GitHub PR merge SHA is
+`7d5824752c5b4b61c966cb7a2fd656258a41c3d6`: it is **not** the
+PR head, not the main SHA, and not the Render live-image digest.
+These findings authorize neither public/private registry publication nor customer delivery.
+
+### Independently downloaded and byte-hashed GitHub CI artifacts
+
+- [PR #913 Docker Security Gate 45248707729](https://github.com/SvenKulessa/Capital-AI/actions/runs/45248707729):
+  `completed/success`; downloaded GitHub artifact ID `14856276257`,
+  `docker-security-7d5824752c5b4b61c966cb7a2fd656258a41c3d6`,
+  **258227 bytes**, independently SHA-256 hashed
+  `b5790ffe0343959b1a3d82d87e9a0cb5977e4426bed1b6648b77cc5c60749feb`
+  matching GitHub's artifact digest; ZIP entries actually opened/read.
+  `container-identity.json.source.sourceSha` = PR head,
+  `source.testedSha` = `7d5824752c5b4b61c966cb7a2fd656258a41c3d6`.
+  `image-id.txt` and `container-identity.json.digests.localImageId` match
+  `sha256:33e5d37d404bffbbd5a8134f8952f1058e0f759eab106be6ddf2390eab8f30c1`.
+  This is **CI image CONFIG SHA-256**, not a published OCI manifest digest.
+  `ociIndexDigest`, `platformManifestDigest` and `runtimeProviderDigest` are null.
+- [Isolated OS Source Mirror 45248707735](https://github.com/SvenKulessa/Capital-AI/actions/runs/45248707735):
+  `completed/success`; downloaded GitHub artifact ID `14855605208`,
+  outer ZIP **288330484 bytes**, independently SHA-256 hashed
+  `7c259e7c949124d808149540b1cd82d2b5899e6464e9dd1bca6b5e354ffa9c31`,
+  equal to provider metadata. Inner `source-mirror.tar.gz` was streamed
+  and independently hashed to
+  `6babcf509ec4075e345142184f644ae74fb29510a4b6d56e5c7adf67a796d1dc`,
+  equal to the bundled checksum and `collection-summary.json`.
+  The bundled verifier reports **34 recipes, 229/229 declared SHA-512
+  source files, 0 missing/mismatched**, but its `sourceSha` is historically
+  `fa706af9aa698d702dc782f3f95a95c7f7572a22` and image config is
+  `sha256:5f76597529b8ef14ead01b686879b577c9ba35a455c03ae5aa021c1a8ae7d1d7`.
+  Matching historical/current installed-APK-database SHA
+  `263c775b75102a70b050dcf8bfde0da4e728ab316c8ebea31cd51735fdc16f64`
+  connects package-input lineage but **does not independently rebuild
+  every binary** or prove corresponding-source completeness/delivery.
+  Mirrored source ZIP is held privately by GitHub and expires per artifact
+  retention, not a durable accessible recipient-offer. No source was sent
+  to a third-party recipient or publicly redistributed by this audit.
+- `runtime-license-coverage.json`: **50 Alpine, 21 Node, 63 Python**
+  package records; frontend 38 emitted package records; exact image
+  notice-byte correlations `frontend=true`, `node=true`, `ofl=true`.
+  Direct ZIP member SHA-256: frontend notices
+  `a9b4f1ffc20fe94b112da8dcc6aa2f8a28be80c8693ce8c3492b4fba52300464`,
+  Node licence `8e603aa87c70d36e497004f0dec63111511cb61b7d65ace12e10ea791599286c`,
+  font OFL `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99`.
+  Native linkage summary says **10 package and 2 Node native binaries**
+  byte-hashed; `unrarStaticInclusion=NOT_PROVEN`,
+  `runtimeNoticeCompleteness=NOT_PROVEN`.
+
+### Six existing redistribution/usage gates, without legal promotion
+
+| Existing ledger item | Actually checked at this PR source / image | Decision still required |
+| --- | --- | --- |
+| 1. OS corresponding source and delivery | CI packages 50; 34 historical source recipes / 229 declared SHA-512 source inputs verified; current APK DB hash correlated | **BLOCKED:** complete current binary/source/patch/relink scope, delivery mode and proof of recipient access; sourceDeliveryProven=false |
+| 2. Current base binary/source/NOTICE | Pinned `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`; current CI Node/OS/frontend notice hashes match inventories; native ELF checked | **BLOCKED:** exact base binary-to-source/exception and full recipient NOTICE coverage; no live OCI copy |
+| 3. JPEG origin/terms | `public/branding/capital-ai-logo.jpg`: **224129 bytes**, SHA-256 `6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3`; `src/assets/images/glowing_earth_nodes_1789997454893.jpg`: **870199 bytes**, SHA-256 `aae548443cb6ec1be4c7d9f9389c52cc1e01b28df28fbc4e985750dd424bb671`; both match ledger by independent GitHub blob hashing | **BLOCKED:** actual earth-image generation/account/terms and allowed derivative/commercial usage; owner-authored logo permission is project-use evidence, not third-party clearance |
+| 4. Inline logos and trademarks | `src/components/AssetLogo.tsx`: **29660 bytes**, SHA-256 `b2c1401e6c39116aa81c0d426d5403134fcb2b36b8729ab5e5fd976c01d7213f`; direct current GitHub blob hash matches ledger | **BLOCKED:** symbol drawing/origin, source SVG/vector copyright, mark usage and applicable product-display permission; exact bytes are not rights |
+| 5. Provider market-data contracts | Read actual **nonbinding** messages from Kraken Support (2026-10-24, Gmail `1a16ee3a0ba04fdf`) and Massive/Polygon market-data specialist (2026-10, Gmail `1a1090f7f5c630e0`); Twelve Data conditional written reply already evidenced in `docs/market-data/evidence/twelve-data-rights-20261005.json` | **BLOCKED:** no executed order form / licensed entity / selected feeds, venues, subscriptions, market-data and API/redistribution terms. In particular, Massive raw data redistribution requires a separate agreement, indices require exchange licensing; Kraken says raw redistribution is not covered without licence. Keep provider `deployEligible=false` |
+| 6. Final-image pinned fonts/OFL | Independent GitHub raw bytes: Regular TTF 176288 bytes SHA-256 `89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8`, Italic TTF 183188 bytes SHA-256 `9529eb888668b6a3c6dd75b6341a2fc5263fb6c9e788822e6117c29dd9e8b115`, OFL 4402 bytes SHA-256 `995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99`; all 3 match `public/fonts/provenance.json` and exact scanned **CI** image's `runtime-font-provenance.json` (`sourceByteMatch=true`, `imageByteMatch=true`) | **CI subgate VERIFIED; published GHCR/Render image NOT_PROVEN**. Never close existing final-published-image gate on a CI-only check |
+
+**Contract-data boundary:** The nonbinding Kraken/Massive reply references in
+`docs/security/evidence/license-rights-review.json` describe observed
+support/sales correspondence, not a binding license schedule.
+Both original provider `status=CONTRACT_SCOPE_UNVERIFIED`,
+`deployEligible=false`, and `contractEvidence.contractOrPermissionReference=null`
+remain unchanged. The root rights ledger continues
+`REVIEW_OPEN`, `deployEligible=false`, `legalApproval=null` and **all six**
+`remainingGates` retained. The already-written guard
+`scripts/assert-ghcr-publication-rights.mjs` continues to block a
+GHCR candidate before login/push for unapproved, unmatched current-source
+and current-base evidence. Existing tests now cover forged provider
+correspondence as insufficient for legal approval.
+
+**Do not overstate:** An exact-image GitHub CI smoke `buildIdentity.bound=true`
+refers to the isolated test merge image only. Public live Render `/healthz`
+previously reported `buildIdentity.bound=false` for main
+`3b92f054ca18b1521fde570ba082acca2b5ec601`.
+No immutable registry platform manifest, trusted signature/attestation,
+image-backed Render deploy, customer license or legal source-delivery receipt
+was produced. `GHCR_PUBLISH=BLOCKED`, `RENDER_CUTOVER=HOLD`.
+
+**Rollback:** Revert the two scoped evidence/negative-test updates and
+this addendum on the existing Draft PR branch; no live state, secrets,
+Registry, customers or billing touched. Each new PR head needs its own
+existing CI checks; prior CI run IDs remain historical evidence.
+
+
+## SaaS-only Render hosting decision — 2026-11-23
+
+**Owner-supplied product boundary:** CAPITAL-AI is operated exclusively as a
+**hosted SaaS service on the existing Render Git-backed Docker service**.
+No OCI/container image, installation package, server binary, SDK bundle or
+CLI is to be delivered to B2B customers. **This is a product-scope decision,
+not a legal approval, not a statement that no software copies are conveyed
+to the hosting provider, and not permission to publish GHCR images.**
+Do not switch the Render source, publish a registry candidate or loosen the
+existing `docs/security/evidence/license-rights-review.json` guard.
+
+**Authority / immutable readback:** current main
+`3b92f054ca18b1521fde570ba082acca2b5ec601`,
+Root `AGENTS.md` blob `3d5ad12cb6e0f055dac6db427422a903937c91dd`
+(`SOLO_MAINTAINER_FLOW@2`). Existing Render workspace
+`tea-d90o4rj7uimc739i86ug`, service `srv-dau1rp893c1s73cdhm1g`,
+source `main` / `./Dockerfile`, live deploy
+`dep-dc28prc9v7es73dd6jq0` at the same main SHA.
+This is **Git-built**, not a verified GHCR-pulled image.
+No B2B-customer image delivery is intended; actual third-party copies
+and contractual licensing to Render remain a separate legal fact check.
+
+### Trigger classification, not a blanket legal waiver
+
+| Usage class in this chosen model | Actual evidence / obligation | Classification |
+| --- | --- | --- |
+| `SERVER_RUNTIME_ONLY`: Alpine/Node/Python, ClamAV, server-only dependencies | Merely invoking software remotely generally does not itself deliver an executable copy to the website user. Scope of GPL/LGPL/MPL obligations depends on actual copies, modifications, linking, selected licence and provider contracts. The pinned base and exact runtime package counts have CI evidence, **not** full source-to-binary proof. | `HOSTED_USE_SCOPED`; source delivery to website customers not automatically triggered, **hosting-provider copy/NOTICE and exact obligations REVIEW_REQUIRED** |
+| `BUILD_ONLY`: build/scan dependencies | Do not count build-only tools as browser or final-runtime delivered solely because they are in lockfiles. Verify inclusion with the existing final-image inventory; any separately copied CI/build image needs its own classification. | `CI_SCOPED`; `NOT_PROVEN` for other actual conveyance |
+| `BROWSER_DISTRIBUTED`: emitted JS, self-hosted TTFs, JPEGs, SVGs and other frontend assets | The browser downloads copies; notices, source obligations (if licence-triggered), font copyright/OFL, asset provenance and trademark permissions remain in scope **even though no container is sent to customers**. Actual CI `THIRD_PARTY_NOTICES.txt`, Node licence and `fonts/OFL.txt` hashes are linked in the preceding six-gate audit, but completeness and live public readback are separate claims. | `NOTICE_BYTE_CI_VERIFIED`; `BROWSER_RIGHTS_REVIEW_REQUIRED` |
+| `NETWORK_COPYLEFT` (e.g. Cryptofeed, AGPL-3.0-or-later) | `server/oss-provider-adapters.mjs` declares Cryptofeed as an **adapter candidate**, `activationReviewRequired:true`; listing software is not proof it is installed, modified or running. If a modified AGPL-covered server program interacts with users over the network, §13 obligations may apply **without delivering a container**. Verify exact runtime activation and source/modification status before admission. | `ACTIVATION_NOT_PROVEN`; `AGPL_NETWORK_REVIEW_REQUIRED_IF_ENABLED` |
+| `HOSTING_PROVIDER_COPY`: Render Git-based Docker build | Render may receive source/build context or create/hold an image in the hosting arrangement. Determine actual copy/conveyance, provider relationship and exact software licences, including any GPL/LGPL/MPL source/NOTICE conditions; **do not classify it as automatically internal or as a completed B2B customer delivery**. | `LEGAL_REVIEW_REQUIRED`; no new deployment |
+| `PUBLIC_MARKET_DATA_DISPLAY`: provider quotes, derived scores, charts, customer-visible content, caches or exports | SaaS service terms do not grant exchange/provider data display, derivative, retention or redistribution rights. Existing Kraken and Massive replies are nonbinding, Twelve Data is conditional and neither selected licensed plan nor entity/feed is evidenced. Open/public reference data and private BYOK are independent scopes. | `PROVIDER_CONTRACT_SCOPE_UNVERIFIED`, keep guards fail-closed |
+| `GHCR_IMAGE_PUBLICATION` or `IMAGE_TO_B2B` | **Not selected** as the operational target. Historical public GHCR package versions do not prove a current publish or license; a later candidate would still require the existing exact-source/base Rights Gate and independent registry attestation. | `DEFERRED_NOT_IN_SAAS_SCOPE`; existing `GHCR_PUBLICATION=BLOCKED`, `RENDER_CUTOVER=HOLD` |
+
+### Six existing ledger entries under the SaaS-only decision
+
+1. **OS source/delivery.** Technical CI inventory: 50 Alpine packages and
+   34 independently mirrored historical source recipes / 229 source-file
+   SHA-512 verifications, with `sourceDeliveryProven=false` and
+   `redistributionApproved=false`. Do **not** demand a customer container
+   source-offer as an already triggered SaaS distribution duty. Establish
+   whether the Render hosting workflow legally conveys copies and, if so,
+   corresponding-source, patch, build-input and recipient-access scope
+   for those exact binaries. **Status: CONDITIONAL_REVIEW / no legal release.**
+2. **Exact base and NOTICE.** Current Docker base pinned to
+   `node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5`.
+   Existing same-CI-image scan correlated the frontend, Node and OFL
+   notice hashes. These do not demonstrate that every runtime notice, base
+   source or provider-conveyance obligation is met. Preserve exact byte
+   evidence and evaluate only the actual SaaS/provider/browser distributions.
+   **Status: CI_SUBGATES_VERIFIED / COMPLETENESS_NOT_PROVEN.**
+3. **JPEG origin.** Owner-authorized project logo file
+   `public/branding/capital-ai-logo.jpg` is distinct from the
+   `glowing_earth_nodes_1789997454893.jpg` hero image whose generating
+   account, creation artifact, commercial terms and derivative permissions
+   are still missing from the ledger. Both are publicly delivered if served.
+   Repository/CI byte hashes cannot confer those rights.
+   **Status: OWNER_LOGO_PROJECT_USE_EVIDENCED / EARTH_RIGHTS_NOT_PROVEN.**
+4. **Inline logos and marks.** `src/components/AssetLogo.tsx` embeds
+   instrument/company-related symbols. Verify provenance of the actual
+   vectors and public brand depiction; use descriptive text/ticker-only
+   alternatives for symbols lacking rights rather than assuming trademark
+   clearance from code hashes. **Status: REVIEW_REQUIRED.**
+5. **Market-data licences.** Only review providers **actually active**
+   for public customer display, derived outputs, retention, API/export,
+   brand attribution and geographical/entity scope. Existing ledger has
+   `kraken`/`polygon` `CONTRACT_SCOPE_UNVERIFIED` and conditional
+   `twelvedata` evidence, not a signed chosen feed entitlement.
+   Do not unlock previously blocked feeds from SaaS selection.
+   **Status: CONTRACT_SCOPE_UNVERIFIED / COMMERCIAL_DISPLAY_BLOCKED
+   absent exact evidence.**
+6. **Fonts / OFL.** `public/fonts/provenance.json` binds unmodified Plus
+   Jakarta Sans Regular/Italic and `public/fonts/OFL.txt` to known upstream
+   bytes. Existing CI test extracts and compares the same font+licence bytes
+   inside the *scanned CI image* (three file hashes) and existing frontend
+   bundle serves font files to browsers. Preserve OFL and upstream copyright
+   with distributed font files and respect reserved names if modified.
+   Published GHCR / independently built Render binary identity is
+   **NOT_PROVEN**; no claim that this image was tested byte-for-byte.
+   **Status: CI_FONT_BYTES_VERIFIED / BROWSER_NOTICE_REVIEW /
+   LIVE_IMAGE_MATCH_NOT_PROVEN.**
+
+### Exact technical next work vs. personal legal evidence
+
+**Technical work already evidenced:** CI Docker Security Gate, isolated
+Source Mirror and CodeQL on PR head
+`8f6d67ced78cdb6a9c84d708d9ff19d1e4b53089` passed;
+browser-emitted inventory and font/notice SHA checks passed on the
+referenced CI merge artifact. The newly added test in
+`scripts/assert-ghcr-publication-rights.test.mjs` asserts that injecting
+`HOSTED_SAAS_ONLY` or `customerImageDelivery=false` into the rights
+ledger does **not** bypass current-source/base, missing approval or remaining
+gates. It is a fail-closed unit test, not a simulated legal permission.
+
+**Owner/source-specific evidence needed before changing any legal
+admission:** (a) exact generated hero-image creation artifact and
+commercial/derivative terms for the account used; (b) third-party logo
+and mark creation/permission provenance, or approval to replace
+unverified symbols with descriptive alternatives; (c) signed provider
+order/terms for **each enabled** commercial data feed with identity,
+region, display, caching, derived/export and attribution rights; and
+(d) if legally material for the actual Render/CI workflow, review of
+the host's software-copy/recipient relationship and matching source/
+NOTICE terms. No new licensing representation is inferred from an
+owner product-model decision.
+
+**Existing rights guard unchanged:** ledger `REVIEW_OPEN`,
+`deployEligible=false`, `legalApproval=null`, all six
+`remainingGates` retained. `GHCR_PUBLISH=BLOCKED`,
+`RENDER_SOURCE_SWITCH=HOLD`. This SaaS scope reduces unnecessary
+customer-image delivery work; it cannot erase browser distribution,
+network-copyleft triggers, provider data rights or applicable host-copy
+obligations. The original `GHCR -> Render` PR is retained as Draft
+offline engineering evidence, not the currently selected deployment goal.
+
+### Primary licence reading (not a substitute for advice)
+
+- OSI FAQ (network use vs distribution): https://opensource.org/faq
+- GNU GPL FAQ: https://www.gnu.org/licenses/gpl-faq.html
+- GNU AGPLv3 (section 13): https://www.gnu.org/licenses/agpl-3.0.html
+- Apache-2.0 section 4: https://www.apache.org/licenses/LICENSE-2.0.html
+- OFL FAQ: https://openfontlicense.org/ofl-faq/
+
+**Rollback:** revert only this paragraph append and the scoped GHCR
+negative test on the existing Draft PR branch. No change to `main`,
+the Render service, package registry, rights ledger, provider credentials,
+customer records, checkout or billing.

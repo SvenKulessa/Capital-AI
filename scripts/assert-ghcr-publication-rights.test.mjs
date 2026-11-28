@@ -107,3 +107,95 @@ test('fully documented synthetic fixture matches only the input contract, never 
   assert.deepEqual(assessed.blockers, []);
   assert.equal(assessed.pinnedBaseImage, pinned);
 });
+
+test('non-binding provider support replies are evidence only and do not authorize GHCR publication', () => {
+  const ledger = JSON.parse(readFileSync(new URL('../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  for (const id of ['kraken', 'polygon']) {
+    const provider = ledger.providers.find(item => item.id === id);
+    assert.equal(provider.deployEligible, false);
+    assert.equal(provider.status, 'CONTRACT_SCOPE_UNVERIFIED');
+    assert.match(provider.nonBindingVendorReply.sourceReference, /^Gmail message /);
+    assert.equal(provider.nonBindingVendorReply.executedAgreement, false);
+    assert.equal(provider.nonBindingVendorReply.contractingEntityBound, false);
+    assert.equal(provider.nonBindingVendorReply.commercialAdmission, false);
+    assert.equal(provider.contractEvidence.contractOrPermissionReference, null);
+  }
+  assert.equal(ledger.status, 'REVIEW_OPEN');
+  assert.equal(ledger.deployEligible, false);
+  assert.equal(ledger.legalApproval, null);
+  assert.equal(ledger.remainingGates.length, 6);
+  const attempted = { ...approved(), providers: ledger.providers, legalApproval: null };
+  const assessed = assessGhcrPublicationRights({ license: attempted, sourceSha: sha, dockerfile });
+  assert.equal(assessed.status, 'BLOCKED');
+  assert.ok(assessed.blockers.includes('LEGAL_APPROVAL_REFERENCE_MISSING'));
+  assert.throws(() => assertGhcrPublicationRights({ license: attempted, sourceSha: sha, dockerfile }));
+});
+
+test('hosted SaaS-only selection cannot bypass GHCR or recipient rights guards', () => {
+  const ledger = JSON.parse(readFileSync(new URL('../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  const currentDockerfile = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  const currentMainSha = '3b92f054ca18b1521fde570ba082acca2b5ec601';
+  const nonAuthorizingDeploymentChoices = [
+    { deploymentModel: 'HOSTED_SAAS_ONLY', customerImageDelivery: false },
+    { deploymentModel: 'HOSTED_SAAS_ONLY', publicGhcrPush: false, providerBuild: 'RENDER_GIT_DOCKERFILE' },
+    { deploymentModel: 'HOSTED_SAAS_ONLY', licenseDelivery: 'NOT_REQUIRED_BY_OWNER_STATEMENT' },
+  ];
+  for (const choices of nonAuthorizingDeploymentChoices) {
+    const assessment = assessGhcrPublicationRights({
+      license: { ...ledger, ...choices },
+      dockerfile: currentDockerfile,
+      sourceSha: currentMainSha,
+    });
+    assert.equal(assessment.status, 'BLOCKED');
+    for (const code of [
+      'REDISTRIBUTION_REVIEW_OPEN', 'DEPLOY_ELIGIBILITY_NOT_GRANTED',
+      'SOURCE_EVIDENCE_SHA_MISMATCH', 'BASE_IMAGE_EVIDENCE_MISMATCH',
+      'REMAINING_GATES_OPEN', 'LEGAL_APPROVAL_REFERENCE_MISSING',
+    ]) assert.ok(assessment.blockers.includes(code), code);
+    assert.throws(() => assertGhcrPublicationRights({
+      license: { ...ledger, ...choices }, dockerfile: currentDockerfile,
+      sourceSha: currentMainSha,
+    }));
+  }
+});
+
+
+test('both SaaS candidate inventory entries retain pinned Cryptofeed AGPL licence and blocked admission', () => {
+  const inventory = readFileSync(new URL('../src/data/externalComponentInventory.ts', import.meta.url), 'utf8');
+  const review = JSON.parse(readFileSync(new URL('../docs/licenses/oss-market-stack/commercial-review-20261003.json', import.meta.url), 'utf8'));
+  const cryptofeed = review.candidates.find(candidate => candidate.id === 'cryptofeed');
+  assert.equal(cryptofeed.softwareLicence, 'AGPL-3.0-or-later WITH ADDITIONAL_ATTRIBUTION_TERM');
+  assert.equal(cryptofeed.productAdmission, 'BLOCKED');
+  const rows = inventory.match(/^\s*\{ name: 'Cryptofeed', role: 'optimization', license: '[^']+' \},?$/gm) || [];
+  assert.equal(rows.length, 2);
+  for (const row of rows) assert.match(row, /license: 'AGPL-3\.0-or-later'/);
+  // Candidate metadata does not establish activation, modification or an executable source-offer.
+});
+
+
+test('unverified third-party AssetLogo SVGs are replaced by accessible ticker-only badges', () => {
+  const component = readFileSync(new URL('../src/components/AssetLogo.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(component, /<svg\b|<img\b|<path\b|<polygon\b|<circle\b/);
+  assert.match(component, /role="img"/);
+  assert.match(component, /aria-label=\{name \?/);
+  assert.match(component, /cleanSymbol\.slice\(0, 4\)/);
+  assert.match(component, /\{displayLabel\}/);
+  assert.match(component, /getCategoryColors/);
+  assert.ok(!component.includes('RENDER_LOGO_LICENSE_APPROVED'));
+  // This proves only one component's rendering: other artwork and trademark usage still need review.
+});
+
+
+test('owner-reported Grok ChatGPT AI Studio hero provenance never grants image rights', () => {
+  const ledger = JSON.parse(readFileSync(new URL('../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  const hero = ledger.assets.find(asset => asset.path === 'src/assets/images/glowing_earth_nodes_1789997454893.jpg');
+  assert.ok(hero);
+  assert.deepEqual(hero.originEvidence.supplementalOwnerStatement.toolsNamed, ['Grok', 'ChatGPT', 'Google AI Studio']);
+  assert.equal(hero.originEvidence.supplementalOwnerStatement.verification, 'OWNER_STATEMENT_ONLY_NOT_CREATION_CHAIN_OR_LICENCE_EVIDENCE');
+  assert.equal(hero.originEvidence.supplementalOwnerStatement.commercialRightsVerified, false);
+  assert.equal(hero.license, null);
+  assert.equal(ledger.status, 'REVIEW_OPEN');
+  assert.equal(ledger.deployEligible, false);
+  assert.equal(ledger.legalApproval, null);
+  assert.ok(ledger.remainingGates.some(gate => gate.includes('JPEG usage terms')));
+});

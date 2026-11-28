@@ -857,13 +857,32 @@
       "creator": null,
       "origin": "Social-Media-Engine aus capital-ai-online/Finance; im Website-Mockup verwendet und durch Gemini eingebettet",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
         "recordedAt": "2026-09-30",
         "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
-        "generationTool": null,
+        "generationTool": "Grok + ChatGPT + Google AI Studio (Owner-Angabe; genaue Beiträge nicht unabhängig verifiziert)",
+        "supplementalOwnerStatement": {
+          "recordedAt": "2026-11-24",
+          "source": "DIRECT_OWNER_CHAT_STATEMENT",
+          "toolsNamed": [
+            "Grok",
+            "ChatGPT",
+            "Google AI Studio"
+          ],
+          "description": "Bild wurde nach Owner-Angabe mithilfe von Grok und ChatGPT zusammen mit Google AI Studio komplettiert.",
+          "individualToolRoles": "NOT_RECONSTRUCTED",
+          "sequence": "NOT_RECONSTRUCTED",
+          "generationAccountIds": null,
+          "accountPlanTiers": null,
+          "promptsAndIntermediateArtifacts": null,
+          "originalGenerationDate": null,
+          "licenceTermsApplicableAtCreation": null,
+          "commercialRightsVerified": false,
+          "verification": "OWNER_STATEMENT_ONLY_NOT_CREATION_CHAIN_OR_LICENCE_EVIDENCE"
+        },
         "generationSystem": "Social-Media-Engine in capital-ai-online/Finance",
         "embeddingTool": "Gemini",
         "generationDate": null,
@@ -1020,7 +1039,23 @@
         "requiredAttribution": null,
         "validityAndReviewDate": null
       },
-      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT"
+      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT",
+      "nonBindingVendorReply": {
+        "kind": "WRITTEN_NON_BINDING_PROVIDER_SUPPORT_EMAIL",
+        "sourceReference": "Gmail message 1a16ee3a0ba04fdf (Kraken Support, 2026-10-24)",
+        "reviewedAt": "2026-11-23",
+        "observations": {
+          "internalCollectionStorageAnalytics": "CONDITIONALLY_DESCRIBED_FOR_OWN_BENEFIT",
+          "redistributionOrThirdPartyRawDataAccess": "NOT_PERMITTED_WITHOUT_SEPARATE_LICENSE",
+          "derivedData": "SUPPORT_SAYS_USER_MAY_USE_DERIVED_DATA_SUBJECT_TO_APPLICABLE_TERMS",
+          "publicCustomerFacingProduct": "PROVIDER_REVIEW_REQUIRED",
+          "marketDataLicenceForCommercialUse": "NOT_ESTABLISHED"
+        },
+        "executedAgreement": false,
+        "contractingEntityBound": false,
+        "feedScopeBound": false,
+        "commercialAdmission": false
+      }
     },
     {
       "id": "twelvedata",
@@ -1072,7 +1107,27 @@
         "requiredAttribution": null,
         "validityAndReviewDate": null
       },
-      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT"
+      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT",
+      "nonBindingVendorReply": {
+        "kind": "WRITTEN_NON_BINDING_PROVIDER_MARKET_DATA_EMAIL",
+        "sourceReference": "Gmail message 1a1090f7f5c630e0 (Massive Market Data Specialist, 2026-10)",
+        "reviewedAt": "2026-11-23",
+        "observations": {
+          "customerFacingDisplay": "CONDITIONAL_BUSINESS_PLAN",
+          "rawDataApiRedistribution": "SEPARATE_DISTRIBUTION_AGREEMENT_REQUIRED",
+          "nonReconstructableDerivedScoresAndB2bReports": "CONDITIONAL_BUSINESS_PLAN",
+          "internalCacheReplayBackupDuringSubscription": "CONDITIONALLY_DESCRIBED",
+          "rawDataRetentionAfterTermination": "SOURCE_AND_RECONSTRUCTABLE_FACTS_MUST_BE_DELETED",
+          "indices": "ADDITIONAL_INDEX_PROVIDER_LICENSES_REQUIRED",
+          "legacyPolygonEndpoints": "SAME_BUSINESS_ENTITLEMENTS_IF_VALID_ORDER_FORM"
+        },
+        "executedAgreement": false,
+        "orderFormIssued": false,
+        "contractingEntityBound": false,
+        "selectedPlanBound": false,
+        "feedScopeBound": false,
+        "commercialAdmission": false
+      }
     },
     {
       "id": "financialdatanet",
@@ -1129,7 +1184,7 @@
       "creator": null,
       "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
@@ -1165,7 +1220,7 @@
       "creator": null,
       "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
@@ -1201,7 +1256,7 @@
       "creator": null,
       "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
-      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "evidenceReference": "docs/security/evidence/asset-mockup-history-review.json",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
       "originEvidence": {
         "type": "OWNER_STATEMENT",
@@ -1229,5 +1284,25 @@
       "removalDate": "2026-09-30",
       "removalReason": "Owner requested replacement with ChatGPT logo in PR 37"
     }
-  ]
+  ],
+  "historicalOsSourceMirrorEvidence": {
+    "status": "SOURCE_HASHES_VERIFIED_NON_AUTHORIZING",
+    "prNumber": 913,
+    "prHead": "d58b61b2c810f419063eec54e2e0708f9d635bc1",
+    "testedMergeSha": "ae01371713c42adf84588fff67784cb5456675a4",
+    "workflowRunId": 46122701378,
+    "artifactId": 15254820218,
+    "artifactSha256": "22e64c0606ab45fcb899fe70806f3b8f860344e3e4f2c10ee8f59a9c76091118",
+    "artifactHashAuthority": "GITHUB_METADATA",
+    "artifactBytesIndependentlyVerified": false,
+    "artifactExpiresAt": "2026-12-01T07:47:29Z",
+    "sourceRecipes": 34,
+    "binaryPackages": 50,
+    "externalFetchFailures": 0,
+    "failedRecipes": [],
+    "sourceDeliveryProven": false,
+    "redistributionApproved": false,
+    "durableArchiveVerified": false,
+    "applicableToNewMerge": false
+  }
 }

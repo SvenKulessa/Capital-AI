@@ -95,6 +95,12 @@ jobs:
             scripts/verify-main-ruleset-origin.test.mjs \
             scripts/registry-cve-gate.test.mjs \
             scripts/assert-ghcr-publication-rights.test.mjs \
+            scripts/platform/ghcr-render-cutover-plan.test.mjs \
+            scripts/platform/runtime-license-coverage.test.mjs \
+            scripts/platform/runtime-font-provenance.test.mjs \
+            scripts/platform/runtime-native-linkage.test.mjs \
+            scripts/platform/runtime-unrar-files.test.mjs \
+            scripts/platform/elf-needed.test.mjs \
             scripts/production-handoff.test.mjs \
             scripts/write-runtime-identity.test.mjs \
             scripts/post-merge-followup.test.mjs \
@@ -429,6 +435,20 @@ jobs:
             security-reports/container-identity.json Dockerfile \
             security-reports/runtime-node-license.txt security-reports/runtime-font-ofl.txt \
             security-reports/os-source-inventory.json security-reports/OS-PACKAGE-NOTICES.txt
+      - name: Byte-Herkunft beider TTFs und OFL aus exakt gescanntem CI-Runtime-Image prüfen
+        run: |
+          set -euo pipefail
+          image="capital-ai:${{ github.sha }}"
+          # Extract bytes without network or container write privileges; do not upload font binaries.
+          test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /app/dist/fonts/PlusJakartaSans-Regular.ttf > security-reports/runtime-font-regular.ttf
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /app/dist/fonts/PlusJakartaSans-Italic.ttf > security-reports/runtime-font-italic.ttf
+          cleanup() { rm -f security-reports/runtime-font-regular.ttf security-reports/runtime-font-italic.ttf; }
+          trap cleanup EXIT
+          node scripts/platform/runtime-font-provenance.mjs \
+            public/fonts/provenance.json security-reports/image-id.txt \
+            security-reports/os-source-inventory.json security-reports \
+            security-reports/runtime-font-provenance.json
       - name: CVE-2026-4738 in Build- und Runtime-Scans ausschließen
         run: |
           # Existing severity gate blocks HIGH/CRITICAL; this repaired MEDIUM CVE must not regress.
@@ -450,6 +470,27 @@ jobs:
           test -s security-reports/image.tar
           test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/image-licenses.json --exit-code 0
+      - name: Runtime SBOM, Lizenzscanner und Notice-Hashes am exportierten CI-Image korrelieren
+        if: always() && steps.image_identity.outputs.image_id != ''
+        run: |
+          set -euo pipefail
+          node scripts/platform/runtime-license-coverage.mjs security-reports > security-reports/runtime-license-coverage.json
+      - name: ClamAV und Sharp Native-Dateien sowie ELF-Linkage am selben CI-Image prüfen
+        if: always() && steps.image_identity.outputs.image_id != ''
+        run: |
+          set -euo pipefail
+          image="capital-ai:${{ github.sha }}"
+          test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --mount type=bind,source="$PWD/scripts/platform/runtime-native-linkage.mjs",target=/tmp/runtime-native-linkage.mjs,readonly \
+            --mount type=bind,source="$PWD/scripts/platform/elf-needed.mjs",target=/tmp/elf-needed.mjs,readonly \
+            --mount type=bind,source="$PWD/scripts/platform/runtime-unrar-files.mjs",target=/tmp/runtime-unrar-files.mjs,readonly \
+            --entrypoint node "$image" /tmp/runtime-native-linkage.mjs collect "$(cat security-reports/image-id.txt)" \
+            > security-reports/runtime-native-linkage.json
+          node scripts/platform/runtime-native-linkage.mjs verify \
+            security-reports/runtime-native-linkage.json security-reports/os-source-inventory.json \
+            security-reports/runtime-license-coverage.json security-reports/image-id.txt \
+            > security-reports/runtime-native-linkage-summary.json
       - name: Runtime ohne Schreibrechte und Linux-Capabilities prüfen
         run: |
           docker run -d --name capital-ai-smoke --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:10000:10000 capital-ai:${{ github.sha }}
@@ -489,6 +530,10 @@ jobs:
             security-reports/os-alpine-release.txt
             security-reports/runtime-node-license.txt
             security-reports/runtime-font-ofl.txt
+            security-reports/runtime-font-provenance.json
+            security-reports/runtime-license-coverage.json
+            security-reports/runtime-native-linkage.json
+            security-reports/runtime-native-linkage-summary.json
             security-reports/smoke-health.json
             security-reports/smoke-state.json
             security-reports/image-id.txt
