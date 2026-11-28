@@ -33,6 +33,7 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
   const sourceBytes = readFileSync(fileURLToPath(sourceUrl));
   const rawPlan = JSON.parse(sourceBytes.toString('utf8'));
   const drafts = buildGrowthIntelligenceContentDrafts(rawPlan);
+  const productToMarket = buildProductChannelIntelligence();
   return {
     contractVersion: 'CAPITAL_AI_GROWTH_INTELLIGENCE_DRAFT_BUNDLE@1',
     sourcePath: GROWTH_INTELLIGENCE_PLAN_PATH,
@@ -57,8 +58,8 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
       plannedScenes: drafts.filter(d=>d.visualScene!==null).length, actualMediaAssets: 0,
       publicPublishAllowed: false, toolRadar: { cadence: 'EXISTING_DAILY_DEPENDENCY_WATCH', state: 'SCHEDULED_SOURCE_ONLY', automaticInstall: false } },
     xAcquisition: xAcquisitionDraftOverview(drafts),
-    productToMarket: buildProductChannelIntelligence(),
-    agentRaceDistribution: buildRaceDistribution(buildProductChannelIntelligence()),
+    productToMarket,
+    agentRaceDistribution: buildRaceDistribution(productToMarket),
     ...(dataInput === undefined ? {} : { growthDataLayer: projectGrowthDataLayer(dataInput) }),
   };
 }
