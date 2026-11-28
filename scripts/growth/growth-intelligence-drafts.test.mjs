@@ -278,3 +278,5 @@ test('direct Instagram Meta HTTP 400 errors are isolated and sanitized',async()=
     assert.equal(result.publicPublishAllowed,false);
   }
 });
+
+import './agent-race-distribution.test.mjs';
