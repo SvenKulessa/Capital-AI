@@ -51,6 +51,22 @@ test('evidence ring is based on explicit control plane evidence, not optimistic 
   assert.equal(ownerEvidenceCounts(rows).notProven,2);
   assert.ok(rows.find(r=>r.label==='Stripe-Umsatz')?.status==='NOT_PROVEN');
 });
+test('Runtime-SHA uses the unique live deploy even when a newer deploy is building', () => {
+  const snapshot = fixture();
+  const live = snapshot.render.deployments![0];
+  const building = { ...live, deployStatus: 'build_in_progress', sourceCommitSha: 'b'.repeat(40) };
+  snapshot.render.deployments = [building, live];
+  snapshot.comparison.runtimeSha = { sourceSha: sha, observedAt: snapshot.generatedAt };
+  const runtime = () => ownerEvidenceRows(snapshot).find(row => row.label === 'Runtime-SHA / Healthz');
+  assert.equal(runtime()?.status, 'VERIFIED');
+  snapshot.comparison.runtimeSha.sourceSha = building.sourceCommitSha;
+  assert.equal(runtime()?.status, 'BLOCKED');
+  snapshot.render.deployments = [building];
+  assert.equal(runtime()?.status, 'NOT_PROVEN');
+  snapshot.render.deployments = [live, { ...building, deployStatus: 'live' }];
+  assert.equal(runtime()?.status, 'NOT_PROVEN');
+  assert.equal(snapshot.comparison.runtimeBuildIdentity, 'NOT_PROVEN_INDEPENDENT_READBACK');
+});
 test('failed required check blocks gate evidence without making an unauthorized merge decision', () => {
   const s=fixture();
   s.github.ci!.runs[0].conclusion='failure';
