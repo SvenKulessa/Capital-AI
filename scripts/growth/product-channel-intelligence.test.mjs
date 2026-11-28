@@ -22,3 +22,6 @@ test('reference-only graph handoff has deterministic identity and no grants, raw
   assert.ok(p.products.some(x=>x.id==='ai-smartcopy'&&x.channels.some(c=>c.id==='acode')));
   assert.ok(p.products.every(x=>Object.keys(x).sort().join(',')==='channels,id,researchStatus'&&x.channels.every(c=>Object.keys(c).sort().join(',')==='id,priority,rule')));
 });
+
+
+test('marketplace candidates expose official documentation but never grant publishing or spend',()=>{const a=projectProductChannels(sample('SAAS-MEMBERSHIP','LEARNING-PORTAL','HERO-BUDDY-SUPPORT'));const saas=a.products.find(p=>p.id==='saas-membership');assert.equal(saas.channels.find(c=>c.id==='microsoftMarketplace').automation,'API_SUBMISSION_DOCUMENTED');assert.equal(saas.channels.find(c=>c.id==='awsMarketplace').automation,'API_SUBMISSION_DOCUMENTED');assert.equal(saas.channels.find(c=>c.id==='googleCloudMarketplace').automation,'PORTAL_REVIEW');const learning=a.products.find(p=>p.id==='learning-portal');assert.equal(learning.channels.find(c=>c.id==='gumroad').automation,'MCP_DRAFT_AND_PUBLISH_DOCUMENTED');for(const p of a.products)for(const c of p.channels){assert.equal(new URL(c.source).protocol,'https:');assert.equal(c.accountAdmission,'NOT_PROVEN');assert.equal(c.costAdmission,'NOT_PROVEN');assert.equal(c.automaticPublishAllowed,false);assert.equal(c.paidActivationAllowed,false);}});

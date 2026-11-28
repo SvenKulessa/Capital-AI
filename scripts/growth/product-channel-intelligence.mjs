@@ -4,6 +4,18 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 export const PRODUCT_REGISTRY_PATH = "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md";
 const channels = {
+  "microsoftMarketplace": {"kind":"DISTRIBUTION","url":"https://partner.microsoft.com/dashboard","source":"https://learn.microsoft.com/en-us/partner-center/marketplace-offers/submission-api-overview","rule":"LISTING_REVIEW_REQUIRED","method":"SaaS Submission API; Partner Center, Entra, Review und Fulfillment prüfen.","automation":"API_SUBMISSION_DOCUMENTED"},
+  "awsMarketplace": {"kind":"DISTRIBUTION","url":"https://aws.amazon.com/marketplace/management/","source":"https://docs.aws.amazon.com/marketplace/latest/developerguide/work-with-saas-products.html","rule":"LISTING_REVIEW_REQUIRED","method":"Catalog API StartChangeSet; Seller-Onboarding, Billing und Review prüfen.","automation":"API_SUBMISSION_DOCUMENTED"},
+  "googleCloudMarketplace": {"kind":"DISTRIBUTION","url":"https://console.cloud.google.com/producer-portal","source":"https://docs.cloud.google.com/marketplace/docs/partners/integrated-saas/submitting","rule":"LISTING_REVIEW_REQUIRED","method":"Producer Portal; allgemeine Listing-Write-API nicht nachgewiesen.","automation":"PORTAL_REVIEW"},
+  "notionMarketplace": {"kind":"DISTRIBUTION","url":"https://www.notion.com/become-a-creator","source":"https://www.notion.com/help/selling-on-marketplace","rule":"LISTING_REVIEW_REQUIRED","method":"Nur passende Notion-Vorlagen; Creator-Profil und Review.","automation":"PORTAL_REVIEW"},
+  "gumroad": {"kind":"DISTRIBUTION","url":"https://gumroad.com/mcp","source":"https://gumroad.com/help/article/355-connect-ai-assistants-to-gumroad","rule":"LISTING_REVIEW_REQUIRED","method":"Offizielles MCP für unveröffentlichte Entwürfe und separate Veröffentlichung; Rechte, OAuth und Produktart prüfen.","automation":"MCP_DRAFT_AND_PUBLISH_DOCUMENTED"},
+  "lemonSqueezy": {"kind":"OWNED","url":"https://www.lemonsqueezy.com/","source":"https://docs.lemonsqueezy.com/help/products/adding-products","rule":"LISTING_REVIEW_REQUIRED","method":"Dashboard-Produktanlage; Produkt-Readback per API; kein Create-Endpunkt angenommen.","automation":"PORTAL_CREATE_API_READ"},
+  "paddle": {"kind":"OWNED","url":"https://www.paddle.com/","source":"https://developer.paddle.com/api-reference/products/create-product/","rule":"LISTING_REVIEW_REQUIRED","method":"Katalog-API; keine garantierte Marketplace-Reichweite oder zweite Billing-Authority.","automation":"API_CATALOG_DOCUMENTED"},
+  "stripeDirect": {"kind":"OWNED","url":"https://dashboard.stripe.com/","source":"https://docs.stripe.com/api/products/create","rule":"REVIEW_REQUIRED","method":"Bestehende Stripe-Integration und Preisautorität wiederverwenden; Sandbox vor Live-Vertrieb.","automation":"API_CATALOG_DOCUMENTED"},
+  "atlassianMarketplace": {"kind":"DISTRIBUTION","url":"https://marketplace.atlassian.com/","source":"https://developer.atlassian.com/platform/marketplace/rest/v4/api-group-app-listing","rule":"LISTING_REVIEW_REQUIRED","method":"Nur kompatible Atlassian-Apps; Listing-/Versions-API, Erstaufnahme und Review prüfen.","automation":"API_LISTING_DOCUMENTED"},
+  "googlePlay": {"kind":"DISTRIBUTION","url":"https://play.google.com/console/","source":"https://developers.google.com/android-publisher/edits/","rule":"LISTING_REVIEW_REQUIRED","method":"Android-App mit bestehendem Package und Signatur; Edits für Listings/Releases; Erstaufnahme und Review prüfen.","automation":"API_EXISTING_APP_EDITS"},
+  "chromeWebStore": {"kind":"DISTRIBUTION","url":"https://chrome.google.com/webstore/devconsole","source":"https://developer.chrome.com/docs/webstore/api","rule":"LISTING_REVIEW_REQUIRED","method":"Nur echte Erweiterungen; erstes Item im Dashboard, spätere Releases per API.","automation":"API_EXISTING_ITEM_RELEASES"},
+  "googleWorkspaceMarketplace": {"kind":"DISTRIBUTION","url":"https://workspace.google.com/marketplace/","source":"https://developers.google.com/workspace/marketplace/how-to-publish","rule":"LISTING_REVIEW_REQUIRED","method":"Nur integrierte Workspace-App; SDK, OAuth und Review; allgemeine Listing-Write-API nicht nachgewiesen.","automation":"PORTAL_REVIEW"},
   "website": {
     "kind": "OWNED",
     "url": "https://capital-ai.online/",
@@ -72,7 +84,8 @@ const channels = {
     "url": "https://github.com/marketplace",
     "source": "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app",
     "rule": "LISTING_REVIEW_REQUIRED",
-    "method": "GitHub-App-Listing und Publisher-/Plan-Anforderungen nachweisen; Marketplace- und Website-Entitlements getrennt halten."
+    "method": "GitHub-App-Listing im Portal einreichen; REST-API für Pläne/Käufe, kein Listing-Create-Endpunkt nachgewiesen. Publisher-Anforderungen und getrennte Entitlements beachten.",
+    "automation": "PORTAL_CREATE_API_READ"
   },
   "linkedin": {
     "kind": "DISCOVERY",
@@ -97,6 +110,8 @@ const channels = {
   }
 };
 const profiles = {
+  "saas": {"audience":"B2B-SaaS-Kunden und technische Entscheider","groups":[["website","stripeDirect","linkedin"],["microsoftMarketplace","awsMarketplace","googleCloudMarketplace","paddle","productHunt"],[]],"queries":["B2B SaaS buyer requirements","Cloud marketplace SaaS listing"],"asset":"Belegte SaaS-Demo, Datenschutz, Support und Fulfillment-Konzept."},
+  "integration": {"audience":"Workspace- und Developer-Integrationen","groups":[["website"],["atlassianMarketplace","googleWorkspaceMarketplace","chromeWebStore"],[]],"queries":["integration marketplace eligibility"],"asset":"Nur nachgewiesene kompatible Integration und minimale Berechtigungen."},
   "mobile": {
     "audience": "Android-Entwickler und mobile Terminal-Nutzer",
     "groups": [
@@ -107,6 +122,7 @@ const profiles = {
         "website"
       ],
       [
+        "googlePlay",
         "productHunt",
         "redditShowcase",
         "alternativeTo",
@@ -152,9 +168,12 @@ const profiles = {
     "groups": [
       [
         "website",
-        "youtube"
+        "youtube",
+        "stripeDirect"
       ],
       [
+        "gumroad",
+        "lemonSqueezy",
         "productHunt",
         "linkedin"
       ],
@@ -177,7 +196,9 @@ const profiles = {
       ],
       [
         "productHunt",
-        "x"
+        "x",
+        "gumroad",
+        "notionMarketplace"
       ],
       [
         "showHN"
@@ -259,6 +280,8 @@ export function parseProductRegistry(markdown) {
   return result;
 }
 function profileFor(id) {
+  if(["saas-membership","b2b-data-api","sentiment-api","white-label-widgets","enterprise-scorer"].includes(id))return "saas";
+  if(id==="hero-buddy-support")return "integration";
   if(id==="ai-smartcopy"||id==="smartclip")return "mobile";
   if(id==="cads-benchmark-engine")return "cads";
   if(["market-vocabulary","learning-portal"].includes(id))return "learning";
@@ -270,14 +293,14 @@ export function projectProductChannels(markdown) {
   const existing=new Set(rows.map(p=>p.id));
   for(const e of extras)if(!existing.has(e.id))rows.push({id:e.id,name:e.name,sourceStatus:e.sourceStatus,...(e.sourceRefs?{sourceRefs:e.sourceRefs}:{})});
   return {
-    contractVersion:"CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1",publicationState:"DRAFT_ONLY",publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,scoreBasis:"EDITORIAL_HYPOTHESIS_NOT_MEASURED",channelSourceReviewDate:"2026-11-25",
+    contractVersion:"CAPITAL_AI_PRODUCT_CHANNEL_INTELLIGENCE@1",publicationState:"DRAFT_ONLY",publicPublishAllowed:false,liveSalesAllowed:false,providerCalls:0,campaignSpend:0,scoreBasis:"EDITORIAL_HYPOTHESIS_NOT_MEASURED",channelSourceReviewDate:"2026-11-28",
     products:rows.map(p=>{
       const profile=profiles[profileFor(p.id)];
       return {...p,profile:profileFor(p.id),currentCommercialReadiness:"NOT_PROVEN",audience:profile?.audience??null,
         researchStatus:profile?"CANDIDATES_REVIEW_REQUIRED":"UNMAPPED_RESEARCH_REQUIRED",
         discoveryQueries:profile?.queries??[p.id+" target users distribution channels",p.id+" official marketplace requirements"],
         assetBrief:profile?.asset??null,
-        channels:profile?profile.groups.flatMap((ids,i)=>ids.map(id=>({id,priority:"P"+i,...channels[id],reviewRequired:true,automaticPublishAllowed:false,paidActivationAllowed:false,externalPurchaseLinkInPluginAllowed:false,metrics:{reach:null,visits:null,conversions:null,revenue:null}}))):[]};
+        channels:profile?profile.groups.flatMap((ids,i)=>ids.map(id=>({id,priority:"P"+i,...channels[id],automation:channels[id].automation??'NOT_PROVEN',accountAdmission:'NOT_PROVEN',costAdmission:'NOT_PROVEN',reviewRequired:true,automaticPublishAllowed:false,paidActivationAllowed:false,externalPurchaseLinkInPluginAllowed:false,metrics:{reach:null,visits:null,conversions:null,revenue:null}}))):[]};
     })
   };
 }
