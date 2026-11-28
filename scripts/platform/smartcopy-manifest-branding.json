@@ -1,7 +1,14 @@
 {
   "schema": "CAPITAL_AI_SMARTCOPY_MANIFEST_BRANDING@1",
+  "productId": "ai-smartcopy",
   "pluginId": "online.capitalai.acopybridge",
-  "version": "1.3.3",
+  "command": "acopy",
+  "displayName": "CAPITAL-AI TerminalCopy",
+  "nameDecision": "OWNER_PROVISIONAL_2026-11-28",
+  "legacyName": "AI-Smartcopy",
+  "version": "1.3.4",
+  "baseVersion": "1.3.3",
+  "baseZipSha256": "52483bf1995da3354df554183dbb4f7c9469d059409d2fddbc64ebbab5330756",
   "author": {
     "name": "CAPITAL-AI",
     "url": "https://capital-ai.online/",
@@ -14,12 +21,49 @@
   "pricingCatalog": "https://capital-ai.online/pricing",
   "pricingCatalogMode": "INFORMATION_ONLY_PRIVATE_RC",
   "brandAsset": "public/branding/capital-ai-logo.jpg",
+  "productLogo": {
+    "identity": "Android-Shell-Universe",
+    "source": "OWNER_APPROVED_MASTER",
+    "masterMime": "image/webp",
+    "masterSha256": "1976c1c81d66497b90b17c603f31a9286f71b509a8ee8b5b7a307e5c017c28d9",
+    "iconSha256": "0d91a00534597d6d2e18c1f5550536df784695a6584ce96a69a294f4f28f94bf",
+    "iconWidth": 160,
+    "iconHeight": 160,
+    "iconBytes": 43336,
+    "rights": "REVIEW_REQUIRED",
+    "attribution": "The Android robot is reproduced or modified from work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License.",
+    "rightsSource": "https://developer.android.com/legal"
+  },
+  "seoDraft": {
+    "title": "CAPITAL-AI TerminalCopy – Terminal Clipboard für AcodeX",
+    "description": "Terminalausgaben und Exit-Codes nach abgeschlossenen Befehlen gezielt in die Android-Zwischenablage übernehmen. Privater Testkandidat; Kompatibilität und Freigaben noch zu prüfen.",
+    "keywords": [
+      "terminal clipboard",
+      "copy terminal output",
+      "shell output copy",
+      "AcodeX",
+      "Android clipboard",
+      "exit code"
+    ],
+    "claim": "Run. Capture. Copy.",
+    "indexingAllowed": false
+  },
+  "catalogDraft": {
+    "productId": "ai-smartcopy",
+    "displayName": "CAPITAL-AI TerminalCopy",
+    "status": "PRIVATE_RC_NOT_FOR_SALE",
+    "priceChangeAllowed": false,
+    "checkoutAllowed": false,
+    "publicListingAllowed": false
+  },
   "commercialRelease": "HOLD",
+  "trademarkClearance": "NOT_PROVEN",
+  "publicPublishAllowed": false,
   "notes": [
     "Acode local ZIP reload icon is expected; preserve plugin ID and original source path.",
     "GitHub username fixes undefined contributor URL; Acode controls contributor avatar and may show the account avatar rather than the brand logo.",
-    "Website and general catalog links are informational in the private RC; no product purchase or checkout link. Recheck Acode rules before publishing.",
-    "UNLICENSED denotes no customer license grant; replace only with approved license terms.",
-    "Keep private product code and ZIP out of public Git history. Apply this overlay in the private build and deliver through existing Drive channel."
+    "Website and general catalog links are informational; no external purchase links in plugin. Recheck platform rules.",
+    "UNLICENSED denotes no customer license grant.",
+    "Keep private product source, master artwork and ZIP out of public Git history; private Drive distribution only. No claim of trademark rights to Android robot derivatives."
   ]
 }
