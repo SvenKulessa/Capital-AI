@@ -3,6 +3,8 @@ name: PG17 Backup Reader Contract (isolated)
 on:
   pull_request:
     paths:
+      - 'scripts/platform/drive-create-lease.sql'
+      - 'scripts/platform/drive-create-lease-pg17-test.sh'
       - 'scripts/platform/backup-reader-contract-test.sh'
       - 'scripts/platform/backup-reader-inventory.sql'
       - 'scripts/platform/backup-recovery-slices-test.sh'
@@ -31,6 +33,7 @@ jobs:
 
       - name: Validate Bash syntax
         run: |
+          bash -n scripts/platform/drive-create-lease-pg17-test.sh
           bash -n scripts/platform/backup-reader-contract-test.sh
           bash -n scripts/platform/backup-recovery-slices-test.sh
 
@@ -69,4 +72,4 @@ jobs:
             --workdir /repo \
             --entrypoint /bin/bash \
             capital-ai-pg17-reader-fixture \
-            -c 'bash scripts/platform/backup-reader-contract-test.sh && bash scripts/platform/backup-recovery-slices-test.sh'
+            -c 'bash scripts/platform/backup-reader-contract-test.sh && bash scripts/platform/backup-recovery-slices-test.sh && bash scripts/platform/drive-create-lease-pg17-test.sh'

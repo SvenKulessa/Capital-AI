@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {deliverDriveArtifact} from './drive-artifact-delivery.mjs';
+import {deliverDriveArtifact,DRIVE_CREATE_LEASE_KEY} from './drive-artifact-delivery.mjs';
 import {routingContract,acodeContract} from './drive-artifact-router.mjs';
 
 const root='1CapitalProjectRootFixture', acodeRoot='1AcodeRootFixture___';
@@ -155,4 +155,125 @@ test('mutable caller buffers are snapshotted before asynchronous upload',async()
   assert.equal(r.status,'VERIFIED_CREATED');
   assert.equal(r.sha256,expected);
   assert.equal(hash(written[0].fileBytes),expected);
+});
+
+test('different topics and scopes share one global exclusive create lease',async()=>{
+  const {p,written}=mock();
+  const keys=[], locks=new Map();
+  let active=0, peak=0;
+  p.withExclusiveCreateLease=async(key,fn)=>{
+    keys.push(key);
+    const prior=locks.get(key)||Promise.resolve();
+    let release;
+    const next=new Promise(resolve=>release=resolve);
+    locks.set(key,next);
+    await prior;
+    active++; peak=Math.max(peak,active);
+    try {
+      // Force overlapping callers to reach the keyed mutex.
+      await new Promise(resolve=>setImmediate(resolve));
+      return await fn();
+    } finally {
+      active--; release();
+      if(locks.get(key)===next)locks.delete(key);
+    }
+  };
+  const requests=[request,{...request,topic:'SECOND_TOPIC'},
+    {...request,scope:'ACODE',category:'ACODE_CODE',domain:'TRUST',extension:'py'}];
+  const results=await Promise.all(requests.map(q=>deliverDriveArtifact({
+    request:q,bytes:content,provider:p,authorization:auth
+  })));
+  assert.deepEqual(keys,[DRIVE_CREATE_LEASE_KEY,DRIVE_CREATE_LEASE_KEY,DRIVE_CREATE_LEASE_KEY]);
+  assert.equal(peak,1);
+  assert.equal(written.length,3);
+  assert.ok(results.every(r=>r.status==='VERIFIED_CREATED'));
+});
+test('lease provider failure does not trigger a fallback upload',async()=>{
+  const {p,written}=mock();
+  p.withExclusiveCreateLease=async()=>{throw Error('lease unavailable');};
+  const r=await deliverDriveArtifact({request,bytes:content,provider:p,authorization:auth});
+  assert.equal(r.status,'HOLD');
+  assert.equal(r.reason,'CONNECTOR_OR_EXCLUSIVE_LEASE_FAILED');
+  assert.equal(written.length,0);
+});
+
+test('durable Supabase lease: two independent providers contend on one backend',async()=>{
+  const {bindSupabaseDriveLease}=await import('./drive-create-lease.mjs');
+  const {p,written}=mock();
+  let row=null,started=false,first,unblock;
+  const entered=new Promise(resolve=>first=resolve);
+  const proceed=new Promise(resolve=>unblock=resolve);
+  const original=p.uploadNewFile;
+  p.uploadNewFile=async args=>{first();await proceed;return original.call(p,args);};
+  const fetchImpl=async(url,options)=>{
+    const {_owner}=JSON.parse(options.body);let ok=false;
+    assert.equal(options.redirect,'error');
+    if(url.endsWith('_acquire')){if(!row){row=_owner;started=false;ok=true;}}
+    if(url.endsWith('_mark_write')&&row===_owner&&!started){
+      assert.deepEqual(JSON.parse(options.body),{_owner,_folder_id:projectFolder,
+        _filename:'2026-11-21_TRUST_EXPOSURE_AUDIT_v1.md',_sha256:hash(content)});
+      started=true;ok=true;
+    }
+    if(url.endsWith('_release')&&row===_owner){row=null;ok=true;}
+    return new Response(JSON.stringify(ok));
+  };
+  const options={enabled:true,env:{SUPABASE_URL:'https://fixture.supabase.co',
+    SUPABASE_SECRET_KEY:'sb_secret_synthetic_fixture'},fetchImpl};
+  const a=bindSupabaseDriveLease(p,options),b=bindSupabaseDriveLease(p,options);
+  const pending=deliverDriveArtifact({request,bytes:content,provider:a,authorization:auth});
+  await entered;
+  assert.equal(started,true);
+  const collision=await deliverDriveArtifact({request,bytes:content,provider:b,authorization:auth});
+  assert.equal(collision.status,'HOLD');
+  unblock();
+  assert.equal((await pending).status,'VERIFIED_CREATED');
+  assert.equal(row,null);
+  assert.equal((await deliverDriveArtifact({request,bytes:content,provider:b,authorization:auth})).status,'VERIFIED_SKIP');
+  assert.equal(written.length,1);
+});
+test('durable lease keeps ambiguous writes; disabled backend does not call RPC',async()=>{
+  const {createSupabaseDriveLease}=await import('./drive-create-lease.mjs');
+  let row=null,calls=0,started=false;
+  const fetchImpl=async(url,options)=>{
+    calls++;
+    const {_owner}=JSON.parse(options.body);let ok=false;
+    if(url.endsWith('_acquire')&&!row){row=_owner;ok=true;}
+    if(url.endsWith('_mark_write')&&row===_owner){started=true;ok=true;}
+    if(url.endsWith('_release')&&row===_owner){row=null;ok=true;}
+    return new Response(JSON.stringify(ok));
+  };
+  const config={env:{SUPABASE_URL:'https://fixture.supabase.co',
+    SUPABASE_SECRET_KEY:'sb_secret_synthetic_fixture'},fetchImpl};
+  const disabled=createSupabaseDriveLease(config);
+  await assert.rejects(disabled.withExclusiveCreateLease(DRIVE_CREATE_LEASE_KEY,()=>assert.fail()));
+  assert.equal(calls,0);
+  const {withExclusiveCreateLease:lease}=createSupabaseDriveLease({...config,enabled:true});
+  await assert.rejects(lease(DRIVE_CREATE_LEASE_KEY,async()=>{throw Error('before write');}));
+  assert.equal(row,null);
+  const held=await lease(DRIVE_CREATE_LEASE_KEY,async l=>{await l.beforeCreate({folderId:projectFolder,filename:'fixture.py',sha256:hash(content)});return {status:'HOLD'};});
+  assert.equal(held.status,'HOLD');assert.ok(row);assert.equal(started,true);
+  await assert.rejects(lease(DRIVE_CREATE_LEASE_KEY,()=>assert.fail()),/DRIVE_LEASE_BUSY/);
+});
+
+test('host writer ignores caller provider override and holds on tampered readback',async()=>{
+  const {createLeasedDriveWriter}=await import('./drive-create-lease.mjs');
+  const {p,written}=mock();
+  let owner=null,intent=null;
+  const fetchImpl=async(url,options)=>{
+    const body=JSON.parse(options.body);let ok=false;
+    if(url.endsWith('_acquire')&&!owner){owner=body._owner;ok=true;}
+    if(url.endsWith('_mark_write')&&owner===body._owner){intent=body;ok=true;}
+    if(url.endsWith('_release')&&owner===body._owner){owner=null;ok=true;}
+    return new Response(JSON.stringify(ok));
+  };
+  p.readFileBytes=async()=>Buffer.from('tampered');
+  const writer=createLeasedDriveWriter(p,{enabled:true,env:{SUPABASE_URL:'https://fixture.supabase.co',
+    SUPABASE_SECRET_KEY:'sb_secret_synthetic_fixture'},fetchImpl});
+  const result=await writer.deliver({request,bytes:content,authorization:auth,provider:{uploadNewFile(){assert.fail();}}});
+  assert.equal(result.status,'HOLD');
+  assert.equal(written.length,1);
+  assert.equal(intent._sha256,hash(content));
+  assert.ok(owner);
+  assert.equal((await writer.deliver({request,bytes:content,authorization:auth})).status,'HOLD');
+  assert.equal(written.length,1);
 });
