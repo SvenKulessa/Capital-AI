@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGsc, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
+import { archiveLifecycleWorkspace, appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGsc, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
 const at = '2026-11-24T12:00:00.000Z';
 const row = initialRows()[0];
 const good = { schema: 'CAPITAL_AI_GROWTH_GA4_READBACK@1', source: 'GA4_DATA_API', private: true, readOnly: true, publicPublishAllowed: false,
@@ -206,4 +206,27 @@ test('lifecycle receipt recomputes delta and archives a distinct non-authorizing
  const missing={...report,baseline:null,final:null,readback:null,readbackMatch:false,comparable:false,deltaPoints:null,regression:null};
  const incomplete=projectGraphHandoff(JSON.stringify(missing),'a'.repeat(64),projected).at(-1)!;
  assert.equal(incomplete.status,'NOT_PROVEN');assert.match(incomplete.tests,/nicht vergleichbar/);assert.doesNotMatch(incomplete.tests,/25 Punkte/);
+});
+
+test('owner lifecycle archive transport is GET-first, byte-verified and idempotent',async()=>{
+  const note={...row,id:'document-hygiene-lifecycle',origin:'OWNER_NOTE' as const,status:'NOT_PROVEN' as const};
+  const history=appendSnapshot([],[note],at),raw=exportWorkspace(history);
+  let stored:string|null=null,id='',posts=0,mode='ok';
+  const request:typeof fetch=async(input,init)=>{
+    const url=String(input);
+    assert.equal(init?.credentials,'same-origin');assert.equal(init?.redirect,'error');
+    if(init?.method==='POST'){
+      posts++;stored=String(init.body);
+      id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(stored))),b=>b.toString(16).padStart(2,'0')).join('');
+      return Response.json({id,version:1,archived:true,authority:'DOCUMENTATION_ONLY'});
+    }
+    if(url.endsWith('/file/'+id)&&id)return new Response(mode==='tamper'?'changed':stored);
+    if(mode==='blocked')return new Response(null,{status:503});
+    return Response.json({schema:'CAPITAL_AI_GROWTH_EVIDENCE_ARCHIVE@1',private:true,authority:'DOCUMENTATION_ONLY',items:id?[{id}]:[]});
+  };
+  mode='blocked';await assert.rejects(archiveLifecycleWorkspace(history,request));assert.equal(posts,0);
+  mode='ok';const first=await archiveLifecycleWorkspace(history,request);assert.equal(first.readbackMatch,true);assert.equal(first.reused,false);assert.equal(stored,raw);
+  const second=await archiveLifecycleWorkspace(history,request);assert.equal(second.reused,true);assert.equal(posts,1);
+  mode='tamper';await assert.rejects(archiveLifecycleWorkspace(history,request));assert.equal(posts,1);
+  await assert.rejects(archiveLifecycleWorkspace(appendSnapshot([],[row],at),request));assert.equal(posts,1);
 });

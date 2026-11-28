@@ -373,3 +373,31 @@ export async function marketplaceDraftRow(catalog:MarketplaceCatalog,channelId:s
  const key=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
  return {...makeRow('marketplace-draft-'+key.slice(0,32),('Marketplace · '+channelId+' · '+productId).slice(0,120),'GROWTH','Produktartefakt, Rechte, Gebühren und Owner-Freigabe verifizieren'),endpoint:channel.url,operation:'DRAFT_ONLY · OFFLINE_PREVIEW',flow:channel.automation,auth:'Account NOT_PROVEN',approvals:'NOT_GRANTED · keine operative Autorität',evidence:'Catalog SHA-256 '+c.catalogSha256+' · Draft '+key,dependencies:channel.feeNote+' · Kosten NOT_PROVEN · Rechte NOT_PROVEN',tests:'0 Provideraufrufe · keine Preisänderung'};
 }
+
+// Explicit owner-session archive transport. No token extraction, background polling or retries.
+// The existing server still enforces owner identity, same origin, activation and recovery.
+export async function archiveLifecycleWorkspace(history:GrowthSnapshot[], request:typeof fetch=fetch) {
+  const raw=exportWorkspace(history);
+  const note=history.at(-1)?.rows.find(r=>r.id==='document-hygiene-lifecycle');
+  if(!note || note.origin!=='OWNER_NOTE' || note.status!=='NOT_PROVEN')throw Error('LIFECYCLE_NOTE_REQUIRED');
+  const id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw))),b=>b.toString(16).padStart(2,'0')).join('');
+  const path='/api/profile/growth-intelligence/evidence-history';
+  const options:RequestInit={credentials:'same-origin',cache:'no-store',redirect:'error',headers:{Accept:'application/json'}};
+  const get=(url:string)=>request(url,{...options,signal:AbortSignal.timeout(20000)});
+  const inventory=await get(path);
+  if(!inventory.ok)throw Error('ARCHIVE_NOT_READY');
+  const data=await inventory.json();
+  if(data?.schema!=='CAPITAL_AI_GROWTH_EVIDENCE_ARCHIVE@1'||data.private!==true||data.authority!=='DOCUMENTATION_ONLY'||
+     !Array.isArray(data.items)||data.items.length>128||!data.items.every((item:unknown)=>typeof item==='object'&&item!==null&&'id'in item&&typeof item.id==='string'&&/^[a-f0-9]{64}$/.test(item.id)))throw Error('INVALID_ARCHIVE_INVENTORY');
+  const exists=data.items.some((item:{id:string})=>item.id===id);
+  if(!exists){
+    if(data.items.length>=128)throw Error('ARCHIVE_LIMIT');
+    const response=await request(path,{...options,method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:raw,signal:AbortSignal.timeout(20000)});
+    if(!response.ok)throw Error('ARCHIVE_WRITE_NOT_PROVEN');
+    const receipt=await response.json();
+    if(receipt?.archived!==true||receipt.id!==id||receipt.authority!=='DOCUMENTATION_ONLY'||receipt.version!==history.at(-1)?.version)throw Error('INVALID_ARCHIVE_RECEIPT');
+  }
+  const readback=await get(path+'/file/'+id);
+  if(!readback.ok || await readback.text()!==raw)throw Error('ARCHIVE_READBACK_NOT_PROVEN');
+  return {id,archived:true,readbackMatch:true,reused:exists,authority:'DOCUMENTATION_ONLY' as const};
+}

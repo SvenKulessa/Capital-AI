@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { OpenAiProviderStatus } from './OpenAiProviderStatus';
 import { InteractiveArticleScene } from '../features/home/InteractiveArticleScene';
 import { growthVisualScene } from '../shared/growthVisualScenes';
-import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, parseMarketplaceCatalog, marketplaceDraftRow, type MarketplaceCatalog, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { archiveLifecycleWorkspace, appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, parseMarketplaceCatalog, marketplaceDraftRow, type MarketplaceCatalog, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -34,6 +34,7 @@ export function GrowthOwnerControlCenter() {
   const fileInput = useRef<HTMLInputElement>(null);
   const restoreInput = useRef<HTMLInputElement>(null);
   const graphInput = useRef<HTMLInputElement>(null);
+  const graphArchiveInput = useRef<HTMLInputElement>(null);
   const [archiveItems, setArchiveItems] = useState<ArchiveItem[]>([]);
   const [archiveReady, setArchiveReady] = useState(false);
   const current = history[history.length - 1];
@@ -161,7 +162,7 @@ export function GrowthOwnerControlCenter() {
     }catch{setMarketplace(null);setMarketChannel('');setMarketProduct('');setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
     finally{setPending(false);}
   }
-  async function importGraph(file:File|undefined) {
+  async function importGraph(file:File|undefined, archiveLifecycle=false) {
     if(!file||pending)return;
     setPending(true);
     try{
@@ -169,12 +170,22 @@ export function GrowthOwnerControlCenter() {
       const bytes=await file.arrayBuffer();
       const raw=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
       const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+      if(archiveLifecycle && JSON.parse(raw)?.schema!=='CAPITAL_AI_HYGIENE_LIFECYCLE@1')throw Error('Lifecycle report required');
       const updated=projectGraphHandoff(raw,digest,rows);
-      if(updated!==rows)setHistory(appendSnapshot(history,updated,new Date().toISOString()));
+      const nextHistory=updated!==rows?appendSnapshot(history,updated,new Date().toISOString()):history;
+      if(updated!==rows)setHistory(nextHistory);
       setView('handoff');setDraft(null);
-      setMessage('Graph-Statusbericht als Dokumentation übernommen. Kein Provider- oder Runtime-Nachweis; bestehende Live-Readbacks unverändert.');
+      if(archiveLifecycle){
+        try{
+          const receipt=await archiveLifecycleWorkspace(nextHistory);
+          setMessage('Lifecycle-Dokumentation archiviert und bytegenau zurückgelesen: '+receipt.id+'. Kein Runtime-Nachweis.');
+        }catch{
+          setArchiveReady(false);
+          setMessage('Lifecycle lokal übernommen; Archivierung oder Readback nicht nachgewiesen. Recovery und Archivfreigabe prüfen.');
+        }
+      }else setMessage('Graph-Statusbericht als Dokumentation übernommen. Kein Provider- oder Runtime-Nachweis; bestehende Live-Readbacks unverändert.');
     }catch{setMessage('Graph-Import abgelehnt: Schema, Größe oder Inhalt ungültig. Historie unverändert.');}
-    finally{setPending(false);if(graphInput.current)graphInput.current.value='';}
+    finally{setPending(false);if(graphInput.current)graphInput.current.value='';if(graphArchiveInput.current)graphArchiveInput.current.value='';}
   }
   function download() {
     const url = URL.createObjectURL(new Blob([exportWorkspace(history)], { type: 'application/json' }));
@@ -238,6 +249,8 @@ export function GrowthOwnerControlCenter() {
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
       <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>
+      <button type="button" className={button} disabled={pending} onClick={()=>graphArchiveInput.current?.click()}>Lifecycle importieren und archivieren</button>
+      <input type="file" accept=".json,application/json" ref={graphArchiveInput} hidden onChange={e=>void importGraph(e.target.files?.[0],true)}/>
       <button type="button" className={button} disabled={pending} onClick={download}>JSON exportieren</button>
       <button type="button" className={button} disabled={pending} onClick={() => fileInput.current?.click()}>JSON importieren (ersetzt Arbeitsstand)</button>
       <input type="file" accept=".json,application/json" ref={fileInput} hidden onChange={e => void upload(e.target.files?.[0])}/>
