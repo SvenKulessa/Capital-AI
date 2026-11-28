@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGsc, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
+import { archiveLifecycleWorkspace, appendSnapshot, applyOwnerEdit, exportWorkspace, importWorkspace, initialRows, projectGa4, projectGsc, projectGraphHandoff, publicSurfaceRows, addMissingPublicSurfaceRows, publicSurfaceResearchTask } from './growthOwnerWorkspaceModel';
 const at = '2026-11-24T12:00:00.000Z';
 const row = initialRows()[0];
 const good = { schema: 'CAPITAL_AI_GROWTH_GA4_READBACK@1', source: 'GA4_DATA_API', private: true, readOnly: true, publicPublishAllowed: false,
@@ -188,4 +188,45 @@ test('Smartcopy conversion graph import keeps candidate and live metrics separat
   assert.deepEqual(importWorkspace(exportWorkspace(appendSnapshot([],next,at)))[0].rows.slice(1),next.slice(1));
   for(const patch of [{authorityGranted:true},{score:100},{coverage:100},{affected:5},{threadId:'raw private task'},{status:'VERIFIED'},{rawPrompt:'test'}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...hygiene,...patch}),reportSha,live));
   for(const patch of [{authorityGranted:true},{citationDigests:[]},{sourceCount:0},{status:'VERIFIED'},{excerpt:'test'},{domain:'ROOT'}])assert.throws(()=>projectGraphHandoff(JSON.stringify({...research,...patch}),reportSha,live));
+});
+
+
+test('lifecycle receipt recomputes delta and archives a distinct non-authorizing row',()=>{
+ const thread='offline-'+'c'.repeat(40),scope='d'.repeat(64);
+ const phase=(digit:string,observedAt:string,affected:number,content:string)=>({contractVersion:'CAPITAL_AI_HYGIENE_HANDOFF@1',threadId:thread,runId:'hygiene-'+digit.repeat(64),sourceSha:'e'.repeat(40),observedAt,scopeDigest:scope,sourceDigest:digit.repeat(64),contentDigest:content.repeat(64),methodId:'doc-drift-claims-v1',checked:4,affected,missing:0,score:100-25*affected,coverage:15,status:'NOT_PROVEN',authorityGranted:false});
+ const b=phase('1','2026-11-28T10:00:00.000Z',1,'a'),f=phase('2','2026-11-28T10:00:01.000Z',0,'b'),r=phase('3','2026-11-28T10:00:02.000Z',0,'b');
+ const report={schema:'CAPITAL_AI_HYGIENE_LIFECYCLE@1',status:'NOT_PROVEN',authorityGranted:false,baseline:b,final:f,readback:r,readbackMatch:true,comparable:true,deltaPoints:25,regression:false};
+ const live=[projectGa4(good,row)],source=projectGraphHandoff(JSON.stringify(f),reportSha,live);
+ const projected=projectGraphHandoff(JSON.stringify(report),reportSha,source),note=projected.at(-1)!;
+ assert.deepEqual(projected.slice(0,-1),source);assert.equal(note.id,'document-hygiene-lifecycle');assert.equal(note.status,'NOT_PROVEN');assert.equal(note.origin,'OWNER_NOTE');assert.match(note.tests,/25 Punkte/);
+ assert.strictEqual(projectGraphHandoff(JSON.stringify(report),reportSha,projected),projected);
+ assert.deepEqual(importWorkspace(exportWorkspace(appendSnapshot([],projected,at)))[0].rows.slice(1),projected.slice(1));
+ for(const patch of [{authorityGranted:true},{status:'VERIFIED'},{deltaPoints:100},{regression:true},{readbackMatch:false},{comparable:false},{rawPrompt:'private'}, {readback:{...r,threadId:null}},{readback:{...r,contentDigest:'a'.repeat(64)}},{baseline:{...b,observedAt:r.observedAt}},{baseline:{...b,score:100}},{baseline:{...b,observedAt:'2026-11-28T10:00:00Z'}}])
+  assert.throws(()=>projectGraphHandoff(JSON.stringify({...report,...patch}),reportSha,source));
+ const missing={...report,baseline:null,final:null,readback:null,readbackMatch:false,comparable:false,deltaPoints:null,regression:null};
+ const incomplete=projectGraphHandoff(JSON.stringify(missing),'a'.repeat(64),projected).at(-1)!;
+ assert.equal(incomplete.status,'NOT_PROVEN');assert.match(incomplete.tests,/nicht vergleichbar/);assert.doesNotMatch(incomplete.tests,/25 Punkte/);
+});
+
+test('owner lifecycle archive transport is GET-first, byte-verified and idempotent',async()=>{
+  const note={...row,id:'document-hygiene-lifecycle',origin:'OWNER_NOTE' as const,status:'NOT_PROVEN' as const};
+  const history=appendSnapshot([],[note],at),raw=exportWorkspace(history);
+  let stored:string|null=null,id='',posts=0,mode='ok';
+  const request:typeof fetch=async(input,init)=>{
+    const url=String(input);
+    assert.equal(init?.credentials,'same-origin');assert.equal(init?.redirect,'error');
+    if(init?.method==='POST'){
+      posts++;stored=String(init.body);
+      id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(stored))),b=>b.toString(16).padStart(2,'0')).join('');
+      return Response.json({id,version:1,archived:true,authority:'DOCUMENTATION_ONLY'});
+    }
+    if(url.endsWith('/file/'+id)&&id)return new Response(mode==='tamper'?'changed':stored);
+    if(mode==='blocked')return new Response(null,{status:503});
+    return Response.json({schema:'CAPITAL_AI_GROWTH_EVIDENCE_ARCHIVE@1',private:true,authority:'DOCUMENTATION_ONLY',items:id?[{id}]:[]});
+  };
+  mode='blocked';await assert.rejects(archiveLifecycleWorkspace(history,request));assert.equal(posts,0);
+  mode='ok';const first=await archiveLifecycleWorkspace(history,request);assert.equal(first.readbackMatch,true);assert.equal(first.reused,false);assert.equal(stored,raw);
+  const second=await archiveLifecycleWorkspace(history,request);assert.equal(second.reused,true);assert.equal(posts,1);
+  mode='tamper';await assert.rejects(archiveLifecycleWorkspace(history,request));assert.equal(posts,1);
+  await assert.rejects(archiveLifecycleWorkspace(appendSnapshot([],[row],at),request));assert.equal(posts,1);
 });
