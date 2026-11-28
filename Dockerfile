@@ -107,6 +107,7 @@ COPY scripts/growth-agent/auto_loop.py ./scripts/growth-agent/auto_loop.py
 COPY server/evidence-dashboard-readback.mjs server/acodex-p1-v2-archive.mjs server/evidence-dashboard-readback.test.mjs ./server/
 COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs server/tinyfish-owner-readback.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
+COPY server/twenty/cloud-readonly.mjs server/twenty/cloud-readonly.test.mjs ./server/twenty/
 COPY server/oauth-consent.mjs server/oauth-consent.test.mjs ./server/
 COPY scripts/agent-operations-pilot-migration.test.mjs ./scripts/
 COPY scripts/oauth-client-isolation.test.mjs ./scripts/
@@ -200,6 +201,7 @@ RUN --network=none node --test server/buddy-gemini-byok.test.mjs server/profile-
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
     && node --import tsx --test src/i18n/messages.test.ts src/i18n/landingSectionCopy.test.ts src/i18n/legalAvailability.test.ts src/i18n/accountWorkspaceCopy.test.ts src/i18n/authCopy.test.ts \
     && node --test server/growth-owner-evidence-archive.test.mjs server/founder-access.test.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.test.mjs server/historical-analytics-demo.test.mjs server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs \
+    && node --test server/twenty/cloud-readonly.test.mjs \
     && node --test server/agent-operations-pilot.test.mjs server/agent-operations-pilot-store.test.mjs scripts/agent-operations-pilot-migration.test.mjs \
     && node --test server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \

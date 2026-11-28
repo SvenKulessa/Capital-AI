@@ -610,3 +610,7 @@
 !scripts/growth/viral-content-engine.test.mjs
 !scripts/growth/viral-template-cache.mjs
 !scripts/growth/viral-template-cache.test.mjs
+# Twenty Cloud metadata-only test included in isolated Docker CI build
+!server/twenty/
+!server/twenty/cloud-readonly.mjs
+!server/twenty/cloud-readonly.test.mjs
