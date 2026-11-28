@@ -156,3 +156,13 @@ test('missing or symlinked living documents do not count as measured',()=>{
     assert.equal(result.checked,0); assert.equal(result.score,null); assert.equal(result.coverage,0); assert.equal(result.missing,3);
   } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
+
+ test('invalid UTF-8 is missing evidence rather than a measured success',()=>{
+ const root=fixture({});
+ try{
+  fs.writeFileSync(path.join(root,'README.md'),Buffer.from([0xff,0xfe]));
+  const report=analyzeDocumentationDrift({root,mainSha:MAIN,files:['README.md'],profile});
+  assert.equal(projectHygieneHandoff(report).score,null);
+  assert.equal(projectHygieneHandoff(report).missing,3);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
