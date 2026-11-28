@@ -361,12 +361,13 @@
 .universe-space {
   background-color: #081229;
   background-image: linear-gradient(rgb(5 12 25 / .55), rgb(5 12 25 / .72)), url('/branding/universe/owner-nebula-v4.webp');
+  filter: saturate(.94);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 @media(forced-colors:active), print { .universe-space { display:none; } }
-.universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#F87171 54%,#F9BF21 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
+.universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#B794F4 54%,#F9BF21 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
 .universe-hub-action { position:relative; isolation:isolate; border:1px solid var(--action-accent); font-weight:700; color:var(--action-accent); background:color-mix(in srgb,var(--action-accent) 12%,transparent); }
 .universe-hub-action--learning { --action-accent:#F9BF21; }
 .universe-hub-action--analytics { --action-accent:#B794F4; }

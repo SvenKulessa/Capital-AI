@@ -686,7 +686,8 @@ test('Universe view policy and public learning source isolation', async () => {
   const { UNIVERSE_VIEW_BRANDING: policy } = await import('../shared/hub-branding.mjs');
   assert.equal(policy.minimumActiveColors, 2);
   assert.equal(policy.maximumActiveColors, 4);
-  assert.deepEqual(policy.pair, ['cyan','gold']);
+  assert.deepEqual(policy.pair, ['violet','gold']);
+  assert.equal(policy.globalNebulaSaturation, .94);
   assert.equal(policy.nebulaMaxViewportFraction, .2);
   assert.equal(policy.studioNavigationTarget, '/');
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
@@ -699,6 +700,7 @@ test('Universe view policy and public learning source isolation', async () => {
   assert.equal(policy.globalBackground, '/branding/universe/owner-nebula-v4.webp');
   assert.equal(policy.logoBadgeNebulaMaxFraction, .10);
   assert.ok(css.includes(policy.globalBackground));
+  assert.match(css, /\.universe-space \{[^}]*filter: saturate\(\.94\)/);
   assert.match(css, /forced-colors:active/);
   assert.match(css, /prefers-reduced-motion:reduce/);
 });
@@ -731,6 +733,7 @@ test('all admitted no-JS static documents share the pinned v4 canvas without pub
   for (const path of htmlPaths) assert.ok(readFileSync(new URL('../' + path, import.meta.url), 'utf8').includes('href="/branding/universe/static-canvas-v4.css"'), path);
   const css = readFileSync(new URL('../public/branding/universe/static-canvas-v4.css', import.meta.url), 'utf8');
   assert.ok(css.includes('/branding/universe/owner-nebula-v4.webp'));
+  assert.match(css, /filter: saturate\(\.94\)/);
   assert.match(css, /forced-colors: active/);
   assert.match(css, /print/);
   const docker = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');

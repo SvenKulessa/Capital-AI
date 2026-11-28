@@ -4,7 +4,7 @@ import { BRAND_COLORS, HUB_BRANDING } from '../../../shared/hub-branding.mjs';
 
 const stages = [
   { title: 'Quellen', color: BRAND_COLORS.cyan, description: 'Welche Quelle liefert die Daten? Herkunft, Zeitbezug und Nutzungsrechte bestimmen, ob Werte verwendet werden dürfen.', link: '/marketscreener/dokumentation', action: 'Datenkonzepte ansehen' },
-  { title: 'Datenqualität', color: BRAND_COLORS.gold, description: 'Vollständigkeit, Aktualität, Einheiten und Vergleichbarkeit prüfen. Fehlende Evidenz darf nicht als verifizierter Wert behandelt werden.', link: '/marketscreener/dokumentation', action: 'Methodik ansehen' },
+  { title: 'Datenqualität', color: BRAND_COLORS.violet, description: 'Vollständigkeit, Aktualität, Einheiten und Vergleichbarkeit prüfen. Fehlende Evidenz darf nicht als verifizierter Wert behandelt werden.', link: '/marketscreener/dokumentation', action: 'Methodik ansehen' },
   { title: 'Scoring', color: BRAND_COLORS.cyan, description: 'Faktoren und Gewichtungen nachvollziehen. Ein Score ist eine methodische Bewertung, keine Vorhersage oder Kaufempfehlung.', link: '/marketscreener?tab=scorer', action: 'Enterprise Scorer öffnen' },
   { title: 'Risiko', color: BRAND_COLORS.rose, description: 'Unsicherheit, Zeitfenster und Grenzen des Vergleichs berücksichtigen. Historische Beispiele belegen keine künftige Rendite.', link: '/marketscreener?tab=terminal', action: 'Screener öffnen' },
   { title: 'Evidenz', color: BRAND_COLORS.cyan, description: 'Ergebnisse mit Quelle, Methode und Prüfstatus einordnen. Eine nachvollziehbare Analyse unterscheidet Beobachtung und Interpretation.', link: '/marketscreener/dokumentation', action: 'Dokumentation öffnen' },
@@ -80,7 +80,7 @@ function AnalyticsExampleCards({selected,color}:{selected:number;color:string}) 
   const example=examples[selected];
   const low=Math.min(...example.series),high=Math.max(...example.series);
   const points=example.series.map((value,i)=>`${10+i*280/6},${78-(value-low)/Math.max(high-low,1)*62}`).join(' ');
-  return <section data-analytics-example-cards aria-label="Statische Demonstrationsdaten" className="mt-5 space-y-3 rounded-2xl border border-cyan-300/30 bg-[#080d1b] p-4">
+  return <section data-analytics-example-cards aria-label="Statische Demonstrationsdaten" className="mt-5 space-y-3 rounded-2xl border border-violet-300/30 bg-[#080d1b] p-4">
     <p className="rounded-lg border border-amber-300/40 px-3 py-2 text-sm font-semibold text-amber-200">DEMO · Statische Beispieldaten aus dem bereitgestellten Analytics-Entwurf. Keine Betriebskennzahlen, Live-Kurse oder Backtest-Ergebnisse.</p>
     <div className="grid min-w-0 gap-3 lg:grid-cols-3">
       <div className="min-w-0 rounded-xl border border-slate-700 p-3"><h4 className="font-semibold text-slate-100">{example.title}</h4>
@@ -136,7 +136,7 @@ export function AnalyticsHubArticle() {
     return orbitPoint(angle);
   });
   return (
-    <article lang="de" id="analytics-hub-universe-article" aria-labelledby="analytics-article-title" className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-cyan-300/40 bg-slate-950 p-3 sm:p-8" style={{ backgroundImage: 'radial-gradient(ellipse at 75% 18%, rgba(103,232,249,.09), transparent 65%), radial-gradient(ellipse at 12% 90%, rgba(249,191,33,.08), transparent 55%)' }}>
+    <article lang="de" id="analytics-hub-universe-article" aria-labelledby="analytics-article-title" className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-violet-300/40 bg-slate-950 p-3 sm:p-8" style={{ backgroundImage: 'radial-gradient(ellipse at 75% 18%, rgba(183,148,244,.15), transparent 65%), radial-gradient(ellipse at 12% 90%, rgba(249,191,33,.10), transparent 55%)' }}>
       <div className="flex items-center gap-3">
         <BarChart3 aria-hidden="true" className="h-10 w-10 shrink-0" style={{color:HUB_BRANDING.marketscreener.color}} />
         <p className="text-xs font-bold uppercase tracking-widest" style={{ color: HUB_BRANDING.marketscreener.color }}>CAPITAL-AI · Analytics Hub</p>

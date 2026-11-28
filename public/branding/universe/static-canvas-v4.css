@@ -10,6 +10,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  filter: saturate(.94);
   background: linear-gradient(rgb(5 12 25 / .78), rgb(5 12 25 / .86)), url('/branding/universe/owner-nebula-v4.webp') center / cover no-repeat;
 }
 @media (forced-colors: active), print {
