@@ -222,5 +222,101 @@ class AutoLoopTests(unittest.TestCase):
         self.assertNotIn("merge", a.calls)
 
 
+
+def hygiene_receipt(phase, task_id, **patch):
+    index = {"baseline": 1, "final": 2, "readback": 3}[phase]
+    digest = str(index) * 64
+    return {"contractVersion": "CAPITAL_AI_HYGIENE_HANDOFF@1",
+            "threadId": task_id if task_id.startswith("offline-") else None,
+            "runId": "hygiene-" + digest, "sourceSha": SHA_MAIN,
+            "observedAt": "2026-11-28T12:00:0%d.000Z" % index,
+            "scopeDigest": "a" * 64, "sourceDigest": digest,
+            "contentDigest": "b" * 64 if index == 1 else "c" * 64,
+            "methodId": "doc-drift-claims-v1", "checked": 4,
+            "affected": 1 if index == 1 else 0, "missing": 0,
+            "score": 75 if index == 1 else 100, "coverage": 15,
+            "status": "NOT_PROVEN", "authorityGranted": False, **patch}
+
+
+class HygieneLifecycleTests(unittest.TestCase):
+    def test_checkpoint_replay_and_measured_delta(self):
+        calls = []
+        def observer(phase, task):
+            calls.append(phase)
+            return hygiene_receipt(phase, task)
+        with tempfile.TemporaryDirectory() as d:
+            os.chmod(d, 0o700)
+            path = os.path.join(d, "hygiene.sqlite3")
+            adapter = Adapter()
+            auth = loop.Authority(read_only=True)
+            first = loop.execute_durable(adapter, auth, "hygiene:test", path, hygiene_observer=observer)
+            self.assertEqual(first["status"], "READ_ONLY_COMPLETE")
+            self.assertEqual(first["hygiene_lifecycle"]["deltaPoints"], 25)
+            self.assertTrue(first["hygiene_lifecycle"]["readbackMatch"])
+            self.assertFalse(first["hygiene_lifecycle"]["authorityGranted"])
+            self.assertEqual(first["hygiene_lifecycle"]["status"], "NOT_PROVEN")
+            self.assertEqual(calls, ["baseline", "final", "readback"])
+            second = loop.execute_durable(adapter, auth, "hygiene:test", path, hygiene_observer=observer)
+            self.assertEqual(first, second)
+            self.assertEqual(calls, ["baseline", "final", "readback"])
+            self.assertEqual(adapter.calls, ["analyze", "evidence"])
+
+    def test_wait_does_not_finalize_and_resume_does_not_repeat_baseline(self):
+        calls = []
+        def observer(phase, task):
+            calls.append(phase)
+            return hygiene_receipt(phase, task)
+        with tempfile.TemporaryDirectory() as d:
+            os.chmod(d, 0o700)
+            path = os.path.join(d, "wait.sqlite3")
+            adapter = Adapter()
+            adapter.test = lambda state: {"passed": False, "status": "WAIT", "failure_class": "CI_PENDING"}
+            auth = loop.Authority(allow_changes=True, allow_merge=False)
+            first = loop.execute_durable(adapter, auth, "hygiene:wait", path, hygiene_observer=observer)
+            self.assertEqual(first["status"], "WAIT")
+            self.assertNotIn("hygiene_lifecycle", first)
+            self.assertEqual(calls, ["baseline"])
+            adapter.test = lambda state: {"passed": True}
+            second = loop.execute_durable(adapter, auth, "hygiene:wait", path, hygiene_observer=observer)
+            self.assertEqual(second["status"], "MERGE_NOT_PROVEN")
+            self.assertEqual(calls, ["baseline", "final", "readback"])
+            self.assertEqual(adapter.calls.count("implement"), 1)
+
+    def test_mismatched_readback_and_forged_claims_cannot_improve_score(self):
+        for patch in ({"scopeDigest": "d" * 64}, {"contentDigest": "d" * 64},
+                      {"authorityGranted": True}, {"score": 99}, {"status": "VERIFIED"},
+                      {"rawPrompt": "synthetic-private"}, {"threadId": "offline-" + "f" * 40}):
+            with self.subTest(patch=patch):
+                def observer(phase, task):
+                    return hygiene_receipt(phase, task, **(patch if phase == "readback" else {}))
+                result = loop.execute(Adapter(), loop.Authority(read_only=True), "hygiene:negative",
+                                      hygiene_observer=observer)["hygiene_lifecycle"]
+                self.assertFalse(result["readbackMatch"])
+                self.assertIsNone(result["deltaPoints"])
+                self.assertNotIn("synthetic-private", str(result))
+                self.assertFalse(result["authorityGranted"])
+
+    def test_hard_stop_does_not_call_final_observer(self):
+        calls = []
+        def observer(phase, task):
+            calls.append(phase)
+            return hygiene_receipt(phase, task)
+        adapter = Adapter()
+        adapter.test = lambda state: {"passed": False, "failure_class": "SECURITY_STOP"}
+        result = loop.execute(adapter, loop.Authority(allow_changes=True), "hygiene:stop",
+                              hygiene_observer=observer)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(calls, ["baseline"])
+        self.assertIsNone(result["hygiene_lifecycle"]["deltaPoints"])
+
+    def test_failed_analysis_is_recorded_without_changing_status(self):
+        adapter = Adapter()
+        adapter.analyze = lambda state: {"ok": False}
+        result = loop.execute(adapter, loop.Authority(), "hygiene:failed",
+                              hygiene_observer=hygiene_receipt)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["hygiene_lifecycle"]["status"], "NOT_PROVEN")
+        self.assertEqual(result["hygiene_lifecycle"]["deltaPoints"], 25)
+
 if __name__ == "__main__":
     unittest.main()
