@@ -2,13 +2,24 @@
 import skillRegistry from '../../.agents/skills/registry.json' with { type: 'json' };
 
 export type ChatDomain = 'PRODUCT' | 'MARKET' | 'PLATFORM' | 'TRUST' | 'GROWTH';
+export const CHAT_BRAND = skillRegistry.promptContracts.presentation;
+export const CHAT_ADAPTIVE = skillRegistry.promptContracts.adaptiveProfile;
 export type ChatFollowUp = {
   id: 'execute' | 'audit' | 'verify';
   label: string;
   prompt: string;
   skills: string[];
   domain: ChatDomain;
+  brand: { profileId: string; role: string; accent: string; motif: string };
 };
+
+/** Copy-only envelope, never an authorization, transport or executed workflow. */
+export function serializeChatFollowUp(item: ChatFollowUp): string {
+  return JSON.stringify({schema: 'CAPITAL_AI_CHAT_FOLLOWUP@1', domain: item.domain,
+    action: item.id, skillIds: item.skills, brand: item.brand,
+    promptProfile: CHAT_ADAPTIVE.candidateVersion, permissionExpansion: false,
+    executionStatus: 'NOT_PROVEN', prompt: item.prompt}, null, 2);
+}
 
 const DOMAINS: ChatDomain[] = ['PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH'];
 const DOMAIN_SIGNALS: Record<ChatDomain, RegExp> = {
@@ -100,16 +111,22 @@ export function buildChatFollowUps(input: string, hint?: ChatDomain): ChatFollow
     : engineering
       ? 'Reproduziere den konkreten Fehler, implementiere den kleinsten sicheren Fix im bestehenden Scope, führe Negativtests und vorhandene CI durch; bei belegter Mergefreigabe regulär squash-mergen. '
       : 'Analysiere zuerst den konkreten Bedarf und liefere die kleinste fachlich richtige, nachprüfbare Umsetzung oder Erklärung; leite aus einer Frage keine Schreibfreigabe ab. ';
-  const base = taskLine + source + council + orchestration + socialClause + ' ';
+  const design = CHAT_BRAND.domains[domain];
+  const brand = (audit = false) => ({ profileId: design.id,
+    role: audit ? CHAT_BRAND.perspectives.INDEPENDENT_QUALITY.label : design.label,
+    accent: audit ? CHAT_BRAND.palette.green : CHAT_BRAND.palette[design.accent as keyof typeof CHAT_BRAND.palette],
+    motif: audit ? CHAT_BRAND.perspectives.INDEPENDENT_QUALITY.motif : design.motif });
+  const visual = 'Verwende den nicht autorisierenden Universe-7-Agentenvertrag promptContracts.presentation aus der Skill-Registry: ' + design.id + '. Zeige bei komplexen Aufgaben passende Architektur-, Evidence- und Entscheidungsvisuals; Status durch Text, keine Live-Behauptung aus Vorschau. Nach Abschluss einen evidenzbasierten versionierten Folgeprompt anbieten. ';
+  const base = taskLine + source + council + orchestration + socialClause + ' ' + visual;
   return [
     { id: 'execute', label: readOnly ? 'Read-only prüfen und belegen' : engineering ? 'Fehler beheben und validieren' : 'Aufgabe strukturiert ausführen',
-      prompt: base + execution + limits, skills, domain },
+      prompt: base + execution + limits, skills, domain, brand: brand() },
     { id: 'audit', label: 'Unabhängige Qualitätsprüfung',
-      prompt: base + 'Prüfe ausschließlich read-only Risiken, Accessibility und Trust Boundaries, tatsächliche CI/CodeQL-/Runtime-Evidence sowie fehlende Nachweise; keine Mutationen, Merges oder Deployments. ' + limits, skills, domain },
+      prompt: base + 'Prüfe ausschließlich read-only Risiken, Accessibility und Trust Boundaries, tatsächliche CI/CodeQL-/Runtime-Evidence sowie fehlende Nachweise; keine Mutationen, Merges oder Deployments. ' + limits, skills, domain, brand: brand(true) },
     { id: 'verify', label: social ? 'Social-Engine-Entwurf und Wirkung' : 'Integration und Wirkung prüfen',
       prompt: base + (social
         ? 'Erstelle einen rechtlich und fachlich prüfbaren Content-/Attribution-Entwurf für die bestehende Social Content Engine und benenne fehlende Owner-/Medien-/Kostenfreigaben. '
         : 'Prüfe Integration, Bedienbarkeit bei 320/390/1440 CSS-Pixeln, reale Wirkung und Recovery im bestehenden Produktpfad; trenne Demo von Live-Evidence. ')
-        + limits, skills, domain },
+        + limits, skills, domain, brand: brand() },
   ];
 }

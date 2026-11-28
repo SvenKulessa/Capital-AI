@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Copy, AlertCircle } from 'lucide-react';
-import { buildChatFollowUps, type ChatDomain } from '../contracts/chatNextStepPrompts';
+import { buildChatFollowUps, serializeChatFollowUp, CHAT_BRAND, type ChatDomain } from '../contracts/chatNextStepPrompts';
 
 /** Shared, responsive copy-only follow-up controls. No silent send or tool invocation. */
 export function ChatNextStepActions({
@@ -40,9 +40,13 @@ export function ChatNextStepActions({
   }
 
   if (!followUps.length) return null;
-  const fallback = followUps.find(item => item.id === copyFailed);
+  const fallback = followUps.find(item => item.id === copyFailed || item.id + ':json' === copyFailed);
+  const fallbackText = fallback && copyFailed?.endsWith(':json') ? serializeChatFollowUp(fallback) : fallback?.prompt;
   return (
-    <section aria-label="Kopierbare nächste Schritte" className="mt-3 min-w-0 rounded-xl border border-cyan-400/25 bg-slate-950/85 p-2 text-slate-100 sm:p-3">
+    <section data-brand-profile={followUps[0].brand.profileId} aria-label="Kopierbare nächste Schritte" className="mt-3 min-w-0 rounded-xl border border-cyan-400/25 bg-slate-950/85 p-2 text-slate-100 sm:p-3">
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 140 3" className="mb-2 h-1 w-full" preserveAspectRatio="none">
+        {CHAT_BRAND.signature.map((family, i) => <rect key={family} x={i * 20} y="0" width="19" height="3" fill={CHAT_BRAND.palette[family as keyof typeof CHAT_BRAND.palette]} />)}
+      </svg>
       <h4 className="mb-1 text-xs font-semibold text-cyan-200">Nächste Schritte · Prompts kopieren</h4>
       <p className="mb-2 text-[11px] leading-snug text-slate-400">
         Multi-Agent-Rat und LangGraph · passende Repository-Skills · keine automatische Ausführung
@@ -51,6 +55,10 @@ export function ChatNextStepActions({
         {followUps.map((item, index) => (
           <li key={item.id} className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700/70 bg-slate-900/80 px-2 py-1.5">
             <span className="min-w-0 flex-1 text-[11px] leading-snug text-slate-100">
+              <span className="block text-slate-300" data-agent-role={item.brand.role}>
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10" className="mr-1 inline h-2.5 w-2.5"><circle cx="5" cy="5" r="4" fill={item.brand.accent}/></svg>
+                {item.brand.role}
+              </span>
               {index + 1}. {item.label}
             </span>
             <button
@@ -65,6 +73,11 @@ export function ChatNextStepActions({
           </li>
         ))}
       </ol>
+      <details className="mt-2 text-xs text-slate-200">
+        <summary className="min-h-11 cursor-pointer py-2 focus-visible:outline focus-visible:outline-2">Maschinenlesbare Prompts (JSON)</summary>
+        <p className="mb-1 text-slate-300">Nur kopieren; keine Ausführung oder Rechteübertragung.</p>
+        {followUps.map(item => <button key={item.id} type="button" aria-label={item.label + ': JSON kopieren'} onClick={() => { void copyPrompt(item.id + ':json', serializeChatFollowUp(item)); }} className="mr-1 mb-1 min-h-11 rounded-lg border border-slate-500 px-2 focus-visible:outline focus-visible:outline-2">{copied === item.id + ':json' ? 'Kopiert' : item.label + ' · JSON'}</button>)}
+      </details>
       <p className="sr-only" role="status" aria-live="polite">
         {copied ? 'Prompt erfolgreich kopiert' : copyFailed ? 'Automatisches Kopieren nicht verfügbar' : ''}
       </p>
@@ -76,7 +89,7 @@ export function ChatNextStepActions({
           </p>
           <textarea
             readOnly
-            value={fallback.prompt}
+            value={fallbackText}
             onFocus={event => event.currentTarget.select()}
             aria-label="Vollständigen Prompt manuell kopieren"
             rows={compact ? 3 : 4}

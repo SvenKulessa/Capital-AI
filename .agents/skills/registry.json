@@ -959,7 +959,198 @@
       "GROWTH": "CAPITAL-AI-GROWTH/domain.prompt.json"
     },
     "authority": "AGENTS.md",
-    "mode": "NON_AUTHORIZING_CONTEXT"
+    "mode": "NON_AUTHORIZING_CONTEXT",
+    "presentation": {
+      "schema": "CAPITAL_AI_AGENT_BRAND_PROFILE@1",
+      "version": "1.0.0",
+      "authority": "AGENTS.md",
+      "permissionExpansion": false,
+      "source": "public/branding/asset-pack/meta/social-render-tokens.json",
+      "webManifest": "docs/branding/UNIVERSE-VIEW-BRANDING-20261126.md",
+      "assetManifest": "public/branding/asset-pack/meta/asset-manifest.json",
+      "logo": {
+        "path": "public/branding/capital-ai-logo.jpg",
+        "sha256": "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3",
+        "rightsRef": "docs/licenses/Capital-AI-BRANDING.md",
+        "replacementAllowed": false
+      },
+      "palette": {
+        "cyan": "#67E8F9",
+        "violet": "#B794F4",
+        "gold": "#F9BF21",
+        "pink": "#F9A8D4",
+        "rose": "#F87171",
+        "blue": "#60A5FA",
+        "green": "#4ADE80"
+      },
+      "background": "#081229",
+      "foreground": "#F8FAFC",
+      "signature": [
+        "cyan",
+        "violet",
+        "gold",
+        "pink",
+        "rose",
+        "blue",
+        "green"
+      ],
+      "domains": {
+        "PRODUCT": {
+          "id": "u7-product",
+          "accent": "cyan",
+          "motif": "interface-grid",
+          "label": "PRODUCT"
+        },
+        "MARKET": {
+          "id": "u7-market",
+          "accent": "violet",
+          "motif": "market-orbit",
+          "label": "MARKET"
+        },
+        "PLATFORM": {
+          "id": "u7-platform",
+          "accent": "blue",
+          "motif": "architecture-network",
+          "label": "PLATFORM"
+        },
+        "TRUST": {
+          "id": "u7-trust",
+          "accent": "rose",
+          "motif": "shield-evidence",
+          "label": "TRUST"
+        },
+        "GROWTH": {
+          "id": "u7-growth",
+          "accent": "gold",
+          "motif": "growth-constellation",
+          "label": "GROWTH"
+        }
+      },
+      "perspectives": {
+        "ORCHESTRATOR": {
+          "accent": "violet",
+          "motif": "orbit",
+          "label": "ORCHESTRATOR"
+        },
+        "DOMAIN_ENGINEER": {
+          "accent": "inherit-domain",
+          "motif": "grid",
+          "label": "DOMAIN ENGINEER"
+        },
+        "TRUST_SECURITY": {
+          "accent": "rose",
+          "motif": "shield",
+          "label": "TRUST / SECURITY"
+        },
+        "INDEPENDENT_QUALITY": {
+          "accent": "green",
+          "motif": "check-grid",
+          "label": "QUALITY"
+        },
+        "RELEASE_OBSERVER": {
+          "accent": "blue",
+          "motif": "readback",
+          "label": "RELEASE OBSERVER"
+        }
+      },
+      "functions": {
+        "architecture": "cyan",
+        "langgraph": "violet",
+        "rag": "pink",
+        "marketing": "gold",
+        "sales": "green",
+        "infrastructure": "rose",
+        "ux": "blue"
+      },
+      "specialists": "RESOLVE_FROM_CANONICAL_DOMAIN_OWNER_AND_LABEL_SKILL_ID",
+      "render": {
+        "activeAccentsMin": 2,
+        "activeAccentsMax": 4,
+        "signatureDecorative": true,
+        "statusUsesTextAndIcon": true,
+        "visualPatterns": [
+          "architecture",
+          "process",
+          "evidence",
+          "comparison",
+          "decision",
+          "roadmap"
+        ],
+        "interactiveOnlyWhenSupported": true,
+        "staticTextFallback": true,
+        "reducedMotion": true,
+        "externalAssetsRequireRights": true,
+        "neverClaimLiveFromPreview": true,
+        "formats": [
+          "SVG",
+          "WebP",
+          "PNG",
+          "AVIF"
+        ],
+        "typography": "INHERIT_APPROVED_PLATFORM_FONT_OR_SYSTEM_FALLBACK",
+        "mobileFirst": true,
+        "contrastTarget": "WCAG_2_2_AA",
+        "preserveOriginalAssets": true
+      },
+      "targets": {
+        "chat": "SOURCE_CONTRACT",
+        "web": "FOLLOWUP_PANEL_CANDIDATE",
+        "android": "NOT_PROVEN",
+        "media": "EXISTING_RENDER_TOKENS"
+      },
+      "commercialClaim": "NOT_PROVEN"
+    },
+    "adaptiveProfile": {
+      "schema": "CAPITAL_AI_ADAPTIVE_PROMPT_PROFILE@1",
+      "candidateVersion": "3.6",
+      "authority": "AGENTS.md",
+      "permissionExpansion": false,
+      "orchestrator": "scripts/growth-agent/auto_loop.py",
+      "checkpoint": "scripts/growth-agent/checkpoint_store.py",
+      "benchmark": "packages/benchmark-core/chat-quality.mjs",
+      "trigger": {
+        "distinctCompletedRuns": 3,
+        "onNoProgress": true,
+        "onRegression": true,
+        "idempotency": "RUN_ID"
+      },
+      "rollback": {
+        "strategy": "FILE_LEVEL_REVERSE_PATCH",
+        "requireBaseAndCandidateSha": true,
+        "requireBlobReadback": true,
+        "stopOnConflict": true,
+        "governanceRequiresConcreteOwnerApproval": true,
+        "forcePush": false
+      },
+      "priority": "P0_SECURITY_LEGAL_THEN_EVIDENCE_BACKED_NICHE",
+      "modeCandidates": [
+        "ADAPTIVE_CHAT_EXECUTION@3.6",
+        "ADAPTIVE_IMPROVEMENT@1",
+        "PROCESS_ACCELERATION@2",
+        "COMMERCIAL_READINESS@2",
+        "AUTONOMOUS_NAVIGATOR@1",
+        "ADAPTIVE_ROLLBACK@1",
+        "GLOBAL_EXECUTION_GROWTH_VISUAL@3"
+      ],
+      "runtimeActivation": "NOT_PROVEN",
+      "metrics": [
+        "routing_accuracy",
+        "schema_validity",
+        "task_completion",
+        "evidence_coverage",
+        "p50_p95_duration",
+        "token_cost",
+        "regression_rate"
+      ],
+      "researchSources": [
+        "https://developers.openai.com/api/docs/guides/structured-outputs",
+        "https://microsoft.github.io/promptflow/concepts/concept-flows.html",
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/models/prompt-classes",
+        "https://docs.n8n.io/advanced-ai/human-in-the-loop-tools/",
+        "https://www.designtokens.org/tr/2025.10/format/",
+        "https://www.w3.org/TR/WCAG22/"
+      ]
+    }
   },
   "skillSourceInventory": {
     "schema": "CAPITAL_AI_SKILL_SOURCE_INVENTORY@1",
