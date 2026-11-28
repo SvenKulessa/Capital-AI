@@ -2,8 +2,8 @@ FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43dd
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
 # Use patched OpenSSL, zlib and libxml2 packages from stable Alpine 3.24.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
-# Fail closed when patched OpenSSL or libxml2 (CVE-2026-86144) is unavailable.
-RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
+# Fail closed when patched OpenSSL or libxml2 (including CVE-2026-11979) is unavailable.
+RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r5' \
     && apk info -v zlib libcrypto3 libssl3 libxml2
 
 FROM crypto-base AS build
@@ -123,7 +123,7 @@ COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs 
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 # Shared SOLO2 profile: CLI and negative tests execute in the existing offline build stage.
 COPY scripts/solo2-config.mjs scripts/solo2-config.test.mjs ./scripts/
-COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.mjs scripts/platform/drive-artifact-delivery.test.mjs ./scripts/platform/
+COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.mjs scripts/platform/drive-artifact-delivery.test.mjs scripts/platform/drive-create-lease.mjs ./scripts/platform/
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 COPY scripts/skill-bundles.mjs ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.

@@ -537,6 +537,7 @@
 !scripts/platform/drive-artifact-router.test.mjs
 !scripts/platform/drive-artifact-delivery.mjs
 !scripts/platform/drive-artifact-delivery.test.mjs
+!scripts/platform/drive-create-lease.mjs
 !scripts/navigation.test.mjs
 !scripts/skill-routing.test.mjs
 !scripts/skill-routing.mjs
