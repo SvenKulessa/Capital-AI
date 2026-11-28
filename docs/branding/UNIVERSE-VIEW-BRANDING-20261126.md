@@ -37,3 +37,6 @@ Owner-approved website implementation scope: original nebula as full-page shared
 | capital-ai-mark-v4.webp | 61bc0831b4868544b3982787dde4f1911583e27c993a89e8b46c514e07ea0993 | 74572 |
 
 PocketDefend is the approved visible Android app name (formerly DeviceCare-KI). Android and product compatibility remain in their existing workstreams. Smart Copy Plugins artwork remains a design reference; third-party Android/platform trademark rights and SKU separation must not be inferred from visual approval. Neither private Drive references nor internal summary artwork are public assets. No commercial approval or third-party redistribution rights are granted here. The three site assets are limited to owner-requested website display. Preserve prior rights documentation.
+
+### Static document coverage
+The seven already admitted standalone legal/documentation pages share a local static canvas stylesheet using the identical v4 WebP. Existing text, canonical routes, and BYOK redirects stay intact; no new document routes are exposed. The previously omitted existing documentation presentation stylesheet is included in the Docker allowlist and COPY. Actual browser and production verification remain separate.

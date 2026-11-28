@@ -155,6 +155,7 @@ const STATIC_SOURCE_BASELINE = new Set([
   "branding/social/youtube.svg",
   "branding/universe/analytics-universe-orbit.webp",
   "branding/universe/owner-nebula-v4.webp",
+  "branding/universe/static-canvas-v4.css",
   "branding/universe/analytics-overview-v4.webp",
   "branding/universe/capital-ai-mark-v4.webp",
   "branding/universe/hero-universe-desktop.webp",

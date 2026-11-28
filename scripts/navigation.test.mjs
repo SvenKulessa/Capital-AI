@@ -724,3 +724,20 @@ test('v4 website branding uses exact approved bytes, local URLs and existing pub
   assert.ok(readFileSync(new URL('../src/components/BrandLogo.tsx', import.meta.url),'utf8').includes('/branding/universe/capital-ai-mark-v4.webp'));
   assert.ok(readFileSync(new URL('../src/components/BrandLogo.tsx', import.meta.url),'utf8').includes('/branding/capital-ai-logo.jpg'));
 });
+
+
+test('all admitted no-JS static documents share the pinned v4 canvas without publishing redirected BYOK files', () => {
+  const htmlPaths = ["public/agb/index.html","public/datenschutz/index.html","public/impressum/index.html","public/documentation/pipeline-architectures.html","public/documentation/pricing-models.html","public/documentation/domains.html","public/downloads/market-screener-hub-open-source.html"];
+  for (const path of htmlPaths) assert.ok(readFileSync(new URL('../' + path, import.meta.url), 'utf8').includes('href="/branding/universe/static-canvas-v4.css"'), path);
+  const css = readFileSync(new URL('../public/branding/universe/static-canvas-v4.css', import.meta.url), 'utf8');
+  assert.ok(css.includes('/branding/universe/owner-nebula-v4.webp'));
+  assert.match(css, /forced-colors: active/);
+  assert.match(css, /print/);
+  const docker = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  assert.ok(docker.includes('public/documentation/presentation.css'));
+  const ignore = readFileSync(new URL('../.dockerignore', import.meta.url), 'utf8');
+  assert.ok(ignore.includes('!public/branding/universe/static-canvas-v4.css'));
+  assert.ok(ignore.includes('!public/documentation/presentation.css'));
+  assert.ok(!ignore.includes('!public/documentation/byok.html'));
+  assert.ok(!ignore.includes('!public/downloads/capital-ai-byok-presentation.html'));
+});

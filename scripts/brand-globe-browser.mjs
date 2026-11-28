@@ -343,6 +343,21 @@ try {
   await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13 });
   await until(() => evaluate("location.pathname === '/learning' && !!document.querySelector('.hub-navigation')"), 'LEARNING_CTA_NAVIGATION');
   report.checks.push({ learningCtaKeyboardNavigation: 'PASS' });
+  // Verify real static documents, not just SPA routes. Redirected BYOK files remain outside this scope.
+  const staticRoutes = ['/agb', '/datenschutz', '/impressum', '/dokumentation/pipeline-architekturen', '/dokumentation/preiskatalog', '/dokumentation/domains', '/dokumentation/oss-market'];
+  for (const viewport of [{width:320,height:800,mobile:true},{width:1440,height:1000,mobile:false}]) {
+    await send('Emulation.setDeviceMetricsOverride', {...viewport,deviceScaleFactor:1});
+    for (const route of staticRoutes) {
+      loaded=false;
+      await send('Page.navigate',{url:origin+route});
+      await until(()=>loaded,'STATIC_PAGE_LOAD_'+route);
+      await until(()=>evaluate("document.readyState === 'complete' && !!document.querySelector('main')"),'STATIC_MAIN_'+route);
+      const result=await evaluate("(()=>({background:getComputedStyle(document.body,'::before').backgroundImage,overflow:document.documentElement.scrollWidth>innerWidth+2}))()");
+      assert.ok(result.background.includes('/branding/universe/owner-nebula-v4.webp'),route+' v4 canvas');
+      assert.equal(result.overflow,false,route+' horizontal overflow');
+      report.checks.push({viewport,route,staticCanvas:'PASS',horizontalOverflow:false});
+    }
+  }
   assert.deepEqual(errors, [], 'Uncaught exceptions');
   report.status = 'TARGETED_PASS';
 } catch (error) { report.status = 'FAILED'; report.error = error.message; process.exitCode = 1; }

@@ -1,0 +1,17 @@
+/* Shared no-JS canvas for admitted static CAPITAL-AI documents. */
+body {
+  isolation: isolate;
+  position: relative;
+  background: #081229;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(rgb(5 12 25 / .78), rgb(5 12 25 / .86)), url('/branding/universe/owner-nebula-v4.webp') center / cover no-repeat;
+}
+@media (forced-colors: active), print {
+  body::before { display: none; }
+}
