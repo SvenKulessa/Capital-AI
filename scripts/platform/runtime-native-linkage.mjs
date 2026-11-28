@@ -112,6 +112,8 @@ function collectPackageFiles(root, dir, max = 350) {
 
 // Collect from already built, scanned image only. No package installs, network, uploads, or config changes.
 export async function collectRuntimeNativeLinkage({ root = '/', expectedConfigDigest }) {
+  // Canonicalize the image root before containment checks.
+  root = realpathSync(root);
   if (!SHA256.test(expectedConfigDigest || '')) throw new Error('Missing externally verified exact image config digest');
   const installed = readFileSync(join(root, 'lib/apk/db/installed'));
   const apk = parseApkFileOwnership(installed);

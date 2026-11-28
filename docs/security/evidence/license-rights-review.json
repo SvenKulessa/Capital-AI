@@ -867,7 +867,11 @@
         "supplementalOwnerStatement": {
           "recordedAt": "2026-11-24",
           "source": "DIRECT_OWNER_CHAT_STATEMENT",
-          "toolsNamed": ["Grok", "ChatGPT", "Google AI Studio"],
+          "toolsNamed": [
+            "Grok",
+            "ChatGPT",
+            "Google AI Studio"
+          ],
           "description": "Bild wurde nach Owner-Angabe mithilfe von Grok und ChatGPT zusammen mit Google AI Studio komplettiert.",
           "individualToolRoles": "NOT_RECONSTRUCTED",
           "sequence": "NOT_RECONSTRUCTED",
@@ -1280,5 +1284,25 @@
       "removalDate": "2026-09-30",
       "removalReason": "Owner requested replacement with ChatGPT logo in PR 37"
     }
-  ]
+  ],
+  "historicalOsSourceMirrorEvidence": {
+    "status": "SOURCE_HASHES_VERIFIED_NON_AUTHORIZING",
+    "prNumber": 913,
+    "prHead": "d58b61b2c810f419063eec54e2e0708f9d635bc1",
+    "testedMergeSha": "ae01371713c42adf84588fff67784cb5456675a4",
+    "workflowRunId": 46122701378,
+    "artifactId": 15254820218,
+    "artifactSha256": "22e64c0606ab45fcb899fe70806f3b8f860344e3e4f2c10ee8f59a9c76091118",
+    "artifactHashAuthority": "GITHUB_METADATA",
+    "artifactBytesIndependentlyVerified": false,
+    "artifactExpiresAt": "2026-12-01T07:47:29Z",
+    "sourceRecipes": 34,
+    "binaryPackages": 50,
+    "externalFetchFailures": 0,
+    "failedRecipes": [],
+    "sourceDeliveryProven": false,
+    "redistributionApproved": false,
+    "durableArchiveVerified": false,
+    "applicableToNewMerge": false
+  }
 }

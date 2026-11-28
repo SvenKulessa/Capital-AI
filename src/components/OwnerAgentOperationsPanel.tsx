@@ -2,12 +2,13 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Activity, GitPullRequest, RefreshCw, ShieldCheck, Server, TrendingUp } from 'lucide-react';
 import {
   AGENT_ROLES, evidenceState, ga4DiagnosticLabel, ga4EventCount, ga4RealtimeEventCount, isSnapshotStale, isVerified,
-  readDashboardSnapshot, visiblePullRequests,
+  readDashboardSnapshot, runtimeEvidence, visiblePullRequests,
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
 import { OwnerOperationsVisualOverview } from './OwnerOperationsVisualOverview';
 import { readGa4ConfigResult, type Ga4ConfigResult } from './ownerGa4ConfigModel';
 import { OwnerGa4ConfigView } from './OwnerGa4ConfigView';
+import { OwnerCommercialRoadmap } from './OwnerCommercialRoadmap';
 
 const ENDPOINT = '/api/profile/evidence-dashboard-readback';
 const GA4_CONFIG_ENDPOINT = '/api/profile/google-analytics-config-diagnostic';
@@ -53,6 +54,7 @@ async function verifySession(userId: string, signal: AbortSignal) {
 export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   const [snapshot, setSnapshot] = useState<DashboardReadback | null>(null);
   const [view, setView] = useState<OperationsView>('overview');
+  const [showRoadmap, setShowRoadmap] = useState(false);
   const [agent, setAgent] = useState<AgentRole | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
@@ -123,16 +125,23 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   const realtimeViews = snapshot ? ga4RealtimeEventCount(snapshot, 'page_view') : null;
   const leads = snapshot ? ga4EventCount(snapshot, 'generate_lead') : null;
   const purchaseEvents = snapshot ? ga4EventCount(snapshot, 'purchase') : null;
-  const evidence = snapshot ? [
+  const runtime = snapshot ? runtimeEvidence(snapshot) : null;
+  const evidence = snapshot && runtime ? [
     { name: 'GitHub Main / PR', state: evidenceState(snapshot, 'github'), detail: shortSha(gh?.mainSha) },
     { name: 'Main-Commit-Checks', state: evidenceState(snapshot, 'ci'), detail: gh?.ci?.scope || gh?.ci?.reason || 'Nicht nachgewiesen' },
     { name: 'Render Control Plane', state: evidenceState(snapshot, 'render'), detail: render?.deployId || render?.reason || 'Nicht nachgewiesen' },
     { name: 'GA4-Event-Readback', state: evidenceState(snapshot, 'ga4'), detail: ga4?.period || ga4?.reason || 'Nicht nachgewiesen' },
     { name: 'Echte Zahlung / Umsatz', state: 'NOT_PROVEN', detail: 'Kein signierter Payment-Readback' },
-    { name: 'Runtime-BuildIdentity', state: 'NOT_PROVEN', detail: snapshot.comparison.runtimeBuildIdentity },
+    { name: 'Runtime-SHA / Healthz', state: runtime.status, detail: runtime.detail },
   ] : [];
 
   return <section aria-labelledby="agent-ops-title" className="space-y-4 rounded-2xl border border-indigo-400/30 bg-[#070f21] p-3 text-white sm:p-5">
+    <button type="button" aria-expanded={showRoadmap} aria-controls="owner-commercial-roadmap" onClick={() => setShowRoadmap(v => !v)}
+      className="min-h-11 rounded-xl border border-amber-300/40 px-4 py-2 text-sm font-semibold text-amber-100 focus-visible:outline-2 focus-visible:outline-amber-200">
+      {showRoadmap ? 'Zurück zu Owner Operations' : 'Vermarktungsroadmap · Growth & Commercial Readiness'}
+    </button>
+    {showRoadmap && <div id="owner-commercial-roadmap"><OwnerCommercialRoadmap key={userId} userId={userId}/></div>}
+    {!showRoadmap && <>
     {snapshot && <OwnerOperationsVisualOverview snapshot={snapshot} />}
     {snapshot && !isVerified(snapshot.github) && (
       <p role="status" className="rounded-xl border border-amber-300/30 bg-amber-300/5 p-3 text-sm text-amber-100">
@@ -358,6 +367,7 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
       <p className="flex items-center gap-2 border-t border-white/10 pt-3 text-xs text-slate-400">
         <Activity aria-hidden="true" className="h-4 w-4"/> Owner-only · GET-only · keine Agentensteuerung oder produktiven Mutationen.
       </p>
+    </>}
     </>}
   </section>;
 }

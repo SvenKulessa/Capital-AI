@@ -91,3 +91,33 @@ test('ELF suffix with non-ELF bytes never produces fabricated DT_NEEDED',async t
   const entry=r.packages.find(x=>x.name==='clamav-libs').binaryFiles[0];
   assert.deepEqual(entry.dynamic,{status:'NOT_ELF_OR_HEADER_UNREADABLE',needed:[]});
 });
+
+test('canonical image root accepts a valid root alias', async t => {
+  const f = fixture(t);
+  const parent = mkdtempSync(join(tmpdir(), 'cap-root-alias-'));
+  t.after(() => rmSync(parent, {force:true, recursive:true}));
+  const alias = join(parent, 'image');
+  symlinkSync(f.root, alias, 'dir');
+  const r = await collectRuntimeNativeLinkage({
+    root: alias, expectedConfigDigest: DIGEST
+  });
+  assert.equal(r.packageCount, 8);
+  assert.equal(r.redistributionApproved, false);
+});
+
+test('native file symlink outside canonical image root is rejected', async t => {
+  const f = fixture(t);
+  const parent = mkdtempSync(join(tmpdir(), 'cap-root-outside-'));
+  t.after(() => rmSync(parent, {force:true, recursive:true}));
+  const outside = join(parent, 'outside.so');
+  writeFileSync(outside, 'synthetic-outside');
+  const target = join(f.root, 'usr/lib/libclamav.so.12');
+  rmSync(target);
+  symlinkSync(outside, target);
+  await assert.rejects(
+    collectRuntimeNativeLinkage({
+      root: f.root, expectedConfigDigest: DIGEST
+    }),
+    /Symlink escapes image root/
+  );
+});

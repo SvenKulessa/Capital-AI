@@ -53,7 +53,11 @@ export type DashboardReadback = {
     realtimeStatus?: string; realtimeEvents?: { eventName: string; eventCount: number }[];
     revenue?: number | null; revenueStatus?: string;
   };
-  comparison: { mainVsDeploy: string; runtimeBuildIdentity: string };
+  comparison: {
+    mainVsDeploy: string;
+    runtimeBuildIdentity: string;
+    runtimeSha?: { sourceSha: string; observedAt: string };
+  };
   acodex?: AcodeXArchive;
   baseline?: { status: string; valuesImported: boolean };
 };
@@ -104,6 +108,9 @@ export function readDashboardSnapshot(value: unknown): DashboardReadback | null 
   if (typeof value.github.status !== 'string' || typeof value.render.status !== 'string' ||
       typeof value.ga4.status !== 'string' || typeof value.comparison.mainVsDeploy !== 'string' ||
       typeof value.comparison.runtimeBuildIdentity !== 'string') return null;
+  const runtime = value.comparison.runtimeSha;
+  if (runtime !== undefined && (!isRecord(runtime) || !validRuntimeSha(runtime.sourceSha) ||
+      !safeDate(runtime.observedAt))) return null;
   // Reject untrusted HTML URLs, mismatched SHAs and invented approval statuses.
   if (value.github.typescript !== undefined) {
     const t = value.github.typescript;
@@ -158,8 +165,26 @@ export function ga4RealtimeEventCount(snapshot: DashboardReadback, event: string
   const row = source.realtimeEvents.find(entry => entry.eventName === event);
   return row && Number.isSafeInteger(row.eventCount) && row.eventCount >= 0 ? row.eventCount : null;
 }
+function validRuntimeSha(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
+}
+
+export function runtimeEvidence(snapshot: DashboardReadback): {
+  status: 'VERIFIED' | 'BLOCKED' | 'NOT_PROVEN'; detail: string;
+} {
+  const sha = snapshot.comparison.runtimeSha?.sourceSha;
+  if (!validRuntimeSha(sha)) return { status: 'NOT_PROVEN', detail: 'Healthz-SHA nicht bestätigt' };
+  const live = (snapshot.render.deployments ?? []).filter(deploy => deploy?.deployStatus === 'live');
+  if (!isVerified(snapshot.render) || live.length !== 1 || !validRuntimeSha(live[0].sourceCommitSha))
+    return { status: 'NOT_PROVEN', detail: 'Healthz ' + sha.slice(0, 12) + ' · Live-Deploy fehlt zum Abgleich' };
+  if (live[0].sourceCommitSha !== sha)
+    return { status: 'BLOCKED', detail: 'Healthz ' + sha.slice(0, 12) + ' · Live-Deploy ' + live[0].sourceCommitSha.slice(0, 12) };
+  return { status: 'VERIFIED', detail: 'Healthz und Live-Deploy · ' + sha.slice(0, 12) };
+}
+
 export function evidenceState(snapshot: DashboardReadback, source: 'github' | 'render' | 'ga4' | 'ci' | 'revenue' | 'runtime'): string {
-  if (source === 'revenue' || source === 'runtime') return 'NOT_PROVEN';
+  if (source === 'revenue') return 'NOT_PROVEN';
+  if (source === 'runtime') return runtimeEvidence(snapshot).status;
   if (source === 'ci') return snapshot.github.ci?.status === 'VERIFIED_PROVIDER_READ' && isVerified(snapshot.github) ? 'VERIFIED' : 'NOT_PROVEN';
   return isVerified(snapshot[source]) ? 'VERIFIED' : 'NOT_PROVEN';
 }

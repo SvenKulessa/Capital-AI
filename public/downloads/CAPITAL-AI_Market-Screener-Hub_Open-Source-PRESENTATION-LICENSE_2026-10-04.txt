@@ -19,5 +19,3 @@ IMPORTANT RIGHTS BOUNDARIES
 4. The deck does not grant market-data display, redistribution, derived-data, retention, resale, white-label, social-media, or API rights.
 5. Any production use of a market dataset remains subject to the CAPITAL-AI source-admission policy and independent evidence for the relevant use cases and instruments.
 6. Third-party names are used only descriptively to document the architecture and evaluated candidates.
-
-Status basis: Owner decision 2026-10-04 and CAPITAL-AI MARKET PR #133.
