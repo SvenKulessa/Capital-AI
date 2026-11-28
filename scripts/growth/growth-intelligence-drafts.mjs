@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildGrowthIntelligenceContentDrafts, xAcquisitionDraftOverview, forecastXAcquisitionBudget, buildXAcquisitionCandidate } from '../../src/contracts/growthIntelligenceContent.ts';
 
 import { buildProductChannelIntelligence } from './product-channel-intelligence.mjs';
+import { buildRaceDistribution } from './agent-race-distribution.mjs';
 import { buildResearchRound, buildSmartcopyPilot } from './product-market-research.mjs';
 import { planContentCampaign } from '../../src/contracts/contentEngine.ts';
 import { buildDraftContentSocialPackage } from '../../src/contracts/contentSocialPackage.ts';
@@ -57,6 +58,7 @@ export function buildGrowthIntelligenceDraftBundle(dataInput) {
       publicPublishAllowed: false, toolRadar: { cadence: 'EXISTING_DAILY_DEPENDENCY_WATCH', state: 'SCHEDULED_SOURCE_ONLY', automaticInstall: false } },
     xAcquisition: xAcquisitionDraftOverview(drafts),
     productToMarket: buildProductChannelIntelligence(),
+    agentRaceDistribution: buildRaceDistribution(buildProductChannelIntelligence()),
     ...(dataInput === undefined ? {} : { growthDataLayer: projectGrowthDataLayer(dataInput) }),
   };
 }
