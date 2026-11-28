@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { OpenAiProviderStatus } from './OpenAiProviderStatus';
 import { InteractiveArticleScene } from '../features/home/InteractiveArticleScene';
 import { growthVisualScene } from '../shared/growthVisualScenes';
-import { appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, parseMarketplaceCatalog, marketplaceDraftRow, type MarketplaceCatalog, type GrowthRow } from './growthOwnerWorkspaceModel';
+import { archiveLifecycleWorkspace, appendSnapshot, applyOwnerEdit, addMissingPublicSurfaceRows, publicSurfaceResearchTask, billingRecoveryResearchTask, domains, exportWorkspace, importWorkspace, initialRows, makeRow, projectGa4, projectXCampaignGa4, projectGsc, projectGraphHandoff, statuses, parseMarketplaceCatalog, marketplaceDraftRow, type MarketplaceCatalog, type GrowthRow } from './growthOwnerWorkspaceModel';
 
 const control = 'min-h-11 w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white';
 const button = 'min-h-11 rounded-lg border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-100 disabled:opacity-50';
@@ -20,6 +20,7 @@ type View = 'matrix' | 'edit' | 'compare' | 'handoff';
 export function GrowthOwnerControlCenter() {
   const [history, setHistory] = useState(() => appendSnapshot([], initialRows(), new Date().toISOString()));
   const [marketplace,setMarketplace]=useState<MarketplaceCatalog|null>(null);
+  const [marketMode,setMarketMode]=useState('ALL');
   const [marketChannel,setMarketChannel]=useState('');
   const [marketProduct,setMarketProduct]=useState('');
   const [sceneIds,setSceneIds]=useState<string[]>([]);
@@ -34,6 +35,7 @@ export function GrowthOwnerControlCenter() {
   const fileInput = useRef<HTMLInputElement>(null);
   const restoreInput = useRef<HTMLInputElement>(null);
   const graphInput = useRef<HTMLInputElement>(null);
+  const graphArchiveInput = useRef<HTMLInputElement>(null);
   const [archiveItems, setArchiveItems] = useState<ArchiveItem[]>([]);
   const [archiveReady, setArchiveReady] = useState(false);
   const current = history[history.length - 1];
@@ -155,13 +157,13 @@ export function GrowthOwnerControlCenter() {
       for(const row of byId.values())next.push(row);
       const nextHistory=appendSnapshot(history,next,new Date().toISOString());
       setHistory(nextHistory);setView('handoff');
-      setMarketplace(marketCatalog);setMarketChannel(marketCatalog?.rows[0]?.id??'');setMarketProduct(marketCatalog?.rows[0]?.products[0]??'');
+      setMarketplace(marketCatalog);setMarketMode('ALL');setMarketChannel(marketCatalog?.rows[0]?.id??'');setMarketProduct(marketCatalog?.rows[0]?.products[0]??'');
       setSceneIds(visual?.sceneIds??[]);setSelectedScene(visual?.sceneIds?.[0]??'');
       setMessage('Build-Artefakte gelesen. Keine laufende Engine, Live-Publikation oder Graph-Ausführung nachgewiesen.');
     }catch{setMarketplace(null);setMarketChannel('');setMarketProduct('');setMessage('Engine-Readback nicht nachgewiesen; vorhandene Historie bleibt unverändert.');}
     finally{setPending(false);}
   }
-  async function importGraph(file:File|undefined) {
+  async function importGraph(file:File|undefined, archiveLifecycle=false) {
     if(!file||pending)return;
     setPending(true);
     try{
@@ -169,11 +171,22 @@ export function GrowthOwnerControlCenter() {
       const bytes=await file.arrayBuffer();
       const raw=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
       const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+      if(archiveLifecycle && JSON.parse(raw)?.schema!=='CAPITAL_AI_HYGIENE_LIFECYCLE@1')throw Error('Lifecycle report required');
       const updated=projectGraphHandoff(raw,digest,rows);
-      setHistory(appendSnapshot(history,updated,new Date().toISOString()));setView('handoff');setDraft(null);
-      setMessage('Graph-Statusbericht als Dokumentation übernommen. Kein Provider- oder Runtime-Nachweis; bestehende Live-Readbacks unverändert.');
+      const nextHistory=updated!==rows?appendSnapshot(history,updated,new Date().toISOString()):history;
+      if(updated!==rows)setHistory(nextHistory);
+      setView('handoff');setDraft(null);
+      if(archiveLifecycle){
+        try{
+          const receipt=await archiveLifecycleWorkspace(nextHistory);
+          setMessage('Lifecycle-Dokumentation archiviert und bytegenau zurückgelesen: '+receipt.id+'. Kein Runtime-Nachweis.');
+        }catch{
+          setArchiveReady(false);
+          setMessage('Lifecycle lokal übernommen; Archivierung oder Readback nicht nachgewiesen. Recovery und Archivfreigabe prüfen.');
+        }
+      }else setMessage('Graph-Statusbericht als Dokumentation übernommen. Kein Provider- oder Runtime-Nachweis; bestehende Live-Readbacks unverändert.');
     }catch{setMessage('Graph-Import abgelehnt: Schema, Größe oder Inhalt ungültig. Historie unverändert.');}
-    finally{setPending(false);if(graphInput.current)graphInput.current.value='';}
+    finally{setPending(false);if(graphInput.current)graphInput.current.value='';if(graphArchiveInput.current)graphArchiveInput.current.value='';}
   }
   function download() {
     const url = URL.createObjectURL(new Blob([exportWorkspace(history)], { type: 'application/json' }));
@@ -205,9 +218,12 @@ export function GrowthOwnerControlCenter() {
       <h3 className="font-bold text-amber-200">Marketplace-Vertrieb</h3>
       <p className="text-sm text-slate-300">Privater Katalog · nur Entwürfe. Konten, Rechte, Kosten und Freigaben sind separat nachzuweisen.</p>
       {!marketplace?<p className="text-sm">Katalog über Engine-Readback laden.</p>:<>
-        <label className="block text-sm">Vertriebskanal<select className={control} value={marketChannel} onChange={e=>{setMarketChannel(e.target.value);setMarketProduct(marketplace.rows.find(r=>r.id===e.target.value)?.products[0]??'');}}>{marketplace.rows.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select></label>
+        <label className="block text-sm">Vertriebsart<select className={control} value={marketMode} onChange={e=>{const mode=e.target.value;const first=marketplace.rows.find(r=>mode==='ALL'||r.distributionMode===mode);setMarketMode(mode);setMarketChannel(first?.id??'');setMarketProduct(first?.products[0]??'');}}><option value="ALL">Alle</option>{[...new Set(marketplace.rows.map(r=>r.distributionMode))].map(mode=><option key={mode} value={mode}>{mode}</option>)}</select></label>
+        <label className="block text-sm">Vertriebskanal<select className={control} value={marketChannel} onChange={e=>{setMarketChannel(e.target.value);setMarketProduct(marketplace.rows.find(r=>r.id===e.target.value)?.products[0]??'');}}>{marketplace.rows.filter(r=>marketMode==='ALL'||r.distributionMode===marketMode).map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select></label>
         {marketplace.rows.filter(r=>r.id===marketChannel).map(r=><div key={r.id} className="space-y-2 break-words text-sm">
-          <p className="text-cyan-200">{r.automation}</p>
+          <p className="text-cyan-200">{r.distributionMode} · {r.automation}</p>
+          <p>{r.productTypes.join(" · ") || "Produktform NOT_PROVEN"} · {r.policyNote}</p>
+          <p className="text-xs text-slate-400">Quellenprüfung: {r.reviewedOn??"NOT_PROVEN"} · nächste Prüfung: {r.nextReviewOn??"offen"}</p>
           <p>{r.feeNote} · Kostenfreigabe NOT_PROVEN</p>
           <div className="flex flex-wrap gap-3"><a className="underline" href={r.url} target="_blank" rel="noopener noreferrer">Vertriebsportal</a><a className="underline" href={r.source} target="_blank" rel="noopener noreferrer">Offizielle Dokumentation</a>{r.feeSource&&<a className="underline" href={r.feeSource} target="_blank" rel="noopener noreferrer">Gebührenquelle</a>}</div>
           <label className="block">Produktkandidat<select className={control} value={marketProduct} onChange={e=>setMarketProduct(e.target.value)}>{r.products.length===0&&<option value="">Keine geprüfte Zuordnung</option>}{r.products.map(id=><option key={id} value={id}>{id}</option>)}</select></label>
@@ -237,6 +253,8 @@ export function GrowthOwnerControlCenter() {
       <button type="button" className={button} disabled={pending} onClick={()=>void readEngines()}>Engine-Readback prüfen</button>
       <button type="button" className={button} disabled={pending} onClick={()=>graphInput.current?.click()}>LangGraph-Statusbericht importieren</button>
       <input type="file" accept=".json,application/json" ref={graphInput} hidden onChange={e=>void importGraph(e.target.files?.[0])}/>
+      <button type="button" className={button} disabled={pending} onClick={()=>graphArchiveInput.current?.click()}>Lifecycle importieren und archivieren</button>
+      <input type="file" accept=".json,application/json" ref={graphArchiveInput} hidden onChange={e=>void importGraph(e.target.files?.[0],true)}/>
       <button type="button" className={button} disabled={pending} onClick={download}>JSON exportieren</button>
       <button type="button" className={button} disabled={pending} onClick={() => fileInput.current?.click()}>JSON importieren (ersetzt Arbeitsstand)</button>
       <input type="file" accept=".json,application/json" ref={fileInput} hidden onChange={e => void upload(e.target.files?.[0])}/>
@@ -298,6 +316,11 @@ export function GrowthOwnerControlCenter() {
     </div>}
     {view === 'handoff' && <div className="space-y-3">
       <p className="text-sm">Marktnews → Quellen und Rechte (read-only) · Growth → getrennte Datenquellen · Content → Entwurfsstatus (read-only) · TRUST → Freigaben · PLATFORM → Betrieb und CI.</p>
+      {rows.filter(r=>['document-hygiene-handoff','research-evidence-handoff'].includes(r.id)).map(r=><article key={r.id} className="rounded-xl border border-cyan-300/30 p-3 space-y-1">
+        <h3 className="font-bold">{r.name}</h3><p className="text-xs text-amber-200">NOT_PROVEN · Dokumentation</p>
+        <p className="text-sm break-words">{r.operation}</p><p className="text-xs break-words">{r.tests}</p>
+        <p className="text-xs break-all">{r.dependencies}</p><p className="text-xs break-all">{r.evidence}</p>
+      </article>)}
       <p className="text-xs text-slate-400">ANALYZED → IMPLEMENTED → TESTED → MERGE_READY → MERGED → DEPLOYED → VERIFIED. Diese Ansicht startet keine Agenten, Publikationen oder Deployments.</p>
       <button type="button" className={button} disabled={pending} onClick={() => {
         const next = addMissingPublicSurfaceRows(rows);

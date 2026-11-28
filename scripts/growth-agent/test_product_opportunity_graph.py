@@ -347,6 +347,14 @@ class ProductChannelReviewTests(unittest.TestCase):
         p["products"][1]["channels"] = [{"id": "unknown", "priority": "P0", "rule": "REVIEW_REQUIRED"}]
         self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
 
+    def test_extended_distribution_channels_keep_review_rules(self):
+        p = self.fixture()
+        p["products"][0]["channels"].append(
+            {"id": "mcpRegistry", "priority": "P1", "rule": "LISTING_REVIEW_REQUIRED"})
+        self.assertTrue(graph.channel_source_review({"payload": p})["channel_valid"])
+        p["products"][0]["channels"][-1]["rule"] = "PUBLISH_ALLOWED"
+        self.assertFalse(graph.channel_source_review({"payload": p})["channel_valid"])
+
     def test_saas_marketplace_rules_accept_only_exact_review_contract(self):
         rules = {"saasHub": "HUMAN_ONLY_SUBMISSION_REQUIRED",
                  "g2": "LISTING_REVIEW_REQUIRED", "capterra": "LISTING_REVIEW_REQUIRED",

@@ -141,7 +141,7 @@ test('visual owner readback returns scene IDs only and rejects fabricated assets
 
 test('TRUST: marketplace catalog is private, fails closed on authority injection, URL spoofing and source mismatch',async()=>{
  const actual=buildOwnerEngineSnapshot(),c=actual.marketplace;
- assert.ok(Buffer.byteLength(JSON.stringify(actual))<=16384);
+ assert.ok(Buffer.byteLength(JSON.stringify(actual))<=32768);
  assert.deepEqual(validateEngineSnapshot(actual).marketplace,c);
  for(const bad of [{...c,publicationAllowed:true},{...c,ownerApproval:'GRANTED'},{...c,spendCents:1},{...c,rows:[{...c.rows[0],url:'https://evil.invalid/'},...c.rows.slice(1)]},{...c,catalogSha256:'0'.repeat(64)}])assert.throws(()=>validateEngineSnapshot({...actual,marketplace:bad}));
  assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...actual.productChannels,sourceSha256:'0'.repeat(64)}}));
@@ -152,4 +152,16 @@ test('TRUST: marketplace catalog is private, fails closed on authority injection
 });
 
 
-test('directory additions remain private, with human-only SaaSHub and one Microsoft entry',()=>{const actual=buildOwnerEngineSnapshot(),c=validateEngineSnapshot(actual).marketplace;assert.equal(c.rows.length,16);assert.equal(c.rows.filter(r=>r.id==='microsoftMarketplace').length,1);assert.equal(c.rows.find(r=>r.id==='saasHub').automation,'HUMAN_ONLY_SUBMISSION_REQUIRED');assert.ok(c.rows.some(r=>r.id==='g2'));assert.ok(c.rows.some(r=>r.id==='capterra'));assert.equal(c.publicationAllowed,false);assert.equal(c.providerCalls,0);});
+test('distribution metadata fails closed even with recomputed digest',async()=>{
+ const {createHash}=await import('node:crypto');
+ const actual=buildOwnerEngineSnapshot();
+ for(const change of [{distributionMode:'ALLOW_ALL'},{reviewedOn:'2026-02-30'},{policyNote:'x'.repeat(301)},{productTypes:['INVALID']}]){
+  const rows=[{...actual.marketplace.rows[0],...change},...actual.marketplace.rows.slice(1)];
+  const catalogSha256=createHash('sha256').update(JSON.stringify({sourceSha256:actual.marketplace.sourceSha256,rows})).digest('hex');
+  assert.throws(()=>validateEngineSnapshot({...actual,marketplace:{...actual.marketplace,rows,catalogSha256}}));
+ }
+});
+
+test('directory additions remain private, with human-only SaaSHub and one Microsoft entry',()=>{const actual=buildOwnerEngineSnapshot(),c=validateEngineSnapshot(actual).marketplace;assert.equal(c.rows.length,29);assert.equal(c.schema,'CAPITAL_AI_MARKETPLACE_CATALOG@2');assert.equal(c.rows.find(r=>r.id==='saasHub').distributionMode,'DISCOVERY_ONLY');assert.equal(c.rows.filter(r=>r.id==='microsoftMarketplace').length,1);assert.equal(c.rows.find(r=>r.id==='saasHub').automation,'HUMAN_ONLY_SUBMISSION_REQUIRED');assert.ok(c.rows.some(r=>r.id==='g2'));assert.ok(c.rows.some(r=>r.id==='capterra'));assert.equal(c.publicationAllowed,false);assert.equal(c.providerCalls,0);});
+
+test('human-only directory cannot be promoted by a recomputed digest',async()=>{const {createHash}=await import('node:crypto');const actual=buildOwnerEngineSnapshot(),source=actual.marketplace;const rows=source.rows.map(r=>r.id==='saasHub'?{...r,automation:'API_SUBMISSION_DOCUMENTED'}:r);const catalogSha256=createHash('sha256').update(JSON.stringify({sourceSha256:source.sourceSha256,rows})).digest('hex');assert.throws(()=>validateEngineSnapshot({...actual,marketplace:{...source,rows,catalogSha256}}));});
