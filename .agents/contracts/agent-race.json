@@ -30,7 +30,9 @@
       "softSkills",
       "vfd"
     ],
-    "userTextTrust": "UNTRUSTED_DATA"
+    "userTextTrust": "UNTRUSTED_DATA",
+    "candidateModule": "scripts/growth/agent-race-candidate.mjs",
+    "executionAuthority": false
   },
   "identity": {
     "animals": [
@@ -44,7 +46,8 @@
     ],
     "guestAllowed": true,
     "publicProfileOptIn": true,
-    "avatarUpload": "NOT_IMPLEMENTED"
+    "avatarUpload": "NOT_IMPLEMENTED",
+    "profileActivation": "NOT_PROVEN"
   },
   "benchmark": {
     "securityPassRequired": true,
