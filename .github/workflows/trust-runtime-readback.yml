@@ -6,12 +6,18 @@ on:
       - .github/workflows/trust-runtime-readback.yml
       - scripts/trust-runtime-readback.mjs
       - scripts/trust-runtime-readback.test.mjs
+      - scripts/platform/federated-healthz.mjs
+      - scripts/platform/federated-healthz.test.mjs
+      - .github/workflows/google-cloud-admin.yml
   push:
     branches: [main]
     paths:
       - .github/workflows/trust-runtime-readback.yml
       - scripts/trust-runtime-readback.mjs
       - scripts/trust-runtime-readback.test.mjs
+      - scripts/platform/federated-healthz.mjs
+      - scripts/platform/federated-healthz.test.mjs
+      - .github/workflows/google-cloud-admin.yml
   workflow_dispatch:
 
 permissions:
@@ -31,7 +37,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Offline readback, isolation and negative regressions
-        run: node --test scripts/trust-runtime-readback.test.mjs
+        run: node --test scripts/trust-runtime-readback.test.mjs scripts/platform/federated-healthz.test.mjs
       # Render checksPass waits for every check. A live probe on push/PR creates
       # a pre-deploy dependency cycle. Dispatch this existing workflow only after
       # Render reports the expected main SHA live; do not relax identity checks.

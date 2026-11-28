@@ -1,14 +1,23 @@
 # CAPITAL_AI_GCP_OPERATOR_KEYLESS_READBACK@1
 # Manual main-only audit; read-only Google scope and IAM role; never enables a service.
 name: Google Cloud Operator (readback or YouTube demo)
+run-name: ${{ inputs.operation == 'healthz' && format('healthz-{0}', inputs.request_id) || 'Google Cloud Operator' }}
 on:
   workflow_dispatch:
     inputs:
       operation:
         description: Read Cloud APIs or upload an approved OAuth demo
         type: choice
-        options: [readback, billing-readback, billing-discovery, upload-youtube-demo]
+        options: [readback, billing-readback, billing-discovery, upload-youtube-demo, healthz]
         default: readback
+      request_id:
+        description: Opaque UUID for healthz only (no personal data)
+        type: string
+        default: ''
+      expected_main_sha:
+        description: Exact expected Main SHA for healthz only
+        type: string
+        default: ''
       media_object_generation:
         description: Generation of youtube-verification/demo-key-rotation-01.mp4.enc in the private demo bucket
         type: string
@@ -20,9 +29,39 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: capital-ai-cloud-operator-audit
+  group: ${{ inputs.operation == 'healthz' && format('capital-ai-healthz-{0}', github.run_id) || 'capital-ai-cloud-operator-audit' }}
   cancel-in-progress: false
 jobs:
+  healthz:
+    # Public HTTP read only; never request a Google token or access secrets.
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.operation == 'healthz'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24.19.0'
+      - name: Verify correlation and receipt isolation
+        run: node --test scripts/platform/federated-healthz.test.mjs
+      - name: Request bound runtime healthz receipt
+        env:
+          HEALTH_REQUEST_ID: ${{ inputs.request_id }}
+          HEALTH_EXPECTED_SHA: ${{ inputs.expected_main_sha }}
+          HEALTH_REPOSITORY_ID: ${{ github.repository_id }}
+        run: node scripts/platform/federated-healthz.mjs worker > healthz-receipt.json
+      - name: Return sanitized receipt for exact run
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: healthz-${{ github.run_id }}
+          path: healthz-receipt.json
+          if-no-files-found: ignore
+          retention-days: 1
   service-usage-readback:
     if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (inputs.operation == 'readback' || inputs.operation == 'billing-readback' || inputs.operation == 'billing-discovery')
     runs-on: ubuntu-24.04
