@@ -3,6 +3,7 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
+import {projectMarketplaceCatalog} from './product-channel-intelligence.mjs';
 import {buildGrowthIntelligenceDraftBundle} from './growth-intelligence-drafts.mjs';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const source=path=>readFileSync(new URL('../../'+path,import.meta.url));
@@ -27,6 +28,7 @@ export function projectOwnerEngineSnapshot({editionBytes,indexBytes,graphBytes,b
     content:{state:'DRAFT_ONLY',drafts:bundle.drafts.length,sourceSha256:bundle.sourceSha256,bundleSha256:sha(JSON.stringify(bundle))},
     visualIntelligence:{state:'DRAFT_ONLY',sceneIds:bundle.drafts.filter(d=>d.visualScene?.publicationAllowed===false && d.visualScene?.actualMediaAssets===0).map(d=>d.contentId),actualMediaAssets:0,publicPublishAllowed:false,toolRadar:'SCHEDULED_SOURCE_ONLY'},
     langgraph:{state:'SOURCE_ONLY_RUNTIME_NOT_PROVEN',sourceSha256:sha(graphBytes)},
+    marketplace:projectMarketplaceCatalog(p),
     productChannels:{state:'DRAFT_ONLY',products:p.products.length,mapped,researchQueue:p.products.length-mapped,sourceSha256:p.sourceSha256,liveMetrics:null},
   };
 }

@@ -127,7 +127,7 @@ test('owner snapshot exposes only draft channel counts and source hash; no live 
  assert.deepEqual(validateEngineSnapshot(actual).productChannels,p);
  assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...p,liveMetrics:{sales:0}}}));
  assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...p,mapped:p.products+1}}));
- const {productChannels,...legacy}=actual;assert.deepEqual(validateEngineSnapshot(legacy),legacy);
+ const {productChannels,marketplace,...legacy}=actual;assert.deepEqual(validateEngineSnapshot(legacy),legacy);
 });
 
 test('visual owner readback returns scene IDs only and rejects fabricated assets or activation',()=>{
@@ -136,4 +136,17 @@ test('visual owner readback returns scene IDs only and rejects fabricated assets
  assert.deepEqual(validateEngineSnapshot(actual).visualIntelligence,actual.visualIntelligence);
  assert.throws(()=>validateEngineSnapshot({...actual,visualIntelligence:{...actual.visualIntelligence,actualMediaAssets:1}}));
  assert.throws(()=>validateEngineSnapshot({...actual,visualIntelligence:{...actual.visualIntelligence,publicPublishAllowed:true}}));
+});
+
+
+test('TRUST: marketplace catalog is private, fails closed on authority injection, URL spoofing and source mismatch',async()=>{
+ const actual=buildOwnerEngineSnapshot(),c=actual.marketplace;
+ assert.ok(Buffer.byteLength(JSON.stringify(actual))<=16384);
+ assert.deepEqual(validateEngineSnapshot(actual).marketplace,c);
+ for(const bad of [{...c,publicationAllowed:true},{...c,ownerApproval:'GRANTED'},{...c,spendCents:1},{...c,rows:[{...c.rows[0],url:'https://evil.invalid/'},...c.rows.slice(1)]},{...c,catalogSha256:'0'.repeat(64)}])assert.throws(()=>validateEngineSnapshot({...actual,marketplace:bad}));
+ assert.throws(()=>validateEngineSnapshot({...actual,productChannels:{...actual.productChannels,sourceSha256:'0'.repeat(64)}}));
+ let reads=0;const load=async()=>{reads++;return Buffer.from(JSON.stringify(actual));};
+ const req={method:'GET'},path=new URL('https://capital-ai.online/api/profile/growth-intelligence/engine-readback');
+ for(const authorized of [async()=>false,async()=>({role:'owner'}),async()=>{throw Error('synthetic');}]){const res={setHeader(){}};await createGrowthEngineReadback({authorized,load}).handle(req,res,path,(r,status)=>{r.status=status;});assert.equal(res.status,404);}
+ assert.equal(reads,0);
 });

@@ -97,10 +97,24 @@ try {
   await send('Page.enable'); await send('Runtime.enable');
   await send('Network.enable');
   await send('Network.setExtraHTTPHeaders', { headers: { 'Accept-Language': 'de-DE' } });
+  // Validate actual HTTP bytes, not merely the source-tree inventory or a successful status.
+  for (const [name, expected] of Object.entries({
+    'owner-nebula-v4.webp': 'e9b0935ecae9e5c5b663e10f57e77ab7a3a9a8d76a7820bf9a8073f6549e199e',
+    'analytics-overview-v4.webp': '587808fe3a7660e22cdb9f95eb599ef00e0694bc3bfa56d9d27d1130a4ffa435',
+    'capital-ai-mark-v4.webp': '61bc0831b4868544b3982787dde4f1911583e27c993a89e8b46c514e07ea0993',
+    'analytics-universe-orbit.webp': 'e691753fd5ffd8db1a9b0ad878c56f091409a55a8fcd8c06ecbe9ebef0b69c65',
+  })) {
+    const response = await fetch(origin + '/branding/universe/' + name);
+    assert.equal(response.status, 200, name);
+    assert.match(response.headers.get('content-type') || '', /^image\/webp(?:;|$)/i);
+    assert.equal(createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex'), expected, name);
+    report.checks.push({asset:name,sha256:expected,http:200});
+  }
   for (const viewport of [{ width: 320, height: 800, mobile: true }, { width: 390, height: 844, mobile: true }, { width: 768, height: 1024, mobile: true }, { width: 1440, height: 1000, mobile: false }]) {
     await send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: 1 });
     await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
     await navigate();
+    assert.ok((await evaluate("getComputedStyle(document.querySelector('.universe-space'),'::before').backgroundImage")).includes('/branding/universe/owner-nebula-v4.webp'), 'Home uses the global v4 background');
     await until(() => evaluate("document.querySelector('.brand-globe-poster').complete && document.querySelector('.brand-globe-poster').naturalWidth === 1254"), 'POSTER');
     assert.equal(await evaluate("document.querySelector('.brand-globe-art').dataset.globeState"), 'poster');
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
@@ -289,10 +303,8 @@ try {
     const stages=['Quellen','Datenqualität','Scoring','Risiko','Evidenz','Marktnews'];
     const layoutAnalytics=await evaluate("(()=>{const el=document.getElementById('analytics-hub-universe-article');const stars=[...el.querySelectorAll('[data-analytics-orbit-star]')];return {stars:stars.length,targets:stars.map(b=>{const r=b.getBoundingClientRect();return [r.width,r.height]}),overflow:el.scrollWidth>el.clientWidth+2,pageOverflow:document.documentElement.scrollWidth>innerWidth+2,demo:el.querySelector('[data-analytics-example-cards]').textContent.includes('Statische Beispieldaten'),learningLinks:el.querySelectorAll('a[href^=\"/learning\"]').length,history:!!document.querySelector('.historical-demo'),archiveVisible:[...document.querySelectorAll('.historical-demo button')].some(b=>b.textContent.includes('Historisches Archiv ansehen')),defaultStage:stars.findIndex(b=>b.getAttribute('aria-pressed')==='true')};})()");
     assert.equal(layoutAnalytics.stars,6);
-    const imageResponse=await fetch(origin+'/branding/universe/analytics-universe-orbit.webp');
-    assert.equal(imageResponse.status,200);
-    assert.equal(createHash('sha256').update(Buffer.from(await imageResponse.arrayBuffer())).digest('hex'),'e691753fd5ffd8db1a9b0ad878c56f091409a55a8fcd8c06ecbe9ebef0b69c65');
-    assert.equal(await evaluate("document.querySelector('#analytics-hub-universe-article svg image').getAttribute('href')"),'/branding/universe/analytics-universe-orbit.webp');
+    assert.equal(await evaluate("document.querySelector('#analytics-hub-universe-article svg image').getAttribute('href')"),'/branding/universe/analytics-overview-v4.webp');
+    assert.ok((await evaluate("getComputedStyle(document.querySelector('.universe-space'),'::before').backgroundImage")).includes('/branding/universe/owner-nebula-v4.webp'), 'Analytics uses the global v4 background');
     assert.ok(layoutAnalytics.targets.every(([w,h])=>w>=44&&h>=44),'Analytics star touch target');
     assert.equal(layoutAnalytics.overflow,false,'Analytics article overflow');
     assert.equal(layoutAnalytics.pageOverflow,false,'Analytics overview page overflow');
@@ -331,6 +343,21 @@ try {
   await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13 });
   await until(() => evaluate("location.pathname === '/learning' && !!document.querySelector('.hub-navigation')"), 'LEARNING_CTA_NAVIGATION');
   report.checks.push({ learningCtaKeyboardNavigation: 'PASS' });
+  // Verify real static documents, not just SPA routes. Redirected BYOK files remain outside this scope.
+  const staticRoutes = ['/agb', '/datenschutz', '/impressum', '/dokumentation/pipeline-architekturen', '/dokumentation/preiskatalog', '/dokumentation/domains', '/dokumentation/oss-market'];
+  for (const viewport of [{width:320,height:800,mobile:true},{width:1440,height:1000,mobile:false}]) {
+    await send('Emulation.setDeviceMetricsOverride', {...viewport,deviceScaleFactor:1});
+    for (const route of staticRoutes) {
+      loaded=false;
+      await send('Page.navigate',{url:origin+route});
+      await until(()=>loaded,'STATIC_PAGE_LOAD_'+route);
+      await until(()=>evaluate("document.readyState === 'complete' && !!document.querySelector('main')"),'STATIC_MAIN_'+route);
+      const result=await evaluate("(()=>({background:getComputedStyle(document.body,'::before').backgroundImage,overflow:document.documentElement.scrollWidth>innerWidth+2}))()");
+      assert.ok(result.background.includes('/branding/universe/owner-nebula-v4.webp'),route+' v4 canvas');
+      assert.equal(result.overflow,false,route+' horizontal overflow');
+      report.checks.push({viewport,route,staticCanvas:'PASS',horizontalOverflow:false});
+    }
+  }
   assert.deepEqual(errors, [], 'Uncaught exceptions');
   report.status = 'TARGETED_PASS';
 } catch (error) { report.status = 'FAILED'; report.error = error.message; process.exitCode = 1; }

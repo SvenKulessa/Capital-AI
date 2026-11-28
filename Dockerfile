@@ -2,8 +2,8 @@ FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43dd
 LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI
 # Use patched OpenSSL, zlib and libxml2 packages from stable Alpine 3.24.
 # One crypto-base layer supplies build, production-deps and runtime; no edge repositories.
-# Fail closed when patched OpenSSL or libxml2 (CVE-2026-86144) is unavailable.
-RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r3' \
+# Fail closed when patched OpenSSL or libxml2 (including CVE-2026-11979) is unavailable.
+RUN apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'zlib>=1.4-r0' 'libxml2>=2.13.9-r5' \
     && apk info -v zlib libcrypto3 libssl3 libxml2
 
 FROM crypto-base AS build
@@ -91,7 +91,7 @@ COPY public/youtube-private-upload.js ./public/youtube-private-upload.js
 COPY public/datenschutz ./public/datenschutz
 COPY public/agb ./public/agb
 COPY public/impressum ./public/impressum
-COPY public/documentation/pipeline-architectures.html public/documentation/pricing-models.html public/documentation/domains.html ./public/documentation/
+COPY public/documentation/pipeline-architectures.html public/documentation/pricing-models.html public/documentation/domains.html public/documentation/presentation.css ./public/documentation/
 COPY public/downloads/market-screener-hub-open-source.html ./public/downloads/market-screener-hub-open-source.html
 COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/learning-simulator.test.mjs server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/founder-access.mjs server/founder-access.test.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.mjs server/blueprint-commerce.test.mjs server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/purchase-receipt.mjs server/purchase-receipt.test.mjs server/smartcopy-sandbox-readback.mjs server/smartcopy-sandbox-readback.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
@@ -123,7 +123,7 @@ COPY scripts/ten-pr-github-evidence.mjs scripts/ten-pr-github-evidence.test.mjs 
 COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 # Shared SOLO2 profile: CLI and negative tests execute in the existing offline build stage.
 COPY scripts/solo2-config.mjs scripts/solo2-config.test.mjs ./scripts/
-COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.mjs scripts/platform/drive-artifact-delivery.test.mjs ./scripts/platform/
+COPY scripts/platform/drive-artifact-router.mjs scripts/platform/drive-artifact-router.test.mjs scripts/platform/drive-artifact-delivery.mjs scripts/platform/drive-artifact-delivery.test.mjs scripts/platform/drive-create-lease.mjs ./scripts/platform/
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 COPY scripts/skill-bundles.mjs ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
