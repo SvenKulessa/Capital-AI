@@ -16,3 +16,5 @@ function checks(assert,build,reconcile,plan,fixture){
  const orphan=clone(fixture);orphan.events.shift();assert(reconcile(orphan).candidateCompleted===null,"no orphan conversion"); 
 }
 test('Agent Race offline draft and attribution safety',()=>checks((v,m)=>assert.ok(v,m),buildRaceDistribution,reconcileRaceDemand,plan,fixture));
+
+import './agent-race-candidate.test.mjs';

@@ -56,7 +56,9 @@
       "robustness": 15
     },
     "missingEvidence": "NOT_PROVEN",
-    "trafficSeparateFromTechnicalScore": true
+    "trafficSeparateFromTechnicalScore": true,
+    "candidateModule": "scripts/growth/agent-race-candidate.mjs",
+    "sourceAuthentication": "NOT_PROVEN"
   },
   "improvement": {
     "interval": 3,
@@ -97,7 +99,15 @@
   "marketValue": {
     "kind": "NON_MONETARY_INDEX",
     "traffic": "CONSENTED_DEDUPLICATED_ATTRIBUTION",
-    "noCashOrToken": true
+    "noCashOrToken": true,
+    "candidateModule": "scripts/growth/agent-race-candidate.mjs",
+    "weights": {
+      "technical": 40,
+      "marketing": 25,
+      "improvement": 20,
+      "demand": 15
+    },
+    "liveIndex": "NOT_PROVEN"
   },
   "commercialStatus": "NOT_PROVEN",
   "distribution": {
