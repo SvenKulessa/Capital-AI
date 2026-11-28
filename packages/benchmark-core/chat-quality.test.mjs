@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import '../eif-product/index.test.mjs';
+import '../eif-product/handoff.test.mjs';
 import { CHAT_BENCHMARK_DIMENSIONS, CHAT_BENCHMARK_VERSION, createChatBenchmark, createPublicChatBenchmarkProjection } from './chat-quality.mjs';
 
 const dimensions = Object.fromEntries(Object.entries(CHAT_BENCHMARK_DIMENSIONS).map(([id, maxScore]) => [id, {
