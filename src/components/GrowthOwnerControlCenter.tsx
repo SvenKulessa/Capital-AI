@@ -170,7 +170,8 @@ export function GrowthOwnerControlCenter() {
       const raw=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
       const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
       const updated=projectGraphHandoff(raw,digest,rows);
-      setHistory(appendSnapshot(history,updated,new Date().toISOString()));setView('handoff');setDraft(null);
+      if(updated!==rows)setHistory(appendSnapshot(history,updated,new Date().toISOString()));
+      setView('handoff');setDraft(null);
       setMessage('Graph-Statusbericht als Dokumentation übernommen. Kein Provider- oder Runtime-Nachweis; bestehende Live-Readbacks unverändert.');
     }catch{setMessage('Graph-Import abgelehnt: Schema, Größe oder Inhalt ungültig. Historie unverändert.');}
     finally{setPending(false);if(graphInput.current)graphInput.current.value='';}
@@ -298,6 +299,11 @@ export function GrowthOwnerControlCenter() {
     </div>}
     {view === 'handoff' && <div className="space-y-3">
       <p className="text-sm">Marktnews → Quellen und Rechte (read-only) · Growth → getrennte Datenquellen · Content → Entwurfsstatus (read-only) · TRUST → Freigaben · PLATFORM → Betrieb und CI.</p>
+      {rows.filter(r=>['document-hygiene-handoff','research-evidence-handoff'].includes(r.id)).map(r=><article key={r.id} className="rounded-xl border border-cyan-300/30 p-3 space-y-1">
+        <h3 className="font-bold">{r.name}</h3><p className="text-xs text-amber-200">NOT_PROVEN · Dokumentation</p>
+        <p className="text-sm break-words">{r.operation}</p><p className="text-xs break-words">{r.tests}</p>
+        <p className="text-xs break-all">{r.dependencies}</p><p className="text-xs break-all">{r.evidence}</p>
+      </article>)}
       <p className="text-xs text-slate-400">ANALYZED → IMPLEMENTED → TESTED → MERGE_READY → MERGED → DEPLOYED → VERIFIED. Diese Ansicht startet keine Agenten, Publikationen oder Deployments.</p>
       <button type="button" className={button} disabled={pending} onClick={() => {
         const next = addMissingPublicSurfaceRows(rows);

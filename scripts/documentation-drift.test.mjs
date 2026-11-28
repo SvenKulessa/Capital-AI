@@ -9,6 +9,7 @@ import {
   findRoadmapDuplicateIds,
   isHistoricalPath,
   isLivingDocument,
+  projectHygieneHandoff,
 } from './documentation-drift.mjs';
 
 const MAIN = 'c1a720a32a054c16944e6c582086a509be137fc4';
@@ -132,4 +133,26 @@ test('runtime dependency boundary uses an immutable implementation baseline inst
     profile: localProfile,
   });
   assert.equal(report.summary.driftDetected, false);
+});
+
+ test('hygiene handoff uses measured claim checks only and strips source text', () => {
+  const root = fixture({'README.md': 'current main: '+OLD, 'src/data/roadmapData.ts':'export const items=[];', 'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md':'No volatile claim'});
+  try {
+    const report = analyzeDocumentationDrift({root,mainSha:MAIN,files:['README.md','src/data/roadmapData.ts','docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md'],profile});
+    const result = projectHygieneHandoff(report,'offline-'+'a'.repeat(40));
+    assert.equal(result.checked,3); assert.equal(result.affected,1); assert.equal(result.score,67);
+    assert.equal(result.coverage,15); assert.equal(result.status,'NOT_PROVEN');
+    assert.equal(result.authorityGranted,false); assert.equal(result.runId,'hygiene-'+result.sourceDigest);
+    assert.ok(!JSON.stringify(result).includes('README.md'));
+    assert.throws(()=>projectHygieneHandoff(report,'raw private task'));
+  } finally { fs.rmSync(root,{recursive:true,force:true}); }
+});
+test('missing or symlinked living documents do not count as measured',()=>{
+  const root=fixture({});
+  try {
+    fs.symlinkSync('/etc/passwd',path.join(root,'README.md'));
+    const report=analyzeDocumentationDrift({root,mainSha:MAIN,files:['README.md'],profile});
+    const result=projectHygieneHandoff(report);
+    assert.equal(result.checked,0); assert.equal(result.score,null); assert.equal(result.coverage,0); assert.equal(result.missing,3);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
