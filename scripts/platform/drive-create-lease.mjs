@@ -2,7 +2,7 @@
 // No auto-expiry: Google Drive cannot fence an abandoned writer.
 import { randomUUID } from 'node:crypto';
 import { boundedJson, secureUrl } from '../../server/http-security.mjs';
-import { DRIVE_CREATE_LEASE_KEY } from './drive-artifact-delivery.mjs';
+import { DRIVE_CREATE_LEASE_KEY, deliverDriveArtifact } from './drive-artifact-delivery.mjs';
 
 export function createSupabaseDriveLease({enabled=false,env=process.env,fetchImpl=fetch}={}){
   let config;
@@ -15,14 +15,14 @@ export function createSupabaseDriveLease({enabled=false,env=process.env,fetchImp
     if(enabled===true && admin && url.href===url.origin+'/' &&
        /^[a-z0-9-]+\.supabase\.co$/.test(url.hostname) && !url.port)config={origin:url.origin,key};
   } catch { /* fail closed */ }
-  async function rpc(name,owner){
+  async function rpc(name,owner,metadata={}){
     if(!config)throw Error('DRIVE_LEASE_DISABLED_OR_UNCONFIGURED');
     try {
       const headers={'Content-Type':'application/json',Accept:'application/json',apikey:config.key};
       if(!config.key.startsWith('sb_secret_'))headers.Authorization='Bearer '+config.key;
       const response=await fetchImpl(config.origin+'/rest/v1/rpc/'+name,{
         method:'POST',headers,redirect:'error',signal:AbortSignal.timeout(5000),
-        body:JSON.stringify({_owner:owner}),
+        body:JSON.stringify({_owner:owner,...metadata}),
       });
       const result=await boundedJson(response,1024);
       if(typeof result!=='boolean')throw Error('INVALID_RESPONSE');
@@ -34,12 +34,15 @@ export function createSupabaseDriveLease({enabled=false,env=process.env,fetchImp
     const owner=randomUUID();
     if(!await rpc('capital_ai_drive_lock_acquire',owner))throw Error('DRIVE_LEASE_BUSY');
     let writeAttempted=false,closed=false;
-    const lease=Object.freeze({async beforeCreate(){
+    const lease=Object.freeze({async beforeCreate({folderId,filename,sha256}={}){
       if(closed || writeAttempted)throw Error('DRIVE_LEASE_WRITE_STATE');
+      if(typeof folderId!=='string' || !/^[A-Za-z0-9_-]{10,120}$/.test(folderId) ||
+         typeof filename!=='string' || filename.length>240 || !/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(filename) ||
+         typeof sha256!=='string' || !/^[a-f0-9]{64}$/.test(sha256))throw Error('DRIVE_LEASE_INTENT_INVALID');
       // Commit a durable intent before the external request. If the RPC is
       // uncertain, keep the row even though no Drive write is initiated.
       writeAttempted=true;
-      if(!await rpc('capital_ai_drive_lock_mark_write',owner))throw Error('DRIVE_LEASE_OWNER_LOST');
+      if(!await rpc('capital_ai_drive_lock_mark_write',owner,{_folder_id:folderId,_filename:filename,_sha256:sha256}))throw Error('DRIVE_LEASE_OWNER_LOST');
     }});
     let result;
     try { result=await fn(lease); }
@@ -64,4 +67,12 @@ export function bindSupabaseDriveLease(provider,options){
   return Object.freeze({authorizedRoots:provider.authorizedRoots,
     ...Object.fromEntries(ports.map(k=>[k,provider[k].bind(provider)])),
     ...createSupabaseDriveLease(options)});
+}
+
+// Host injects an authenticated Drive port once, never per delivery request.
+export function createLeasedDriveWriter(provider,options){
+  const bound=bindSupabaseDriveLease(provider,options);
+  return Object.freeze({deliver({request,bytes,authorization}={}){
+    return deliverDriveArtifact({request,bytes,authorization,provider:bound});
+  }});
 }

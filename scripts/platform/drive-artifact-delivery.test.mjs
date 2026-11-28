@@ -209,7 +209,11 @@ test('durable Supabase lease: two independent providers contend on one backend',
     const {_owner}=JSON.parse(options.body);let ok=false;
     assert.equal(options.redirect,'error');
     if(url.endsWith('_acquire')){if(!row){row=_owner;started=false;ok=true;}}
-    if(url.endsWith('_mark_write')&&row===_owner&&!started){started=true;ok=true;}
+    if(url.endsWith('_mark_write')&&row===_owner&&!started){
+      assert.deepEqual(JSON.parse(options.body),{_owner,_folder_id:projectFolder,
+        _filename:'2026-11-21_TRUST_EXPOSURE_AUDIT_v1.md',_sha256:hash(content)});
+      started=true;ok=true;
+    }
     if(url.endsWith('_release')&&row===_owner){row=null;ok=true;}
     return new Response(JSON.stringify(ok));
   };
@@ -246,7 +250,30 @@ test('durable lease keeps ambiguous writes; disabled backend does not call RPC',
   const {withExclusiveCreateLease:lease}=createSupabaseDriveLease({...config,enabled:true});
   await assert.rejects(lease(DRIVE_CREATE_LEASE_KEY,async()=>{throw Error('before write');}));
   assert.equal(row,null);
-  const held=await lease(DRIVE_CREATE_LEASE_KEY,async l=>{await l.beforeCreate();return {status:'HOLD'};});
+  const held=await lease(DRIVE_CREATE_LEASE_KEY,async l=>{await l.beforeCreate({folderId:projectFolder,filename:'fixture.py',sha256:hash(content)});return {status:'HOLD'};});
   assert.equal(held.status,'HOLD');assert.ok(row);assert.equal(started,true);
   await assert.rejects(lease(DRIVE_CREATE_LEASE_KEY,()=>assert.fail()),/DRIVE_LEASE_BUSY/);
+});
+
+test('host writer ignores caller provider override and holds on tampered readback',async()=>{
+  const {createLeasedDriveWriter}=await import('./drive-create-lease.mjs');
+  const {p,written}=mock();
+  let owner=null,intent=null;
+  const fetchImpl=async(url,options)=>{
+    const body=JSON.parse(options.body);let ok=false;
+    if(url.endsWith('_acquire')&&!owner){owner=body._owner;ok=true;}
+    if(url.endsWith('_mark_write')&&owner===body._owner){intent=body;ok=true;}
+    if(url.endsWith('_release')&&owner===body._owner){owner=null;ok=true;}
+    return new Response(JSON.stringify(ok));
+  };
+  p.readFileBytes=async()=>Buffer.from('tampered');
+  const writer=createLeasedDriveWriter(p,{enabled:true,env:{SUPABASE_URL:'https://fixture.supabase.co',
+    SUPABASE_SECRET_KEY:'sb_secret_synthetic_fixture'},fetchImpl});
+  const result=await writer.deliver({request,bytes:content,authorization:auth,provider:{uploadNewFile(){assert.fail();}}});
+  assert.equal(result.status,'HOLD');
+  assert.equal(written.length,1);
+  assert.equal(intent._sha256,hash(content));
+  assert.ok(owner);
+  assert.equal((await writer.deliver({request,bytes:content,authorization:auth})).status,'HOLD');
+  assert.equal(written.length,1);
 });

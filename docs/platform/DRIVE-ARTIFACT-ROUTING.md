@@ -118,3 +118,7 @@ object and prove the previous writer is quiescent before authorized recovery.
 After DB restore keep writers disabled until outstanding Drive operations are
 reconciled. For rollback disable all writer hosts first; preserve any pending
 row and reconcile it before removing the three RPCs and dedicated schema.
+
+### Durable reconciliation identity and host entry point
+
+The staged lock persists the exact target folder ID, generated filename and SHA-256 before the external call. All three are retained across database restart and ambiguous upload. Do not log owner tokens or private target metadata. A trusted host may use `createLeasedDriveWriter(existingDriveProvider,{enabled:true,env})` and call its `deliver({request,bytes,authorization})` entry point; per-request provider overrides are ignored. The host must still supply its independently authenticated Drive ports, and must not expose the raw provider separately. An existing LangGraph action may invoke this host-owned callback, but checkpoints must not contain credentials or owner tokens. On HOLD, stop automatic retries and reconcile recorded intent before separately authorized recovery. No new graph, scheduler, HTTP route or provider credential is introduced here.

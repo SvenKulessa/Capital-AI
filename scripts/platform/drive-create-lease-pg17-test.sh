@@ -28,7 +28,11 @@ SQL
 sql -q -f scripts/platform/drive-create-lease.sql
 a=00000000-0000-4000-8000-000000000001
 b=00000000-0000-4000-8000-000000000002
-rpc(){ sql -Atq -c "set role service_role; select public.capital_ai_drive_lock_$1('$2'::uuid);"; }
+rpc(){
+  local args="'$2'::uuid"
+  if [[ $1 == mark_write ]]; then args+=",'1FixtureFolderABC','fixture.py',repeat('a',64)"; fi
+  sql -Atq -c "set role service_role; select public.capital_ai_drive_lock_$1($args);"
+}
 # Two independent transactions compete for one singleton.
 rpc acquire "$a" > "$scratch/a" & pa=$!
 rpc acquire "$b" > "$scratch/b" & pb=$!
@@ -45,9 +49,12 @@ else echo 'FAIL concurrent acquisition'; exit 1; fi
 pg pg_ctl -D "$scratch/data" -m fast -w stop >/dev/null
 start
 [[ $(rpc acquire "$other") == f ]]
+[[ $(sql -Atq -c "select target_folder_id || ':' || target_filename || ':' || target_sha256 from capital_ai_drive_lock.exclusive_create") == "1FixtureFolderABC:fixture.py:$(printf '%064d' 0 | tr 0 a)" ]]
 for role in anon authenticated; do
   for fn in acquire mark_write release; do
-    if sql -q -c "set role $role; select public.capital_ai_drive_lock_$fn('$owner'::uuid);" >/dev/null 2>&1; then
+    args="'$owner'::uuid"
+    if [[ $fn == mark_write ]]; then args+=",'1FixtureFolderABC','fixture.py',repeat('a',64)"; fi
+    if sql -q -c "set role $role; select public.capital_ai_drive_lock_$fn($args);" >/dev/null 2>&1; then
       echo 'FAIL unauthorized RPC'; exit 1
     fi
   done

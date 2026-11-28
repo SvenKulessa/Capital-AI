@@ -135,7 +135,7 @@ export async function deliverDriveArtifact({request,bytes,provider,authorization
       if(listed.some(f=>f.name.toLowerCase()===planned.filename.toLowerCase()))
         return deny('EXACT_NAME_COLLISION');
       // A durable backend must record uncertainty before the external write.
-      if(lease?.beforeCreate) await lease.beforeCreate();
+      if(lease?.beforeCreate) await lease.beforeCreate({folderId,filename:planned.filename,sha256:hash});
       const uploaded=await provider.uploadNewFile({
         parentFolderId:folderId,fileName:planned.filename,fileBytes:snapshot,
         mimeType:MIME[request.extension],mode:'CREATE_ONLY',sha256:hash
