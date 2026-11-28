@@ -110,5 +110,5 @@ export function reconcileRaceDemand(raw){
  if(done){completed++;ch.completed++;}if(price){responses++;ch.priceResponses++;if(price.priceCents>0)willing++;}
  }
  const candidateCohort=visitors>=100&&completed>=20&&responses>=20;
- return {schema:"CAPITAL_AI_AGENT_RACE_DEMAND_CANDIDATES@1",state:"SOURCE_RECORDED_NOT_AUTHENTICATED",candidateVisitors:visitors||null,candidateCompleted:completed||null,candidatePriceResponses:responses||null,candidatePositivePriceResponses:willing||null,candidateCohortThresholdMet:candidateCohort,candidateChannels:perChannel,liveVisitors:null,liveConversions:null,actualWillingnessToPay:null,marketValue:null,providerAuthentication:"NOT_PROVEN",publicPublishAllowed:false,providerCalls:0,campaignSpend:0};
+ return {schema:"CAPITAL_AI_AGENT_RACE_DEMAND_CANDIDATES@1",state:"SOURCE_RECORDED_NOT_AUTHENTICATED",candidateVisitors:visitors||null,candidateCompleted:completed||null,candidatePriceResponses:responses||null,candidatePositivePriceResponses:responses?willing:null,candidateCohortThresholdMet:candidateCohort,candidateChannels:perChannel,liveVisitors:null,liveConversions:null,actualWillingnessToPay:null,marketValue:null,providerAuthentication:"NOT_PROVEN",publicPublishAllowed:false,providerCalls:0,campaignSpend:0};
 }
