@@ -65,3 +65,8 @@ The n8n proposal is **internal orchestration only**; evaluate n8n's license and 
 ## Rollback
 
 Remove the new opportunity modules/tests and the minimal test-script wiring via a revert. No database, external resources, secrets or publishing state have changed. The existing Content Engine and social publishing adapter remain unaffected.
+
+
+## Distribution Opportunity Score @1 — 2026-11-28
+
+`evaluateDistributionOpportunity` in the existing opportunity module implements the seven owner-proposed weights (20/15/15/15/15/10/10). Inputs are explicitly source-recorded hypotheses or NOT_PROVEN; unknown criteria must be null and have no evidence reference. Full score is null until coverage reaches 100%, with separate weighted observed points and provisional covered score. No automatic ranking based solely on partial coverage. Rights, security and authorization are hard commercial gates: BLOCKED dominates, unknown yields HOLD, even complete source-recorded claims remain REVIEW_REQUIRED. No caller-supplied evidence is authenticated by this pure function; no publication, sales or spend authority. Existing CADS, product opportunity @1 and finance scenario math remain unchanged. Test fixtures are synthetic; actual product demand, security, legal rights and conversion remain unproven.
