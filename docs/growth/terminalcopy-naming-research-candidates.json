@@ -1,0 +1,44 @@
+{
+  "records": [
+    {
+      "productId": "ai-smartcopy",
+      "kind": "PLATFORM_RULE",
+      "entityId": "acode",
+      "sourceUrl": "https://docs.acode.app/docs/plugin-essentials/manifest",
+      "observedOn": "2026-11-28",
+      "summary": "Acode documents plugin display name, stable identifier, versioned ZIP updates, author, license and keywords; the icon is limited to 50 KB. No publication or price activation is implied."
+    },
+    {
+      "productId": "ai-smartcopy",
+      "kind": "COMPETITOR",
+      "entityId": "termux-api",
+      "sourceUrl": "https://f-droid.org/packages/com.termux.api/",
+      "observedOn": "2026-11-28",
+      "summary": "Termux:API provides shell-script access to the system clipboard in a separate Android terminal environment. The clipboard capability is not exclusive to this product."
+    },
+    {
+      "productId": "ai-smartcopy",
+      "kind": "COMPETITOR",
+      "entityId": "terminalcopy-herdrify",
+      "sourceUrl": "https://docs.rs/herdrify-app/latest/herdrify_app/protocol/struct.TerminalCopy.html",
+      "observedOn": "2026-11-28",
+      "summary": "TerminalCopy names a technical clipboard command for a focused terminal selection. This is lexical overlap, not proof of a registered trademark or equivalent commercial product."
+    },
+    {
+      "productId": "ai-smartcopy",
+      "kind": "COMPETITOR",
+      "entityId": "nircmd-shellcopy",
+      "sourceUrl": "https://nircmd.nirsoft.net/shellcopy.html",
+      "observedOn": "2026-11-28",
+      "summary": "NirCmd uses shellcopy for file copying. The alternative name overlaps with an existing technical command but the functionality differs."
+    },
+    {
+      "productId": "ai-smartcopy",
+      "kind": "PLATFORM_RULE",
+      "entityId": "android-branding",
+      "sourceUrl": "https://developer.android.com/legal",
+      "observedOn": "2026-11-28",
+      "summary": "Android robot use requires attribution under the specified Creative Commons license. Logo-derived trademark and broader branding rights remain to be reviewed before commercial release."
+    }
+  ]
+}
