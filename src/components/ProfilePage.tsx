@@ -1,4 +1,5 @@
 import React from 'react';
+import { VocabularyAchievementBadge } from '../features/learning/VocabularyGame';
 import { LearningEntitlementBadge, AccountProductBadge } from '../features/learning/LearningEntitlementBadge';
 import { ProfileAvatarUpload } from '../features/account/ProfileAvatarUpload';
 import { GeminiByokSettings } from '../features/account/GeminiByokSettings';
@@ -70,6 +71,7 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
                   </button>
                 </>}
                 {!session.account.badges?.some(badge => /vocabulary/i.test(badge.id+' '+badge.label)) && <LearningEntitlementBadge />}
+                <VocabularyAchievementBadge key={session.user?.id} />
 
                 {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).length ? (
                   <div className="mt-4 flex flex-wrap gap-3" aria-label="Kontobadges">

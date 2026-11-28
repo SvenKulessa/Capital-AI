@@ -1,18 +1,27 @@
-import { useState, type KeyboardEvent } from 'react';
-import { PortfolioRiskQuiz } from './PortfolioRiskQuiz';
+import { lazy, Suspense, useState, type KeyboardEvent } from 'react';
+import { VocabularySoloQuiz } from './VocabularyGame';
+// Keep question catalogs out of the near-budget LearningPortalPage chunk.
+const PortfolioRiskQuiz = lazy(() => import('./PortfolioRiskQuiz').then(module => ({ default: module.PortfolioRiskQuiz })));
+const GrowthIntelligenceQuiz = lazy(() => import('./GrowthIntelligenceQuiz').then(module => ({ default: module.GrowthIntelligenceQuiz })));
+const quizLoading = <p role="status" className="p-4 text-sm text-slate-300">Quiz wird geladen …</p>;
 
-type Category = 'quant' | 'portfolio';
-const categories: readonly Category[] = ['quant', 'portfolio'];
+type Category = 'quant' | 'portfolio' | 'vocabulary' | 'growth';
+const categories: readonly Category[] = ['quant', 'portfolio', 'vocabulary', 'growth'];
 
 export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
   const [category, setCategory] = useState<Category>('quant');
+  const [portfolioOpened, setPortfolioOpened] = useState(false);
+  const selectCategory = (next: Category) => {
+    setCategory(next);
+    if (next === 'portfolio') setPortfolioOpened(true);
+  };
   const selectWithKeyboard = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     const index = categories.indexOf(category);
-    const next = event.key === 'Home' ? categories[0] : event.key === 'End' ? categories[1]
+    const next = event.key === 'Home' ? categories[0] : event.key === 'End' ? categories[categories.length - 1]
       : categories[(index + (event.key === 'ArrowRight' ? 1 : -1) + categories.length) % categories.length];
-    setCategory(next);
+    selectCategory(next);
     document.getElementById('quizzes-tab-' + next)?.focus();
   };
   return (
@@ -26,10 +35,10 @@ export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
         {categories.map(item => (
           <button key={item} id={'quizzes-tab-' + item} type="button" role="tab"
             tabIndex={item === category ? 0 : -1} aria-selected={category === item}
-            aria-controls={'quizzes-panel-' + item} onClick={() => setCategory(item)}
+            aria-controls={'quizzes-panel-' + item} onClick={() => selectCategory(item)}
             className={'min-h-11 rounded-t-lg px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-amber-300 ' +
               (item === category ? 'border-b-2 border-amber-300 bg-amber-400/10 text-amber-200' : 'text-slate-300 hover:text-white')}>
-            {item === 'quant' ? 'Quant & Trader' : 'Portfolio-Risiko'}
+            {item === 'quant' ? 'Quant & Trader' : item === 'portfolio' ? 'Portfolio-Risiko' : item === 'vocabulary' ? 'Wörter-Quiz' : 'Growth Intelligence'}
           </button>
         ))}
       </div>
@@ -47,7 +56,13 @@ export function QuizzesTab({ onOpenQuant }: { onOpenQuant: () => void }) {
       </div>
       <div id="quizzes-panel-portfolio" role="tabpanel" aria-labelledby="quizzes-tab-portfolio"
         hidden={category !== 'portfolio'}>
-        <PortfolioRiskQuiz />
+        {portfolioOpened && <Suspense fallback={quizLoading}><PortfolioRiskQuiz /></Suspense>}
+      </div>
+      <div id="quizzes-panel-vocabulary" role="tabpanel" aria-labelledby="quizzes-tab-vocabulary" hidden={category !== 'vocabulary'}>
+        {category === 'vocabulary' && <VocabularySoloQuiz />}
+      </div>
+      <div id="quizzes-panel-growth" role="tabpanel" aria-labelledby="quizzes-tab-growth" hidden={category !== 'growth'}>
+        {category === 'growth' && <Suspense fallback={quizLoading}><GrowthIntelligenceQuiz /></Suspense>}
       </div>
     </section>
   );

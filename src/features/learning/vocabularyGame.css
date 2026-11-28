@@ -1,0 +1,24 @@
+.vocabulary-turn {
+  perspective: 800px;
+}
+.vocabulary-turn-inner {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 240ms ease-in-out;
+}
+.vocabulary-turn-inner[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+.vocabulary-face {
+  grid-area: 1 / 1;
+  display: block;
+  padding: .5rem;
+  backface-visibility: hidden;
+  overflow-wrap: anywhere;
+}
+.vocabulary-face-back {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vocabulary-turn-inner { transition: none; }
+}
