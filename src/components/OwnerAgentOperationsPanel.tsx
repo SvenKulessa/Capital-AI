@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Activity, GitPullRequest, RefreshCw, ShieldCheck, Server, TrendingUp } from 'lucide-react';
 import {
   AGENT_ROLES, evidenceState, ga4DiagnosticLabel, ga4EventCount, ga4RealtimeEventCount, isSnapshotStale, isVerified,
-  readDashboardSnapshot, visiblePullRequests,
+  readDashboardSnapshot, runtimeEvidence, visiblePullRequests,
   type AgentRole, type DashboardReadback, type OperationsView,
 } from './ownerOperationsModel';
 import { OwnerOperationsVisualOverview } from './OwnerOperationsVisualOverview';
@@ -125,13 +125,14 @@ export function OwnerAgentOperationsPanel({ userId }: { userId: string }) {
   const realtimeViews = snapshot ? ga4RealtimeEventCount(snapshot, 'page_view') : null;
   const leads = snapshot ? ga4EventCount(snapshot, 'generate_lead') : null;
   const purchaseEvents = snapshot ? ga4EventCount(snapshot, 'purchase') : null;
-  const evidence = snapshot ? [
+  const runtime = snapshot ? runtimeEvidence(snapshot) : null;
+  const evidence = snapshot && runtime ? [
     { name: 'GitHub Main / PR', state: evidenceState(snapshot, 'github'), detail: shortSha(gh?.mainSha) },
     { name: 'Main-Commit-Checks', state: evidenceState(snapshot, 'ci'), detail: gh?.ci?.scope || gh?.ci?.reason || 'Nicht nachgewiesen' },
     { name: 'Render Control Plane', state: evidenceState(snapshot, 'render'), detail: render?.deployId || render?.reason || 'Nicht nachgewiesen' },
     { name: 'GA4-Event-Readback', state: evidenceState(snapshot, 'ga4'), detail: ga4?.period || ga4?.reason || 'Nicht nachgewiesen' },
     { name: 'Echte Zahlung / Umsatz', state: 'NOT_PROVEN', detail: 'Kein signierter Payment-Readback' },
-    { name: 'Runtime-BuildIdentity', state: 'NOT_PROVEN', detail: snapshot.comparison.runtimeBuildIdentity },
+    { name: 'Runtime-SHA / Healthz', state: runtime.status, detail: runtime.detail },
   ] : [];
 
   return <section aria-labelledby="agent-ops-title" className="space-y-4 rounded-2xl border border-indigo-400/30 bg-[#070f21] p-3 text-white sm:p-5">

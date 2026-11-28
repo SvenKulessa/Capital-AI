@@ -15,14 +15,16 @@ Keine Schlüssel, Tokens oder privaten Provider-Payloads enthalten.
 | Eigene Angebotsverweise | VERIFIED | Bestehende Learning-, Pricing- und B2B-Verweise auf der öffentlichen Website. Kein neuer externer Werbedienst nötig; keine neue Aktivierung behauptet. |
 | AdSense | BLOCKED | Keine Integration/Publisher-ID im geprüften Code. Anbieterfreigabe und für EWR-Traffic geeignete zertifizierte CMP nicht nachgewiesen. |
 | Kraken-Referral-Banner | BLOCKED | Komponente vorhanden, aber nicht eingebunden. Aktuelle kontospezifische Programmbedingungen und öffentliche kommerzielle Bewerbung nicht nachgewiesen; bestehende Werbeaussagen benötigen Belege. |
-| Gesamtbudget 5 EUR | NOT_PROVEN | Tatsächliche Rechnung/Gutschriften fehlen; Budgetumfang GCP allein oder gesamte Infrastruktur offen. |
+| Anbieterbudgets | VERIFIED | Owner-Klarstellung: Google Cloud 5 EUR/Monat, Render 15 EUR/Monat; getrennte Grenzen. Tatsächliche Verbrauchseinhaltung NOT_PROVEN. |
 
 ## Kosten und Aktivierung
 
 Render-Readback: ein Web-Service, Plan 0.5c-512mb und 5 GB persistente Disk.
 Offizieller Listenpreis: 7 USD/Monat plus 5 × 0,25 USD/Monat = 8,25 USD/Monat,
 vor Steuern, Wechselkurs, Gutschriften und weiteren Ressourcen. Das ist keine Rechnung.
-Ein Gesamtlimit von 5 EUR ist damit nicht belegt. Kein Downgrade oder Löschen der Disk.
+Die 5-EUR-Grenze gilt ausschließlich für Google Cloud; Render hat eine eigene
+15-EUR-Grenze. Keine Restbudgetberechnung aus Listenpreisen ableiten.
+Kein Downgrade oder Löschen der Disk.
 
 Bestehendes consented Analytics, private GA4-Readbacks und eigene Angebotsverweise
 wiederverwenden. Keine zusätzlichen Worker, Scheduler, Datenspeicher, API-Abos,
@@ -33,13 +35,30 @@ ad_storage, ad_user_data und ad_personalization auf denied.
 
 ## Nächste Owner-Schritte bei verbleibenden Blockern
 
-1. Budgetumfang bestätigen und im privaten Billing-Editor aktuelle Kosten sowie
-   Gutschriften prüfen; keine Rechnungs-/Zahlungsdaten in öffentliche Artefakte kopieren.
-2. Für Werbung die gewünschte Variante benennen: eigene Produktwerbung,
-   AdSense-Einnahmen oder Affiliate. Bei AdSense Websitefreigabe, Publisher-Kennung
+1. Im privaten Billing-Editor aktuelle Kosten sowie Gutschriften je Anbieter prüfen;
+   keine Rechnungs-/Zahlungsdaten in öffentliche Artefakte kopieren.
+2. Der Owner hat alle drei Wege beauftragt: eigene Produktwerbung,
+   AdSense-Einnahmen und Affiliate. Bei AdSense Websitefreigabe, Publisher-Kennung
    und CMP-Nachweis bereitstellen; bei Kraken kontospezifische Bedingungen prüfen.
 3. Für Browser-End-to-End-Nachweis ein definiertes zustimmungsbasiertes Testereignis
    mit Zeitpunkt und anschließendem privaten GA4-Readback korrelieren. Keine PII.
+
+## Aktivierungsreihenfolge nach Owner-Entscheidung
+
+| Weg | Vorhanden | Kostenarme Umsetzung | Konkrete verbleibende Voraussetzung |
+| --- | --- | --- | --- |
+| Eigene Produktwerbung | Learning-/Pricing-/B2B-Verweise öffentlich aktiv | Vorhandene Seiten und consented Analytics nutzen; keine neue Werbeplattform | Bestätigte Leads/Käufe getrennt von bloßen Klicks auswerten; kein bezahltes Anzeigenbudget erteilt |
+| AdSense-Einnahmen | Kein Publisher-Tag und keine ID im geprüften Code | Bestehende Website nutzen; Google Privacy & messaging als CMP-Option prüfen, keinen zusätzlichen Cloud-Service anlegen | ca-pub-Kennung, Website-Prüfung, CMP-Konfiguration und Freigabestatus aus privatem AdSense-Konto; keine Kontoanlage/AGB-Annahme behaupten |
+| Affiliate | Kraken-Referral-Komponente ohne Einbindung | Bestehende Komponente erst nach Rechteprüfung einbinden; kein Tracking-SDK nötig | Kontospezifische Bedingungen müssen öffentliche Websitewerbung erlauben; eindeutige Werbekennzeichnung, belegte Aussagen, Risikohinweis und sponsored-Link vor Live-Aktivierung |
+
+Google-Ads-Keyword-Recherche ist ein eigener lesender Pfad in PR #1000 und keine
+AdSense-Integration oder Erlaubnis, bezahlte Kampagnen zu starten.
+Das reguläre GA4-Servicekonto belegt keine AdSense-Kontoberechtigung.
+
+PR #1005: Der ursprüngliche Docker-Lauf 46101916540 scheiterte an der veralteten
+SEO-Quellensignatur für src/content/publicLegalContent.ts. Die Reparatur verwendet
+den bestehenden Generator refresh-seo-source-provenance.mjs; keine Prüfung wird
+abgeschwächt. Aktuelle CI und produktiver Readback bleiben separat zu prüfen.
 
 ## Quellen
 
