@@ -621,5 +621,69 @@ export const ARCHITECTURE_GOVERNANCE_VOCABULARY = Object.freeze([
         "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409"
       }
     ]
+  },
+  {
+    "id": "learning-subshell",
+    "term": "Subshell",
+    "category": "MOBILE_RUNTIME",
+    "categoryLabel": "Mobile & Runtime",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Untergeordnete Shell-Ausführungsumgebung mit einem weitgehend getrennten Shell-Zustand.",
+    "detailedExplanation": "Eine Subshell übernimmt einen Ausgangszustand der aufrufenden Shell. Änderungen an Variablen oder Arbeitsverzeichnis wirken nicht automatisch auf die Eltern-Shell zurück. Dateisystem und Berechtigungen können jedoch gemeinsam genutzt werden; eine Subshell ist keine Sicherheits-Sandbox.",
+    "formulaOrRule": "( Befehle ) → getrennte Shell-Umgebung; Exit-Code an die aufrufende Shell.",
+    "practicalExample": "Ein Diagnoseblock wechselt temporär das Arbeitsverzeichnis. Nach dem Block bleibt das Arbeitsverzeichnis der aufrufenden Shell unverändert.",
+    "keyTakeaway": "Shell-Zustand zu isolieren ist nicht dasselbe wie Dateien, Rechte oder Netzwerkzugriffe zu isolieren.",
+    "searchTags": [
+      "Subshell",
+      "Untershell",
+      "untergeordnete Shell",
+      "Shell-Unterumgebung",
+      "Parent Shell",
+      "Prozessisolation"
+    ],
+    "thesaurus": [
+      "Untershell",
+      "untergeordnete Shell",
+      "Shell-Unterumgebung"
+    ],
+    "sources": [
+      {
+        "title": "GNU Bash Reference Manual – Command Execution Environment",
+        "url": "https://www.gnu.org/software/bash/manual/html_node/Command-Execution-Environment.html"
+      }
+    ]
+  },
+  {
+    "id": "learning-probe",
+    "term": "Probe",
+    "category": "MOBILE_RUNTIME",
+    "categoryLabel": "Mobile & Runtime",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Gezielter diagnostischer Test, der einen bestimmten Systemzustand oder eine Funktion überprüft.",
+    "detailedExplanation": "Eine Probe liefert anhand einer definierten Prüfung ein beobachtbares Ergebnis, beispielsweise einen Exit-Code. In einer Runtime kann sie Version, Erreichbarkeit oder Funktionsfähigkeit untersuchen. Liveness-, Readiness- und Startup-Probes beantworten unterschiedliche Betriebsfragen; eine fehlgeschlagene Probe beweist nicht automatisch die Fehlerursache. Ob die Prüfung Nebenwirkungen hat, hängt von ihrer Implementierung ab.",
+    "formulaOrRule": "Prüfziel + begrenzte Testaktion + Ergebnisbewertung → nachvollziehbarer Status.",
+    "practicalExample": "Eine Offline-Probe ruft die Version und das globale Inventar eines Paketmanagers ab, ohne Pakete zu installieren.",
+    "keyTakeaway": "Eine Probe misst einen konkreten Zustand; sie ist keine automatische Reparatur und kein vollständiger Sicherheitsnachweis.",
+    "searchTags": [
+      "Probe",
+      "Prüfsonde",
+      "Diagnoseprüfung",
+      "Funktionsprüfung",
+      "Health Check",
+      "Liveness",
+      "Readiness",
+      "Startup Probe"
+    ],
+    "thesaurus": [
+      "Prüfsonde",
+      "Diagnoseprüfung",
+      "Funktionsprüfung"
+    ],
+    "sources": [
+      {
+        "title": "Kubernetes – Liveness, Readiness, and Startup Probes",
+        "url": "https://kubernetes.io/docs/concepts/workloads/pods/probes/"
+      }
+    ]
   }
 ]);

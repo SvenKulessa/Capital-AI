@@ -44,7 +44,15 @@ test('Hub and modal use normalized tags and the same lookup without substring ev
 });
 test('61 additions have complete lessons, unique identities and accessible skill categories across consumers',()=>{
   const additions=researched.filter(t=>t.reviewedAt==='2026-11-06');assert.equal(additions.length,61);
-  assert.equal(VOCABULARY_TERMS.length,386);assert.equal(vocabularyMetadata.length,386);
+  assert.equal(VOCABULARY_TERMS.length,388);assert.equal(vocabularyMetadata.length,388);
+  assert.equal(new Set(VOCABULARY_TERMS.map(t=>t.id)).size,388);
+  assert.deepEqual(vocabularyMetadata.map(t=>t.id).sort(),VOCABULARY_TERMS.map(t=>t.id).sort());
+  for(const [id,query] of [['learning-subshell','Subshell'],['learning-probe','Probe']]) {
+    const term=VOCABULARY_TERMS.find(t=>t.id===id);
+    assert.ok(term);
+    assert.ok(lookupVocabulary(query).some(t=>t.id===id));
+    assert.ok(answerLocally('Erkläre '+query,'de',false).answer.includes(term.shortDefinition),id);
+  }
   for(const term of additions) {
     assert.equal(VOCABULARY_TERMS.filter(t=>t.id===term.id).length,1);
     const ui=VOCABULARY_TERMS.find(t=>t.id===term.id)!;
@@ -61,7 +69,7 @@ test('Content and Social attach identical dictionary definitions without grantin
     objective:'MiFID II und Firecrawl erklären',audience:['FinTech Teams'],channels:['WEBSITE'] as ['WEBSITE'],outputs:['TEXT'] as ['TEXT'],sourceUrls:[]};
   const plan=planContentCampaign(campaign),social=buildDraftContentSocialPackage({campaign,contentId:'draft',assets:[{assetId:'text',contentId:'draft',sourceSha:campaign.sourceSha,kind:'TEXT',sha256:'b'.repeat(64),mimeType:'text/plain',evidenceRef:'owned:test'}]});
   assert.deepEqual(plan.vocabularyContext,social.vocabularyContext);
-  assert.equal(plan.vocabularyContext!.catalogCount,386);
+  assert.equal(plan.vocabularyContext!.catalogCount,388);
   assert.ok(plan.vocabularyContext!.terms.some(t=>t.id==='mifid-ii'));
   assert.equal(plan.publication.publicPublishAllowed,false);
   assert.deepEqual(social.approvals,[]);assert.deepEqual(social.deliveries,[]);
