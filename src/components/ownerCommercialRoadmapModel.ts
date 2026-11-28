@@ -11,7 +11,14 @@ export function parseCommercialRoadmap(raw: string): GrowthSnapshot[] {
 }
 
 export function serializeCommercialRoadmap(snapshots: GrowthSnapshot[]): string {
-  return exportWorkspace(parseCommercialRoadmap(exportWorkspace(snapshots)));
+  const validated = parseCommercialRoadmap(exportWorkspace(snapshots));
+  return exportWorkspace(validated.map(snapshot => {
+    // The existing archive requires canonical UTC milliseconds. Do not silently
+    // truncate a timestamp with meaningful sub-millisecond precision.
+    const fraction = /\.(\d+)Z$/.exec(snapshot.at)?.[1] ?? '';
+    if (/[^0]/.test(fraction.slice(3))) throw Error('WORKSPACE_TIMESTAMP_PRECISION');
+    return { ...snapshot, at: new Date(snapshot.at).toISOString() };
+  }));
 }
 
 export function isOwnerRoadmapSession(raw: unknown, userId: string): boolean {

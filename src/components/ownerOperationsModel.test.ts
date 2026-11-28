@@ -169,3 +169,17 @@ test('commercial roadmap rejects unrelated workspace and downgrades imported VER
   assert.equal(parseCommercialRoadmap(serializeCommercialRoadmap(parsed))[0].rows[0].status,'NOT_PROVEN');
   assert.throws(()=>parseCommercialRoadmap(exportWorkspace([{version:1,at:'2026-01-01T00:00:00Z',rows:[makeRow('unrelated','Unrelated','TRUST')]}])));
 });
+
+
+test('commercial roadmap archive export canonicalizes UTC without losing revision data', () => {
+  const row = makeRow('commercial-roadmap-test', 'Synthetic gate', 'TRUST');
+  const input = [{version:1,at:'2026-01-01T00:00:00Z',rows:[row]},
+    {version:2,at:'2026-01-01T00:00:01.120000Z',rows:[row]}];
+  const output = JSON.parse(serializeCommercialRoadmap(input));
+  assert.deepEqual(output.snapshots.map((s: {at:string}) => s.at),
+    ['2026-01-01T00:00:00.000Z','2026-01-01T00:00:01.120Z']);
+  assert.deepEqual(output.snapshots.map((s: {version:number}) => s.version), [1,2]);
+  assert.deepEqual(output.snapshots[0].rows,[row]);
+  assert.equal(input[0].at,'2026-01-01T00:00:00Z');
+  assert.throws(() => serializeCommercialRoadmap([{...input[0],at:'2026-01-01T00:00:00.000001Z'}]));
+});
