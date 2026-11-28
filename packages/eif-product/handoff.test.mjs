@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {parseHandoff,validateOwnerHandoff} from './handoff.mjs';
+const fixture=()=>({contractVersion:'CAPITAL_AI_HYGIENE_HANDOFF@1',threadId:'offline-'+'1'.repeat(40),runId:'hygiene-'+'a'.repeat(64),sourceSha:'b'.repeat(40),observedAt:'2026-11-28T10:00:00.000Z',scopeDigest:'c'.repeat(64),sourceDigest:'a'.repeat(64),contentDigest:'d'.repeat(64),methodId:'doc-drift-claims-v1',checked:4,affected:1,missing:1,score:75,coverage:15,status:'NOT_PROVEN',authorityGranted:false});
+const encode=JSON.stringify;
+const cli=(arg,input)=>spawnSync(process.execPath,[new URL('./cli.mjs',import.meta.url).pathname,arg],{input,encoding:'utf8'});
+test('existing #1019 receipt maps to CADS partial evidence only',()=>{const raw=encode(fixture());const p=parseHandoff(raw);assert.equal(p.benchmark.score,75);assert.equal(p.benchmark.coverage,15);assert.equal(p.benchmark.status,'NOT_PROVEN');assert.equal(p.benchmark.dimensions.correctness.score,null);assert.equal(p.benchmark.criticalControls.rights.status,'NOT_PROVEN');assert.equal(p.sourceAuthentication,'NOT_PROVEN');assert.equal(p.threadCorrelation,'DECLARED_ONLY');assert.equal(p.commercialEligible,false);assert.equal(p.importSha256,createHash('sha256').update(raw).digest('hex'));});
+test('owner handoff preserves exact bytes',()=>{const raw=JSON.stringify(fixture(),null,2)+'\n';assert.equal(validateOwnerHandoff(raw),raw);const s=cli('owner-handoff',raw);assert.equal(s.status,0);assert.equal(s.stdout,raw);});
+test('zero checked never implies success',()=>{const p=parseHandoff(encode({...fixture(),checked:0,affected:0,score:null,coverage:0,threadId:null}));assert.equal(p.benchmark.score,null);assert.equal(p.threadCorrelation,'NONE');});
+test('reject fabricated authority, score, coverage, schema and raw content',()=>{for(const patch of [{authorityGranted:true},{status:'VERIFIED'},{score:100},{coverage:100},{runId:'hygiene-'+'e'.repeat(64)},{sourceSha:'x'},{threadId:'offline-other'},{affected:5},{missing:-1},{query:'secret'},{observedAt:'yesterday'}])assert.throws(()=>parseHandoff(encode({...fixture(),...patch})));});
+test('reject oversize and malformed without leaking content',()=>{for(const raw of ['{secret','x'.repeat(16385)]){const s=cli('owner-handoff',raw);assert.equal(s.status,2);assert.equal(s.stdout,'');assert.doesNotMatch(s.stderr,/secret/);}});
+test('inspect CLI is not a new Owner report contract',()=>{const s=cli('inspect-handoff',encode(fixture()));assert.equal(s.status,0);assert.equal(JSON.parse(s.stdout).benchmark.coverage,15);assert.equal(JSON.parse(s.stdout).contractVersion,undefined);});

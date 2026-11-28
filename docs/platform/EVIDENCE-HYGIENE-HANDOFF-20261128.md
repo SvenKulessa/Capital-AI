@@ -1,0 +1,8 @@
+# Offline Evidence and Hygiene handoff
+
+Implementation baseline 5e0ae3743a61ac40585171d086125d7c44a379fa. Existing #895; compatible with #1011, #1012, #1016 and merged #1017. No new authority, provider, scheduler or database.
+
+- Existing private worker: append `--evidence-handoff` to an already authorized `--single` invocation. Redirect its bounded JSON to the existing private delivery path. Never include query, excerpt, credentials or raw logs. The receipt rechecks curated RAG sources against the completed checkpoint. A matching source read is not provider or runtime evidence.
+- Existing repository scanner: `node scripts/documentation-drift.mjs --hygiene --report-only`. Optionally add `--thread-id offline-<40 hex>` from that worker receipt to correlate the records. This is a declared reference, not an authenticated run join. Score measures only current-main claim stability in actually read living documents; other dimensions and critical controls remain unknown. No worktree mutation. Missing files are not measured successes.
+- Import both JSON reports via existing Growth Owner Control Center graph import. Reports are strictly parsed, projected as OWNER_NOTE / NOT_PROVEN and cannot overwrite GA4/GSC readbacks. Same current receipt is idempotent; changed receipt creates a revision. Archive via the existing owner-only encrypted evidence history when its activation and recovery conditions are satisfied. Readback is documentation only, never a promotion or a worker action.
+- Existing archive is not a live synchronization bus. Automatic transport, end-to-end verified run correlation, continuous execution hooks, production readback and complete hygiene measurement remain NOT_PROVEN. No new runtime activation.

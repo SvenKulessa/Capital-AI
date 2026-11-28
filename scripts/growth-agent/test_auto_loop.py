@@ -318,5 +318,45 @@ class HygieneLifecycleTests(unittest.TestCase):
         self.assertEqual(result["hygiene_lifecycle"]["status"], "NOT_PROVEN")
         self.assertEqual(result["hygiene_lifecycle"]["deltaPoints"], 25)
 
+
+    def test_pinned_scanner_real_checkout_and_tamper(self):
+        import hashlib
+        import shutil
+        import subprocess
+        from hygiene_scanner_adapter import PinnedScanner, PIN_PATHS
+        node, git = shutil.which("node"), shutil.which("git")
+        source = Path(__file__).resolve().parents[2]
+        if not node or not git or not all((source / p).is_file() for p in PIN_PATHS):
+            self.skipTest("host scanner dependencies absent from isolated worker image")
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d).resolve()
+            pins = {}
+            for name in PIN_PATHS:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((source / name).read_bytes())
+                pins[name] = hashlib.sha256(target.read_bytes()).hexdigest()
+            (root / "README.md").write_text("Synthetic local document", encoding="utf-8")
+            subprocess.run([git, "init", "-q", str(root)], check=True)
+            subprocess.run([git, "-C", str(root), "add", "."], check=True)
+            subprocess.run([git, "-C", str(root), "-c", "user.name=Fixture",
+                            "-c", "user.email=fixture@example.invalid",
+                            "-c", "commit.gpgsign=false", "commit", "-qm", "fixture"], check=True)
+            observer = PinnedScanner(root, node=node, git=git, pins=pins)
+            task = "offline-" + "a" * 40
+            result = loop.execute(Adapter(), loop.Authority(read_only=True), task,
+                                  hygiene_observer=observer)["hygiene_lifecycle"]
+            self.assertTrue(result["readbackMatch"])
+            self.assertEqual(result["baseline"]["threadId"], task)
+            self.assertEqual(result["deltaPoints"], 0)
+            self.assertEqual(result["baseline"]["coverage"], 15)
+            self.assertFalse(result["authorityGranted"])
+            with self.assertRaises(ValueError):
+                observer("final", "../untrusted")
+            (root / PIN_PATHS[0]).write_text("tampered", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                observer("final", task)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -67,6 +67,7 @@ COPY CAPITAL-AI-GROWTH/growth-intelligence/content-plan-v1.json ./CAPITAL-AI-GRO
 COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY packages/benchmark-core ./packages/benchmark-core
+COPY packages/eif-product ./packages/eif-product
 COPY apps/cads-github-app/marketplace-plans.production.json apps/cads-github-app/github-app-registration.production.example.json ./apps/cads-github-app/
 COPY documentary/evidence ./documentary/evidence
 COPY generated/documentary ./generated/documentary

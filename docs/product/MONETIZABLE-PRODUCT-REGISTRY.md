@@ -18,6 +18,7 @@ A successful build, test or UI is not a production release. Provider rights and 
 | [CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE | DRY_RUN_ONLY | — | — | Kraken Spot `AddOrder(validate=true)` ist als nicht ausführender Dry-Run vorbereitet; Live-Submit, persistente Idempotency/Audit und Revenue-Share-Abrechnung bleiben blockiert. |
 | [CAPITAL-AI-MARKET]OSS-PIPELINE-SIMULATION-ENGINE | INTEGRATED | 44% | 56% | Pipeline Builder integriert, nicht als bezahltes Paket mit SLA geschnitten. |
 | [CAPITAL-AI-PRODUCT]CADS-BENCHMARK-ENGINE | GITHUB_MARKETPLACE_BILLING_RUNTIME_IMPLEMENTED | — | — | Starter/Pro/Enterprise Paid-Marketplace-Runtime mit HMAC, GitHub-Subscription-Readback, idempotentem Supabase-Entitlement-Ledger und Cancellation-Cleanup ist implementiert. Externe GitHub-Admission, USD-Preise, echte Plan-IDs und Listing-Approval bleiben offen. |
+| [CAPITAL-AI-PRODUCT]EIF | PRIVATE_DEMO_ONLY | — | — | Issue #895; offline CADS/CLI/MCP candidate. No listing, price, entitlement or publication; rights, pilot and production evidence outstanding. |
 | [CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP | PLANNED | 26% | 74% | Digest-Pipeline dokumentiert, App und kommerzielle Evidence-Tiers fehlen. |
 | [CAPITAL-AI-MARKET]CPT-STAKE-TO-ACCESS | PLANNED | 24% | 76% | Tokenomics-Seite vorhanden, Stake-Gate und $CPT-Zahlung deaktiviert. |
 | [CAPITAL-AI-MARKET]CPT-MICROPAYMENTS | PLANNED | 10% | 90% | Kein Wallet-, Settlement- oder Usage-Meter. |
