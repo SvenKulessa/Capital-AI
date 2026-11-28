@@ -4,6 +4,38 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 export const PRODUCT_REGISTRY_PATH = "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md";
 const channels = {
+  "saasHub": {
+    "kind": "DIRECTORY",
+    "url": "https://www.saashub.com/",
+    "source": "https://www.saashub.com/services/submit",
+    "sourceReviewedAt": "2026-11-28",
+    "rule": "HUMAN_ONLY_SUBMISSION_REQUIRED",
+    "method": "Produktkategorie und Verfügbarkeit prüfen; Einreichung ausschließlich persönlich durch den menschlichen Betreiber. Keine automatisierte Einreichung."
+  },
+  "g2": {
+    "kind": "DIRECTORY",
+    "url": "https://www.g2.com/",
+    "source": "https://documentation.g2.com/help/docs/finding-or-listing-a-product-on-g2",
+    "sourceReviewedAt": "2026-11-28",
+    "rule": "LISTING_REVIEW_REQUIRED",
+    "method": "Vorhandenes Profil und passende Softwarekategorie prüfen, Herstellerfreigabe und echtes Produkt nachweisen. Keine erfundenen Bewertungen oder bezahlte Aktivierung."
+  },
+  "capterra": {
+    "kind": "DIRECTORY",
+    "url": "https://www.capterra.com/",
+    "source": "https://documentation.g2.com/docs/product-information",
+    "sourceReviewedAt": "2026-11-28",
+    "rule": "LISTING_REVIEW_REQUIRED",
+    "method": "Gemeinsame Produktpflege über my.G2 prüfen; bestehende Listing-Identität, Kategorie und Konditionen verifizieren. Keine Doppelregistrierung oder bezahlte Werbung."
+  },
+  "microsoftMarketplace": {
+    "kind": "DISTRIBUTION",
+    "url": "https://marketplace.microsoft.com/",
+    "source": "https://learn.microsoft.com/en-us/partner-center/marketplace-offers/plan-saas-offer",
+    "sourceReviewedAt": "2026-11-28",
+    "rule": "LISTING_REVIEW_REQUIRED",
+    "method": "Nur passendes B2B-SaaS als Contact Me-Kandidat prüfen; Partner-Center-Berechtigung und Listing-Anforderungen belegen. Kein Transact, Billing oder Angebot aktivieren."
+  },
   "website": {
     "kind": "OWNED",
     "url": "https://capital-ai.online/",
@@ -97,6 +129,12 @@ const channels = {
   }
 };
 const profiles = {
+  "saas": {
+    "audience": "SaaS-Nutzer und technische Entscheider; B2B-Eignung separat prüfen",
+    "groups": [["website"], ["productHunt", "saasHub", "linkedin"], ["g2", "capterra", "microsoftMarketplace"]],
+    "queries": ["AI learning and market intelligence software", "B2B SaaS listing requirements"],
+    "asset": "Belegbare Produktdemo, Leistungsumfang und Lizenz; keine ungeprüften Preise, Ergebnisse oder Kaufversprechen."
+  },
   "mobile": {
     "audience": "Android-Entwickler und mobile Terminal-Nutzer",
     "groups": [
@@ -115,7 +153,8 @@ const profiles = {
         "tiktok"
       ],
       [
-        "showHN"
+        "showHN",
+        "saasHub"
       ]
     ],
     "queries": [
@@ -138,7 +177,11 @@ const profiles = {
         "productHunt"
       ],
       [
-        "showHN"
+        "showHN",
+        "saasHub",
+        "g2",
+        "capterra",
+        "microsoftMarketplace"
       ]
     ],
     "queries": [
@@ -156,9 +199,10 @@ const profiles = {
       ],
       [
         "productHunt",
-        "linkedin"
+        "linkedin",
+        "saasHub"
       ],
-      []
+      ["g2", "capterra"]
     ],
     "queries": [
       "Finanzbildung Lernmaterial digitale Lernprodukte",
@@ -180,7 +224,11 @@ const profiles = {
         "x"
       ],
       [
-        "showHN"
+        "showHN",
+        "saasHub",
+        "g2",
+        "capterra",
+        "microsoftMarketplace"
       ]
     ],
     "queries": [
@@ -259,6 +307,7 @@ export function parseProductRegistry(markdown) {
   return result;
 }
 function profileFor(id) {
+  if(id==="saas-membership")return "saas";
   if(id==="ai-smartcopy"||id==="smartclip")return "mobile";
   if(id==="cads-benchmark-engine")return "cads";
   if(["market-vocabulary","learning-portal"].includes(id))return "learning";
