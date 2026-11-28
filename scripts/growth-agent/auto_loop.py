@@ -281,7 +281,10 @@ def build_graph(actions, authority: Authority, *, checkpointer=None, interrupt_a
                    and state.get("stop_reason") not in HARD_STOPS
                    and state.get("failure_class") not in HARD_STOPS)
         final = observe_handoff(hygiene_observer, "final", task_id) if allowed else None
-        readback = observe_handoff(hygiene_observer, "readback", task_id) if final else None
+        readback = (observe_handoff(hygiene_observer, "readback", task_id)
+                    if final and binding_valid(state) else None)
+        if not binding_valid(state):
+            final = readback = None
         return {"hygiene_lifecycle": finish_lifecycle(
             task_id, state.get("hygiene_baseline"), final, readback)}
 
