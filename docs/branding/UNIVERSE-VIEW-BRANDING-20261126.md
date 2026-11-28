@@ -25,3 +25,15 @@ Branding-Assets, Design-Tokens, freigegebene Referenzen ohne personenbezogene Ro
 Lizenztexte, Lizenznachweise, Rights-/Provenienz-Manifeste: LEGAL_LICENSES → CAPITAL-AI/80_Legal/Licenses.
 Originaldateien und zugehörige Lizenz-/Hash-Nachweise zusammen nachvollziehbar versionieren. Bei neu erstellten oder geänderten Dateien im selben autorisierten Arbeitsgang die bestehende Drive-Routing-/Delivery-Pipeline anwenden. Name: YYYY-MM-DD_DOMAIN_TOPIC[_STATUS]_vN.extension. Keine Überschreibung, Löschung, öffentliche Freigabe oder Änderung von Kaufrechten. Private Review-Pakete dürfen Entwürfe mit unverändertem Rechte-/HOLD-Status enthalten; keine ungeklärten Drittanbieterassets.
 Für autorisierte interaktive Einzelablage gilt direkter Create-only-Connector mit vollständigem Folder-Readback, Kollisionsprüfung und unabhängiger Datei-/Parent-/SHA-256-Prüfung. Keine parallelen Schreibvorgänge in diesem Arbeitsgang. Der bestehende autonome Adapter benötigt weiterhin eine echte globale exklusive Schreibsperre. Kein neuer Scheduler oder OAuth-Client. Fehlt eine erforderliche Providerfähigkeit, Status HOLD/NOT_PROVEN; ein GitHub-Artefakt ist kein Drive-Upload.
+
+
+## Ergänzung v4 · 28.11.2026
+Owner-approved website implementation scope: original nebula as full-page shared SPA background, approved Analytics overview illustration and CAPITAL-AI website header mark. Original bytes verified against the v4 owner register before import. Existing JPEG master, vendor/OAuth assets, Hero globe, and earlier Analytics orbit remain unchanged. No change to IAM, commerce, app signing or entitlement. The earlier 20% local atmosphere constraint is not the global v4 background; badge/logo derivative cap remains 10%. Background has a static contrast overlay and is suppressed in forced colors/print. Browser acceptance and production status remain unverified until the actual release is read back.
+
+| Website reference | SHA-256 | Bytes |
+|---|---|---:|
+| owner-nebula-v4.webp | e9b0935ecae9e5c5b663e10f57e77ab7a3a9a8d76a7820bf9a8073f6549e199e | 61840 |
+| analytics-overview-v4.webp | 587808fe3a7660e22cdb9f95eb599ef00e0694bc3bfa56d9d27d1130a4ffa435 | 123072 |
+| capital-ai-mark-v4.webp | 61bc0831b4868544b3982787dde4f1911583e27c993a89e8b46c514e07ea0993 | 74572 |
+
+PocketDefend is the approved visible Android app name (formerly DeviceCare-KI). Android and product compatibility remain in their existing workstreams. Smart Copy Plugins artwork remains a design reference; third-party Android/platform trademark rights and SKU separation must not be inferred from visual approval. Neither private Drive references nor internal summary artwork are public assets. No commercial approval or third-party redistribution rights are granted here. The three site assets are limited to owner-requested website display. Preserve prior rights documentation.

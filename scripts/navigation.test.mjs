@@ -3,6 +3,7 @@ import { BRAND_COLORS, HUB_BRANDING, ASSET_BRANDING, hubTabAccent, legalPageAcce
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute, CONTROL_CENTER_SECTION_IDS } from '../src/utils/appNavigation.ts';
 import { messages } from '../src/i18n/messages.ts';
 
@@ -695,6 +696,31 @@ test('Universe view policy and public learning source isolation', async () => {
     assert.doesNotMatch(source, /VOCABULARY_SOURCE_PRS|github\.com\/SvenKulessa\/Capital-AI\/pull\//);
   }
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
-  assert.match(css, /\.universe-nebula \{[^}]*width:30%; height:30%/);
+  assert.equal(policy.globalBackground, '/branding/universe/owner-nebula-v4.webp');
+  assert.equal(policy.logoBadgeNebulaMaxFraction, .10);
+  assert.ok(css.includes(policy.globalBackground));
+  assert.match(css, /forced-colors:active/);
   assert.match(css, /prefers-reduced-motion:reduce/);
+});
+
+
+test('v4 website branding uses exact approved bytes, local URLs and existing public admission', async () => {
+  const { WEBSITE_BRANDING_V4: assets } = await import('../shared/hub-branding.mjs');
+  const ignore = readFileSync(new URL('../.dockerignore', import.meta.url), 'utf8');
+  const docker = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  const admission = readFileSync(new URL('../server/public-artifact-policy.mjs', import.meta.url), 'utf8');
+  assert.equal(Object.keys(assets).length, 3);
+  for (const [name, record] of Object.entries(assets)) {
+    const bytes = readFileSync(new URL('../public/branding/universe/' + name, import.meta.url));
+    assert.equal(bytes.length, record.bytes);
+    assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(bytes.toString('ascii', 8, 12), 'WEBP');
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), record.sha256);
+    assert.ok(ignore.includes('!public/branding/universe/' + name));
+    assert.ok(admission.includes('"branding/universe/' + name + '"'));
+  }
+  assert.ok(docker.includes('COPY public/branding/universe ./public/branding/universe'));
+  assert.ok(readFileSync(new URL('../src/features/analysis/AnalyticsHubArticle.tsx', import.meta.url),'utf8').includes('/branding/universe/analytics-overview-v4.webp'));
+  assert.ok(readFileSync(new URL('../src/components/BrandLogo.tsx', import.meta.url),'utf8').includes('/branding/universe/capital-ai-mark-v4.webp'));
+  assert.ok(readFileSync(new URL('../src/components/BrandLogo.tsx', import.meta.url),'utf8').includes('/branding/capital-ai-logo.jpg'));
 });

@@ -22,10 +22,7 @@ export function ApplicationViewport({
         Zum Hauptinhalt springen
       </a>
 
-      <div aria-hidden="true" className="universe-space fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="universe-nebula universe-nebula--gold" />
-        <div className="universe-nebula universe-nebula--cyan" />
-      </div>
+      <div aria-hidden="true" className="universe-space fixed inset-0 pointer-events-none z-0 overflow-hidden" />
 
       <main
         id="main-content"

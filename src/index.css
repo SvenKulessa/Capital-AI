@@ -357,16 +357,15 @@
   outline-offset: 3px;
 }
 
-/* Universe view contract: two complementary accents, limited atmospheric area. */
+/* Owner-approved v4 global canvas. Opaque/contrasting reading surfaces remain independent. */
 .universe-space {
-  background-image: radial-gradient(circle, rgb(220 240 255 / .22) .65px, transparent .95px), radial-gradient(circle, rgb(255 255 255 / .14) .6px, transparent .9px);
-  background-size: 67px 79px, 113px 97px; background-position: 0 0, 37px 25px;
-  transition: filter 180ms ease;
+  background-color: #081229;
+  background-image: linear-gradient(rgb(5 12 25 / .55), rgb(5 12 25 / .72)), url('/branding/universe/owner-nebula-v4.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
-.universe-viewport:has(a:focus-visible, button:focus-visible) .universe-space { filter: brightness(1.08); }
-.universe-nebula { position:absolute; width:30%; height:30%; overflow:hidden; contain:paint; opacity:.65; }
-.universe-nebula--gold { top:0; left:0; background:radial-gradient(ellipse at 8% 12%, rgb(249 191 33 / .24), transparent 68%), radial-gradient(ellipse at 25% 12%, rgb(248 113 113 / .12), transparent 65%); }
-.universe-nebula--cyan { bottom:0; right:0; background:radial-gradient(ellipse at 90% 88%, rgb(103 232 249 / .23), transparent 68%), radial-gradient(ellipse at 74% 75%, rgb(183 148 244 / .10), transparent 65%); }
+@media(forced-colors:active), print { .universe-space { display:none; } }
 .universe-hero-heading { color:#F9BF21; background:linear-gradient(110deg,#67E8F9 0%,#F87171 54%,#F9BF21 100%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:none !important; }
 .universe-hub-action { position:relative; isolation:isolate; border:1px solid var(--action-accent); font-weight:700; color:var(--action-accent); background:color-mix(in srgb,var(--action-accent) 12%,transparent); }
 .universe-hub-action--learning { --action-accent:#F9BF21; }

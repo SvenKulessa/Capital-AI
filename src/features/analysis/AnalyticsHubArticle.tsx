@@ -149,8 +149,8 @@ export function AnalyticsHubArticle() {
           <p className="mt-1 text-xs text-slate-300">Konzeptionelle Darstellung · keine Live-Marktdaten</p>
           <div className="relative mx-auto w-full max-w-xl">
           <svg viewBox="0 0 360 296" className="block h-auto w-full" role="img" aria-label={`Analyse-Universum, ausgewählt: ${stage.title}. Sechs miteinander verknüpfte Themen.`}>
-            {/* Owner-approved generated artwork; independent vector process controls. */}
-            <image href="/branding/universe/analytics-universe-orbit.webp" x="0" y="13" width="360" height="270" preserveAspectRatio="xMidYMid meet"/>
+            {/* Owner-approved v4 overview illustration; independent vector process controls, not measured market data. */}
+            <image href="/branding/universe/analytics-overview-v4.webp" x="0" y="13" width="360" height="270" preserveAspectRatio="xMidYMid meet"/>
             {stages.map((item,i)=><path key={item.title} d={arc(i)} fill="none" stroke={item.color} strokeWidth={selected===i?3:1.3} strokeLinecap="round" opacity={selected===i?1:.6}/>)}
             {positions.map((point,i)=><g key={stages[i].title}><circle cx={point.x} cy={point.y} r="21" fill="#090D1C" stroke={stages[i].color} strokeWidth={i===selected?2.5:1} opacity=".94"/><polygon points={star(point.x,point.y,i===selected?18:15)} fill={stages[i].color} stroke="#F8FAFC" strokeWidth={i===selected?1.25:.5}/><text x={point.x} y={point.y+3} textAnchor="middle" fontSize="10" fill="#090D1C" fontWeight="800">{i+1}</text></g>)}
           </svg>
