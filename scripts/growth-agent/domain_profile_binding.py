@@ -15,6 +15,7 @@ import re
 import stat
 
 from offline_scope import scoped_thread_id
+from offline_task_input import valid_research_query
 
 DOMAINS = ("PRODUCT", "MARKET", "PLATFORM", "TRUST", "GROWTH")
 REPOSITORY = "SvenKulessa/Capital-AI"
@@ -227,8 +228,7 @@ def bind_domain_task(repo_root: Path, *, tenant: str, repository: str,
             or type(task.get("task_id")) is not str
             or re.fullmatch(r"[A-Za-z0-9._:-]{1,96}", task["task_id"], re.ASCII) is None
             or type(task.get("domain")) is not str or task["domain"] not in DOMAINS
-            or type(task.get("query")) is not str
-            or not 1 <= len(task["query"]) <= 300):
+            or not valid_research_query(task.get("query"))):
         raise ValueError("invalid offline domain task contract")
     bundle = load_domain_profiles(repo_root)
     metadata = bundle["domains"][task["domain"]]

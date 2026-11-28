@@ -205,11 +205,94 @@ function projectConversionGraphHandoff(raw:unknown, reportSha:string, rows:Growt
   return [...rows.filter(r=>r.id!==row.id),row];
 }
 
+const offlineThread = z.string().regex(/^offline-[a-f0-9]{40}$/);
+const hygieneHandoffSchema = z.object({
+  contractVersion:z.literal('CAPITAL_AI_HYGIENE_HANDOFF@1'),threadId:offlineThread.nullable(),
+  runId:z.string().regex(/^hygiene-[a-f0-9]{64}$/),sourceSha:z.string().regex(/^[a-f0-9]{40}$/),
+  observedAt:z.iso.datetime(),scopeDigest:graphDigest,sourceDigest:graphDigest,contentDigest:graphDigest,
+  methodId:z.literal('doc-drift-claims-v1'),checked:z.number().int().min(0).max(1000000),
+  affected:z.number().int().min(0).max(1000000),missing:z.number().int().min(0).max(1000000),
+  score:z.number().int().min(0).max(100).nullable(),coverage:z.union([z.literal(0),z.literal(15)]),
+  status:z.literal('NOT_PROVEN'),authorityGranted:z.literal(false),
+}).strict().refine(d=>d.runId==='hygiene-'+d.sourceDigest && d.affected<=d.checked &&
+  (d.checked===0 ? d.score===null && d.coverage===0 : d.coverage===15 && d.score===Math.round(100*(d.checked-d.affected)/d.checked)));
+const researchEvidenceSchema = z.object({
+  contractVersion:z.literal('CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1'),threadId:offlineThread,
+  domain:z.enum(domains),bundleSha256:graphDigest,profileSha256:graphDigest,
+  citationDigests:z.array(graphDigest).max(3),sourceCount:z.number().int().min(0).max(3),
+  status:z.enum(['SOURCE_READBACK_MATCH','NOT_PROVEN']),authorityGranted:z.literal(false),
+}).strict().refine(d=>new Set(d.citationDigests).size===d.citationDigests.length &&
+  (d.status==='SOURCE_READBACK_MATCH' ? d.citationDigests.length>0 && d.citationDigests.length<=d.sourceCount : d.sourceCount===0&&d.citationDigests.length===0));
+
+function upsertEvidenceNote(rows:GrowthRow[], row:GrowthRow, reportSha:string):GrowthRow[] {
+  const existing=rows.find(r=>r.id===row.id);
+  if(existing?.origin==='OWNER_NOTE'&&existing.status==='NOT_PROVEN'&&existing.evidence===row.evidence &&
+    existing.evidence.includes('Import SHA-256 '+reportSha)&&JSON.stringify(existing)===JSON.stringify(row))return rows;
+  return [...rows.filter(r=>r.id!==row.id),row];
+}
+
+function projectHygieneNote(raw:unknown, reportSha:string, rows:GrowthRow[]):GrowthRow[]{
+  const d=hygieneHandoffSchema.parse(raw);
+  const row=makeRow('document-hygiene-handoff','Document Hygiene · Offline-Messung','TRUST','Messscope und unabhängigen Readback prüfen');
+  return upsertEvidenceNote(rows,{...row,flow:'Claim-Stabilität · kein allgemeiner Hygiene- oder Freigabenachweis',
+    operation:'Score '+(d.score??'unbekannt')+' / 100 · Abdeckung '+d.coverage+' % · '+d.observedAt,
+    tests:'Geprüft '+d.checked+' · Auffällig '+d.affected+' · Fehlend '+d.missing+' · '+d.methodId,
+    dependencies:d.threadId??'Keine Graph-Korrelation',
+    evidence:'Import SHA-256 '+reportSha+'; Commit '+d.sourceSha+'; Scope '+d.scopeDigest+'; Report '+d.sourceDigest+'; Content '+d.contentDigest+'; Run '+d.runId,
+    auth:'Importierte Messung; Herkunft und Aktualität NOT_PROVEN',approvals:'Keine Mutations-, Merge- oder Verkaufsfreigabe'},reportSha);
+}
+// The lifecycle payload comes from existing SQLite graph state, never the full state.
+const lifecyclePhaseSchema = hygieneHandoffSchema.refine(d=>/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(d.observedAt));
+const hygieneLifecycleSchema = z.object({
+  schema:z.literal('CAPITAL_AI_HYGIENE_LIFECYCLE@1'),status:z.literal('NOT_PROVEN'),authorityGranted:z.literal(false),
+  baseline:lifecyclePhaseSchema.nullable(),final:lifecyclePhaseSchema.nullable(),readback:lifecyclePhaseSchema.nullable(),
+  readbackMatch:z.boolean(),comparable:z.boolean(),deltaPoints:z.number().int().min(-100).max(100).nullable(),regression:z.boolean().nullable(),
+}).strict();
+
+function projectHygieneLifecycleNote(raw:unknown,reportSha:string,rows:GrowthRow[]):GrowthRow[]{
+  const d=hygieneLifecycleSchema.parse(raw);
+  const {baseline:b,final:f,readback:r}=d;
+  const phases=[b,f,r].filter(p=>p!==null);
+  if(new Set(phases.map(p=>p.threadId)).size>1 || (r!==null && f===null))throw Error('Inconsistent lifecycle binding');
+  const fields=['sourceSha','scopeDigest','contentDigest','methodId','checked','affected','missing','score','coverage'] as const;
+  const match=!!(f && r && r.observedAt>=f.observedAt && r.sourceDigest!==f.sourceDigest && fields.every(k=>f[k]===r[k]));
+  const comparable=!!(b && f && match && b.observedAt<f.observedAt && b.sourceDigest!==f.sourceDigest &&
+    b.scopeDigest===f.scopeDigest && b.methodId===f.methodId && b.checked===f.checked && b.missing===f.missing &&
+    b.score!==null && f.score!==null);
+  const delta=comparable && b?.score!=null && f?.score!=null ? f.score-b.score : null;
+  if(d.readbackMatch!==match || d.comparable!==comparable || d.deltaPoints!==delta || d.regression!==(delta===null?null:delta<0))
+    throw Error('Inconsistent lifecycle measurement');
+  const phaseRef=(label:string,p:typeof b)=>p ? label+' '+p.sourceSha+'/'+p.scopeDigest+'/'+p.sourceDigest+'/'+p.contentDigest : label+' fehlt';
+  const phaseScore=(label:string,p:typeof b)=>p ? label+' '+(p.score??'unbekannt')+'/100 ('+p.coverage+' %; '+p.observedAt+')' : label+' fehlt';
+  const row=makeRow('document-hygiene-lifecycle','Document Hygiene · Lifecycle','TRUST','Messscope und unabhängige Herkunft prüfen');
+  return upsertEvidenceNote(rows,rowSchema.parse({...row,
+    flow:'Baseline / Final / Readback · Claim-Stabilität, kein allgemeiner Hygiene- oder Freigabenachweis',
+    operation:[phaseScore('Baseline',b),phaseScore('Final',f),phaseScore('Readback',r)].join('; '),
+    tests:'Readback '+(match?'konsistent':'nicht nachgewiesen')+'; Delta '+(delta===null?'nicht vergleichbar':delta+' Punkte')+'; Regression '+(delta===null?'unbekannt':delta<0?'ja':'nein'),
+    dependencies:phases[0]?.threadId??'Keine Graph-Korrelation',
+    evidence:['Import SHA-256 '+reportSha,phaseRef('B',b),phaseRef('F',f),phaseRef('R',r)].join('; '),
+    auth:'Importierte, nicht unabhängig authentifizierte Messung',
+    approvals:'Keine Mutations-, Merge-, Archivaktivierungs- oder Verkaufsfreigabe',
+  }),reportSha);
+}
+
+function projectResearchEvidenceNote(raw:unknown,reportSha:string,rows:GrowthRow[]):GrowthRow[]{
+  const d=researchEvidenceSchema.parse(raw);
+  const row=makeRow('research-evidence-handoff','LangGraph · RAG-Evidence','PLATFORM','Quellen und Task-Bindung unabhängig zurücklesen');
+  return upsertEvidenceNote(rows,{...row,domain:d.domain,flow:'Offline LangGraph · keine Provider-Autorität',
+    operation:'Importierter Graph-Status '+d.status,tests:'Zitierte Abschnitte '+d.sourceCount,
+    dependencies:d.threadId,auth:'Importiert, nicht unabhängig authentifiziert',approvals:'Keine Freigabe',
+    evidence:'Import SHA-256 '+reportSha+'; Bundle '+d.bundleSha256+'; Profil '+d.profileSha256+'; Quellen '+d.citationDigests.join(', ')},reportSha);
+}
+
 /** Untrusted offline status-only report; separate rows never overwrite live owner readbacks. */
 export function projectGraphHandoff(raw:string, reportSha:string, rows:GrowthRow[]):GrowthRow[] {
   if(new TextEncoder().encode(raw).length>16384)throw Error('Graph report too large');
   graphDigest.parse(reportSha);
   const parsed=JSON.parse(raw);
+  if(parsed?.contractVersion==='CAPITAL_AI_HYGIENE_HANDOFF@1')return projectHygieneNote(parsed,reportSha,rows);
+  if(parsed?.schema==='CAPITAL_AI_HYGIENE_LIFECYCLE@1')return projectHygieneLifecycleNote(parsed,reportSha,rows);
+  if(parsed?.contractVersion==='CAPITAL_AI_RESEARCH_EVIDENCE_HANDOFF@1')return projectResearchEvidenceNote(parsed,reportSha,rows);
   if(parsed && typeof parsed==='object' && 'contractVersion' in parsed &&
     parsed.contractVersion==='CAPITAL_AI_X_CONVERSION_GRAPH_HANDOFF@1')
     return projectConversionGraphHandoff(parsed,reportSha,rows);
@@ -290,4 +373,32 @@ export async function marketplaceDraftRow(catalog:MarketplaceCatalog,channelId:s
  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([c.catalogSha256,channelId,productId])));
  const key=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
  return {...makeRow('marketplace-draft-'+key.slice(0,32),('Marketplace · '+channelId+' · '+productId).slice(0,120),'GROWTH','Produktartefakt, Rechte, Gebühren und Owner-Freigabe verifizieren'),endpoint:channel.url,operation:'DRAFT_ONLY · OFFLINE_PREVIEW',flow:channel.automation,auth:'Account NOT_PROVEN',approvals:'NOT_GRANTED · keine operative Autorität',evidence:'Catalog SHA-256 '+c.catalogSha256+' · Draft '+key,dependencies:channel.feeNote+' · Kosten NOT_PROVEN · Rechte NOT_PROVEN',tests:'0 Provideraufrufe · keine Preisänderung'};
+}
+
+// Explicit owner-session archive transport. No token extraction, background polling or retries.
+// The existing server still enforces owner identity, same origin, activation and recovery.
+export async function archiveLifecycleWorkspace(history:GrowthSnapshot[], request:typeof fetch=fetch) {
+  const raw=exportWorkspace(history);
+  const note=history.at(-1)?.rows.find(r=>r.id==='document-hygiene-lifecycle');
+  if(!note || note.origin!=='OWNER_NOTE' || note.status!=='NOT_PROVEN')throw Error('LIFECYCLE_NOTE_REQUIRED');
+  const id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw))),b=>b.toString(16).padStart(2,'0')).join('');
+  const path='/api/profile/growth-intelligence/evidence-history';
+  const options:RequestInit={credentials:'same-origin',cache:'no-store',redirect:'error',headers:{Accept:'application/json'}};
+  const get=(url:string)=>request(url,{...options,signal:AbortSignal.timeout(20000)});
+  const inventory=await get(path);
+  if(!inventory.ok)throw Error('ARCHIVE_NOT_READY');
+  const data=await inventory.json();
+  if(data?.schema!=='CAPITAL_AI_GROWTH_EVIDENCE_ARCHIVE@1'||data.private!==true||data.authority!=='DOCUMENTATION_ONLY'||
+     !Array.isArray(data.items)||data.items.length>128||!data.items.every((item:unknown)=>typeof item==='object'&&item!==null&&'id'in item&&typeof item.id==='string'&&/^[a-f0-9]{64}$/.test(item.id)))throw Error('INVALID_ARCHIVE_INVENTORY');
+  const exists=data.items.some((item:{id:string})=>item.id===id);
+  if(!exists){
+    if(data.items.length>=128)throw Error('ARCHIVE_LIMIT');
+    const response=await request(path,{...options,method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:raw,signal:AbortSignal.timeout(20000)});
+    if(!response.ok)throw Error('ARCHIVE_WRITE_NOT_PROVEN');
+    const receipt=await response.json();
+    if(receipt?.archived!==true||receipt.id!==id||receipt.authority!=='DOCUMENTATION_ONLY'||receipt.version!==history.at(-1)?.version)throw Error('INVALID_ARCHIVE_RECEIPT');
+  }
+  const readback=await get(path+'/file/'+id);
+  if(!readback.ok || await readback.text()!==raw)throw Error('ARCHIVE_READBACK_NOT_PROVEN');
+  return {id,archived:true,readbackMatch:true,reused:exists,authority:'DOCUMENTATION_ONLY' as const};
 }

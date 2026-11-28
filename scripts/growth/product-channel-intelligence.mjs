@@ -298,7 +298,7 @@ function profileFor(id) {
   if(id==="ai-smartcopy"||id==="smartclip")return "mobile";
   if(id==="cads-benchmark-engine")return "cads";
   if(["market-vocabulary","learning-portal"].includes(id))return "learning";
-  if(["oss-pipeline-simulation-engine","ghcr-digest-blueprint-marketplace-app","seo-growth-engine","social-media-engine","digital-blueprints","solo2-rag","loop-agent"].includes(id))return "engineering";
+  if(["oss-pipeline-simulation-engine","ghcr-digest-blueprint-marketplace-app","seo-growth-engine","social-media-engine","digital-blueprints","solo2-rag","loop-agent","eif"].includes(id))return "engineering";
   return null;
 }
 const supplementalMatches = {"ai-smartcopy":["githubReleases"],"smartclip":["githubReleases"],"solo2-rag":["acti","mcpRegistry","pypi","githubReleases"],"loop-agent":["mcpRegistry","pypi","ghcr","githubReleases"],"digital-blueprints":["githubReleases"],"cads-benchmark-engine":["githubReleases","ghcr"],"hero-buddy-support":["notionConnections","chatgptApps"],"learning-portal":["notionMarketplace"],"market-vocabulary":["notionMarketplace"],"b2b-data-api":["rapidApi"],"sentiment-api":["rapidApi"],"oss-pipeline-simulation-engine":["ghcr","githubReleases"]};
