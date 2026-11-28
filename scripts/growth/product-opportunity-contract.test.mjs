@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   PRODUCT_OPPORTUNITY_VERSION,
+  DISTRIBUTION_OPPORTUNITY_VERSION,
+  DISTRIBUTION_OPPORTUNITY_WEIGHTS,
+  evaluateDistributionOpportunity,
   buildOpportunityDraftCampaign,
   calculateOpportunityScenario,
   evaluateProductOpportunity,
@@ -266,4 +269,42 @@ test('low trust and no viable contribution force HOLD, never auto GO', () => {
   const great = sample();
   great.scores = { market: 5, product: 5, economics: 5, growth: 5, trust: 5 };
   assert.equal(evaluateProductOpportunity(great).decision, 'VALIDATE');
+});
+
+
+const distributionSample=()=>({
+ contractVersion:DISTRIBUTION_OPPORTUNITY_VERSION,productId:'solo2-rag',
+ criteria:Object.fromEntries(Object.keys(DISTRIBUTION_OPPORTUNITY_WEIGHTS).map(k=>[k,{status:'NOT_PROVEN',score:null,evidenceRef:null}])),
+ gates:Object.fromEntries(['rights','security','authorization'].map(k=>[k,{status:'NOT_PROVEN',evidenceRef:null}]))
+});
+test('distribution weights sum to 100, missing evidence remains null and does not inflate an overall score',()=>{
+ assert.equal(Object.values(DISTRIBUTION_OPPORTUNITY_WEIGHTS).reduce((a,b)=>a+b,0),100);
+ const p=distributionSample();
+ assert.equal(evaluateDistributionOpportunity(p).scoreCoveragePercent,0);
+ assert.equal(evaluateDistributionOpportunity(p).score,null);
+ assert.equal(evaluateDistributionOpportunity(p).provisionalCoveredScore,null);
+ p.criteria.demand={status:'SOURCE_RECORDED',score:80,evidenceRef:'synthetic:market'};
+ const result=evaluateDistributionOpportunity(p);
+ assert.equal(result.score,null);assert.equal(result.scoreCoveragePercent,20);
+ assert.equal(result.observedWeightedPoints,16);assert.equal(result.provisionalCoveredScore,80);
+ assert.equal(result.commercialGate,'HOLD');
+});
+test('complete source-recorded criteria cannot grant rights, activation or a verified commercial score',()=>{
+ const p=distributionSample();
+ for(const k of Object.keys(p.criteria))p.criteria[k]={status:'SOURCE_RECORDED',score:80,evidenceRef:'synthetic:criterion'};
+ for(const k of Object.keys(p.gates))p.gates[k]={status:'SOURCE_RECORDED',evidenceRef:'synthetic:gate'};
+ const v=evaluateDistributionOpportunity(p);assert.equal(v.score,80);assert.equal(v.scoreCoveragePercent,100);
+ assert.equal(v.commercialGate,'REVIEW_REQUIRED');assert.equal(v.independentQuality,'NOT_PROVEN');
+ assert.equal(v.publicationAllowed,false);assert.equal(v.liveSalesAllowed,false);assert.equal(v.spendAllowed,false);
+ p.gates.rights={status:'BLOCKED',evidenceRef:'synthetic:hold'};assert.equal(evaluateDistributionOpportunity(p).commercialGate,'BLOCKED');
+});
+test('distribution scoring rejects fabricated verification, unknown values and extra authority fields',()=>{
+ for(const bad of [
+  p=>p.criteria.demand={status:'VERIFIED',score:100,evidenceRef:'synthetic'},
+  p=>p.criteria.demand.score=1,
+  p=>p.criteria.demand={status:'SOURCE_RECORDED',score:101,evidenceRef:'synthetic'},
+  p=>delete p.criteria.demand,
+  p=>p.gates.rights={status:'VERIFIED',evidenceRef:'synthetic'},
+  p=>p.publicationAllowed=true,
+ ]){const p=distributionSample();bad(p);assert.throws(()=>evaluateDistributionOpportunity(p));}
 });
