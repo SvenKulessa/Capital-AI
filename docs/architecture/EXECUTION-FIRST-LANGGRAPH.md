@@ -175,3 +175,56 @@ host-specific adapter before any merge retry; **do not** use the current
 adapter for unattended retry of an ambiguous merge outcome. No scheduler,
 credentials or production agent is enabled by this change.
 
+
+## Adaptive improvement handoff and commercial research glossary (2026-11-28)
+
+Development checkpoint only. The existing durable graph accepts an optional trusted
+local improvement observer after independent terminal checkpoint readback; WAIT,
+read-only and repair attempts do not count. The observer is not configured by
+default. It must use the existing owner-private SQLite store, a scope digest,
+a separately authenticated source-SHA-bound benchmark receipt and the exact
+task ID. No raw chat, credentials or benchmark source records go into GitHub.
+The pending cycle ID is deterministic; acknowledge only after trusted artifact or
+PR readback. Three unique evaluated completions trigger a pending improvement;
+the sixth completion triggers the second. A restart cannot count a task twice.
+
+The comparator consumes SOLO2_CHAT_BENCHMARK@1 and the existing
+CAPITAL_AI_HYGIENE_LIFECYCLE@1. Missing or incompatible evidence means HOLD;
+a known regression means DISCARD_CANDIDATE, or REVERT_PR_REQUIRED only if an
+already-merged rollback was independently authorized. Candidate proposals are
+not approvals. The provisional +2 point acceptance threshold is a technical
+hypothesis, not a new governance gate. No automatic production revert, status
+promotion, permission expansion or commercial activation is implemented by this
+handoff. An authenticated host-side evaluator, candidate generator, and scoped
+GitHub App transport are still required; offline workers remain credential-free.
+No new scheduler, service, provider, CI workflow or required check.
+
+### Market and SEO vocabulary for the existing RAG retriever
+
+- Niche / JTBD: underserved problem, defined customer segment, current workaround
+  and measured frequency. The existing product opportunity contract and viral
+  product drafts produce hypotheses, not market validation.
+- Demand / Nachfrage: count of independently reviewed demand signals by defined
+  segment and period; a search impression is not a purchase.
+- Willingness to pay / Zahlungsbereitschaft: stated price-test response versus
+  observed payment; retain cohort, currency, billing interval, and limitations.
+  Reuse product-market-research validation, never infer a validated price.
+- Competitive analysis / Wettbewerb: compare equivalent functionality, total
+  cost, licensing, distribution and observed buyer alternatives with dated sources.
+- Unit economics / Deckungsbeitrag: net realized revenue less variable costs;
+  CAC is attributable acquisition cost per acquired customer. LTV is expected
+  contribution over retention, not a guaranteed cash flow. Break-even requires
+  positive contribution; use the existing unit_economics.py for scenario analysis
+  and distinguish USD assumptions from actual EUR ledger evidence.
+- SEO search intent: informational, navigational, commercial investigation or
+  transactional; keyword demand is not willingness to pay. CTR is clicks divided
+  by impressions; conversion rate requires defined consented events and denominator.
+  Reuse the existing SEO metadata, GA4 and Search Console contracts; no fabricated
+  search volume, paid keywords, conversion, CAC, LTV or revenue.
+- Product-market fit: observed sustained customer value, retention and willingness
+  to pay; missing cohorts remain NOT_PROVEN. No automatic commercial approval.
+
+These definitions are repository-owned reference data, not instructions or
+market measurements. The existing MARKET/GROWTH retriever may cite this document
+by line and SHA-256. Benchmark and source versions, scope and evidence IDs
+must match before a comparison is accepted. Existing PR #1022 remains draft-only.

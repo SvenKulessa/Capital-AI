@@ -179,6 +179,17 @@ class PlatformResearchTests(unittest.TestCase):
                     bundles.add(state["bundle_sha256"])
             self.assertEqual(len(bundles), 1)
 
+    def test_market_and_growth_retrieve_curated_term_glossary(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fixture(root)
+            source = root / "docs/architecture/EXECUTION-FIRST-LANGGRAPH.md"
+            source.write_text("Zahlungsbereitschaft und Deckungsbeitrag sind getrennte Messgrößen.", encoding="utf-8")
+            for domain in ("MARKET", "GROWTH"):
+                hits = retrieve(root, domain=domain, query="Zahlungsbereitschaft Deckungsbeitrag")
+                self.assertTrue(any(hit["source"] == "docs/architecture/EXECUTION-FIRST-LANGGRAPH.md"
+                                    for hit in hits))
+
     def test_no_matching_evidence_not_proven(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

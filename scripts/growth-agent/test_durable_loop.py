@@ -89,6 +89,36 @@ class DurableTests(unittest.TestCase):
             self.assertEqual(os.stat(db).st_mode & 0o077, 0)
             self.assertNotIn("PRIVATE_SECRET", Path(db).read_bytes().decode("latin1"))
 
+    def test_improvement_observer_counts_three_durable_completions_once(self):
+        from improvement_handoff import observe_terminal
+        from hashlib import sha256
+        with tempfile.TemporaryDirectory() as folder, sqlite3.connect(":memory:") as ledger:
+            scope = "a" * 64
+            auth = Authority(allow_changes=True, allow_merge=True, observe_existing_deploy=True)
+            def verifier(state):
+                return {"scope": scope, "task_id": state["task_id"],
+                        "source_sha": state["merge_sha"],
+                        "receipt": sha256(state["task_id"].encode()).hexdigest(),
+                        "evaluated": True}
+            def observer(state):
+                return observe_terminal(state, scope=scope, db=ledger, verifier=verifier)
+            for number in range(1, 4):
+                db = str(Path(folder) / f"improvement-{number}.sqlite3")
+                http = FakeTransport()
+                first = execute_durable(self.actions(http), auth, f"run-{number}", db,
+                                        improvement_observer=observer)
+                replay = execute_durable(self.actions(http), auth, f"run-{number}", db,
+                                         improvement_observer=observer)
+                self.assertEqual(first["status"], "VERIFIED")
+                self.assertEqual(first["improvement_handoff"], replay["improvement_handoff"])
+                self.assertEqual(first["improvement_handoff"]["status"],
+                                 "IMPROVEMENT_DUE" if number == 3 else "RECORDED")
+                self.assertEqual(http.mutations, 1)
+            denied = execute_durable(self.actions(FakeTransport()), Authority(read_only=True),
+                                      "readonly", str(Path(folder) / "readonly.sqlite3"),
+                                      improvement_observer=lambda _: self.fail("read-only observer"))
+            self.assertNotIn("improvement_handoff", denied)
+
     def test_interrupt_checkpoint_resumes_at_next_node(self):
         from langgraph.checkpoint.sqlite import SqliteSaver
         with tempfile.TemporaryDirectory() as folder:

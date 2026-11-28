@@ -21,8 +21,8 @@ SOURCES = {
     "PLATFORM": ("docs/architecture/EXECUTION-FIRST-LANGGRAPH.md",
                  "docs/platform/LANGGRAPH-WORKER-READBACK-20261115.md"),
     "TRUST": ("AGENTS.md", "docs/architecture/EXECUTION-FIRST-LANGGRAPH.md"),
-    "MARKET": ("AGENTS.md",),
-    "GROWTH": ("AGENTS.md",),
+    "MARKET": ("AGENTS.md", "docs/architecture/EXECUTION-FIRST-LANGGRAPH.md"),
+    "GROWTH": ("AGENTS.md", "docs/architecture/EXECUTION-FIRST-LANGGRAPH.md"),
     "PRODUCT": ("AGENTS.md",),
 }
 MAX_BYTES = 180_000

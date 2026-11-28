@@ -42,6 +42,7 @@ class LoopState(TypedDict, total=False):
     wait_phase: str
     hygiene_baseline: dict | None
     hygiene_lifecycle: dict
+    improvement_handoff: dict
 
 
 @dataclass(frozen=True)
@@ -336,7 +337,8 @@ def execute(actions, authority: Authority, task_id: str, *, hygiene_observer=Non
 
 
 
-def execute_durable(actions, authority: Authority, task_id: str, db_path: str, *, hygiene_observer=None) -> LoopState:
+def execute_durable(actions, authority: Authority, task_id: str, db_path: str, *,
+                    hygiene_observer=None, improvement_observer=None) -> LoopState:
     """Single-writer SQLite-backed LangGraph checkpoint and crash-safe continuation.
 
     A completed thread is returned without repeating actions; a pending checkpoint
@@ -381,11 +383,33 @@ def execute_durable(actions, authority: Authority, task_id: str, db_path: str, *
             snapshot = graph.get_state(config)
             if snapshot and snapshot.values:
                 # No automatic restart after a completed/blocked task.
-                if not snapshot.next:
-                    return snapshot.values
-                # Resume pending checkpoint. Do not restart from START.
-                return graph.invoke(None, config)
-            return graph.invoke({"task_id": task_id, "attempts": 0, "history": []}, config)
+                result = snapshot.values if not snapshot.next else graph.invoke(None, config)
+            else:
+                result = graph.invoke({"task_id": task_id, "attempts": 0, "history": []}, config)
+            if improvement_observer is None or authority.read_only or not authority.allow_changes:
+                return result
+            # Re-read the durable terminal checkpoint; no WAIT/repair counts.
+            # A trusted local observer may record a receipt, never grant graph authority.
+            from improvement_handoff import TERMINAL
+            if result.get("status") not in TERMINAL:
+                return result
+            try:
+                import copy
+                terminal = graph.get_state(config)
+                if terminal.next or terminal.values != result:
+                    return result
+                receipt = improvement_observer(copy.deepcopy(terminal.values))
+                status = receipt.get("status") if isinstance(receipt, dict) else None
+                cycle = receipt.get("cycle_id") if isinstance(receipt, dict) else None
+                if (status == "IMPROVEMENT_DUE" and isinstance(cycle, str)
+                        and re.fullmatch(r"[a-f0-9]{64}", cycle)):
+                    return {**result, "improvement_handoff": {"status": status, "cycle_id": cycle}}
+                if status == "RECORDED" and cycle is None:
+                    return {**result, "improvement_handoff": {"status": status, "cycle_id": None}}
+            except Exception:
+                # A completed merge cannot become a failed merge due to local learning I/O.
+                pass
+            return {**result, "improvement_handoff": {"status": "NOT_PROVEN", "cycle_id": None}}
         finally:
             conn.close()
     finally:
